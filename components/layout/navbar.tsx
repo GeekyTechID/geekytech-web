@@ -1,0 +1,503 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Bell,
+  ChevronDown,
+  LogOut,
+  Menu,
+  Package,
+  Search,
+  Settings,
+  ShoppingCart,
+  User,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/auth-store";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const NAV_LINKS = [
+  { label: "Produk", href: "/products" },
+  { label: "Kategori", href: "/products?view=category" },
+  { label: "Flash Sale", href: "/flash-sale" },
+  { label: "Blog", href: "/blog" },
+] as const;
+
+// ----------------------------------------------------------------
+// Navbar utama
+// ----------------------------------------------------------------
+export function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, profile, isAuthenticated, isAdmin } = useAuth();
+  const { reset } = useAuthStore();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Tutup user menu saat klik di luar
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Tutup mobile menu saat route berubah
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+  }, [pathname]);
+
+  // Focus search input saat dibuka
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
+
+  // Lock scroll saat mobile menu terbuka
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+    setSearchOpen(false);
+    setSearchQuery("");
+  };
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    reset();
+    toast.success("Berhasil keluar.");
+    router.push("/");
+    router.refresh();
+  };
+
+  const userInitials = profile?.full_name
+    ? profile.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  return (
+    <>
+      <header className="sticky top-0 z-30 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 items-center gap-3">
+            {/* Mobile: hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden -ml-1 p-2 text-muted-foreground hover:text-foreground transition-swiss"
+              aria-label="Buka menu"
+            >
+              <Menu size={20} />
+            </button>
+
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center gap-2 shrink-0"
+              aria-label="GeekyTech — Beranda"
+            >
+              <div className="w-7 h-7 bg-[#EA5329] flex items-center justify-center">
+                <span className="text-white font-black text-xs leading-none">
+                  G
+                </span>
+              </div>
+              <span className="font-black text-lg uppercase tracking-tight hidden sm:inline">
+                GeekyTech
+              </span>
+            </Link>
+
+            {/* Desktop nav links */}
+            <nav className="hidden lg:flex items-center gap-0.5 ml-4">
+              {NAV_LINKS.map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium transition-swiss",
+                    pathname === href || pathname.startsWith(href.split("?")[0])
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="flex-1" />
+
+            {/* Desktop search bar */}
+            {searchOpen ? (
+              <form
+                onSubmit={handleSearch}
+                className="hidden lg:flex items-center border border-foreground/30 focus-within:border-foreground transition-swiss w-64"
+              >
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari produk..."
+                  className="flex-1 h-8 px-3 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(false)}
+                  className="px-2 text-muted-foreground hover:text-foreground transition-swiss"
+                  aria-label="Tutup pencarian"
+                >
+                  <X size={14} />
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="hidden lg:flex items-center gap-2 h-8 px-3 text-sm text-muted-foreground border border-border hover:border-foreground/30 hover:text-foreground transition-swiss w-52"
+                aria-label="Cari produk"
+              >
+                <Search size={14} />
+                <span>Cari produk...</span>
+              </button>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center gap-1">
+              {/* Mobile search */}
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="lg:hidden p-2 text-muted-foreground hover:text-foreground transition-swiss"
+                aria-label="Cari"
+              >
+                <Search size={18} />
+              </button>
+
+              {/* Notif bell (hanya saat login) */}
+              {isAuthenticated && (
+                <Link
+                  href="/dashboard/notifications"
+                  className="p-2 text-muted-foreground hover:text-foreground transition-swiss relative"
+                  aria-label="Notifikasi"
+                >
+                  <Bell size={18} />
+                </Link>
+              )}
+
+              {/* Cart */}
+              <Link
+                href="/cart"
+                className="p-2 text-muted-foreground hover:text-foreground transition-swiss"
+                aria-label="Keranjang belanja"
+              >
+                <ShoppingCart size={18} />
+              </Link>
+
+              {/* Theme toggle */}
+              <ThemeToggle className="hidden sm:flex" />
+
+              {/* User menu / Auth buttons */}
+              {isAuthenticated ? (
+                <div ref={userMenuRef} className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    className="flex items-center gap-1.5 ml-1 h-8 px-2 text-sm font-medium border border-border hover:border-foreground/30 transition-swiss"
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    aria-label="Menu akun"
+                  >
+                    <div className="w-5 h-5 bg-foreground text-background text-[10px] font-black flex items-center justify-center">
+                      {userInitials}
+                    </div>
+                    <ChevronDown
+                      size={12}
+                      className={cn(
+                        "text-muted-foreground transition-transform duration-150",
+                        userMenuOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-full mt-1 w-52 bg-background border border-border z-50 py-1"
+                    >
+                      {/* User info */}
+                      <div className="px-3 py-2 border-b border-border">
+                        <p className="text-sm font-semibold truncate">
+                          {profile?.full_name ?? "Pengguna"}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user?.email}
+                        </p>
+                      </div>
+                      <UserMenuItem
+                        icon={User}
+                        label="Profil Saya"
+                        href="/dashboard/profile"
+                      />
+                      <UserMenuItem
+                        icon={Package}
+                        label="Pesanan Saya"
+                        href="/dashboard/orders"
+                      />
+                      {isAdmin && (
+                        <>
+                          <div className="border-t border-border my-1" />
+                          <UserMenuItem
+                            icon={Settings}
+                            label="Admin Panel"
+                            href="/admin"
+                          />
+                        </>
+                      )}
+                      <div className="border-t border-border my-1" />
+                      <button
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-swiss"
+                      >
+                        <LogOut size={14} />
+                        Keluar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-1 ml-1">
+                  <Link href="/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-none text-xs font-bold uppercase tracking-wide"
+                    >
+                      Masuk
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button
+                      size="sm"
+                      className="h-8 rounded-none text-xs font-bold uppercase tracking-wide bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black"
+                    >
+                      Daftar
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile search bar (collapsible) */}
+        {searchOpen && (
+          <div className="lg:hidden border-t border-border px-4 py-2">
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <Search size={16} className="text-muted-foreground shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari produk..."
+                className="flex-1 h-8 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="text-muted-foreground hover:text-foreground shrink-0"
+              >
+                <X size={16} />
+              </button>
+            </form>
+          </div>
+        )}
+      </header>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden
+          />
+
+          {/* Drawer */}
+          <aside className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-background border-r border-border flex flex-col lg:hidden">
+            {/* Header drawer */}
+            <div className="flex items-center justify-between h-14 px-4 border-b border-border shrink-0">
+              <span className="font-black text-base uppercase tracking-tight">
+                Menu
+              </span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 -mr-2 text-muted-foreground hover:text-foreground"
+                aria-label="Tutup menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Nav links */}
+            <nav className="flex-1 overflow-y-auto py-4">
+              <ul className="space-y-0.5 px-3">
+                {NAV_LINKS.map(({ label, href }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      className={cn(
+                        "flex items-center h-10 px-3 text-sm font-medium transition-swiss",
+                        pathname === href ||
+                          pathname.startsWith(href.split("?")[0])
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="border-t border-border mx-3 my-4" />
+
+              {/* Auth section */}
+              {isAuthenticated ? (
+                <div className="px-3 space-y-0.5">
+                  <div className="px-3 py-2 mb-2">
+                    <p className="text-sm font-semibold">
+                      {profile?.full_name ?? "Pengguna"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <MobileMenuItem
+                    icon={User}
+                    label="Profil Saya"
+                    href="/dashboard/profile"
+                  />
+                  <MobileMenuItem
+                    icon={Package}
+                    label="Pesanan Saya"
+                    href="/dashboard/orders"
+                  />
+                  {isAdmin && (
+                    <MobileMenuItem
+                      icon={Settings}
+                      label="Admin Panel"
+                      href="/admin"
+                    />
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 h-10 px-3 text-sm font-medium text-destructive hover:bg-destructive/5 transition-swiss"
+                  >
+                    <LogOut size={16} />
+                    Keluar
+                  </button>
+                </div>
+              ) : (
+                <div className="px-3 space-y-2">
+                  <Link href="/login" className="block">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-none font-bold uppercase tracking-wide text-xs"
+                    >
+                      Masuk
+                    </Button>
+                  </Link>
+                  <Link href="/register" className="block">
+                    <Button className="w-full rounded-none font-bold uppercase tracking-wide text-xs bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black">
+                      Daftar
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </nav>
+
+            {/* Theme toggle di drawer */}
+            <div className="border-t border-border p-4 shrink-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Tema
+                </span>
+                <ThemeToggle variant="full" />
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
+    </>
+  );
+}
+
+// ----------------------------------------------------------------
+// Sub-components
+// ----------------------------------------------------------------
+function UserMenuItem({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+}) {
+  return (
+    <Link
+      role="menuitem"
+      href={href}
+      className="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted transition-swiss"
+    >
+      <Icon size={14} className="text-muted-foreground" />
+      {label}
+    </Link>
+  );
+}
+
+function MobileMenuItem({
+  icon: Icon,
+  label,
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 h-10 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-swiss"
+    >
+      <Icon size={16} />
+      {label}
+    </Link>
+  );
+}

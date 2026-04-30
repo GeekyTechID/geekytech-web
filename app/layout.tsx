@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { Providers } from "@/components/providers";
@@ -7,16 +7,46 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "GeekyTech",
-  description: "Toko tech & gadget",
+  title: {
+    default: "GeekyTech — Toko Tech & Gadget",
+    template: "%s | GeekyTech",
+  },
+  description:
+    "GeekyTech — toko tech & gadget terpercaya. Produk original bergaransi resmi. Pengiriman ke seluruh Indonesia.",
+  keywords: ["toko tech", "gadget", "elektronik", "laptop", "smartphone", "gaming"],
+  authors: [{ name: "GeekyTech" }],
+  creator: "GeekyTech",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://geekytech.com",
+  ),
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "GeekyTech",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -28,7 +58,7 @@ export default function RootLayout({
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-sans">
         <Providers>{children}</Providers>
