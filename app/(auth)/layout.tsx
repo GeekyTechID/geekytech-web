@@ -1,5 +1,4 @@
-import Link from "next/link";
-
+import { SiteLogo } from "@/components/shared/site-logo";
 export default function AuthLayout({
   children,
 }: {
@@ -9,14 +8,7 @@ export default function AuthLayout({
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Panel kiri — brand (hidden di mobile) */}
       <div className="hidden lg:flex flex-col justify-between bg-black text-white p-12 border-r border-white/10">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 bg-[#EA5329] flex items-center justify-center shrink-0">
-            <span className="text-white font-black text-sm leading-none">G</span>
-          </div>
-          <span className="text-white font-black text-xl tracking-tight uppercase">
-            GeekyTech
-          </span>
-        </Link>
+        <SiteLogo variant="authPanel" />
 
         <div className="space-y-6">
           <p className="text-5xl font-black leading-[1.05] tracking-tight uppercase">
@@ -54,14 +46,7 @@ export default function AuthLayout({
       <div className="flex flex-col min-h-screen">
         {/* Mobile header */}
         <div className="flex items-center justify-between p-6 border-b border-border lg:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#EA5329] flex items-center justify-center">
-              <span className="text-white font-black text-xs">G</span>
-            </div>
-            <span className="font-black text-lg tracking-tight uppercase">
-              GeekyTech
-            </span>
-          </Link>
+          <SiteLogo variant="authMobile" />
         </div>
 
         <div className="flex flex-1 items-center justify-center p-6 lg:p-12">

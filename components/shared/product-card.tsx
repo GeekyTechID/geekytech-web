@@ -1,0 +1,116 @@
+"use client"
+
+import Image from "next/image"
+import Link from "next/link"
+import { Heart, Star } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { formatRupiah } from "@/lib/format"
+import { Button } from "@/components/ui/button"
+
+export interface ProductCardData {
+  id: string
+  name: string
+  slug: string
+  base_price: number
+  sale_price?: number | null
+  average_rating: number
+  review_count: number
+  is_featured: boolean
+  primary_image?: string | null
+  primary_image_alt?: string | null
+  is_flash_sale?: boolean
+}
+
+interface ProductCardProps {
+  product: ProductCardData
+  onWishlist?: (id: string) => void
+  isWishlisted?: boolean
+  className?: string
+}
+
+export function ProductCard({ product, onWishlist, isWishlisted = false, className }: ProductCardProps) {
+  const hasDiscount =
+    product.sale_price != null && product.sale_price < product.base_price
+  const discountPercent = hasDiscount
+    ? Math.round(((product.base_price - product.sale_price!) / product.base_price) * 100)
+    : 0
+
+  return (
+    <div className={cn("group relative flex flex-col border border-foreground bg-background transition-swiss", className)}>
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden bg-muted">
+        {product.primary_image ? (
+          <Image
+            src={product.primary_image}
+            alt={product.primary_image_alt ?? product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">No Image</span>
+          </div>
+        )}
+
+        <div className="absolute left-0 top-0 flex flex-col gap-1 p-2">
+          {product.is_flash_sale && (
+            <span className="bg-brand px-1.5 py-0.5 text-swiss-label text-white">FLASH</span>
+          )}
+          {hasDiscount && (
+            <span className="bg-foreground px-1.5 py-0.5 text-swiss-label text-background">
+              -{discountPercent}%
+            </span>
+          )}
+          {product.is_featured && !hasDiscount && !product.is_flash_sale && (
+            <span className="bg-foreground px-1.5 py-0.5 text-swiss-label text-background">FEATURED</span>
+          )}
+        </div>
+      </Link>
+
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        {product.review_count > 0 && (
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 fill-brand text-brand" />
+            <span className="text-xs font-semibold">{product.average_rating.toFixed(1)}</span>
+            <span className="text-xs text-muted-foreground">({product.review_count})</span>
+          </div>
+        )}
+
+        <Link
+          href={`/products/${product.slug}`}
+          className="line-clamp-2 text-sm font-bold leading-tight transition-colors hover:text-brand"
+        >
+          {product.name}
+        </Link>
+
+        <div className="mt-auto flex items-end justify-between gap-2">
+          <div className="flex flex-col">
+            <span className="text-swiss-price">
+              {formatRupiah(product.sale_price ?? product.base_price)}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatRupiah(product.base_price)}
+              </span>
+            )}
+          </div>
+
+          {onWishlist && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={(e) => {
+                e.preventDefault()
+                onWishlist(product.id)
+              }}
+              aria-label={isWishlisted ? "Hapus dari wishlist" : "Tambah ke wishlist"}
+            >
+              <Heart className={cn("h-4 w-4", isWishlisted && "fill-brand text-brand")} />
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

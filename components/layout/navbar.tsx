@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { SiteLogo } from "@/components/shared/site-logo";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -118,20 +119,7 @@ export function Navbar() {
             </button>
 
             {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 shrink-0"
-              aria-label="GeekyTech — Beranda"
-            >
-              <div className="w-7 h-7 bg-[#EA5329] flex items-center justify-center">
-                <span className="text-white font-black text-xs leading-none">
-                  G
-                </span>
-              </div>
-              <span className="font-black text-lg uppercase tracking-tight hidden sm:inline">
-                GeekyTech
-              </span>
-            </Link>
+            <SiteLogo variant="navbar" priority />
 
             {/* Desktop nav links */}
             <nav className="hidden lg:flex items-center gap-0.5 ml-4">

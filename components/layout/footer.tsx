@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SiteLogo } from "@/components/shared/site-logo";
+
 const FOOTER_LINKS = {
   Produk: [
     { label: "Semua Produk", href: "/products" },
@@ -84,11 +86,9 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
           {/* Brand */}
           <div className="col-span-2">
-            <Link href="/" className="inline-block mb-4">
-              <span className="text-2xl font-black uppercase tracking-tight">
-                GeekyTech
-              </span>
-            </Link>
+            <div className="mb-4">
+              <SiteLogo variant="footer" />
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
               Toko tech &amp; gadget terpercaya. Produk original bergaransi resmi. Pengiriman ke seluruh Indonesia.
             </p>

@@ -225,7 +225,7 @@ export default async function AdminDashboardPage() {
   } = await fetchDashboardData();
 
   return (
-    <div className="p-6 lg:p-8 space-y-8 max-w-7xl">
+    <div className="w-full p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div>
         <p className="text-swiss-eyebrow">Overview</p>

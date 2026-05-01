@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
-import { cn } from "@/lib/utils";
+import { SiteLogo } from "@/components/shared/site-logo";
 
 export default function AdminPanelLayout({
   children,
@@ -45,14 +45,15 @@ export default function AdminPanelLayout({
           >
             <Menu size={20} />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-[#EA5329] flex items-center justify-center">
-              <span className="text-white font-black text-[9px]">G</span>
-            </div>
-            <span className="text-sm font-black uppercase tracking-tight">
-              Admin Panel
-            </span>
-          </div>
+          <SiteLogo
+            href="/admin"
+            variant="adminTopbar"
+            ariaLabel="GeekyTech Admin — Dashboard"
+            className="shrink-0"
+          />
+          <span className="text-sm font-black uppercase tracking-tight">
+            Admin Panel
+          </span>
         </header>
 
         {/* Scrollable page content */}

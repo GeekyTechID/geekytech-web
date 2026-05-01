@@ -272,7 +272,7 @@ export function ProductTable({
                         <DropdownMenuItem asChild>
                           <Link
                             href={`/admin/products/${product.id}/edit`}
-                            className="flex items-center gap-2 cursor-pointer rounded-none"
+                            className="flex items-center gap-2 rounded-none"
                           >
                             <Edit size={13} />
                             Edit Produk
@@ -281,7 +281,7 @@ export function ProductTable({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => setDeleteTarget(product)}
-                          className="text-destructive focus:text-destructive cursor-pointer rounded-none"
+                          className="text-destructive focus:text-destructive rounded-none"
                         >
                           <Trash2 size={13} className="mr-2" />
                           Hapus Produk

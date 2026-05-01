@@ -12,6 +12,7 @@ import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SiteLogo } from "@/components/shared/site-logo";
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -80,14 +81,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm space-y-10">
         {/* Logo + badge */}
         <div className="space-y-5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#EA5329] flex items-center justify-center">
-              <span className="text-white font-black text-sm">G</span>
-            </div>
-            <span className="font-black text-xl uppercase tracking-tight">
-              GeekyTech
-            </span>
-          </Link>
+          <SiteLogo variant="adminLogin" />
 
           <div className="flex items-center gap-2 border border-border px-3 py-2 w-fit">
             <ShieldCheck size={14} className="text-[#EA5329]" />

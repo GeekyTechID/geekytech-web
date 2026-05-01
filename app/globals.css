@@ -183,6 +183,12 @@
     @apply bg-background text-foreground;
   }
 
+  /* Interaktif — pointer konsisten untuk tautan & tombol */
+  a[href],
+  button:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
   /* Swiss Style — heading hierarchy */
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-black tracking-tight leading-tight;

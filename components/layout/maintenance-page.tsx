@@ -1,18 +1,13 @@
 import { Wrench } from "lucide-react";
 
+import { SiteLogo } from "@/components/shared/site-logo";
+
 export function MaintenancePage() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center">
       {/* Logo */}
       <div className="mb-10">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-[#EA5329] flex items-center justify-center">
-            <span className="text-white font-black text-base">G</span>
-          </div>
-          <span className="text-3xl font-black uppercase tracking-tight">
-            GeekyTech
-          </span>
-        </div>
+        <SiteLogo variant="maintenance" asStatic />
       </div>
 
       {/* Icon */}

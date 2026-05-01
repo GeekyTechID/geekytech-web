@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/auth-store";
 import { useAuth } from "@/hooks/use-auth";
+import { SiteLogo } from "@/components/shared/site-logo";
 import { cn } from "@/lib/utils";
 
 const NAV_GROUPS = [
@@ -93,19 +94,9 @@ export function AdminSidebar() {
     <aside className="flex flex-col w-56 h-full bg-background border-r border-border">
       {/* Header */}
       <div className="flex items-center gap-2.5 h-14 px-4 border-b border-border shrink-0">
-        <Link href="/admin" className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 bg-[#EA5329] flex items-center justify-center shrink-0">
-            <span className="text-white font-black text-[10px]">G</span>
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-tight truncate">
-              GeekyTech
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              Admin
-            </p>
-          </div>
-        </Link>
+        <div className="flex flex-col gap-1 min-w-0">
+          <SiteLogo href="/admin" variant="adminSidebar" ariaLabel="GeekyTech Admin — Dashboard" />
+        </div>
       </div>
 
       {/* Navigation */}
