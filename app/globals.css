@@ -228,6 +228,26 @@
   }
 }
 
+@layer components {
+  /* Tombol/link dengan latar --color-swiss-black → hover brand */
+  button.bg-swiss-black:not(:disabled):hover,
+  a.bg-swiss-black:hover,
+  input[type="submit"].bg-swiss-black:not(:disabled):hover,
+  input[type="button"].bg-swiss-black:not(:disabled):hover {
+    background-color: var(--color-brand);
+    color: var(--color-brand-foreground);
+  }
+
+  button.bg-swiss-black:not(:disabled),
+  a.bg-swiss-black,
+  input[type="submit"].bg-swiss-black:not(:disabled),
+  input[type="button"].bg-swiss-black:not(:disabled) {
+    transition-property: color, background-color, border-color, opacity;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
 /* ============================================================
    Swiss Typography Utilities
    ============================================================ */

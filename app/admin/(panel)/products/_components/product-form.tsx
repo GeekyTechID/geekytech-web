@@ -357,14 +357,14 @@ export function ProductForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Kategori">
             <Select
-              value={watch("category_id") ?? ""}
-              onValueChange={(v) => setValue("category_id", v || null)}
+              value={watch("category_id") ?? "__none__"}
+              onValueChange={(v) => setValue("category_id", v === "__none__" ? null : v)}
             >
               <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Pilih kategori..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">— Tanpa Kategori —</SelectItem>
+                <SelectItem value="__none__">— Tanpa Kategori —</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}

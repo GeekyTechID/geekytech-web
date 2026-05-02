@@ -28,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
       setInitialized(true);
+    }).catch(() => {
+      setLoading(false);
+      setInitialized(true);
     });
 
     // Dengarkan perubahan auth state (login, logout, token refresh)

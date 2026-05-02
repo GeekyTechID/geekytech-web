@@ -48,7 +48,9 @@ function LoginForm() {
   }, []);
 
   const onSubmit = async (values: LoginFormValues) => {
-    const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    const hasTurnstile =
+      !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY &&
+      process.env.NODE_ENV === "production";
     if (hasTurnstile && !turnstileToken) {
       toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
       return;

@@ -422,7 +422,7 @@ export function Navbar() {
                     </Button>
                   </Link>
                   <Link href="/register" className="block">
-                    <Button className="w-full rounded-none font-bold uppercase tracking-wide text-xs bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black">
+                    <Button className="w-full rounded-none font-bold uppercase tracking-wide text-xs">
                       Daftar
                     </Button>
                   </Link>

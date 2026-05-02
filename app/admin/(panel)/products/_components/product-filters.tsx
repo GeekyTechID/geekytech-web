@@ -74,7 +74,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
             className={cn(
               "px-3 h-9 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
               (value === "all" ? status === "all" : status === value)
-                ? "bg-foreground text-background"
+                ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >

@@ -5,15 +5,18 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   ChevronRight,
+  FileBarChart,
   FileText,
   Grid2X2,
   ImageIcon,
+  Layers,
   LogOut,
   MessageSquare,
   Package,
   Settings,
   ShoppingBag,
   Tag,
+  Ticket,
   Users,
   Zap,
 } from "lucide-react";
@@ -54,6 +57,14 @@ const NAV_GROUPS = [
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
       { label: "Banner", href: "/admin/banners", icon: ImageIcon },
       { label: "Flash Sale", href: "/admin/flash-sale", icon: Zap },
+      { label: "Kupon", href: "/admin/coupons", icon: Ticket },
+    ],
+  },
+  {
+    label: "Laporan & Stok",
+    items: [
+      { label: "Laporan", href: "/admin/reports", icon: FileBarChart },
+      { label: "Stok", href: "/admin/stock", icon: Layers },
     ],
   },
   {
@@ -118,7 +129,7 @@ export function AdminSidebar() {
                       className={cn(
                         "flex items-center gap-2.5 h-8 px-2 text-sm font-medium transition-swift rounded-none",
                         active
-                          ? "bg-foreground text-background"
+                          ? "bg-swiss-black text-swiss-white"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted",
                       )}
                       aria-current={active ? "page" : undefined}

@@ -1,22 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteLogo } from "@/components/shared/site-logo";
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -26,50 +27,36 @@ export default function AdminLoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (err === "not_admin") {
+      toast.error("Akses ditolak. Akun ini bukan admin.");
+    }
+  }, [searchParams]);
+
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
+      const res = await fetch("/api/auth/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
       });
 
-      if (error) {
-        const msg = error.message.toLowerCase();
-        if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
-          toast.error("Email atau password salah.");
-        } else if (msg.includes("email not confirmed")) {
-          toast.error("Email belum dikonfirmasi. Cek inbox Anda.");
-        } else {
-          toast.error(error.message);
-        }
-        return;
-      }
+      const json = (await res.json()) as { success: boolean; error?: string };
 
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
-
-      if (profileError) {
-        await supabase.auth.signOut();
-        toast.error(`Gagal verifikasi akun: ${profileError.message}`);
-        return;
-      }
-
-      if (!profile || profile.role !== "admin") {
-        await supabase.auth.signOut();
-        toast.error("Akses ditolak. Akun ini bukan admin.");
+      if (!json.success) {
+        toast.error(json.error ?? "Login gagal.");
         return;
       }
 
       toast.success("Selamat datang di Admin Panel.");
       window.location.href = "/admin";
-    } catch (err) {
-      console.error("[AdminLogin] Unexpected error:", err);
+    } catch {
       toast.error("Terjadi kesalahan tidak terduga. Coba lagi.");
     } finally {
       setIsLoading(false);
@@ -106,7 +93,11 @@ export default function AdminLoginPage() {
         <div className="border-t border-border" />
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5"
+          noValidate
+        >
           <div className="space-y-1.5">
             <Label
               htmlFor="email"
@@ -164,8 +155,14 @@ export default function AdminLoginPage() {
             disabled={isLoading}
             className="w-full h-11 rounded-none font-bold uppercase tracking-widest text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
           >
-            {isLoading && <Loader2 size={16} className="animate-spin mr-2" />}
-            Masuk
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="animate-spin mr-2" />
+                Memproses...
+              </>
+            ) : (
+              "Masuk"
+            )}
           </Button>
         </form>
 
@@ -179,5 +176,13 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense>
+      <AdminLoginContent />
+    </Suspense>
   );
 }

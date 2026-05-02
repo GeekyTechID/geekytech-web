@@ -69,7 +69,7 @@ export function OrderFilters() {
             className={cn(
               "h-9 border-r border-border px-3 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
               (value === "all" ? status === "all" : status === value)
-                ? "bg-foreground text-background"
+                ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >

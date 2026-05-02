@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "@/types/supabase";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
@@ -27,29 +27,43 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // Refresh session — wajib dipanggil di setiap middleware agar token tidak expire
+  // Refresh session — wajib dipanggil agar token tidak expire
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
+  function redirectWithCookies(destination: string) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = destination;
+    redirectUrl.search = "";
+    const res = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      res.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return res;
+  }
+
   // ─── /dashboard/* — wajib login ─────────────────────────────────────────────
   if (pathname.startsWith("/dashboard")) {
     if (!user) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/login";
+      redirectUrl.search = "";
       redirectUrl.searchParams.set("redirectTo", pathname);
-      return NextResponse.redirect(redirectUrl);
+      const res = NextResponse.redirect(redirectUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        res.cookies.set(cookie.name, cookie.value, cookie);
+      });
+      return res;
     }
   }
 
   // ─── /admin/* — wajib login + role admin ────────────────────────────────────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     if (!user) {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/admin/login";
-      return NextResponse.redirect(redirectUrl);
+      return redirectWithCookies("/admin/login");
     }
 
     const { data: profile } = await supabase
@@ -59,9 +73,15 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (profile?.role !== "admin") {
-      const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/";
-      return NextResponse.redirect(redirectUrl);
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/admin/login";
+      loginUrl.search = "";
+      loginUrl.searchParams.set("error", "not_admin");
+      const res = NextResponse.redirect(loginUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        res.cookies.set(cookie.name, cookie.value, cookie);
+      });
+      return res;
     }
   }
 

@@ -68,7 +68,7 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
               "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-swiss",
               "border-r border-border last:border-r-0",
               theme === value
-                ? "bg-foreground text-background"
+                ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
             aria-label={label}

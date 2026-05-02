@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Menu } from "lucide-react";
 
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
-import { SiteLogo } from "@/components/shared/site-logo";
+import { AdminTopbar } from "@/components/layout/admin-topbar";
 
 export default function AdminPanelLayout({
   children,
@@ -34,27 +33,10 @@ export default function AdminPanelLayout({
         </>
       )}
 
-      {/* Main content */}
+      {/* Main content area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile topbar */}
-        <header className="md:hidden flex items-center h-14 px-4 border-b border-border bg-background shrink-0 gap-3">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-swiss"
-            aria-label="Buka menu"
-          >
-            <Menu size={20} />
-          </button>
-          <SiteLogo
-            href="/admin"
-            variant="adminTopbar"
-            ariaLabel="GeekyTech Admin — Dashboard"
-            className="shrink-0"
-          />
-          <span className="text-sm font-black uppercase tracking-tight">
-            Admin Panel
-          </span>
-        </header>
+        {/* Topbar — tampil di semua ukuran layar */}
+        <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Scrollable page content */}
         <main className="flex-1 overflow-y-auto">
