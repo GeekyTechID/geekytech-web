@@ -1,7 +1,9 @@
 # GeekyTech — Claude Code Context
 
 ## Project Overview
+
 GeekyTech adalah platform ecommerce toko tech/gadget berbasis web.
+
 - Migrasi dari Tokopedia ke platform sendiri
 - 107 produk, 3.565 pelanggan, 23.000+ transaksi existing
 - Target: production-ready ecommerce dengan fitur lengkap
@@ -188,6 +190,7 @@ NEXTAUTH_SECRET=                  ← random string
 ## Aturan Coding
 
 ### General
+
 - Selalu gunakan TypeScript strict mode
 - Gunakan `async/await`, bukan `.then()`
 - Semua error wajib di-handle dengan try/catch
@@ -195,6 +198,7 @@ NEXTAUTH_SECRET=                  ← random string
 - Gunakan path alias `@/` untuk semua import
 
 ### Supabase
+
 - Gunakan **server client** (`createServerClient`) di Server Components & API Routes
 - Gunakan **browser client** (`createBrowserClient`) di Client Components
 - **JANGAN** gunakan `SUPABASE_SERVICE_ROLE_KEY` di client-side
@@ -202,6 +206,7 @@ NEXTAUTH_SECRET=                  ← random string
 - Untuk operasi admin, gunakan service role key di API route
 
 ### API Routes
+
 - Semua API route wajib validasi input dengan Zod
 - Webhook Midtrans: **wajib** verify signature sebelum proses apapun
 - Webhook Biteship: **wajib** verify signature sebelum proses apapun
@@ -215,6 +220,7 @@ NEXTAUTH_SECRET=                  ← random string
   ```
 
 ### Midtrans
+
 - Pakai **Snap** (bukan Core API)
 - Signature verification: `SHA512(orderId + statusCode + grossAmount + serverKey)`
 - Handle semua status: `pending`, `settlement`, `capture`, `deny`, `expire`, `cancel`, `challenge`
@@ -222,12 +228,14 @@ NEXTAUTH_SECRET=                  ← random string
 - Payment timeout: 3 jam (bisa dikonfigurasi dari `settings` table)
 
 ### Biteship
+
 - Selalu sertakan berat (gram) dan dimensi saat create order
 - Ambil alamat origin dari `settings` table, bukan hardcode
 - Create shipment hanya setelah Midtrans status `settlement`
 - Simpan AWB ke tabel `shipments` setelah dapat dari Biteship
 
 ### Stok
+
 - Saat user checkout → tambah `reserved` di `product_variants`
 - Saat payment expire/cancel → kurangi `reserved` (release)
 - Saat payment settlement → kurangi `stock` dan `reserved`
@@ -235,16 +243,19 @@ NEXTAUTH_SECRET=                  ← random string
 - Catat semua perubahan stok di `stock_history`
 
 ### GSAP
+
 - Import GSAP hanya di Client Components (`"use client"`)
 - Gunakan `useGSAP` hook dari `@gsap/react`
 - Cleanup animasi di return function useEffect/useGSAP
 - Jangan animasi sesuatu yang belum di-mount
 
 ### Zustand
+
 - Pisahkan store per domain: `cartStore`, `authStore`, `uiStore`
 - Persist `cartStore` ke localStorage sebagai fallback
 
 ### Form
+
 - Semua form pakai React Hook Form + Zod schema
 - Error message ditampilkan di bawah field
 - Loading state saat submit
@@ -253,15 +264,15 @@ NEXTAUTH_SECRET=                  ← random string
 
 ## Security Checklist
 
-- [ ] RLS aktif di semua tabel Supabase
-- [ ] `/dashboard/*` → redirect ke `/login` jika belum login (middleware)
-- [ ] `/admin/*` → redirect jika bukan role `admin` (middleware)
-- [ ] Midtrans webhook signature diverifikasi
-- [ ] Biteship webhook signature diverifikasi
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` tidak pernah ke client
-- [ ] Rate limiting di API routes publik
-- [ ] Input validation dengan Zod di semua API route
-- [ ] CAPTCHA (Cloudflare Turnstile) di login & register
+- RLS aktif di semua tabel Supabase
+- `/dashboard/`* → redirect ke `/login` jika belum login (middleware)
+- `/admin/*` → redirect jika bukan role `admin` (middleware)
+- Midtrans webhook signature diverifikasi
+- Biteship webhook signature diverifikasi
+- `SUPABASE_SERVICE_ROLE_KEY` tidak pernah ke client
+- Rate limiting di API routes publik
+- Input validation dengan Zod di semua API route
+- CAPTCHA (Cloudflare Turnstile) di login & register
 
 ---
 
@@ -276,6 +287,7 @@ Tujuan: mencegah Supabase free tier auto-pause karena tidak aktif
 ## Email Templates (Resend)
 
 Kirim email untuk:
+
 1. Verifikasi email (daftar)
 2. Reset password
 3. Konfirmasi order
@@ -295,6 +307,7 @@ Kirim email untuk:
 ## GA4 Events
 
 Wajib track event berikut:
+
 ```
 view_item          → saat buka halaman produk
 add_to_cart        → saat tambah ke cart
@@ -334,9 +347,10 @@ Selalu coding di branch `development`. Merge ke `main` hanya setelah QA.
 
 ## Referensi
 
-- Supabase Docs: https://supabase.com/docs
-- Midtrans Snap Docs: https://docs.midtrans.com/reference/snap-js
-- Biteship API Docs: https://biteship.com/id/docs
-- Resend Docs: https://resend.com/docs
-- GSAP Docs: https://gsap.com/docs/v3/
-- shadcn/ui: https://ui.shadcn.com
+- Supabase Docs: [https://supabase.com/docs](https://supabase.com/docs)
+- Midtrans Snap Docs: [https://docs.midtrans.com/reference/snap-js](https://docs.midtrans.com/reference/snap-js)
+- Biteship API Docs: [https://biteship.com/id/docs](https://biteship.com/id/docs)
+- Resend Docs: [https://resend.com/docs](https://resend.com/docs)
+- GSAP Docs: [https://gsap.com/docs/v3/](https://gsap.com/docs/v3/)
+- shadcn/ui: [https://ui.shadcn.com](https://ui.shadcn.com)
+

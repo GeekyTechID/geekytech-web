@@ -68,6 +68,27 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
     return { error: error.message };
   }
 
+  const { error: variantsError } = await supabase.from("product_variants").insert(
+    data.variants.map((v) => ({
+      product_id: product.id,
+      name: v.name,
+      sku: v.sku,
+      price: v.price,
+      stock: v.stock,
+      weight: v.weight,
+      length: v.length,
+      width: v.width,
+      height: v.height,
+      is_active: v.is_active,
+    }))
+  );
+
+  if (variantsError) {
+    await supabase.from("products").delete().eq("id", product.id);
+    if (variantsError.code === "23505") return { error: "SKU varian sudah digunakan produk lain." };
+    return { error: `Gagal menyimpan varian: ${variantsError.message}` };
+  }
+
   await Promise.all([
     data.images.length > 0
       ? supabase.from("product_images").insert(
@@ -80,20 +101,6 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
           }))
         )
       : null,
-    supabase.from("product_variants").insert(
-      data.variants.map((v) => ({
-        product_id: product.id,
-        name: v.name,
-        sku: v.sku,
-        price: v.price,
-        stock: v.stock,
-        weight: v.weight,
-        length: v.length,
-        width: v.width,
-        height: v.height,
-        is_active: v.is_active,
-      }))
-    ),
     data.tags.length > 0
       ? supabase.from("product_tags").insert(
           data.tags.map((tag) => ({ product_id: product.id, tag }))
@@ -166,7 +173,7 @@ export async function updateProduct(
 
   for (const v of data.variants) {
     if (v.id) {
-      await supabase
+      const { error: updateVariantError } = await supabase
         .from("product_variants")
         .update({
           name: v.name,
@@ -180,8 +187,12 @@ export async function updateProduct(
           is_active: v.is_active,
         })
         .eq("id", v.id);
+      if (updateVariantError) {
+        if (updateVariantError.code === "23505") return { error: "SKU varian sudah digunakan produk lain." };
+        return { error: `Gagal memperbarui varian: ${updateVariantError.message}` };
+      }
     } else {
-      await supabase.from("product_variants").insert({
+      const { error: insertVariantError } = await supabase.from("product_variants").insert({
         product_id: id,
         name: v.name,
         sku: v.sku,
@@ -193,6 +204,10 @@ export async function updateProduct(
         height: v.height,
         is_active: v.is_active,
       });
+      if (insertVariantError) {
+        if (insertVariantError.code === "23505") return { error: "SKU varian sudah digunakan produk lain." };
+        return { error: `Gagal menambah varian: ${insertVariantError.message}` };
+      }
     }
   }
 

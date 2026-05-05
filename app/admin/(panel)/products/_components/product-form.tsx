@@ -236,6 +236,7 @@ export function ProductForm({
   const onSubmit = async (values: FormValues) => {
     if (images.length === 0) {
       toast.warning("Tambahkan minimal 1 gambar produk.");
+      return;
     }
 
     const payload = {
@@ -256,18 +257,22 @@ export function ProductForm({
     };
 
     startTransition(async () => {
-      const result = isEdit
-        ? await updateProduct(defaultProduct!.id, payload)
-        : await createProduct(payload);
+      try {
+        const result = isEdit
+          ? await updateProduct(defaultProduct!.id, payload)
+          : await createProduct(payload);
 
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
+        if ("error" in result) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.success(isEdit ? "Produk berhasil diperbarui." : "Produk berhasil ditambahkan.");
+        router.push("/admin/products");
+        router.refresh();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
       }
-
-      toast.success(isEdit ? "Produk berhasil diperbarui." : "Produk berhasil ditambahkan.");
-      router.push("/admin/products");
-      router.refresh();
     });
   };
 

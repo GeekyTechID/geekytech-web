@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { CornerDownRight, Edit, Grid2X2, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +29,6 @@ export type CategoryRow = {
   name: string;
   slug: string;
   parent_id: string | null;
-  image_url: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;
@@ -106,9 +104,6 @@ export function CategoryTable({ categories }: CategoryTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="w-12 px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Foto
-              </th>
               <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Nama
               </th>
@@ -130,25 +125,6 @@ export function CategoryTable({ categories }: CategoryTableProps) {
                 key={row.id}
                 className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
               >
-                {/* Image */}
-                <td className="px-4 py-3">
-                  <div className="h-9 w-9 shrink-0 overflow-hidden border border-border bg-muted">
-                    {row.image_url ? (
-                      <Image
-                        src={row.image_url}
-                        alt={row.name}
-                        width={36}
-                        height={36}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Grid2X2 size={14} className="text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                </td>
-
                 {/* Name */}
                 <td className="px-4 py-3">
                   <div className={row.depth === 1 ? "ml-4 flex items-center gap-2" : ""}>

@@ -29,7 +29,7 @@ export default async function AdminCategoriesPage({
 
   let query = supabase
     .from("categories")
-    .select("id, name, slug, parent_id, image_url, sort_order, is_active, created_at", {
+    .select("id, name, slug, parent_id, sort_order, is_active, created_at", {
       count: "exact",
     })
     .order("sort_order", { ascending: true })

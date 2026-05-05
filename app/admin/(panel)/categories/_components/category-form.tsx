@@ -22,7 +22,6 @@ const formSchema = z.object({
     .min(1, "Slug wajib diisi")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug: huruf kecil, angka, dan tanda hubung"),
   parent_id: z.string(),
-  image_url: z.string(),
   sort_order: z.number().int().min(0),
   is_active: z.boolean(),
 });
@@ -70,7 +69,6 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
       name: "",
       slug: "",
       parent_id: "",
-      image_url: "",
       sort_order: 0,
       is_active: true,
       ...defaultValues,
@@ -78,7 +76,6 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
   });
 
   const isActive = watch("is_active");
-  const imageUrl = watch("image_url");
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
@@ -86,7 +83,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
       const payload = {
         ...values,
         parent_id: values.parent_id || null,
-        image_url: values.image_url || null,
+        image_url: null,
       };
 
       const result = categoryId
@@ -189,37 +186,6 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
             <p className="text-xs text-destructive">{errors.sort_order.message}</p>
           )}
         </div>
-      </div>
-
-      {/* Gambar */}
-      <div className="space-y-4 border border-border p-6">
-        <h2 className="text-xs font-black uppercase tracking-widest">Gambar Kategori</h2>
-        <div className="space-y-1.5">
-          <Label htmlFor="image_url" className="text-xs font-bold uppercase tracking-widest">
-            URL Gambar
-          </Label>
-          <Input
-            id="image_url"
-            className="h-9 rounded-none"
-            placeholder="https://..."
-            {...register("image_url")}
-          />
-          {errors.image_url && (
-            <p className="text-xs text-destructive">{errors.image_url.message}</p>
-          )}
-        </div>
-
-        {imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt="Preview gambar kategori"
-            className="h-24 w-24 border border-border object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
       </div>
 
       {/* Status */}
