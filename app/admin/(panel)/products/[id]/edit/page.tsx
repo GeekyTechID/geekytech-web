@@ -66,7 +66,7 @@ export default async function EditProductPage({
   const defaultTags = (product.product_tags ?? []).map((t) => t.tag);
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <div className="p-6 space-y-6 w-full">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link

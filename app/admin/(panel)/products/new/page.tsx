@@ -17,7 +17,7 @@ export default async function NewProductPage() {
     .order("name");
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <div className="p-6 space-y-6 w-full">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link href="/admin/products" className="hover:text-foreground transition-colors font-medium">

@@ -277,366 +277,381 @@ export function ProductForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
-      {/* ── Informasi Dasar ──────────────────────────────────────────── */}
-      <Section title="Informasi Dasar">
-        <div className="space-y-4">
-          <Field label="Nama Produk" error={errors.name?.message} required>
-            <Input
-              {...register("name", { onChange: handleNameChange })}
-              placeholder="Contoh: Samsung Galaxy S25 Ultra"
-              className="rounded-none"
-            />
-          </Field>
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      {/* ── 2xl: 2 kolom | <2xl: 1 kolom ────────────────────────────── */}
+      <div className="flex flex-col 2xl:flex-row 2xl:items-stretch gap-8">
 
-          <Field label="Slug (URL)" error={errors.slug?.message} required>
-            <Input
-              {...register("slug")}
-              placeholder="samsung-galaxy-s25-ultra"
-              className="rounded-none font-mono text-sm"
-            />
-          </Field>
+        {/* ── KOLOM KIRI: Info Dasar → Gambar ──────────────────────── */}
+        <div className="flex-1 space-y-8 min-w-0">
 
-          <Field label="Deskripsi" error={errors.description?.message}>
-            <Textarea
-              {...register("description")}
-              placeholder="Deskripsi lengkap produk..."
-              rows={5}
-              className="rounded-none resize-none"
-            />
-          </Field>
-        </div>
-      </Section>
+          {/* Informasi Dasar */}
+          <Section title="Informasi Dasar">
+            <div className="space-y-4">
+              <Field label="Nama Produk" error={errors.name?.message} required>
+                <Input
+                  {...register("name", { onChange: handleNameChange })}
+                  placeholder="Contoh: Samsung Galaxy S25 Ultra"
+                  className="rounded-none"
+                />
+              </Field>
 
-      <Separator />
+              <Field label="Slug (URL)" error={errors.slug?.message} required>
+                <Input
+                  {...register("slug")}
+                  placeholder="samsung-galaxy-s25-ultra"
+                  className="rounded-none font-mono text-sm"
+                />
+              </Field>
 
-      {/* ── Harga ────────────────────────────────────────────────────── */}
-      <Section title="Harga">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Harga Dasar (Rp)" error={errors.base_price?.message} required>
-            <Input
-              type="number"
-              {...register("base_price", { valueAsNumber: true })}
-              placeholder="0"
-              className="rounded-none"
-            />
-          </Field>
+              <Field label="Deskripsi" error={errors.description?.message}>
+                <Textarea
+                  {...register("description")}
+                  placeholder="Deskripsi lengkap produk..."
+                  rows={5}
+                  className="rounded-none resize-none"
+                />
+              </Field>
+            </div>
+          </Section>
 
-          <Field label="Min. Pembelian (pcs)" error={errors.min_order_qty?.message}>
-            <Input
-              type="number"
-              {...register("min_order_qty", { valueAsNumber: true })}
-              placeholder="1"
-              className="rounded-none"
-            />
-          </Field>
-        </div>
+          <Separator />
 
-        <div className="flex items-center gap-3 pt-2">
-          <Switch
-            id="has_sale"
-            checked={hasSale}
-            onCheckedChange={(v) => setValue("has_sale", v)}
-          />
-          <Label htmlFor="has_sale" className="text-sm font-medium cursor-pointer">
-            Aktifkan harga diskon
-          </Label>
-        </div>
+          {/* Harga */}
+          <Section title="Harga">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Harga Dasar (Rp)" error={errors.base_price?.message} required>
+                <Input
+                  type="number"
+                  {...register("base_price", { valueAsNumber: true })}
+                  placeholder="0"
+                  className="rounded-none"
+                />
+              </Field>
 
-        {hasSale && (
-          <Field label="Harga Diskon (Rp)" error={errors.sale_price?.message}>
-            <Input
-              type="number"
-              {...register("sale_price", { valueAsNumber: true })}
-              placeholder="0"
-              className="rounded-none"
-            />
-          </Field>
-        )}
-      </Section>
+              <Field label="Min. Pembelian (pcs)" error={errors.min_order_qty?.message}>
+                <Input
+                  type="number"
+                  {...register("min_order_qty", { valueAsNumber: true })}
+                  placeholder="1"
+                  className="rounded-none"
+                />
+              </Field>
+            </div>
 
-      <Separator />
+            <div className="flex items-center gap-3 pt-2">
+              <Switch
+                id="has_sale"
+                checked={hasSale}
+                onCheckedChange={(v) => setValue("has_sale", v)}
+              />
+              <Label htmlFor="has_sale" className="text-sm font-medium cursor-pointer">
+                Aktifkan harga diskon
+              </Label>
+            </div>
 
-      {/* ── Kategori & Status ─────────────────────────────────────────── */}
-      <Section title="Kategori & Status">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Kategori">
-            <Select
-              value={watch("category_id") ?? "__none__"}
-              onValueChange={(v) => setValue("category_id", v === "__none__" ? null : v)}
-            >
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Pilih kategori..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">— Tanpa Kategori —</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
+            {hasSale && (
+              <Field label="Harga Diskon (Rp)" error={errors.sale_price?.message}>
+                <Input
+                  type="number"
+                  {...register("sale_price", { valueAsNumber: true })}
+                  placeholder="0"
+                  className="rounded-none"
+                />
+              </Field>
+            )}
+          </Section>
 
-        <div className="flex flex-col gap-3 pt-1">
-          <div className="flex items-center gap-3">
-            <Switch
-              id="is_active"
-              checked={watch("is_active")}
-              onCheckedChange={(v) => setValue("is_active", v)}
-            />
-            <Label htmlFor="is_active" className="text-sm font-medium cursor-pointer">
-              Produk aktif (tampil di toko)
-            </Label>
-          </div>
-          <div className="flex items-center gap-3">
-            <Switch
-              id="is_featured"
-              checked={watch("is_featured")}
-              onCheckedChange={(v) => setValue("is_featured", v)}
-            />
-            <Label htmlFor="is_featured" className="text-sm font-medium cursor-pointer">
-              Produk unggulan (featured)
-            </Label>
-          </div>
-        </div>
-      </Section>
+          <Separator />
 
-      <Separator />
-
-      {/* ── Gambar ───────────────────────────────────────────────────── */}
-      <Section title="Gambar Produk">
-        <ImageUploader images={images} onChange={setImages} />
-      </Section>
-
-      <Separator />
-
-      {/* ── Varian ───────────────────────────────────────────────────── */}
-      <Section title="Varian Produk">
-        {errors.variants?.root?.message && (
-          <p className="text-xs text-destructive">{errors.variants.root.message}</p>
-        )}
-        {typeof errors.variants?.message === "string" && (
-          <p className="text-xs text-destructive">{errors.variants.message}</p>
-        )}
-
-        <div className="space-y-3">
-          {fields.map((field, i) => {
-            const isExpanded = expandedVariants.includes(i);
-            const variantName = watch(`variants.${i}.name`) || `Varian ${i + 1}`;
-            const variantErrors = errors.variants?.[i];
-
-            return (
-              <div key={field.id} className="border border-border">
-                {/* Variant header */}
-                <div
-                  className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-muted/50 transition-colors"
-                  onClick={() => toggleVariantExpand(i)}
+          {/* Kategori & Status */}
+          <Section title="Kategori & Status">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Kategori">
+                <Select
+                  value={watch("category_id") ?? "__none__"}
+                  onValueChange={(v) => setValue("category_id", v === "__none__" ? null : v)}
                 >
-                  <span className="text-xs font-black uppercase tracking-widest text-muted-foreground w-6">
-                    {i + 1}
-                  </span>
-                  <span className="text-sm font-bold flex-1">{variantName}</span>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Pilih kategori..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— Tanpa Kategori —</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
 
-                  <Switch
-                    checked={watch(`variants.${i}.is_active`)}
-                    onCheckedChange={(v) => setValue(`variants.${i}.is_active`, v)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+            <div className="flex flex-col gap-3 pt-1">
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="is_active"
+                  checked={watch("is_active")}
+                  onCheckedChange={(v) => setValue("is_active", v)}
+                />
+                <Label htmlFor="is_active" className="text-sm font-medium cursor-pointer">
+                  Produk aktif (tampil di toko)
+                </Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="is_featured"
+                  checked={watch("is_featured")}
+                  onCheckedChange={(v) => setValue("is_featured", v)}
+                />
+                <Label htmlFor="is_featured" className="text-sm font-medium cursor-pointer">
+                  Produk unggulan (featured)
+                </Label>
+              </div>
+            </div>
+          </Section>
 
-                  {fields.length > 1 && (
+        </div>
+
+        {/* ── KOLOM KANAN: Gambar → Varian → SEO + Submit ──────────── */}
+        <div className="flex-1 flex flex-col min-w-0">
+        <div className="space-y-8">
+
+          {/* Gambar Produk */}
+          <Section title="Gambar Produk">
+            <ImageUploader images={images} onChange={setImages} />
+          </Section>
+
+          <Separator />
+
+          {/* Varian Produk */}
+          <Section title="Varian Produk">
+            {errors.variants?.root?.message && (
+              <p className="text-xs text-destructive">{errors.variants.root.message}</p>
+            )}
+            {typeof errors.variants?.message === "string" && (
+              <p className="text-xs text-destructive">{errors.variants.message}</p>
+            )}
+
+            <div className="space-y-3">
+              {fields.map((field, i) => {
+                const isExpanded = expandedVariants.includes(i);
+                const variantName = watch(`variants.${i}.name`) || `Varian ${i + 1}`;
+                const variantErrors = errors.variants?.[i];
+
+                return (
+                  <div key={field.id} className="border border-border">
+                    {/* Variant header */}
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                      onClick={() => toggleVariantExpand(i)}
+                    >
+                      <span className="text-xs font-black uppercase tracking-widest text-muted-foreground w-6">
+                        {i + 1}
+                      </span>
+                      <span className="text-sm font-bold flex-1">{variantName}</span>
+
+                      <Switch
+                        checked={watch(`variants.${i}.is_active`)}
+                        onCheckedChange={(v) => setValue(`variants.${i}.is_active`, v)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+
+                      {fields.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            remove(i);
+                            setExpandedVariants((prev) => prev.filter((n) => n !== i).map((n) => (n > i ? n - 1 : n)));
+                          }}
+                          className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                      {isExpanded ? <ChevronUp size={14} className="shrink-0" /> : <ChevronDown size={14} className="shrink-0" />}
+                    </div>
+
+                    {/* Variant body */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 border-t border-border">
+                        <Field label="Nama Varian" error={variantErrors?.name?.message} required>
+                          <Input
+                            {...register(`variants.${i}.name`)}
+                            placeholder="Default / Merah / 128GB"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="SKU" error={variantErrors?.sku?.message} required>
+                          <Input
+                            {...register(`variants.${i}.sku`)}
+                            placeholder="GT-SKU-001"
+                            className="rounded-none text-sm font-mono"
+                          />
+                        </Field>
+                        <Field label="Harga (Rp)" error={variantErrors?.price?.message} required>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.price`, { valueAsNumber: true })}
+                            placeholder="0"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="Stok" error={variantErrors?.stock?.message} required>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.stock`, { valueAsNumber: true })}
+                            placeholder="0"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="Berat (gram)" error={variantErrors?.weight?.message} required>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.weight`, { valueAsNumber: true })}
+                            placeholder="500"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="Panjang (cm)" error={variantErrors?.length?.message}>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.length`, { valueAsNumber: true })}
+                            placeholder="0"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="Lebar (cm)" error={variantErrors?.width?.message}>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.width`, { valueAsNumber: true })}
+                            placeholder="0"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                        <Field label="Tinggi (cm)" error={variantErrors?.height?.message}>
+                          <Input
+                            type="number"
+                            {...register(`variants.${i}.height`, { valueAsNumber: true })}
+                            placeholder="0"
+                            className="rounded-none text-sm"
+                          />
+                        </Field>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none font-bold uppercase tracking-widest text-xs h-9 border-dashed"
+              onClick={() => {
+                const nextIndex = fields.length;
+                append({
+                  name: "",
+                  sku: "",
+                  price: 0,
+                  stock: 0,
+                  weight: 500,
+                  length: 0,
+                  width: 0,
+                  height: 0,
+                  is_active: true,
+                });
+                setExpandedVariants((prev) => [...prev, nextIndex]);
+              }}
+            >
+              <Plus size={13} className="mr-1.5" />
+              Tambah Varian
+            </Button>
+          </Section>
+
+          <Separator />
+
+          {/* Tags */}
+          <Section title="Tags">
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5 min-h-9 p-2 border border-border bg-transparent">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest bg-foreground text-background px-2 py-0.5"
+                  >
+                    {tag}
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        remove(i);
-                        setExpandedVariants((prev) => prev.filter((n) => n !== i).map((n) => (n > i ? n - 1 : n)));
-                      }}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                      onClick={() => setTags(tags.filter((t) => t !== tag))}
+                      className="hover:opacity-60 transition-opacity"
                     >
-                      <Trash2 size={14} />
+                      <X size={10} />
                     </button>
-                  )}
-                  {isExpanded ? <ChevronUp size={14} className="shrink-0" /> : <ChevronDown size={14} className="shrink-0" />}
-                </div>
-
-                {/* Variant body */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 pt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 border-t border-border">
-                    <Field label="Nama Varian" error={variantErrors?.name?.message} required>
-                      <Input
-                        {...register(`variants.${i}.name`)}
-                        placeholder="Default / Merah / 128GB"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="SKU" error={variantErrors?.sku?.message} required>
-                      <Input
-                        {...register(`variants.${i}.sku`)}
-                        placeholder="GT-SKU-001"
-                        className="rounded-none text-sm font-mono"
-                      />
-                    </Field>
-                    <Field label="Harga (Rp)" error={variantErrors?.price?.message} required>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.price`, { valueAsNumber: true })}
-                        placeholder="0"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="Stok" error={variantErrors?.stock?.message} required>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.stock`, { valueAsNumber: true })}
-                        placeholder="0"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="Berat (gram)" error={variantErrors?.weight?.message} required>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.weight`, { valueAsNumber: true })}
-                        placeholder="500"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="Panjang (cm)" error={variantErrors?.length?.message}>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.length`, { valueAsNumber: true })}
-                        placeholder="0"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="Lebar (cm)" error={variantErrors?.width?.message}>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.width`, { valueAsNumber: true })}
-                        placeholder="0"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                    <Field label="Tinggi (cm)" error={variantErrors?.height?.message}>
-                      <Input
-                        type="number"
-                        {...register(`variants.${i}.height`, { valueAsNumber: true })}
-                        placeholder="0"
-                        className="rounded-none text-sm"
-                      />
-                    </Field>
-                  </div>
-                )}
+                  </span>
+                ))}
+                <input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  onBlur={() => tagInput && addTag(tagInput)}
+                  placeholder={tags.length === 0 ? "Ketik tag lalu tekan Enter atau koma..." : ""}
+                  className="flex-1 min-w-32 text-xs outline-none bg-transparent placeholder:text-muted-foreground"
+                />
               </div>
-            );
-          })}
+              <p className="text-[11px] text-muted-foreground">Tekan Enter atau koma untuk menambah tag.</p>
+            </div>
+          </Section>
+
+          <Separator />
+
+          {/* SEO */}
+          <Section title="SEO (Opsional)">
+            <div className="space-y-4">
+              <Field label="Meta Title" error={errors.meta_title?.message}>
+                <Input
+                  {...register("meta_title")}
+                  placeholder="Judul SEO (default: nama produk)"
+                  className="rounded-none"
+                />
+              </Field>
+              <Field label="Meta Description" error={errors.meta_description?.message}>
+                <Textarea
+                  {...register("meta_description")}
+                  placeholder="Deskripsi singkat untuk mesin pencari (max 160 karakter)"
+                  rows={3}
+                  className="rounded-none resize-none"
+                />
+              </Field>
+            </div>
+          </Section>
+
+        </div>{/* end space-y-8 */}
+
+        {/* ── Submit ─────────────────────────────────────────────────── */}
+        <div className="flex gap-3 pt-8 2xl:mt-auto">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="rounded-none font-bold uppercase tracking-widest text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-10 px-6"
+          >
+            {isPending && <Loader2 size={14} className="animate-spin mr-2" />}
+            {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-none font-bold uppercase tracking-widest text-xs h-10"
+            onClick={() => router.back()}
+            disabled={isPending}
+          >
+            Batal
+          </Button>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="rounded-none font-bold uppercase tracking-widest text-xs h-9 border-dashed"
-          onClick={() => {
-            const nextIndex = fields.length;
-            append({
-              name: "",
-              sku: "",
-              price: 0,
-              stock: 0,
-              weight: 500,
-              length: 0,
-              width: 0,
-              height: 0,
-              is_active: true,
-            });
-            setExpandedVariants((prev) => [...prev, nextIndex]);
-          }}
-        >
-          <Plus size={13} className="mr-1.5" />
-          Tambah Varian
-        </Button>
-      </Section>
-
-      <Separator />
-
-      {/* ── Tags ─────────────────────────────────────────────────────── */}
-      <Section title="Tags">
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1.5 min-h-9 p-2 border border-border bg-transparent">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest bg-foreground text-background px-2 py-0.5"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => setTags(tags.filter((t) => t !== tag))}
-                  className="hover:opacity-60 transition-opacity"
-                >
-                  <X size={10} />
-                </button>
-              </span>
-            ))}
-            <input
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={handleTagKeyDown}
-              onBlur={() => tagInput && addTag(tagInput)}
-              placeholder={tags.length === 0 ? "Ketik tag lalu tekan Enter atau koma..." : ""}
-              className="flex-1 min-w-32 text-xs outline-none bg-transparent placeholder:text-muted-foreground"
-            />
-          </div>
-          <p className="text-[11px] text-muted-foreground">Tekan Enter atau koma untuk menambah tag.</p>
-        </div>
-      </Section>
-
-      <Separator />
-
-      {/* ── SEO ──────────────────────────────────────────────────────── */}
-      <Section title="SEO (Opsional)">
-        <div className="space-y-4">
-          <Field label="Meta Title" error={errors.meta_title?.message}>
-            <Input
-              {...register("meta_title")}
-              placeholder="Judul SEO (default: nama produk)"
-              className="rounded-none"
-            />
-          </Field>
-          <Field label="Meta Description" error={errors.meta_description?.message}>
-            <Textarea
-              {...register("meta_description")}
-              placeholder="Deskripsi singkat untuk mesin pencari (max 160 karakter)"
-              rows={3}
-              className="rounded-none resize-none"
-            />
-          </Field>
-        </div>
-      </Section>
-
-      {/* ── Submit ───────────────────────────────────────────────────── */}
-      <div className="flex gap-3 pt-2">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="rounded-none font-bold uppercase tracking-widest text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-10 px-6"
-        >
-          {isPending && <Loader2 size={14} className="animate-spin mr-2" />}
-          {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="rounded-none font-bold uppercase tracking-widest text-xs h-10"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
-          Batal
-        </Button>
+        </div>{/* end kolom kanan */}
       </div>
     </form>
   );
