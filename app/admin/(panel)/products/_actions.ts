@@ -42,8 +42,36 @@ export type ProductInput = {
 
 type ActionResult = { error: string } | { id: string };
 
+function normalizeSku(sku: string) {
+  return sku.trim();
+}
+
+function findDuplicateSku(variants: VariantInput[]) {
+  const seen = new Map<string, number>();
+
+  for (let i = 0; i < variants.length; i += 1) {
+    const key = normalizeSku(variants[i].sku).toLowerCase();
+    if (!key) continue;
+
+    const firstIndex = seen.get(key);
+    if (firstIndex !== undefined) {
+      return `SKU varian ${i + 1} duplikat dengan varian ${firstIndex + 1}.`;
+    }
+
+    seen.set(key, i);
+  }
+
+  return null;
+}
+
 export async function createProduct(data: ProductInput): Promise<ActionResult> {
   const supabase = await createServiceClient();
+  const duplicateSkuError = findDuplicateSku(data.variants);
+  if (duplicateSkuError) return { error: duplicateSkuError };
+  const normalizedVariants = data.variants.map((v) => ({
+    ...v,
+    sku: normalizeSku(v.sku),
+  }));
 
   const { data: product, error } = await supabase
     .from("products")
@@ -69,7 +97,7 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
   }
 
   const { error: variantsError } = await supabase.from("product_variants").insert(
-    data.variants.map((v) => ({
+    normalizedVariants.map((v) => ({
       product_id: product.id,
       name: v.name,
       sku: v.sku,
@@ -117,6 +145,13 @@ export async function updateProduct(
   data: ProductInput
 ): Promise<ActionResult> {
   const supabase = await createServiceClient();
+  const duplicateSkuError = findDuplicateSku(data.variants);
+  if (duplicateSkuError) return { error: duplicateSkuError };
+
+  const normalizedVariants = data.variants.map((v) => ({
+    ...v,
+    sku: normalizeSku(v.sku),
+  }));
 
   const { error } = await supabase
     .from("products")
@@ -154,15 +189,59 @@ export async function updateProduct(
     );
   }
 
-  // Variants: get existing IDs, upsert or insert, deactivate removed
-  const { data: existingVariants } = await supabase
+  // Variants: get all existing IDs for this product, including inactive variants
+  // that are hidden from the form but still hold globally-unique SKUs.
+  const { data: existingVariants, error: existingVariantsError } = await supabase
     .from("product_variants")
     .select("id")
     .eq("product_id", id);
 
+  if (existingVariantsError) {
+    return { error: `Gagal membaca varian produk: ${existingVariantsError.message}` };
+  }
+
   const existingIds = existingVariants?.map((v) => v.id) ?? [];
-  const incomingIds = data.variants.filter((v) => v.id).map((v) => v.id!);
+  const incomingIds = normalizedVariants
+    .filter((v) => v.id && existingIds.includes(v.id))
+    .map((v) => v.id!);
   const removedIds = existingIds.filter((eid) => !incomingIds.includes(eid));
+  const incomingSkus = normalizedVariants.map((v) => v.sku).filter(Boolean);
+
+  if (incomingSkus.length > 0) {
+    const { data: skuConflicts, error: skuConflictError } = await supabase
+      .from("product_variants")
+      .select("id, sku, product_id")
+      .in("sku", incomingSkus)
+      .neq("product_id", id)
+      .limit(1);
+
+    if (skuConflictError) {
+      return { error: `Gagal memeriksa SKU varian: ${skuConflictError.message}` };
+    }
+
+    if ((skuConflicts?.length ?? 0) > 0) {
+      return { error: "SKU varian sudah digunakan produk lain." };
+    }
+  }
+
+  // Phase 1: Temporarily clear every SKU owned by this product, including
+  // inactive/removed variants. The database has a global UNIQUE constraint on
+  // product_variants.sku, so hidden inactive rows can still block a valid save.
+  if (existingIds.length > 0) {
+    const phase1Results = await Promise.all(
+      existingIds.map((variantId) =>
+        supabase
+          .from("product_variants")
+          .update({ sku: `__tmp_${id}_${variantId}` })
+          .eq("id", variantId)
+          .eq("product_id", id)
+      )
+    );
+    const phase1Err = phase1Results.find((r) => r.error);
+    if (phase1Err?.error) {
+      return { error: `Gagal memproses varian: ${phase1Err.error.message}` };
+    }
+  }
 
   if (removedIds.length > 0) {
     await supabase
@@ -171,8 +250,10 @@ export async function updateProduct(
       .in("id", removedIds);
   }
 
-  for (const v of data.variants) {
-    if (v.id) {
+  // Phase 2: Apply actual values. All temp SKUs are now cleared so real SKUs can
+  // be set freely; a 23505 here only means a genuine external conflict/race.
+  for (const v of normalizedVariants) {
+    if (v.id && existingIds.includes(v.id)) {
       const { error: updateVariantError } = await supabase
         .from("product_variants")
         .update({
@@ -186,7 +267,8 @@ export async function updateProduct(
           height: v.height,
           is_active: v.is_active,
         })
-        .eq("id", v.id);
+        .eq("id", v.id)
+        .eq("product_id", id);
       if (updateVariantError) {
         if (updateVariantError.code === "23505") return { error: "SKU varian sudah digunakan produk lain." };
         return { error: `Gagal memperbarui varian: ${updateVariantError.message}` };

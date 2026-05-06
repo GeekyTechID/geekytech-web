@@ -71,7 +71,8 @@ interface ProductTableProps {
   products: ProductRow[];
   page: number;
   totalPages: number;
-  searchParams: Record<string, string | undefined>;
+  totalCount: number;
+  perPage: number;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -94,7 +95,8 @@ export function ProductTable({
   products,
   page,
   totalPages,
-  searchParams,
+  totalCount,
+  perPage,
 }: ProductTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -102,6 +104,8 @@ export function ProductTable({
 
   const [deleteTarget, setDeleteTarget] = useState<ProductRow | null>(null);
   const [isPending, startTransition] = useTransition();
+  const firstItem = totalCount === 0 ? 0 : (page - 1) * perPage + 1;
+  const lastItem = Math.min(page * perPage, totalCount);
 
   const goToPage = (p: number) => {
     const params = new URLSearchParams(currentParams.toString());
@@ -298,22 +302,27 @@ export function ProductTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            Halaman {page} dari {totalPages}
+            Menampilkan {firstItem}-{lastItem} dari {totalCount} produk
           </p>
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
               className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
             </button>
+            <span className="px-3 h-8 border-y border-border flex items-center text-xs font-bold uppercase tracking-widest">
+              {page} / {totalPages}
+            </span>
             <button
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
               className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
             </button>

@@ -13,7 +13,7 @@ export default function AdminPanelLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/30">
+    <div className="flex min-h-screen bg-muted/30">
       {/* Desktop sidebar */}
       <div className="hidden md:flex flex-col shrink-0">
         <AdminSidebar />
@@ -34,12 +34,12 @@ export default function AdminPanelLayout({
       )}
 
       {/* Main content area */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0">
         {/* Topbar — tampil di semua ukuran layar */}
         <AdminTopbar onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Scrollable page content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Page content */}
+        <main className="flex-1">
           {children}
         </main>
       </div>

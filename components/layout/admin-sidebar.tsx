@@ -102,7 +102,7 @@ export function AdminSidebar() {
     : "A";
 
   return (
-    <aside className="flex flex-col w-56 h-full bg-background border-r border-border">
+    <aside className="sticky top-0 flex h-screen w-56 flex-col bg-background border-r border-border">
       {/* Header */}
       <div className="flex items-center gap-2.5 h-14 px-4 border-b border-border shrink-0">
         <div className="flex flex-col gap-1 min-w-0">

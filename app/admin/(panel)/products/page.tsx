@@ -11,12 +11,13 @@ import { ProductTable, type ProductRow } from "./_components/product-table";
 export const metadata: Metadata = { title: "Kelola Produk — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
 
-const PER_PAGE = 20;
+const PER_PAGE = 10;
 
 type SearchParams = Promise<{
   q?: string;
   status?: string;
   category?: string;
+  sort?: string;
   page?: string;
 }>;
 
@@ -29,6 +30,7 @@ export default async function AdminProductsPage({
   const q = params.q ?? "";
   const status = params.status ?? "all";
   const categoryId = params.category ?? "";
+  const sort = params.sort ?? "latest";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
   const from = (page - 1) * PER_PAGE;
   const to = from + PER_PAGE - 1;
@@ -52,16 +54,34 @@ export default async function AdminProductsPage({
            product_variants(id, stock, reserved, is_active)`,
           { count: "exact" }
         )
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .range(from, to);
+        .is("deleted_at", null);
 
       if (q) query = query.ilike("name", `%${q}%`);
       if (status === "active") query = query.eq("is_active", true);
       if (status === "inactive") query = query.eq("is_active", false);
       if (categoryId) query = query.eq("category_id", categoryId);
 
-      return query;
+      switch (sort) {
+        case "oldest":
+          query = query.order("created_at", { ascending: true });
+          break;
+        case "name-asc":
+          query = query.order("name", { ascending: true });
+          break;
+        case "name-desc":
+          query = query.order("name", { ascending: false });
+          break;
+        case "price-asc":
+          query = query.order("base_price", { ascending: true });
+          break;
+        case "price-desc":
+          query = query.order("base_price", { ascending: false });
+          break;
+        default:
+          query = query.order("created_at", { ascending: false });
+      }
+
+      return query.range(from, to);
     })(),
   ]);
 
@@ -100,12 +120,8 @@ export default async function AdminProductsPage({
           products={(products ?? []) as ProductRow[]}
           page={page}
           totalPages={totalPages}
-          searchParams={{
-            q: params.q,
-            status: params.status,
-            category: params.category,
-            page: params.page,
-          }}
+          totalCount={count ?? 0}
+          perPage={PER_PAGE}
         />
       </Suspense>
     </div>

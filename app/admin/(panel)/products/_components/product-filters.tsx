@@ -21,6 +21,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
   const categoryId = searchParams.get("category") ?? "";
+  const sort = searchParams.get("sort") ?? "latest";
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -40,12 +41,21 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
     router.push(pathname);
   };
 
-  const hasFilters = q || status !== "all" || categoryId;
+  const hasFilters = q || status !== "all" || categoryId || sort !== "latest";
 
   const statusOptions = [
     { value: "all", label: "Semua Status" },
     { value: "active", label: "Aktif" },
     { value: "inactive", label: "Nonaktif" },
+  ];
+
+  const sortOptions = [
+    { value: "latest", label: "Terbaru" },
+    { value: "oldest", label: "Terlama" },
+    { value: "name-asc", label: "Nama A-Z" },
+    { value: "name-desc", label: "Nama Z-A" },
+    { value: "price-asc", label: "Harga Termurah" },
+    { value: "price-desc", label: "Harga Termahal" },
   ];
 
   return (
@@ -98,6 +108,19 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
           ))}
         </select>
       )}
+
+      {/* Sort */}
+      <select
+        value={sort}
+        onChange={(e) => updateParam("sort", e.target.value === "latest" ? "" : e.target.value)}
+        className="h-9 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+      >
+        {sortOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
 
       {/* Clear */}
       {hasFilters && (

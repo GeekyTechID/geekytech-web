@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 const variantSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Nama varian wajib diisi"),
-  sku: z.string().min(1, "SKU wajib diisi"),
+  sku: z.string().trim().min(1, "SKU wajib diisi"),
   price: z.number().min(0, "Harga tidak boleh negatif"),
   stock: z.number().min(0, "Stok tidak boleh negatif"),
   weight: z.number().min(1, "Berat minimal 1 gram"),
@@ -195,10 +195,16 @@ export function ProductForm({
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = form;
 
-  const { fields, append, remove } = useFieldArray({ control, name: "variants" });
+  // keyName diubah dari default "id" ke "_key" agar tidak bentrok dengan field
+  // data "id" (UUID varian di database). Tanpa ini, RHF memakai field "id" sebagai
+  // internal tracker sehingga values.variants[i].id bisa tidak terbaca saat submit,
+  // yang menyebabkan server action memperlakukan semua varian sebagai INSERT baru.
+  const { fields, append, remove } = useFieldArray({ control, name: "variants", keyName: "_key" });
 
   const hasSale = watch("has_sale");
 
@@ -239,6 +245,27 @@ export function ProductForm({
       return;
     }
 
+    // Cek duplikat SKU antar varian dalam form — dilakukan manual di sini
+    // (bukan via Zod superRefine) untuk menghindari issue kompabilitas
+    // @hookform/resolvers v5 + Zod v4 pada nested array error path.
+    clearErrors("variants");
+    const seenSkus = new Map<string, number>();
+    let hasDuplicateSku = false;
+    values.variants.forEach((v, i) => {
+      const key = v.sku.trim().toLowerCase();
+      if (!key) return;
+      if (seenSkus.has(key)) {
+        setError(`variants.${i}.sku`, {
+          type: "manual",
+          message: `SKU duplikat dengan varian ${seenSkus.get(key)! + 1}`,
+        });
+        hasDuplicateSku = true;
+      } else {
+        seenSkus.set(key, i);
+      }
+    });
+    if (hasDuplicateSku) return;
+
     const payload = {
       name: values.name,
       slug: values.slug,
@@ -252,7 +279,7 @@ export function ProductForm({
       meta_title: values.meta_title,
       meta_description: values.meta_description,
       images: images.map((img, i) => ({ ...img, sort_order: i })),
-      variants: values.variants,
+      variants: values.variants.map((v) => ({ ...v, sku: v.sku.trim() })),
       tags,
     };
 
@@ -279,10 +306,10 @@ export function ProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       {/* ── 2xl: 2 kolom | <2xl: 1 kolom ────────────────────────────── */}
-      <div className="flex flex-col 2xl:flex-row 2xl:items-stretch gap-8">
+      <div className="flex flex-col 2xl:flex-row 2xl:items-start gap-8">
 
         {/* ── KOLOM KIRI: Info Dasar → Gambar ──────────────────────── */}
-        <div className="flex-1 space-y-8 min-w-0">
+        <div className="2xl:flex-1 space-y-8 min-w-0">
 
           {/* Informasi Dasar */}
           <Section title="Informasi Dasar">
@@ -413,7 +440,7 @@ export function ProductForm({
         </div>
 
         {/* ── KOLOM KANAN: Gambar → Varian → SEO + Submit ──────────── */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="2xl:flex-1 flex flex-col min-w-0">
         <div className="space-y-8">
 
           {/* Gambar Produk */}
@@ -439,7 +466,9 @@ export function ProductForm({
                 const variantErrors = errors.variants?.[i];
 
                 return (
-                  <div key={field.id} className="border border-border">
+                  <div key={field._key} className="border border-border">
+                    <input type="hidden" {...register(`variants.${i}.id`)} />
+
                     {/* Variant header */}
                     <div
                       className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-muted/50 transition-colors"
@@ -630,7 +659,7 @@ export function ProductForm({
         </div>{/* end space-y-8 */}
 
         {/* ── Submit ─────────────────────────────────────────────────── */}
-        <div className="flex gap-3 pt-8 2xl:mt-auto">
+        <div className="flex gap-3 pt-8">
           <Button
             type="submit"
             disabled={isPending}
