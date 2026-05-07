@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { ImageUploader, type ImageItem } from "./image-uploader";
 import { createProduct, updateProduct } from "../_actions";
 import { cn } from "@/lib/utils";
@@ -78,6 +77,16 @@ type FormValues = {
     height: number;
     is_active: boolean;
   }[];
+};
+
+// ─── Draft persistence ───────────────────────────────────────────────────────
+
+const DRAFT_KEY = "product-new-draft";
+
+type FormDraft = {
+  formValues?: Partial<FormValues>;
+  images?: ImageItem[];
+  tags?: string[];
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -148,30 +157,48 @@ export function ProductForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const [images, setImages] = useState<ImageItem[]>(defaultImages);
-  const [tags, setTags] = useState<string[]>(defaultTags);
+  const isEdit = !!defaultProduct;
+
+  // Baca draft sekali saat mount (hanya untuk mode tambah produk baru)
+  const [savedDraft] = useState<FormDraft | null>(() => {
+    if (isEdit || typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as FormDraft;
+    } catch (_e) {
+      // Data corrupt → hapus agar tidak terus memicu error
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch (_) {}
+      return null;
+    }
+  });
+
+  const [images, setImages] = useState<ImageItem[]>(savedDraft?.images ?? defaultImages);
+  const [tags, setTags] = useState<string[]>(savedDraft?.tags ?? defaultTags);
   const [tagInput, setTagInput] = useState("");
   const [expandedVariants, setExpandedVariants] = useState<number[]>([0]);
 
-  const isEdit = !!defaultProduct;
+  const dv = savedDraft?.formValues;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: defaultProduct?.name ?? "",
-      slug: defaultProduct?.slug ?? "",
-      description: defaultProduct?.description ?? "",
-      base_price: defaultProduct?.base_price ?? 0,
-      has_sale: defaultProduct ? defaultProduct.sale_price !== null : false,
-      sale_price: defaultProduct?.sale_price ?? null,
-      min_order_qty: defaultProduct?.min_order_qty ?? 1,
-      category_id: defaultProduct?.category_id ?? null,
-      is_active: defaultProduct?.is_active ?? true,
-      is_featured: defaultProduct?.is_featured ?? false,
-      meta_title: defaultProduct?.meta_title ?? "",
-      meta_description: defaultProduct?.meta_description ?? "",
+      name: dv?.name ?? defaultProduct?.name ?? "",
+      slug: dv?.slug ?? defaultProduct?.slug ?? "",
+      description: dv?.description ?? defaultProduct?.description ?? "",
+      base_price: dv?.base_price ?? defaultProduct?.base_price ?? 0,
+      has_sale: dv?.has_sale ?? (defaultProduct ? defaultProduct.sale_price !== null : false),
+      sale_price: dv?.sale_price ?? defaultProduct?.sale_price ?? null,
+      min_order_qty: dv?.min_order_qty ?? defaultProduct?.min_order_qty ?? 1,
+      category_id: dv?.category_id ?? defaultProduct?.category_id ?? null,
+      is_active: dv?.is_active ?? defaultProduct?.is_active ?? true,
+      is_featured: dv?.is_featured ?? defaultProduct?.is_featured ?? false,
+      meta_title: dv?.meta_title ?? defaultProduct?.meta_title ?? "",
+      meta_description: dv?.meta_description ?? defaultProduct?.meta_description ?? "",
       variants:
-        defaultVariants.length > 0
+        (dv?.variants && dv.variants.length > 0)
+          ? dv.variants
+          : defaultVariants.length > 0
           ? defaultVariants
           : [
               {
@@ -207,6 +234,50 @@ export function ProductForm({
   const { fields, append, remove } = useFieldArray({ control, name: "variants", keyName: "_key" });
 
   const hasSale = watch("has_sale");
+
+  // ── Draft persistence ─────────────────────────────────────────────────────
+  // Gunakan ref agar form.watch callback selalu dapat nilai terbaru images/tags
+  // tanpa perlu re-subscribe setiap kali state berubah.
+  const latestImages = useRef(images);
+  const latestTags = useRef(tags);
+  latestImages.current = images;
+  latestTags.current = tags;
+
+  // Simpan perubahan field form ke sessionStorage (subscribe tanpa re-render)
+  useEffect(() => {
+    if (isEdit) return;
+    const sub = watch((values) => {
+      try {
+        sessionStorage.setItem(
+          DRAFT_KEY,
+          JSON.stringify({
+            formValues: values,
+            images: latestImages.current,
+            tags: latestTags.current,
+          })
+        );
+      } catch (_e) { /* sessionStorage penuh / tidak tersedia → abaikan */ }
+    });
+    return () => sub.unsubscribe();
+  }, [watch, isEdit]);
+
+  // Simpan images & tags ke draft saat keduanya berubah di luar form.watch
+  useEffect(() => {
+    if (isEdit) return;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      const current: FormDraft = raw ? JSON.parse(raw) : {};
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ ...current, images, tags })
+      );
+    } catch (_e) {
+      // Data corrupt → tulis ulang bersih
+      try {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ images, tags }));
+      } catch (_) {}
+    }
+  }, [images, tags, isEdit]);
 
   // Auto-generate slug from name (only for new products)
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,6 +366,7 @@ export function ProductForm({
         }
 
         toast.success(isEdit ? "Produk berhasil diperbarui." : "Produk berhasil ditambahkan.");
+        if (!isEdit) sessionStorage.removeItem(DRAFT_KEY);
         router.push("/admin/products");
         router.refresh();
       } catch (err) {
@@ -341,8 +413,6 @@ export function ProductForm({
             </div>
           </Section>
 
-          <Separator />
-
           {/* Harga */}
           <Section title="Harga">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -387,8 +457,6 @@ export function ProductForm({
               </Field>
             )}
           </Section>
-
-          <Separator />
 
           {/* Kategori & Status */}
           <Section title="Kategori & Status">
@@ -447,8 +515,6 @@ export function ProductForm({
           <Section title="Gambar Produk">
             <ImageUploader images={images} onChange={setImages} />
           </Section>
-
-          <Separator />
 
           {/* Varian Produk */}
           <Section title="Varian Produk">
@@ -599,8 +665,6 @@ export function ProductForm({
             </Button>
           </Section>
 
-          <Separator />
-
           {/* Tags */}
           <Section title="Tags">
             <div className="space-y-2">
@@ -632,8 +696,6 @@ export function ProductForm({
               <p className="text-[11px] text-muted-foreground">Tekan Enter atau koma untuk menambah tag.</p>
             </div>
           </Section>
-
-          <Separator />
 
           {/* SEO */}
           <Section title="SEO (Opsional)">
@@ -696,8 +758,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+    <div className="space-y-4 border border-border px-4 py-4 sm:px-6">
+      <h2 className="text-xs font-black uppercase tracking-widest text-black">
         {title}
       </h2>
       {children}
