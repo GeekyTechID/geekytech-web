@@ -15,14 +15,15 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any;
 
-  const [{ data: product }, { data: categories }] = await Promise.all([
+  const [{ data: product }, { data: categories }, { data: brands }] = await Promise.all([
     supabase
       .from("products")
       .select(
         `id, name, slug, description, base_price, sale_price, min_order_qty,
-         category_id, is_active, is_featured, meta_title, meta_description, deleted_at,
+         category_id, brand_id, is_active, is_featured, meta_title, meta_description, deleted_at,
          product_images(url, is_primary, alt_text, sort_order),
          product_variants(id, name, sku, price, stock, weight, length, width, height, is_active),
          product_tags(tag)`
@@ -35,6 +36,13 @@ export default async function EditProductPage({
       .from("categories")
       .select("id, name")
       .eq("is_active", true)
+      .order("name"),
+
+    supabase
+      .from("brands")
+      .select("id, name")
+      .eq("is_active", true)
+      .order("sort_order")
       .order("name"),
   ]);
 
@@ -63,7 +71,8 @@ export default async function EditProductPage({
       is_active: v.is_active,
     }));
 
-  const defaultTags = (product.product_tags ?? []).map((t) => t.tag);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const defaultTags = (product.product_tags ?? []).map((t: any) => t.tag);
 
   return (
     <div className="p-6 space-y-6 w-full">
@@ -88,6 +97,7 @@ export default async function EditProductPage({
 
       <ProductForm
         categories={categories ?? []}
+        brands={brands ?? []}
         defaultProduct={{
           id: product.id,
           name: product.name,
@@ -97,6 +107,7 @@ export default async function EditProductPage({
           sale_price: product.sale_price,
           min_order_qty: product.min_order_qty,
           category_id: product.category_id,
+          brand_id: product.brand_id ?? null,
           is_active: product.is_active,
           is_featured: product.is_featured,
           meta_title: product.meta_title,

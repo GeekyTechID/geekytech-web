@@ -9,17 +9,11 @@ import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "Semua" },
-  { value: "pending_payment", label: "Menunggu Bayar" },
-  { value: "paid", label: "Dibayar" },
-  { value: "processing", label: "Diproses" },
-  { value: "shipped", label: "Dikirim" },
-  { value: "delivered", label: "Terkirim" },
-  { value: "completed", label: "Selesai" },
-  { value: "cancelled", label: "Dibatalkan" },
-  { value: "refunded", label: "Refund" },
+  { value: "active", label: "Aktif" },
+  { value: "inactive", label: "Nonaktif" },
 ];
 
-export function OrderFilters() {
+export function BrandFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -32,45 +26,39 @@ export function OrderFilters() {
       const params = new URLSearchParams(searchParams.toString());
       if (value) params.set(key, value);
       else params.delete(key);
-      params.delete("page");
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams]
+    [router, pathname, searchParams],
   );
 
   const hasFilters = q || status !== "all";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {/* Search */}
-      <div className="relative max-w-xs flex-1">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
+    <div className="flex flex-col sm:flex-row gap-3">
+      <div className="relative flex-1 max-w-xs">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Cari no. order / nama penerima..."
+          placeholder="Cari nama merek..."
           defaultValue={q}
           onChange={(e) => {
             const val = e.target.value;
             const tid = setTimeout(() => updateParam("q", val), 400);
             return () => clearTimeout(tid);
           }}
-          className="h-9 rounded-none pl-8 text-sm"
+          className="rounded-none pl-8 h-11 text-sm"
         />
       </div>
 
-      {/* Status */}
-      <div className="flex flex-wrap border border-border">
+      <div className="flex border border-border">
         {STATUS_OPTIONS.map(({ value, label }) => (
           <button
             key={value}
             onClick={() => updateParam("status", value === "all" ? "" : value)}
             className={cn(
-              "h-11 border-r border-border px-4 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
+              "px-4 h-11 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
               (value === "all" ? status === "all" : status === value)
                 ? "bg-swiss-black text-swiss-white"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
             {label}
@@ -78,11 +66,10 @@ export function OrderFilters() {
         ))}
       </div>
 
-      {/* Clear */}
       {hasFilters && (
         <button
           onClick={() => router.push(pathname)}
-          className="flex h-11 items-center gap-1.5 border border-dashed border-border px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+          className="flex items-center gap-1.5 h-11 px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground border border-dashed border-border transition-colors"
         >
           <X size={12} />
           Reset

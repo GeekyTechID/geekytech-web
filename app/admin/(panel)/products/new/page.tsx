@@ -8,13 +8,13 @@ import { ProductForm } from "../_components/product-form";
 export const metadata: Metadata = { title: "Tambah Produk — Admin GeekyTech" };
 
 export default async function NewProductPage() {
-  const supabase = await createClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any;
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name")
-    .eq("is_active", true)
-    .order("name");
+  const [{ data: categories }, { data: brands }] = await Promise.all([
+    supabase.from("categories").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order").order("name"),
+  ]);
 
   return (
     <div className="p-6 space-y-6 w-full">
@@ -34,7 +34,7 @@ export default async function NewProductPage() {
         </p>
       </div>
 
-      <ProductForm categories={categories ?? []} />
+      <ProductForm categories={categories ?? []} brands={brands ?? []} />
     </div>
   );
 }

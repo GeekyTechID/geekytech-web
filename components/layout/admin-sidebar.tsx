@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Building2,
   ChevronRight,
   FileBarChart,
   FileText,
@@ -22,7 +23,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/auth-store";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteLogo } from "@/components/shared/site-logo";
@@ -39,6 +39,7 @@ const NAV_GROUPS = [
     label: "Katalog",
     items: [
       { label: "Produk", href: "/admin/products", icon: Package },
+      { label: "Merek", href: "/admin/brands", icon: Building2 },
       { label: "Kategori", href: "/admin/categories", icon: Grid2X2 },
       { label: "Tags", href: "/admin/tags", icon: Tag },
     ],
@@ -77,7 +78,6 @@ const NAV_GROUPS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { profile, user } = useAuth();
   const { reset } = useAuthStore();
 
@@ -85,11 +85,15 @@ export function AdminSidebar() {
     exact ? pathname === href : pathname.startsWith(href);
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    reset();
-    toast.success("Berhasil keluar.");
-    router.push("/admin/login");
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      window.location.href = "/admin/login";
+    }
   };
 
   const initials = profile?.full_name
@@ -102,7 +106,7 @@ export function AdminSidebar() {
     : "A";
 
   return (
-    <aside className="sticky top-0 flex h-screen w-56 flex-col bg-background border-r border-border">
+    <aside className="sticky top-0 flex h-screen w-80 flex-col bg-black/3 border-r border-border">
       {/* Header */}
       <div className="flex items-center gap-2.5 h-14 px-4 border-b border-border shrink-0">
         <div className="flex flex-col gap-1 min-w-0">
@@ -127,7 +131,7 @@ export function AdminSidebar() {
                     <Link
                       href={href}
                       className={cn(
-                        "flex items-center gap-2.5 h-8 px-2 text-sm font-medium transition-swift rounded-none",
+                        "flex items-center gap-2.5 h-11 px-3 text-sm font-medium transition-swift rounded-none",
                         active
                           ? "bg-swiss-black text-swiss-white"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -176,7 +180,7 @@ export function AdminSidebar() {
 
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 h-8 px-2 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-swiss"
+          className="flex w-full items-center gap-2.5 h-11 px-3 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-swiss"
         >
           <LogOut size={13} />
           Keluar

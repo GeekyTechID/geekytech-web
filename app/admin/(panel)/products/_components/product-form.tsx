@@ -45,6 +45,7 @@ const productSchema = z.object({
   sale_price: z.number().nullable(),
   min_order_qty: z.number().min(1, "Min. order minimal 1"),
   category_id: z.string().nullable(),
+  brand_id: z.string().nullable(),
   is_active: z.boolean(),
   is_featured: z.boolean(),
   meta_title: z.string(),
@@ -61,6 +62,7 @@ type FormValues = {
   sale_price: number | null;
   min_order_qty: number;
   category_id: string | null;
+  brand_id: string | null;
   is_active: boolean;
   is_featured: boolean;
   meta_title: string;
@@ -92,6 +94,7 @@ type FormDraft = {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Category = { id: string; name: string };
+type Brand = { id: string; name: string };
 
 type DefaultProduct = {
   id: string;
@@ -102,6 +105,7 @@ type DefaultProduct = {
   sale_price: number | null;
   min_order_qty: number;
   category_id: string | null;
+  brand_id?: string | null;
   is_active: boolean;
   is_featured: boolean;
   meta_title: string | null;
@@ -123,6 +127,7 @@ type DefaultVariant = {
 
 interface ProductFormProps {
   categories: Category[];
+  brands: Brand[];
   defaultProduct?: DefaultProduct;
   defaultImages?: ImageItem[];
   defaultVariants?: DefaultVariant[];
@@ -149,6 +154,7 @@ function toSlug(str: string) {
 
 export function ProductForm({
   categories,
+  brands,
   defaultProduct,
   defaultImages = [],
   defaultVariants = [],
@@ -191,6 +197,7 @@ export function ProductForm({
       sale_price: dv?.sale_price ?? defaultProduct?.sale_price ?? null,
       min_order_qty: dv?.min_order_qty ?? defaultProduct?.min_order_qty ?? 1,
       category_id: dv?.category_id ?? defaultProduct?.category_id ?? null,
+      brand_id: dv?.brand_id ?? defaultProduct?.brand_id ?? null,
       is_active: dv?.is_active ?? defaultProduct?.is_active ?? true,
       is_featured: dv?.is_featured ?? defaultProduct?.is_featured ?? false,
       meta_title: dv?.meta_title ?? defaultProduct?.meta_title ?? "",
@@ -345,6 +352,7 @@ export function ProductForm({
       sale_price: values.has_sale ? values.sale_price : null,
       min_order_qty: values.min_order_qty,
       category_id: values.category_id,
+      brand_id: values.brand_id,
       is_active: values.is_active,
       is_featured: values.is_featured,
       meta_title: values.meta_title,
@@ -461,6 +469,25 @@ export function ProductForm({
           {/* Kategori & Status */}
           <Section title="Kategori & Status">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Merek">
+                <Select
+                  value={watch("brand_id") ?? "__none__"}
+                  onValueChange={(v) => setValue("brand_id", v === "__none__" ? null : v)}
+                >
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Pilih merek..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— Tanpa Merek —</SelectItem>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
               <Field label="Kategori">
                 <Select
                   value={watch("category_id") ?? "__none__"}

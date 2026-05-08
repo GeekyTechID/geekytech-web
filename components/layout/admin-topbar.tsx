@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   ChevronDown,
@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -28,6 +27,9 @@ const PAGE_TITLES: { pattern: RegExp; title: string }[] = [
   { pattern: /^\/admin\/products\/new$/, title: "Tambah Produk" },
   { pattern: /^\/admin\/products\/[^/]+\/edit$/, title: "Edit Produk" },
   { pattern: /^\/admin\/products/, title: "Kelola Produk" },
+  { pattern: /^\/admin\/brands\/new$/, title: "Tambah Merek" },
+  { pattern: /^\/admin\/brands\/[^/]+\/edit$/, title: "Edit Merek" },
+  { pattern: /^\/admin\/brands/, title: "Kelola Merek" },
   { pattern: /^\/admin\/categories/, title: "Kelola Kategori" },
   { pattern: /^\/admin\/tags/, title: "Tags" },
   { pattern: /^\/admin\/orders\/[^/]+$/, title: "Detail Pesanan" },
@@ -57,7 +59,6 @@ type AdminTopbarProps = {
 
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, profile } = useAuth();
   const { reset } = useAuthStore();
 
@@ -80,11 +81,15 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    reset();
-    toast.success("Berhasil keluar.");
-    router.push("/admin/login");
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      window.location.href = "/admin/login";
+    }
   };
 
   const initials = profile?.full_name
@@ -123,7 +128,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:flex items-center gap-1 h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-swiss"
+          className="hidden sm:flex items-center gap-1 h-11 px-4 text-xs text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-swiss"
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
@@ -145,7 +150,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         <div ref={userMenuRef} className="relative ml-1">
           <button
             onClick={() => setUserMenuOpen((v) => !v)}
-            className="flex items-center gap-1.5 h-8 px-2 border border-transparent hover:border-border transition-swiss"
+            className="flex items-center gap-1.5 h-11 px-3 border border-transparent hover:border-border transition-swiss"
             aria-expanded={userMenuOpen}
             aria-haspopup="menu"
             aria-label="Menu akun"

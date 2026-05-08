@@ -8,18 +8,21 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 type Category = { id: string; name: string };
+type Brand = { id: string; name: string };
 
 interface ProductFiltersProps {
   categories: Category[];
+  brands?: Brand[];
 }
 
-export function ProductFilters({ categories }: ProductFiltersProps) {
+export function ProductFilters({ categories, brands = [] }: ProductFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
+  const brandId = searchParams.get("brand") ?? "";
   const categoryId = searchParams.get("category") ?? "";
   const sort = searchParams.get("sort") ?? "latest";
 
@@ -41,7 +44,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
     router.push(pathname);
   };
 
-  const hasFilters = q || status !== "all" || categoryId || sort !== "latest";
+  const hasFilters = q || status !== "all" || brandId || categoryId || sort !== "latest";
 
   const statusOptions = [
     { value: "all", label: "Semua Status" },
@@ -71,7 +74,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
             const id = setTimeout(() => updateParam("q", val), 400);
             return () => clearTimeout(id);
           }}
-          className="rounded-none pl-8 h-9 text-sm"
+          className="rounded-none pl-8 h-11 text-sm"
         />
       </div>
 
@@ -82,7 +85,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
             key={value}
             onClick={() => updateParam("status", value === "all" ? "" : value)}
             className={cn(
-              "px-3 h-9 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
+              "px-4 h-11 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
               (value === "all" ? status === "all" : status === value)
                 ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -93,12 +96,28 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
         ))}
       </div>
 
+      {/* Brand filter */}
+      {brands.length > 0 && (
+        <select
+          value={brandId}
+          onChange={(e) => updateParam("brand", e.target.value)}
+          className="h-11 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground w-auto cursor-pointer"
+        >
+          <option value="">Semua Merek</option>
+          {brands.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      )}
+
       {/* Category filter */}
       {categories.length > 0 && (
         <select
           value={categoryId}
           onChange={(e) => updateParam("category", e.target.value)}
-          className="h-9 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+          className="h-11 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground cursor-pointer"
         >
           <option value="">Semua Kategori</option>
           {categories.map((cat) => (
@@ -113,7 +132,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
       <select
         value={sort}
         onChange={(e) => updateParam("sort", e.target.value === "latest" ? "" : e.target.value)}
-        className="h-9 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+        className="h-11 border border-border bg-background text-sm px-2 rounded-none text-foreground focus:outline-none focus:ring-1 focus:ring-foreground w-auto cursor-pointer"
       >
         {sortOptions.map((option) => (
           <option key={option.value} value={option.value}>
@@ -126,7 +145,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
       {hasFilters && (
         <button
           onClick={clearAll}
-          className="flex items-center gap-1.5 h-9 px-3 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground border border-dashed border-border transition-colors"
+          className="flex items-center gap-1.5 h-11 px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground border border-dashed border-border transition-colors"
         >
           <X size={12} />
           Reset

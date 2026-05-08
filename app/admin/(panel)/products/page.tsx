@@ -16,6 +16,7 @@ const PER_PAGE = 10;
 type SearchParams = Promise<{
   q?: string;
   status?: string;
+  brand?: string;
   category?: string;
   sort?: string;
   page?: string;
@@ -29,6 +30,7 @@ export default async function AdminProductsPage({
   const params = await searchParams;
   const q = params.q ?? "";
   const status = params.status ?? "all";
+  const brandId = params.brand ?? "";
   const categoryId = params.category ?? "";
   const sort = params.sort ?? "latest";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
@@ -37,11 +39,18 @@ export default async function AdminProductsPage({
 
   const supabase = await createClient();
 
-  const [{ data: categories }, productsResult] = await Promise.all([
+  const [{ data: categories }, { data: brands }, productsResult] = await Promise.all([
     supabase
       .from("categories")
       .select("id, name")
       .eq("is_active", true)
+      .order("name"),
+
+    supabase
+      .from("brands")
+      .select("id, name")
+      .eq("is_active", true)
+      .order("sort_order")
       .order("name"),
 
     (() => {
@@ -59,6 +68,8 @@ export default async function AdminProductsPage({
       if (q) query = query.ilike("name", `%${q}%`);
       if (status === "active") query = query.eq("is_active", true);
       if (status === "inactive") query = query.eq("is_active", false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (brandId) query = (query as any).eq("brand_id", brandId);
       if (categoryId) query = query.eq("category_id", categoryId);
 
       switch (sort) {
@@ -100,7 +111,7 @@ export default async function AdminProductsPage({
         </div>
         <Button
           asChild
-          className="rounded-none font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-9 px-4 shrink-0"
+          className="rounded-none font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-11 px-4 shrink-0"
         >
           <Link href="/admin/products/new">
             <Plus size={13} className="mr-1.5" />
@@ -111,7 +122,10 @@ export default async function AdminProductsPage({
 
       {/* Filters */}
       <Suspense>
-        <ProductFilters categories={categories ?? []} />
+        <ProductFilters
+          categories={categories ?? []}
+          brands={(brands ?? []) as { id: string; name: string }[]}
+        />
       </Suspense>
 
       {/* Table */}
@@ -122,6 +136,7 @@ export default async function AdminProductsPage({
           totalPages={totalPages}
           totalCount={count ?? 0}
           perPage={PER_PAGE}
+          brands={(brands ?? []) as { id: string; name: string }[]}
         />
       </Suspense>
     </div>

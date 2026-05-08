@@ -31,6 +31,7 @@ export type ProductInput = {
   sale_price: number | null;
   min_order_qty: number;
   category_id: string | null;
+  brand_id: string | null;
   is_active: boolean;
   is_featured: boolean;
   meta_title: string;
@@ -83,6 +84,8 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
       sale_price: data.sale_price,
       min_order_qty: data.min_order_qty,
       category_id: data.category_id,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(data.brand_id !== undefined && { brand_id: data.brand_id } as any),
       is_active: data.is_active,
       is_featured: data.is_featured,
       meta_title: data.meta_title || null,
@@ -163,6 +166,8 @@ export async function updateProduct(
       sale_price: data.sale_price,
       min_order_qty: data.min_order_qty,
       category_id: data.category_id,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(data.brand_id !== undefined && { brand_id: data.brand_id } as any),
       is_active: data.is_active,
       is_featured: data.is_featured,
       meta_title: data.meta_title || null,
@@ -329,6 +334,55 @@ export async function toggleProductStatus(
     .from("products")
     .update({ is_active: isActive })
     .eq("id", id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/products");
+  return {};
+}
+
+export async function bulkDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  if (!ids.length) return {};
+  const supabase = await createServiceClient();
+
+  const { error } = await supabase
+    .from("products")
+    .update({ deleted_at: new Date().toISOString(), is_active: false })
+    .in("id", ids);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/products");
+  return {};
+}
+
+export async function bulkSetBrand(
+  ids: string[],
+  brandId: string | null,
+): Promise<{ error?: string }> {
+  if (!ids.length) return {};
+  const supabase = await createServiceClient();
+
+  const { error } = await supabase
+    .from("products")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ brand_id: brandId } as any)
+    .in("id", ids);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/products");
+  return {};
+}
+
+export async function bulkSetStatus(
+  ids: string[],
+  isActive: boolean,
+): Promise<{ error?: string }> {
+  if (!ids.length) return {};
+  const supabase = await createServiceClient();
+
+  const { error } = await supabase
+    .from("products")
+    .update({ is_active: isActive })
+    .in("id", ids);
 
   if (error) return { error: error.message };
   revalidatePath("/admin/products");

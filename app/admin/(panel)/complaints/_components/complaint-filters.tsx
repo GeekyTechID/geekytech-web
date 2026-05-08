@@ -63,7 +63,7 @@ export function ComplaintFilters() {
             key={value}
             onClick={() => updateParam("status", value)}
             className={cn(
-              "h-9 border-r border-border px-3 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
+              "h-11 border-r border-border px-4 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
               status === value || (value === "all" && status === "all")
                 ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -78,7 +78,7 @@ export function ComplaintFilters() {
       {hasFilters && (
         <button
           onClick={() => router.push(pathname)}
-          className="flex h-9 items-center gap-1.5 border border-dashed border-border px-3 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+          className="flex h-11 items-center gap-1.5 border border-dashed border-border px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
         >
           <X size={12} />
           Reset

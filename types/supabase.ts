@@ -112,6 +112,39 @@ export type Database = {
         }
         Relationships: []
       }
+      brands: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           cart_id: string
@@ -1011,6 +1044,7 @@ export type Database = {
         Row: {
           average_rating: number
           base_price: number
+          brand_id: string | null
           category_id: string | null
           created_at: string
           deleted_at: string | null
@@ -1031,6 +1065,7 @@ export type Database = {
         Insert: {
           average_rating?: number
           base_price: number
+          brand_id?: string | null
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1051,6 +1086,7 @@ export type Database = {
         Update: {
           average_rating?: number
           base_price?: number
+          brand_id?: string | null
           category_id?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1069,6 +1105,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_category_id_fkey"
             columns: ["category_id"]
