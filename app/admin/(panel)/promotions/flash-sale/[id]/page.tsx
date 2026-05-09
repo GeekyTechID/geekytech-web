@@ -101,7 +101,7 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
       {/* Back + header */}
       <div>
         <Link
-          href="/admin/flash-sale"
+          href="/admin/promotions/flash-sale"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
         >
           <ArrowLeft size={13} />
@@ -135,7 +135,7 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
             <div className="p-4">
               <FlashSaleForm
                 initialData={sale}
-                redirectTo={`/admin/flash-sale/${id}`}
+                redirectTo={`/admin/promotions/flash-sale/${id}`}
               />
             </div>
           </div>

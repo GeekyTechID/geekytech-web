@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -1046,6 +1044,7 @@ export type Database = {
           base_price: number
           brand_id: string | null
           category_id: string | null
+          condition: string
           created_at: string
           deleted_at: string | null
           description: string | null
@@ -1067,6 +1066,7 @@ export type Database = {
           base_price: number
           brand_id?: string | null
           category_id?: string | null
+          condition?: string
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1088,6 +1088,7 @@ export type Database = {
           base_price?: number
           brand_id?: string | null
           category_id?: string | null
+          condition?: string
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1151,6 +1152,117 @@ export type Database = {
           phone?: string | null
           role?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      promotion_brands: {
+        Row: {
+          brand_id: string | null
+          id: string
+          promotion_id: string | null
+        }
+        Insert: {
+          brand_id?: string | null
+          id?: string
+          promotion_id?: string | null
+        }
+        Update: {
+          brand_id?: string | null
+          id?: string
+          promotion_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_brands_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_brands_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotion_products: {
+        Row: {
+          display_order: number | null
+          id: string
+          product_id: string | null
+          promotion_id: string | null
+        }
+        Insert: {
+          display_order?: number | null
+          id?: string
+          product_id?: string | null
+          promotion_id?: string | null
+        }
+        Update: {
+          display_order?: number | null
+          id?: string
+          product_id?: string | null
+          promotion_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_products_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotions: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          max_items: number | null
+          selection_mode: string | null
+          subtitle: string | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_items?: number | null
+          selection_mode?: string | null
+          subtitle?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_items?: number | null
+          selection_mode?: string | null
+          subtitle?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

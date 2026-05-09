@@ -47,7 +47,7 @@ export default async function AdminFlashSalePage() {
           </p>
         </div>
         <Link
-          href="/admin/flash-sale/new"
+          href="/admin/promotions/flash-sale/new"
           className="flex items-center gap-2 h-11 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity"
         >
           <Plus size={14} />

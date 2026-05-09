@@ -55,12 +55,12 @@ export function FlashSaleForm({ initialData, redirectTo }: FlashSaleFormProps) {
         const { error } = await updateFlashSale(initialData.id, data);
         if (error) { toast.error(error); return; }
         toast.success("Flash sale diperbarui.");
-        router.push(redirectTo ?? `/admin/flash-sale/${initialData.id}`);
+        router.push(redirectTo ?? `/admin/promotions/flash-sale/${initialData.id}`);
       } else {
         const { error, id } = await createFlashSale(data);
         if (error || !id) { toast.error(error ?? "Gagal membuat flash sale."); return; }
         toast.success("Flash sale berhasil dibuat.");
-        router.push(redirectTo ?? `/admin/flash-sale/${id}`);
+        router.push(redirectTo ?? `/admin/promotions/flash-sale/${id}`);
       }
     });
   };
@@ -138,7 +138,7 @@ export function FlashSaleForm({ initialData, redirectTo }: FlashSaleFormProps) {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/admin/flash-sale")}
+          onClick={() => router.push("/admin/promotions/flash-sale")}
           disabled={isPending}
           className="h-10 px-4 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
         >

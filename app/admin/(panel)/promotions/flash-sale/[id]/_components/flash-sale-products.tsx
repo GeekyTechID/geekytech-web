@@ -48,12 +48,20 @@ function EditRow({
   onDone: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
-  const [salePrice, setSalePrice] = useState(product.sale_price);
+  const normalPrice = product.product_variants?.price ?? 0;
+  const initialDiscount =
+    normalPrice > 0
+      ? Math.round(((normalPrice - product.sale_price) / normalPrice) * 100)
+      : 0;
+  const [discountPercent, setDiscountPercent] = useState(initialDiscount);
   const [quota, setQuota] = useState(product.quota);
+
+  const computedPrice =
+    normalPrice > 0 ? Math.round(normalPrice * (1 - discountPercent / 100)) : 0;
 
   const handleSave = () => {
     startTransition(async () => {
-      const { error } = await updateFlashSaleProduct(product.id, salePrice, quota);
+      const { error } = await updateFlashSaleProduct(product.id, computedPrice, quota);
       if (error) toast.error(error);
       else { toast.success("Produk diperbarui."); onDone(); }
     });
@@ -62,14 +70,23 @@ function EditRow({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Harga:</span>
-        <Input
-          type="number"
-          value={salePrice}
-          onChange={(e) => setSalePrice(parseInt(e.target.value, 10) || 0)}
-          className="h-7 w-28 rounded-none text-xs"
-          min={0}
-        />
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Diskon:</span>
+        <div className="relative">
+          <Input
+            type="number"
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
+            className="h-7 w-20 rounded-none text-xs pr-6"
+            min={0}
+            max={99}
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
+        </div>
+        {normalPrice > 0 && (
+          <span className="text-[10px] font-bold text-[#EA5329]">
+            → {formatRupiah(computedPrice)}
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1">
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Kuota:</span>
@@ -109,28 +126,32 @@ function AddProductForm({
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [variantId, setVariantId] = useState("");
-  const [salePrice, setSalePrice] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(20);
   const [quota, setQuota] = useState(10);
 
   const selectedVariant = availableVariants.find((v) => v.id === variantId);
+  const computedPrice = selectedVariant
+    ? Math.round(selectedVariant.price * (1 - discountPercent / 100))
+    : 0;
 
   const handleAdd = () => {
     if (!variantId) { toast.error("Pilih variant terlebih dahulu."); return; }
-    if (salePrice <= 0) { toast.error("Harga flash sale harus lebih dari 0."); return; }
+    if (discountPercent <= 0 || discountPercent >= 100) { toast.error("Diskon harus antara 1% – 99%."); return; }
+    if (computedPrice <= 0) { toast.error("Harga flash sale harus lebih dari 0."); return; }
     if (quota <= 0) { toast.error("Kuota harus lebih dari 0."); return; }
 
     startTransition(async () => {
       const { error } = await addFlashSaleProduct({
         flash_sale_id: flashSaleId,
         variant_id: variantId,
-        sale_price: salePrice,
+        sale_price: computedPrice,
         quota,
       });
       if (error) { toast.error(error); return; }
       toast.success("Produk ditambahkan ke flash sale.");
       setOpen(false);
       setVariantId("");
-      setSalePrice(0);
+      setDiscountPercent(20);
       setQuota(10);
     });
   };
@@ -168,8 +189,6 @@ function AddProductForm({
             value={variantId}
             onChange={(e) => {
               setVariantId(e.target.value);
-              const v = availableVariants.find((v) => v.id === e.target.value);
-              if (v) setSalePrice(Math.round(v.price * 0.8));
             }}
             className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
           >
@@ -183,21 +202,30 @@ function AddProductForm({
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Harga Flash Sale *
+            Diskon *
             {selectedVariant && (
               <span className="ml-1 normal-case text-muted-foreground/60">
                 (Normal: {formatRupiah(selectedVariant.price)})
               </span>
             )}
           </label>
-          <Input
-            type="number"
-            value={salePrice}
-            onChange={(e) => setSalePrice(parseInt(e.target.value, 10) || 0)}
-            className="h-9 rounded-none text-sm"
-            min={0}
-            placeholder="0"
-          />
+          <div className="relative">
+            <Input
+              type="number"
+              value={discountPercent}
+              onChange={(e) => setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
+              className="h-9 rounded-none text-sm pr-8"
+              min={1}
+              max={99}
+              placeholder="20"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+          </div>
+          {selectedVariant && (
+            <p className="text-xs font-bold text-[#EA5329]">
+              Harga flash sale: {formatRupiah(computedPrice)}
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

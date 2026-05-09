@@ -40,7 +40,7 @@ export async function createFlashSale(
     .single();
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/flash-sale");
+  revalidatePath("/admin/promotions/flash-sale");
   revalidatePath("/");
   return { id: sale.id };
 }
@@ -66,8 +66,8 @@ export async function updateFlashSale(
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/flash-sale");
-  revalidatePath(`/admin/flash-sale/${id}`);
+  revalidatePath("/admin/promotions/flash-sale");
+  revalidatePath(`/admin/promotions/flash-sale/${id}`);
   revalidatePath("/");
   return {};
 }
@@ -83,7 +83,7 @@ export async function toggleFlashSaleActive(
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/flash-sale");
+  revalidatePath("/admin/promotions/flash-sale");
   revalidatePath("/");
   return {};
 }
@@ -96,7 +96,7 @@ export async function deleteFlashSale(id: string): Promise<{ error?: string }> {
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/flash-sale");
+  revalidatePath("/admin/promotions/flash-sale");
   revalidatePath("/");
   return {};
 }
@@ -127,7 +127,7 @@ export async function addFlashSaleProduct(
   });
 
   if (error) return { error: error.message };
-  revalidatePath(`/admin/flash-sale/${data.flash_sale_id}`);
+  revalidatePath(`/admin/promotions/flash-sale/${data.flash_sale_id}`);
   return {};
 }
 
@@ -146,7 +146,7 @@ export async function updateFlashSaleProduct(
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/flash-sale");
+  revalidatePath("/admin/promotions/flash-sale");
   return {};
 }
 
@@ -161,6 +161,6 @@ export async function removeFlashSaleProduct(
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath(`/admin/flash-sale/${flashSaleId}`);
+  revalidatePath(`/admin/promotions/flash-sale/${flashSaleId}`);
   return {};
 }

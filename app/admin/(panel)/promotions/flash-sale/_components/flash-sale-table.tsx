@@ -64,7 +64,7 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
   return (
     <div className="flex items-center gap-1">
       <Link
-        href={`/admin/flash-sale/${sale.id}`}
+        href={`/admin/promotions/flash-sale/${sale.id}`}
         className="inline-flex p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label="Lihat detail"
       >
@@ -138,7 +138,7 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
                 {/* Name */}
                 <td className="px-4 py-3">
                   <Link
-                    href={`/admin/flash-sale/${sale.id}`}
+                    href={`/admin/promotions/flash-sale/${sale.id}`}
                     className="font-bold hover:text-brand transition-colors"
                   >
                     {sale.name}

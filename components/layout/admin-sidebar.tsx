@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Building2,
+  ChevronDown,
   ChevronRight,
   FileBarChart,
   FileText,
@@ -14,10 +16,13 @@ import {
   LogOut,
   MessageSquare,
   Package,
+  PackageSearch,
   Settings,
   ShoppingBag,
+  Star,
   Tag,
   Ticket,
+  TrendingUp,
   Users,
   Zap,
 } from "lucide-react";
@@ -28,7 +33,20 @@ import { useAuth } from "@/hooks/use-auth";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { cn } from "@/lib/utils";
 
-const NAV_GROUPS = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  exact?: boolean;
+};
+
+type NavGroup = {
+  label: string;
+  collapsible?: boolean;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
@@ -57,8 +75,17 @@ const NAV_GROUPS = [
       { label: "Ulasan", href: "/admin/reviews", icon: MessageSquare },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
       { label: "Banner", href: "/admin/banners", icon: ImageIcon },
-      { label: "Flash Sale", href: "/admin/flash-sale", icon: Zap },
       { label: "Kupon", href: "/admin/coupons", icon: Ticket },
+    ],
+  },
+  {
+    label: "Promosi",
+    collapsible: true,
+    items: [
+      { label: "Flash Sale", href: "/admin/promotions/flash-sale", icon: Zap },
+      { label: "Produk Second", href: "/admin/promotions/second-products", icon: PackageSearch },
+      { label: "Rekomendasi", href: "/admin/promotions/featured-products", icon: Star },
+      { label: "Rating Tertinggi", href: "/admin/promotions/top-rated", icon: TrendingUp },
     ],
   },
   {
@@ -74,7 +101,79 @@ const NAV_GROUPS = [
       { label: "Pengaturan", href: "/admin/settings", icon: Settings },
     ],
   },
-] as const;
+];
+
+function CollapsibleGroup({
+  group,
+  isActive,
+}: {
+  group: NavGroup;
+  isActive: (href: string, exact?: boolean) => boolean;
+}) {
+  const anyActive = group.items.some((item) => isActive(item.href, item.exact));
+  const [open, setOpen] = useState(anyActive);
+
+  return (
+    <div className="mb-5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="mb-1.5 flex w-full items-center justify-between px-2 group"
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+          {group.label}
+        </span>
+        <ChevronDown
+          size={12}
+          className={cn(
+            "text-muted-foreground transition-transform duration-200 group-hover:text-foreground",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200",
+          open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        <ul className="space-y-0.5">
+          {group.items.map(({ label, href, icon: Icon, exact }) => {
+            const active = isActive(href, exact);
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className={cn(
+                    "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
+                    active
+                      ? "bg-brand/10 font-semibold text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <Icon
+                    size={14}
+                    className={cn("shrink-0", active && "text-brand")}
+                    strokeWidth={active ? 2.5 : 1.5}
+                  />
+                  <span className="truncate">{label}</span>
+                  {active && (
+                    <ChevronRight
+                      size={12}
+                      className="ml-auto shrink-0 text-brand/70"
+                    />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -116,47 +215,49 @@ export function AdminSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-4">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label} className="mb-5">
-            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {group.label}
-            </p>
-            <ul className="space-y-0.5">
-              {group.items.map(({ label, href, icon: Icon, ...rest }) => {
-                const exact = "exact" in rest ? rest.exact : false;
-                const active = isActive(href, exact);
-
-                return (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className={cn(
-                        "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
-                        active
-                          ? "bg-brand/10 font-semibold text-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                      )}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      <Icon
-                        size={14}
-                        className={cn("shrink-0", active && "text-brand")}
-                        strokeWidth={active ? 2.5 : 1.5}
-                      />
-                      <span className="truncate">{label}</span>
-                      {active && (
-                        <ChevronRight
-                          size={12}
-                          className="ml-auto shrink-0 text-brand/70"
+        {NAV_GROUPS.map((group) =>
+          group.collapsible ? (
+            <CollapsibleGroup key={group.label} group={group} isActive={isActive} />
+          ) : (
+            <div key={group.label} className="mb-5">
+              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {group.label}
+              </p>
+              <ul className="space-y-0.5">
+                {group.items.map(({ label, href, icon: Icon, exact }) => {
+                  const active = isActive(href, exact);
+                  return (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className={cn(
+                          "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
+                          active
+                            ? "bg-brand/10 font-semibold text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        )}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        <Icon
+                          size={14}
+                          className={cn("shrink-0", active && "text-brand")}
+                          strokeWidth={active ? 2.5 : 1.5}
                         />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+                        <span className="truncate">{label}</span>
+                        {active && (
+                          <ChevronRight
+                            size={12}
+                            className="ml-auto shrink-0 text-brand/70"
+                          />
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )
+        )}
       </nav>
 
       {/* User info + logout */}
