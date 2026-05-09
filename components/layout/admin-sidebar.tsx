@@ -106,19 +106,19 @@ export function AdminSidebar() {
     : "A";
 
   return (
-    <aside className="sticky top-0 flex h-screen w-60 flex-col bg-black/3">
+    <aside className="admin-sidebar-surface sticky top-0 shrink-0">
       {/* Header */}
-      <div className="flex items-center gap-2.5 h-14 px-4 shrink-0">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-[#e0e0e0] px-4 dark:border-border">
         <div className="flex flex-col gap-1 min-w-0">
           <SiteLogo href="/admin" variant="adminSidebar" ariaLabel="GeekyTech Admin — Dashboard" />
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2">
+      <nav className="flex-1 overflow-y-auto px-2 py-4">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2">
+            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               {group.label}
             </p>
             <ul className="space-y-0.5">
@@ -131,23 +131,23 @@ export function AdminSidebar() {
                     <Link
                       href={href}
                       className={cn(
-                        "flex items-center gap-2.5 h-11 px-3 text-sm font-medium transition-swift rounded-none",
+                        "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
                         active
-                          ? "bg-swiss-black text-swiss-white"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                          ? "bg-brand/10 font-semibold text-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                       aria-current={active ? "page" : undefined}
                     >
                       <Icon
                         size={14}
-                        className="shrink-0"
+                        className={cn("shrink-0", active && "text-brand")}
                         strokeWidth={active ? 2.5 : 1.5}
                       />
                       <span className="truncate">{label}</span>
                       {active && (
                         <ChevronRight
                           size={12}
-                          className="ml-auto shrink-0 opacity-60"
+                          className="ml-auto shrink-0 text-brand/70"
                         />
                       )}
                     </Link>
@@ -160,12 +160,12 @@ export function AdminSidebar() {
       </nav>
 
       {/* User info + logout */}
-      <div className="border-t border-border p-3 shrink-0 space-y-1">
+      <div className="shrink-0 space-y-1 border-t border-[#e0e0e0] p-3 dark:border-border">
         <Link
           href="/admin/settings/account"
-          className="flex items-center gap-2.5 px-2 py-1.5 hover:bg-muted transition-swiss rounded-none group"
+          className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
         >
-          <div className="w-6 h-6 bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
             {initials}
           </div>
           <div className="min-w-0 flex-1">
@@ -179,8 +179,9 @@ export function AdminSidebar() {
         </Link>
 
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 h-11 px-3 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-swiss"
+          className="flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive active:scale-[0.98]"
         >
           <LogOut size={13} />
           Keluar

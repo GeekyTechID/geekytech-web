@@ -40,7 +40,7 @@ const ORDER_STATUS_CONFIG: Record<
   { label: string; color: string; icon: React.ElementType }
 > = {
   pending_payment: { label: "Menunggu Bayar", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock },
-  paid: { label: "Dibayar", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400", icon: CheckCircle2 },
+  paid: { label: "Dibayar", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle2 },
   processing: { label: "Diproses", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400", icon: Package },
   shipped: { label: "Dikirim", color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400", icon: Truck },
   delivered: { label: "Terkirim", color: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400", icon: CheckCircle2 },
@@ -229,7 +229,9 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div>
         <p className="text-swiss-eyebrow">Overview</p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Dashboard</h1>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+          Dashboard
+        </h1>
       </div>
 
       {/* ── Stat Cards ─────────────────────────────────────────── */}
@@ -262,10 +264,8 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ── Order Status Breakdown ──────────────────────────────── */}
-      <div className="bg-background border border-border p-5">
-        <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-          Status Pesanan
-        </h2>
+      <div className="admin-utility-card p-5">
+        <h2 className="admin-section-title mb-4">Status Pesanan</h2>
         <div className="flex flex-wrap gap-2">
           {(Object.entries(ORDER_STATUS_CONFIG) as [OrderStatus, typeof ORDER_STATUS_CONFIG[OrderStatus]][]).map(
             ([status, cfg]) => {
@@ -292,11 +292,9 @@ export default async function AdminDashboardPage() {
       {/* ── Charts + Side Stats ─────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue chart */}
-        <div className="lg:col-span-2 bg-background border border-border p-5 space-y-3">
+        <div className="admin-utility-card lg:col-span-2 space-y-3 p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-widest">
-              Revenue — 30 Hari Terakhir
-            </h2>
+            <h2 className="admin-section-title">Revenue — 30 Hari Terakhir</h2>
           </div>
           <RevenueChart data={dailyChartData} />
         </div>
@@ -304,21 +302,19 @@ export default async function AdminDashboardPage() {
         {/* Side stats */}
         <div className="flex flex-col gap-4">
           {/* Orders chart */}
-          <div className="bg-background border border-border p-5 space-y-3 flex-1">
-            <h2 className="text-xs font-bold uppercase tracking-widest">
-              Order — 30 Hari Terakhir
-            </h2>
+          <div className="admin-utility-card flex flex-1 flex-col space-y-3 p-5">
+            <h2 className="admin-section-title">Order — 30 Hari Terakhir</h2>
             <OrdersChart data={dailyChartData} />
           </div>
 
           {/* Pelanggan */}
-          <div className="bg-background border border-border p-5 flex items-center gap-4">
-            <div className="w-10 h-10 bg-muted flex items-center justify-center shrink-0">
-              <Users size={18} className="text-muted-foreground" />
+          <div className="admin-utility-card flex items-center gap-4 p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand/10">
+              <Users size={18} className="text-brand" />
             </div>
             <div>
-              <p className="text-2xl font-black">{stats.newCustomersWeek}</p>
-              <p className="text-xs text-muted-foreground">Pelanggan baru minggu ini</p>
+              <p className="text-2xl font-semibold tabular-nums">{stats.newCustomersWeek}</p>
+              <p className="text-[13px] text-muted-foreground">Pelanggan baru minggu ini</p>
             </div>
           </div>
         </div>
@@ -326,20 +322,20 @@ export default async function AdminDashboardPage() {
 
       {/* ── Low Stock ───────────────────────────────────────────── */}
       {lowStockVariants.length > 0 && (
-        <div className="bg-background border border-border">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <h2 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-              <AlertTriangle size={14} className="text-yellow-500" />
-              Stok Hampir Habis
+        <div className="admin-utility-card">
+          <div className="admin-utility-card-header">
+            <h2 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground">
+              <AlertTriangle size={14} className="text-brand" />
+              Stok hampir habis
             </h2>
             <Link
               href="/admin/products?filter=low_stock"
-              className="text-xs text-muted-foreground hover:text-foreground transition-swiss flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-[#e0e0e0] dark:divide-border">
             {lowStockVariants.map((v: {
               id: string;
               sku: string;
@@ -375,14 +371,12 @@ export default async function AdminDashboardPage() {
       )}
 
       {/* ── Recent Orders ───────────────────────────────────────── */}
-      <div className="bg-background border border-border">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-          <h2 className="text-xs font-bold uppercase tracking-widest">
-            Pesanan Terbaru
-          </h2>
+      <div className="admin-utility-card">
+        <div className="admin-utility-card-header">
+          <h2 className="admin-section-title">Pesanan Terbaru</h2>
           <Link
             href="/admin/orders"
-            className="text-xs text-muted-foreground hover:text-foreground transition-swiss flex items-center gap-1"
+            className="admin-text-link inline-flex items-center gap-1"
           >
             Lihat semua <ArrowRight size={12} />
           </Link>
@@ -390,18 +384,18 @@ export default async function AdminDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left">
+              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
                 {["No. Order", "Pembeli", "Status", "Total", "Tanggal"].map((h) => (
                   <th
                     key={h}
-                    className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap"
+                    className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {recentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
@@ -429,7 +423,7 @@ export default async function AdminDashboardPage() {
                       <td className="px-5 py-3 font-mono text-xs font-semibold">
                         <Link
                           href={`/admin/orders/${order.id}`}
-                          className="hover:text-[#EA5329] transition-swiss"
+                    className="text-brand transition-opacity hover:opacity-80"
                         >
                           {order.order_number}
                         </Link>
@@ -463,19 +457,17 @@ export default async function AdminDashboardPage() {
       {/* ── Bottom row: Pelanggan Baru + Ulasan ─────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pelanggan baru */}
-        <div className="bg-background border border-border">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <h2 className="text-xs font-bold uppercase tracking-widest">
-              Pelanggan Baru
-            </h2>
+        <div className="admin-utility-card">
+          <div className="admin-utility-card-header">
+            <h2 className="admin-section-title">Pelanggan Baru</h2>
             <Link
               href="/admin/customers"
-              className="text-xs text-muted-foreground hover:text-foreground transition-swiss flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
             {recentCustomers.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-muted-foreground">
                 Belum ada pelanggan
@@ -487,7 +479,7 @@ export default async function AdminDashboardPage() {
                   : "?";
                 return (
                   <li key={c.id} className="flex items-center gap-3 px-5 py-2.5 hover:bg-muted/50 transition-swiss">
-                    <div className="w-7 h-7 bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -506,19 +498,17 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Ulasan terbaru */}
-        <div className="bg-background border border-border">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <h2 className="text-xs font-bold uppercase tracking-widest">
-              Ulasan Terbaru
-            </h2>
+        <div className="admin-utility-card">
+          <div className="admin-utility-card-header">
+            <h2 className="admin-section-title">Ulasan Terbaru</h2>
             <Link
               href="/admin/reviews"
-              className="text-xs text-muted-foreground hover:text-foreground transition-swiss flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
             {recentReviews.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-muted-foreground">
                 Belum ada ulasan
@@ -597,20 +587,31 @@ function StatCard({
   return (
     <div
       className={cn(
-        "border p-5 space-y-3",
+        "space-y-3 p-6",
         accent
-          ? "bg-[#EA5329] border-[#EA5329] text-white"
-          : "bg-background border-border",
+          ? "rounded-lg border border-brand bg-brand text-white active:scale-[0.98]"
+          : "admin-utility-card active:scale-[0.98]",
       )}
     >
       <div className="flex items-center justify-between">
-        <p className={cn("text-xs font-bold uppercase tracking-widest", accent ? "text-white/80" : "text-muted-foreground")}>
+        <p
+          className={cn(
+            "text-[11px] font-semibold uppercase tracking-widest",
+            accent ? "text-white/85" : "text-muted-foreground",
+          )}
+        >
           {label}
         </p>
-        <Icon size={16} className={accent ? "text-white/70" : "text-muted-foreground"} strokeWidth={1.5} />
+        <Icon
+          size={16}
+          className={accent ? "text-white/80" : "text-brand/80"}
+          strokeWidth={1.5}
+        />
       </div>
-      <p className="text-3xl font-black tracking-tight leading-none">{value}</p>
-      <p className={cn("text-xs truncate", accent ? "text-white/70" : "text-muted-foreground")}>{sub}</p>
+      <p className="text-3xl font-semibold tracking-tight leading-none">{value}</p>
+      <p className={cn("truncate text-xs leading-relaxed", accent ? "text-white/75" : "text-muted-foreground")}>
+        {sub}
+      </p>
     </div>
   );
 }

@@ -49,6 +49,7 @@ import {
   bulkDeleteProducts,
   bulkSetBrand,
   bulkSetStatus,
+  bulkSetCondition,
 } from "../_actions";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -76,6 +77,7 @@ export type ProductRow = {
   slug: string;
   base_price: number;
   sale_price: number | null;
+  condition: "new" | "second";
   is_active: boolean;
   is_featured: boolean;
   created_at: string;
@@ -136,6 +138,8 @@ export function ProductTable({
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [brandDialogOpen, setBrandDialogOpen] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<string>("");
+  const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
+  const [selectedCondition, setSelectedCondition] = useState<"new" | "second">("new");
 
   const firstItem = totalCount === 0 ? 0 : (page - 1) * perPage + 1;
   const lastItem = Math.min(page * perPage, totalCount);
@@ -225,6 +229,20 @@ export function ProductTable({
     });
   };
 
+  const handleBulkSetCondition = () => {
+    const ids = Array.from(selectedIds);
+    startTransition(async () => {
+      const result = await bulkSetCondition(ids, selectedCondition);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`Kondisi ${ids.length} produk diubah ke "${selectedCondition === "new" ? "Baru" : "Second"}".`);
+        clearSelection();
+      }
+      setConditionDialogOpen(false);
+    });
+  };
+
   const handleBulkStatus = (isActive: boolean) => {
     const ids = Array.from(selectedIds);
     startTransition(async () => {
@@ -288,6 +306,15 @@ export function ProductTable({
               Ganti Merek
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest"
+            onClick={() => setConditionDialogOpen(true)}
+            disabled={isPending}
+          >
+            Ganti Kondisi
+          </Button>
           <Button
             size="sm"
             className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 ml-auto"
@@ -390,14 +417,26 @@ export function ProductTable({
                       <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
                         /{product.slug}
                       </p>
-                      {product.is_featured && (
+                      <div className="flex flex-wrap gap-1 mt-1">
                         <Badge
                           variant="outline"
-                          className="text-[9px] rounded-none px-1.5 py-0 mt-1 border-[#EA5329] text-[#EA5329] font-bold uppercase tracking-widest"
+                          className={`text-[9px] rounded-none px-1.5 py-0 font-bold uppercase tracking-widest ${
+                            product.condition === "second"
+                              ? "border-amber-500 text-amber-600"
+                              : "border-emerald-500 text-emerald-600"
+                          }`}
                         >
-                          Unggulan
+                          {product.condition === "second" ? "Second" : "Baru"}
                         </Badge>
-                      )}
+                        {product.is_featured && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] rounded-none px-1.5 py-0 border-[#EA5329] text-[#EA5329] font-bold uppercase tracking-widest"
+                          >
+                            Unggulan
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </td>
 
@@ -574,6 +613,55 @@ export function ProductTable({
             >
               {isPending ? "Menghapus..." : `Hapus ${selectedIds.size} Produk`}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk condition selector dialog */}
+      <Dialog open={conditionDialogOpen} onOpenChange={(open) => { if (!open) setConditionDialogOpen(false); }}>
+        <DialogContent className="rounded-none max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-black uppercase tracking-tight">
+              Ganti Kondisi
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Pilih kondisi baru untuk {selectedIds.size} produk yang dipilih.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="flex gap-3">
+              {(["new", "second"] as const).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setSelectedCondition(val)}
+                  className={`flex-1 h-9 border text-xs font-bold uppercase tracking-widest transition-colors rounded-none ${
+                    selectedCondition === val
+                      ? "border-[#EA5329] bg-[#EA5329]/10 text-[#EA5329]"
+                      : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground"
+                  }`}
+                >
+                  {val === "new" ? "Baru" : "Second"}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs"
+                onClick={() => setConditionDialogOpen(false)}
+                disabled={isPending}
+              >
+                Batal
+              </Button>
+              <Button
+                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
+                onClick={handleBulkSetCondition}
+                disabled={isPending}
+              >
+                {isPending ? "Menyimpan..." : "Terapkan"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -13,7 +13,7 @@ export default function AdminPanelLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-muted/30">
+    <div className="admin-shell flex">
       {/* Desktop sidebar */}
       <div className="hidden md:flex flex-col shrink-0">
         <AdminSidebar />

@@ -22,6 +22,7 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
 
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
+  const condition = searchParams.get("condition") ?? "all";
   const brandId = searchParams.get("brand") ?? "";
   const categoryId = searchParams.get("category") ?? "";
   const sort = searchParams.get("sort") ?? "latest";
@@ -44,12 +45,18 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
     router.push(pathname);
   };
 
-  const hasFilters = q || status !== "all" || brandId || categoryId || sort !== "latest";
+  const hasFilters = q || status !== "all" || condition !== "all" || brandId || categoryId || sort !== "latest";
 
   const statusOptions = [
     { value: "all", label: "Semua Status" },
     { value: "active", label: "Aktif" },
     { value: "inactive", label: "Nonaktif" },
+  ];
+
+  const conditionOptions = [
+    { value: "all", label: "Semua Kondisi" },
+    { value: "new", label: "Baru" },
+    { value: "second", label: "Second" },
   ];
 
   const sortOptions = [
@@ -87,6 +94,24 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
             className={cn(
               "px-4 h-11 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
               (value === "all" ? status === "all" : status === value)
+                ? "bg-swiss-black text-swiss-white"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Condition filter */}
+      <div className="flex border border-border">
+        {conditionOptions.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => updateParam("condition", value === "all" ? "" : value)}
+            className={cn(
+              "px-4 h-11 text-xs font-bold uppercase tracking-widest border-r border-border last:border-r-0 transition-colors",
+              (value === "all" ? condition === "all" : condition === value)
                 ? "bg-swiss-black text-swiss-white"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}

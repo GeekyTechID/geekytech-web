@@ -102,7 +102,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
     : user?.email?.[0]?.toUpperCase() ?? "A";
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 bg-background border-b border-border px-4 lg:px-6">
+    <header className="admin-topbar-surface sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 px-4 lg:px-6">
       {/* Hamburger — tampil di mobile */}
       <button
         onClick={onMenuClick}
@@ -114,7 +114,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
       {/* Page title */}
       <div className="flex items-center gap-2 min-w-0">
-        <h1 className="text-sm font-black uppercase tracking-wide truncate">
+        <h1 className="truncate text-[21px] font-semibold uppercase tracking-tight text-foreground">
           {pageTitle}
         </h1>
       </div>
@@ -128,7 +128,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:flex items-center gap-1 h-11 px-4 text-xs text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-swiss"
+          className="admin-text-link hidden h-11 items-center gap-1 rounded-full border border-transparent px-4 sm:flex dark:hover:border-border"
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
@@ -150,12 +150,12 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         <div ref={userMenuRef} className="relative ml-1">
           <button
             onClick={() => setUserMenuOpen((v) => !v)}
-            className="flex items-center gap-1.5 h-11 px-3 border border-transparent hover:border-border transition-swiss"
+            className="flex h-11 items-center gap-1.5 rounded-md border border-transparent px-3 transition-colors hover:border-[#e0e0e0] hover:bg-muted/60 dark:hover:border-border"
             aria-expanded={userMenuOpen}
             aria-haspopup="menu"
             aria-label="Menu akun"
           >
-            <div className="w-6 h-6 bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
               {initials}
             </div>
             <div className="hidden lg:block text-left min-w-0 max-w-[8rem]">
@@ -178,10 +178,10 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           {userMenuOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full mt-1 w-52 bg-background border border-border z-50 py-1 shadow-sm"
+              className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-[#e0e0e0] bg-card py-1 dark:border-border"
             >
               {/* Info user */}
-              <div className="px-3 py-2.5 border-b border-border">
+              <div className="border-b border-[#e0e0e0] px-3 py-2.5 dark:border-border">
                 <p className="text-sm font-semibold truncate">
                   {profile?.full_name ?? "Admin"}
                 </p>
@@ -245,7 +245,7 @@ function TopbarMenuItem({
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted transition-swiss"
+      className="mx-1 flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
     >
       <Icon size={14} className="text-muted-foreground" />
       {label}

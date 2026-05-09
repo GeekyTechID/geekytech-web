@@ -46,6 +46,7 @@ const productSchema = z.object({
   min_order_qty: z.number().min(1, "Min. order minimal 1"),
   category_id: z.string().nullable(),
   brand_id: z.string().nullable(),
+  condition: z.enum(["new", "second"]),
   is_active: z.boolean(),
   is_featured: z.boolean(),
   meta_title: z.string(),
@@ -63,6 +64,7 @@ type FormValues = {
   min_order_qty: number;
   category_id: string | null;
   brand_id: string | null;
+  condition: "new" | "second";
   is_active: boolean;
   is_featured: boolean;
   meta_title: string;
@@ -106,6 +108,7 @@ type DefaultProduct = {
   min_order_qty: number;
   category_id: string | null;
   brand_id?: string | null;
+  condition?: "new" | "second" | null;
   is_active: boolean;
   is_featured: boolean;
   meta_title: string | null;
@@ -198,6 +201,7 @@ export function ProductForm({
       min_order_qty: dv?.min_order_qty ?? defaultProduct?.min_order_qty ?? 1,
       category_id: dv?.category_id ?? defaultProduct?.category_id ?? null,
       brand_id: dv?.brand_id ?? defaultProduct?.brand_id ?? null,
+      condition: dv?.condition ?? (defaultProduct?.condition === "second" ? "second" : "new"),
       is_active: dv?.is_active ?? defaultProduct?.is_active ?? true,
       is_featured: dv?.is_featured ?? defaultProduct?.is_featured ?? false,
       meta_title: dv?.meta_title ?? defaultProduct?.meta_title ?? "",
@@ -353,6 +357,7 @@ export function ProductForm({
       min_order_qty: values.min_order_qty,
       category_id: values.category_id,
       brand_id: values.brand_id,
+      condition: values.condition,
       is_active: values.is_active,
       is_featured: values.is_featured,
       meta_title: values.meta_title,
@@ -507,6 +512,29 @@ export function ProductForm({
                 </Select>
               </Field>
             </div>
+
+            <Field label="Kondisi Produk" required>
+              <div className="flex gap-3">
+                {(["new", "second"] as const).map((val) => {
+                  const isSelected = watch("condition") === val;
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setValue("condition", val)}
+                      className={cn(
+                        "flex-1 h-9 border text-xs font-bold uppercase tracking-widest transition-colors",
+                        isSelected
+                          ? "border-[#EA5329] bg-[#EA5329]/10 text-[#EA5329]"
+                          : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground"
+                      )}
+                    >
+                      {val === "new" ? "Baru" : "Second"}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
 
             <div className="flex flex-col gap-3 pt-1">
               <div className="flex items-center gap-3">

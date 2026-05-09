@@ -23,7 +23,7 @@ export default async function EditProductPage({
       .from("products")
       .select(
         `id, name, slug, description, base_price, sale_price, min_order_qty,
-         category_id, brand_id, is_active, is_featured, meta_title, meta_description, deleted_at,
+         category_id, brand_id, condition, is_active, is_featured, meta_title, meta_description, deleted_at,
          product_images(url, is_primary, alt_text, sort_order),
          product_variants(id, name, sku, price, stock, weight, length, width, height, is_active),
          product_tags(tag)`
@@ -108,6 +108,7 @@ export default async function EditProductPage({
           min_order_qty: product.min_order_qty,
           category_id: product.category_id,
           brand_id: product.brand_id ?? null,
+          condition: product.condition ?? "new",
           is_active: product.is_active,
           is_featured: product.is_featured,
           meta_title: product.meta_title,

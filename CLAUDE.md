@@ -30,14 +30,10 @@ Version Control     : GitHub (branch: main = production, development = preview)
 
 ---
 
-## Design System — Swiss Style
+## Design System
 
-- **Tipografi**: Font sans-serif bold (Helvetica), hierarchy ketat (tidak ada font dekoratif)
-- **Warna**: Hitam (`#000000`), Putih (`#FFFFFF`), Aksen Merah (`#EA5329`)
-- **Grid**: 12 kolom, alignment strict, whitespace luas
-- **Spacing**: Base unit 4px (`space-1` = 4px, `space-4` = 16px, dst)
-- **Border**: Tegas, tipis (`border-black`), tidak ada shadow berlebihan
-- **Animasi**: GSAP untuk transisi halaman, entrance, hover, scroll-triggered
+See `.cursor/rules/design.mdc` for full design system.
+Always follow Tailwind utility conventions.
 
 ---
 

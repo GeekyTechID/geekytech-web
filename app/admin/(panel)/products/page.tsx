@@ -16,6 +16,7 @@ const PER_PAGE = 20;
 type SearchParams = Promise<{
   q?: string;
   status?: string;
+  condition?: string;
   brand?: string;
   category?: string;
   sort?: string;
@@ -30,6 +31,7 @@ export default async function AdminProductsPage({
   const params = await searchParams;
   const q = params.q ?? "";
   const status = params.status ?? "all";
+  const conditionFilter = params.condition ?? "";
   const brandId = params.brand ?? "";
   const categoryId = params.category ?? "";
   const sort = params.sort ?? "latest";
@@ -57,7 +59,7 @@ export default async function AdminProductsPage({
       let query = supabase
         .from("products")
         .select(
-          `id, name, slug, base_price, sale_price, is_active, is_featured, created_at,
+          `id, name, slug, base_price, sale_price, condition, is_active, is_featured, created_at,
            categories(id, name),
            product_images(url, is_primary),
            product_variants(id, stock, reserved, is_active)`,
@@ -68,6 +70,8 @@ export default async function AdminProductsPage({
       if (q) query = query.ilike("name", `%${q}%`);
       if (status === "active") query = query.eq("is_active", true);
       if (status === "inactive") query = query.eq("is_active", false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (conditionFilter === "new" || conditionFilter === "second") query = (query as any).eq("condition", conditionFilter);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (brandId) query = (query as any).eq("brand_id", brandId);
       if (categoryId) query = query.eq("category_id", categoryId);
