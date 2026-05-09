@@ -106,9 +106,9 @@ export function AdminSidebar() {
     : "A";
 
   return (
-    <aside className="sticky top-0 flex h-screen w-80 flex-col bg-black/3 border-r border-border">
+    <aside className="sticky top-0 flex h-screen w-60 flex-col bg-black/3">
       {/* Header */}
-      <div className="flex items-center gap-2.5 h-14 px-4 border-b border-border shrink-0">
+      <div className="flex items-center gap-2.5 h-14 px-4 shrink-0">
         <div className="flex flex-col gap-1 min-w-0">
           <SiteLogo href="/admin" variant="adminSidebar" ariaLabel="GeekyTech Admin — Dashboard" />
         </div>
@@ -118,7 +118,7 @@ export function AdminSidebar() {
       <nav className="flex-1 overflow-y-auto py-4 px-2">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2 mb-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2">
               {group.label}
             </p>
             <ul className="space-y-0.5">

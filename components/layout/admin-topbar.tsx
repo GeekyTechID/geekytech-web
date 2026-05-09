@@ -102,7 +102,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
     : user?.email?.[0]?.toUpperCase() ?? "A";
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 bg-background border-b border-border px-4 lg:px-6">
       {/* Hamburger — tampil di mobile */}
       <button
         onClick={onMenuClick}

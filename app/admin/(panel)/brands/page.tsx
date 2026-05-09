@@ -11,7 +11,7 @@ import { BrandTable, type BrandRow } from "./_components/brand-table";
 export const metadata: Metadata = { title: "Kelola Merek — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
 
-const PER_PAGE = 10;
+const PER_PAGE = 20;
 
 type SearchParams = Promise<{
   q?: string;

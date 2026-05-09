@@ -11,7 +11,7 @@ import { ProductTable, type ProductRow } from "./_components/product-table";
 export const metadata: Metadata = { title: "Kelola Produk — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
 
-const PER_PAGE = 10;
+const PER_PAGE = 20;
 
 type SearchParams = Promise<{
   q?: string;

@@ -2,7 +2,16 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { CornerDownRight, Edit, Grid2X2, MoreHorizontal, Trash2 } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CornerDownRight,
+  Edit,
+  Grid2X2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,51 +32,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { deleteCategory, toggleCategoryStatus } from "../_actions";
+import type { CategoryRow, FlatCategoryRow } from "../_lib/flat-category-tree";
 
-export type CategoryRow = {
-  id: string;
-  name: string;
-  slug: string;
-  parent_id: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
-};
-
-type FlatRow = CategoryRow & { depth: 0 | 1 };
-
-function buildFlatTree(categories: CategoryRow[]): FlatRow[] {
-  const topLevel = categories.filter((c) => !c.parent_id);
-  const children = categories.filter((c) => c.parent_id);
-  const result: FlatRow[] = [];
-  const addedIds = new Set<string>();
-
-  for (const parent of topLevel) {
-    result.push({ ...parent, depth: 0 });
-    addedIds.add(parent.id);
-    for (const child of children.filter((c) => c.parent_id === parent.id)) {
-      result.push({ ...child, depth: 1 });
-      addedIds.add(child.id);
-    }
-  }
-
-  // orphan children (parent deleted or filtered out)
-  for (const child of children) {
-    if (!addedIds.has(child.id)) result.push({ ...child, depth: 1 });
-  }
-
-  return result;
-}
+export type { CategoryRow } from "../_lib/flat-category-tree";
 
 interface CategoryTableProps {
-  categories: CategoryRow[];
+  rows: FlatCategoryRow[];
+  page: number;
+  totalPages: number;
+  totalCount: number;
+  perPage: number;
 }
 
-export function CategoryTable({ categories }: CategoryTableProps) {
+export function CategoryTable({
+  rows,
+  page,
+  totalPages,
+  totalCount,
+  perPage,
+}: CategoryTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentParams = useSearchParams();
+
   const [deleteTarget, setDeleteTarget] = useState<CategoryRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const rows = buildFlatTree(categories);
+  const firstItem = totalCount === 0 ? 0 : (page - 1) * perPage + 1;
+  const lastItem = Math.min(page * perPage, totalCount);
+
+  const goToPage = (p: number) => {
+    const params = new URLSearchParams(currentParams.toString());
+    params.set("page", String(p));
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleToggle = (cat: CategoryRow, value: boolean) => {
     startTransition(async () => {
@@ -89,7 +87,7 @@ export function CategoryTable({ categories }: CategoryTableProps) {
     });
   };
 
-  if (rows.length === 0) {
+  if (totalCount === 0) {
     return (
       <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
         <Grid2X2 size={36} strokeWidth={1} />
@@ -204,6 +202,38 @@ export function CategoryTable({ categories }: CategoryTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            Menampilkan {firstItem}–{lastItem} dari {totalCount} kategori
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1}
+              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              aria-label="Halaman sebelumnya"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <span className="flex h-8 items-center border-y border-border px-3 text-xs font-bold uppercase tracking-widest">
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages}
+              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              aria-label="Halaman berikutnya"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
