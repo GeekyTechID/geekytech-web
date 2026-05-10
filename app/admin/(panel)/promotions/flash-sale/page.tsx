@@ -16,15 +16,11 @@ export default async function AdminFlashSalePage() {
     .select("id, name, starts_at, ends_at, is_active, created_at")
     .order("starts_at", { ascending: false });
 
-  // Get product count per flash sale
   const ids = flashSales?.map((s) => s.id) ?? [];
   const productCountMap: Record<string, number> = {};
 
   if (ids.length > 0) {
-    const { data: fsp } = await supabase
-      .from("flash_sale_products")
-      .select("flash_sale_id")
-      .in("flash_sale_id", ids);
+    const { data: fsp } = await supabase.from("flash_sale_products").select("flash_sale_id").in("flash_sale_id", ids);
 
     for (const row of fsp ?? []) {
       productCountMap[row.flash_sale_id] = (productCountMap[row.flash_sale_id] ?? 0) + 1;
@@ -37,25 +33,24 @@ export default async function AdminFlashSalePage() {
   }));
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Flash Sale</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Promosi</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Flash Sale</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {flashSales?.length ?? 0} flash sale
           </p>
         </div>
         <Link
           href="/admin/promotions/flash-sale/new"
-          className="flex items-center gap-2 h-11 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2} />
           Buat Flash Sale
         </Link>
       </div>
 
-      {/* Table */}
       <FlashSaleTable flashSales={rows} />
     </div>
   );

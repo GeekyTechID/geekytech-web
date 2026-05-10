@@ -14,33 +14,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import {
   updateOrderStatus,
   VALID_TRANSITIONS,
   type OrderStatus,
 } from "../../_actions";
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending_payment: "Menunggu Bayar",
-  paid: "Dibayar",
-  processing: "Diproses",
-  shipped: "Dikirim",
-  delivered: "Terkirim",
-  completed: "Selesai",
-  cancelled: "Dibatalkan",
-  refunded: "Refund",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending_payment: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  paid: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  processing: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  shipped: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  delivered: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
-  completed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  refunded: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
-};
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 interface StatusUpdaterProps {
   orderId: string;
@@ -63,7 +44,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`Status diperbarui ke "${STATUS_LABELS[selectedStatus]}".`);
+        toast.success(`Status diperbarui ke "${ADMIN_ORDER_STATUS_LABEL[selectedStatus]}".`);
         setOpen(false);
         setSelectedStatus("");
         setNote("");
@@ -73,88 +54,82 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
 
   return (
     <div className="space-y-3">
-      {/* Current status */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground">Status saat ini:</span>
         <span
           className={cn(
-            "px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-            STATUS_COLORS[currentStatus]
+            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+            adminOrderStatusBadgeClass(currentStatus),
           )}
         >
-          {STATUS_LABELS[currentStatus]}
+          {ADMIN_ORDER_STATUS_LABEL[currentStatus]}
         </span>
       </div>
 
       {canUpdate ? (
         <Button
+          type="button"
           variant="outline"
-          className="w-full rounded-none font-bold uppercase tracking-widest text-xs"
+          className="w-full rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => setOpen(true)}
         >
           Ubah Status
         </Button>
       ) : (
-        <p className="text-[11px] text-muted-foreground">
-          Status ini tidak dapat diubah secara manual.
-        </p>
+        <p className="text-[11px] text-muted-foreground">Status ini tidak dapat diubah secara manual.</p>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm rounded-none">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
+            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">
               Ubah Status Pesanan
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[17px] leading-[1.47]">
               Pilih status baru. Perubahan akan dicatat di riwayat.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 pt-1">
-            {/* Status select */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase tracking-widest">
-                Status Baru
-              </Label>
+              <Label className={labelClass}>Status Baru</Label>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-                className="h-9 w-full rounded-none border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-border"
               >
                 <option value="">— Pilih status —</option>
                 {validNext.map((s) => (
                   <option key={s} value={s}>
-                    {STATUS_LABELS[s]}
+                    {ADMIN_ORDER_STATUS_LABEL[s]}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Note */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase tracking-widest">
-                Catatan (opsional)
-              </Label>
+              <Label className={labelClass}>Catatan (opsional)</Label>
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Alasan perubahan status..."
-                className="h-20 resize-none rounded-none text-sm"
+                className="h-20 resize-none rounded-lg border-[#e0e0e0] text-sm dark:border-border"
               />
             </div>
 
             <div className="flex gap-2">
               <Button
+                type="button"
                 variant="outline"
-                className="flex-1 rounded-none font-bold uppercase tracking-widest text-xs"
+                className="flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="flex-1 rounded-none border-0 bg-[#EA5329] font-bold uppercase tracking-widest text-xs text-white hover:bg-[#D44820]"
+                type="button"
+                className="flex-1 rounded-full bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
                 onClick={handleSubmit}
                 disabled={!selectedStatus || isPending}
               >

@@ -13,21 +13,23 @@ import { updateComplaintStatus, updateAdminNote, type ComplaintStatus } from "..
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
     label: "Baru",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    className: "bg-brand/10 text-brand",
   },
   in_review: {
     label: "Ditinjau",
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    className: "bg-muted text-foreground",
   },
   resolved: {
     label: "Selesai",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
   },
   rejected: {
     label: "Ditolak",
-    className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
+    className: "bg-muted text-muted-foreground",
   },
 };
+
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 export type ComplaintDetail = {
   id: string;
@@ -50,7 +52,7 @@ interface ComplaintDetailProps {
 export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
   const [isPending, startTransition] = useTransition();
   const [adminNote, setAdminNote] = useState(complaint.admin_note ?? "");
-  const statusCfg = STATUS_CONFIG[complaint.status] ?? { label: complaint.status, className: "" };
+  const statusCfg = STATUS_CONFIG[complaint.status] ?? { label: complaint.status, className: "bg-muted text-muted-foreground" };
 
   const handleStatusUpdate = (newStatus: ComplaintStatus) => {
     startTransition(async () => {
@@ -71,60 +73,51 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
   const images = Array.isArray(complaint.images) ? complaint.images : [];
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Back + header */}
-      <div>
-        <Link
-          href="/admin/complaints"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
-        >
-          <ArrowLeft size={13} />
-          Kembali ke daftar komplain
-        </Link>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black uppercase tracking-tight">
-              Detail Komplain
-            </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Dibuat {formatDate(complaint.created_at)}
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-block px-3 py-1 text-xs font-black uppercase tracking-widest",
-              statusCfg.className
-            )}
-          >
-            {statusCfg.label}
-          </span>
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <Link
+        href="/admin/complaints"
+        className="admin-text-link inline-flex items-center gap-1.5 text-xs font-medium"
+      >
+        <ArrowLeft size={13} />
+        Kembali ke daftar komplain
+      </Link>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-swiss-eyebrow">Layanan</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Detail Komplain</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            Dibuat {formatDate(complaint.created_at)}
+          </p>
         </div>
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest",
+            statusCfg.className,
+          )}
+        >
+          {statusCfg.label}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left: main info */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Complaint info */}
-          <div className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Informasi Komplain</h2>
+        <div className="space-y-6 lg:col-span-2">
+          <div className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Informasi Komplain</h2>
             </div>
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-4 p-6">
+              <div className="grid grid-cols-2 gap-4 text-[17px] leading-[1.47]">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                    Tipe
-                  </p>
+                  <p className={cn(labelClass, "mb-1")}>Tipe</p>
                   <p className="capitalize">{complaint.type.replace(/_/g, " ")}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                    No. Order
-                  </p>
+                  <p className={cn(labelClass, "mb-1")}>No. Order</p>
                   {complaint.orders ? (
                     <Link
                       href={`/admin/orders/${complaint.orders.id}`}
-                      className="font-mono font-bold hover:text-brand transition-colors inline-flex items-center gap-1"
+                      className="admin-text-link inline-flex items-center gap-1 font-mono text-sm font-semibold"
                     >
                       {complaint.orders.order_number}
                       <ExternalLink size={11} />
@@ -136,45 +129,32 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
               </div>
 
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                  Alasan
-                </p>
-                <p className="text-sm">{complaint.reason}</p>
+                <p className={cn(labelClass, "mb-1")}>Alasan</p>
+                <p className="text-[17px] leading-[1.47]">{complaint.reason}</p>
               </div>
 
               {complaint.description && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                    Deskripsi
-                  </p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  <p className={cn(labelClass, "mb-1")}>Deskripsi</p>
+                  <p className="whitespace-pre-wrap text-[17px] leading-[1.47] text-muted-foreground">
                     {complaint.description}
                   </p>
                 </div>
               )}
 
-              {/* Images */}
               {images.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                    Foto Bukti ({images.length})
-                  </p>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <p className={cn(labelClass, "mb-2")}>Foto Bukti ({images.length})</p>
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {images.map((url, i) => (
                       <a
                         key={i}
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative aspect-square border border-border overflow-hidden bg-muted/30 hover:opacity-80 transition-opacity"
+                        className="relative aspect-square overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 transition-opacity hover:opacity-80 dark:border-border"
                       >
-                        <Image
-                          src={url}
-                          alt={`Bukti ${i + 1}`}
-                          fill
-                          sizes="120px"
-                          className="object-cover"
-                        />
+                        <Image src={url} alt={`Bukti ${i + 1}`} fill sizes="120px" className="object-cover" />
                       </a>
                     ))}
                   </div>
@@ -183,23 +163,23 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
             </div>
           </div>
 
-          {/* Admin note */}
-          <div className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Catatan Admin</h2>
+          <div className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Catatan Admin</h2>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="space-y-3 p-6">
               <textarea
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Tambahkan catatan internal untuk komplain ini..."
                 rows={4}
-                className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground resize-none"
+                className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-[17px] leading-[1.47] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
               />
               <button
+                type="button"
                 onClick={handleSaveNote}
                 disabled={isPending}
-                className="h-9 px-4 bg-swiss-black text-swiss-white text-xs font-bold uppercase tracking-widest transition-opacity disabled:opacity-50"
+                className="h-10 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
               >
                 Simpan Catatan
               </button>
@@ -207,48 +187,40 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
           </div>
         </div>
 
-        {/* Right: customer info + actions */}
         <div className="space-y-6">
-          {/* Customer info */}
-          <div className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Pelanggan</h2>
+          <div className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Pelanggan</h2>
             </div>
-            <div className="p-4 space-y-3 text-sm">
+            <div className="space-y-3 p-6 text-[17px] leading-[1.47]">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-                  Nama
-                </p>
+                <p className={cn(labelClass, "mb-0.5")}>Nama</p>
                 <p className="font-medium">{complaint.profiles?.full_name ?? "—"}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-                  No. Telepon
-                </p>
+                <p className={cn(labelClass, "mb-0.5")}>No. Telepon</p>
                 <p>{complaint.profiles?.phone ?? "—"}</p>
               </div>
               {complaint.resolved_at && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-                    Diselesaikan
-                  </p>
+                  <p className={cn(labelClass, "mb-0.5")}>Diselesaikan</p>
                   <p>{formatDate(complaint.resolved_at)}</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Tindakan</h2>
+          <div className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Tindakan</h2>
             </div>
-            <div className="p-4 space-y-2">
+            <div className="space-y-2 p-6">
               {complaint.status === "open" && (
                 <button
+                  type="button"
                   onClick={() => handleStatusUpdate("in_review")}
                   disabled={isPending}
-                  className="w-full flex items-center justify-center gap-2 h-9 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
                 >
                   <Clock size={14} />
                   Mulai Tinjau
@@ -258,17 +230,19 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
               {(complaint.status === "open" || complaint.status === "in_review") && (
                 <>
                   <button
+                    type="button"
                     onClick={() => handleStatusUpdate("resolved")}
                     disabled={isPending}
-                    className="w-full flex items-center justify-center gap-2 h-9 bg-green-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <CheckCircle2 size={14} />
                     Tandai Selesai
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleStatusUpdate("rejected")}
                     disabled={isPending}
-                    className="w-full flex items-center justify-center gap-2 h-9 bg-destructive/10 text-destructive text-xs font-bold uppercase tracking-widest hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-destructive/40 text-xs font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <XCircle size={14} />
                     Tolak Komplain
@@ -278,9 +252,10 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
 
               {(complaint.status === "resolved" || complaint.status === "rejected") && (
                 <button
+                  type="button"
                   onClick={() => handleStatusUpdate("open")}
                   disabled={isPending}
-                  className="w-full flex items-center justify-center gap-2 h-9 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
                 >
                   Buka Kembali
                 </button>

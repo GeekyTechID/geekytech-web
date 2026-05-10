@@ -82,6 +82,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Promosi",
     collapsible: true,
     items: [
+      { label: "Main Banner", href: "/admin/promotions/main-banner", icon: ImageIcon },
       { label: "Flash Sale", href: "/admin/promotions/flash-sale", icon: Zap },
       { label: "Produk Second", href: "/admin/promotions/second-products", icon: PackageSearch },
       { label: "Rekomendasi", href: "/admin/promotions/featured-products", icon: Star },

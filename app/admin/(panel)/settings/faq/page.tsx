@@ -18,24 +18,25 @@ export default async function AdminSettingsFaqPage() {
     .order("question", { ascending: true });
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
           <Link
             href="/admin/settings"
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="admin-text-link mb-2 inline-flex items-center gap-1 text-xs font-medium"
           >
             <ChevronLeft size={14} />
             Pengaturan
           </Link>
-          <span className="text-muted-foreground">/</span>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Kelola FAQ</h1>
+          <p className="text-swiss-eyebrow">Toko</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Kelola FAQ</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Pertanyaan yang sering diajukan pelanggan.</p>
         </div>
         <Link
           href="/admin/settings/faq/new"
-          className="flex items-center gap-2 h-9 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2} />
           Tambah FAQ
         </Link>
       </div>

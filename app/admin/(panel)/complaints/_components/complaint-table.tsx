@@ -10,19 +10,19 @@ import { cn } from "@/lib/utils";
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
     label: "Baru",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    className: "bg-brand/10 text-brand",
   },
   in_review: {
     label: "Ditinjau",
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    className: "bg-muted text-foreground",
   },
   resolved: {
     label: "Selesai",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
   },
   rejected: {
     label: "Ditolak",
-    className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
+    className: "bg-muted text-muted-foreground",
   },
 };
 
@@ -56,134 +56,121 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
 
   if (complaints.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <FileText size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada komplain</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada komplain</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Pelanggan
-              </th>
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                No. Order
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-                Tipe
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground lg:table-cell">
-                Alasan
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-                Tanggal
-              </th>
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status
-              </th>
-              <th className="w-12 px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {complaints.map((complaint) => {
-              const statusCfg = STATUS_CONFIG[complaint.status] ?? {
-                label: complaint.status,
-                className: "bg-gray-100 text-gray-700",
-              };
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Pelanggan
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  No. Order
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Tipe
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                  Alasan
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  Tanggal
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Status
+                </th>
+                <th className="w-12 px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+              {complaints.map((complaint) => {
+                const statusCfg = STATUS_CONFIG[complaint.status] ?? {
+                  label: complaint.status,
+                  className: "bg-muted text-muted-foreground",
+                };
 
-              return (
-                <tr
-                  key={complaint.id}
-                  className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-                >
-                  {/* Customer */}
-                  <td className="px-4 py-3">
-                    <span className="text-sm font-medium">
-                      {complaint.profiles?.full_name ?? "—"}
-                    </span>
-                  </td>
+                return (
+                  <tr key={complaint.id} className="transition-colors hover:bg-muted/30">
+                    <td className="px-4 py-3">
+                      <span className="text-[17px] font-medium">{complaint.profiles?.full_name ?? "—"}</span>
+                    </td>
 
-                  {/* Order number */}
-                  <td className="px-4 py-3">
-                    <span className="font-mono text-xs font-bold">
-                      {complaint.orders?.order_number ?? "—"}
-                    </span>
-                  </td>
+                    <td className="px-4 py-3">
+                      <span className="font-mono text-xs font-semibold">{complaint.orders?.order_number ?? "—"}</span>
+                    </td>
 
-                  {/* Type */}
-                  <td className="hidden px-4 py-3 md:table-cell">
-                    <span className="text-xs capitalize text-muted-foreground">
-                      {complaint.type.replace(/_/g, " ")}
-                    </span>
-                  </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <span className="text-xs capitalize text-muted-foreground">
+                        {complaint.type.replace(/_/g, " ")}
+                      </span>
+                    </td>
 
-                  {/* Reason */}
-                  <td className="hidden px-4 py-3 lg:table-cell">
-                    <p className="text-xs text-muted-foreground line-clamp-1 max-w-xs">
-                      {complaint.reason}
-                    </p>
-                  </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      <p className="max-w-xs line-clamp-1 text-xs text-muted-foreground">{complaint.reason}</p>
+                    </td>
 
-                  {/* Date */}
-                  <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-xs text-muted-foreground">
-                      {formatRelativeDate(complaint.created_at)}
-                    </span>
-                  </td>
+                    <td className="hidden px-4 py-3 sm:table-cell">
+                      <span className="text-xs text-muted-foreground">
+                        {formatRelativeDate(complaint.created_at)}
+                      </span>
+                    </td>
 
-                  {/* Status */}
-                  <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-                        statusCfg.className
-                      )}
-                    >
-                      {statusCfg.label}
-                    </span>
-                  </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                          statusCfg.className,
+                        )}
+                      >
+                        {statusCfg.label}
+                      </span>
+                    </td>
 
-                  {/* View */}
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/complaints/${complaint.id}`}
-                      className="inline-flex p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      aria-label="Lihat detail"
-                    >
-                      <Eye size={15} />
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/complaints/${complaint.id}`}
+                        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        aria-label="Lihat detail"
+                      >
+                        <Eye size={15} />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
             <button
+              type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronLeft size={14} />
             </button>
             <button
+              type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronRight size={14} />
             </button>

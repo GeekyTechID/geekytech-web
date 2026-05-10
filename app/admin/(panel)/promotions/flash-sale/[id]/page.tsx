@@ -20,33 +20,31 @@ type Params = Promise<{ id: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("flash_sales")
-    .select("name")
-    .eq("id", id)
-    .single();
+  const { data } = await supabase.from("flash_sales").select("name").eq("id", id).single();
   return { title: `${data?.name ?? "Flash Sale"} — Admin GeekyTech` };
 }
 
-function getStatusInfo(sale: {
-  is_active: boolean;
-  starts_at: string;
-  ends_at: string;
-}): { label: string; className: string } {
+function getStatusInfo(sale: { is_active: boolean; starts_at: string; ends_at: string }): {
+  label: string;
+  className: string;
+} {
   const now = new Date();
   const starts = new Date(sale.starts_at);
   const ends = new Date(sale.ends_at);
 
   if (!sale.is_active) {
-    return { label: "Nonaktif", className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400" };
+    return { label: "Nonaktif", className: "bg-muted text-muted-foreground" };
   }
   if (now < starts) {
-    return { label: "Terjadwal", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
+    return { label: "Terjadwal", className: "bg-brand/10 text-brand" };
   }
   if (now >= starts && now <= ends) {
-    return { label: "Berlangsung", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
+    return {
+      label: "Berlangsung",
+      className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+    };
   }
-  return { label: "Berakhir", className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400" };
+  return { label: "Berakhir", className: "bg-muted text-muted-foreground" };
 }
 
 export default async function AdminFlashSaleDetailPage({ params }: { params: Params }) {
@@ -68,12 +66,11 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
        product_variants:variant_id (
          name, sku, price,
          products:product_id (name, slug)
-       )`
+       )`,
     )
     .eq("flash_sale_id", id)
     .order("sale_price", { ascending: true });
 
-  // Get all active variants not yet in this flash sale
   const existingVariantIds = (fspData ?? []).map((r) => r.variant_id);
 
   const { data: allVariants } = await supabase
@@ -97,51 +94,41 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
   const statusInfo = getStatusInfo(sale);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Back + header */}
-      <div>
-        <Link
-          href="/admin/promotions/flash-sale"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
-        >
-          <ArrowLeft size={13} />
-          Kembali ke daftar flash sale
-        </Link>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black uppercase tracking-tight">{sale.name}</h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {formatDate(sale.starts_at)} — {formatDate(sale.ends_at)}
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-block px-3 py-1 text-xs font-black uppercase tracking-widest",
-              statusInfo.className
-            )}
-          >
-            {statusInfo.label}
-          </span>
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <Link
+        href="/admin/promotions/flash-sale"
+        className="admin-text-link inline-flex items-center gap-1.5 text-xs font-medium"
+      >
+        <ArrowLeft size={13} />
+        Kembali ke daftar flash sale
+      </Link>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-swiss-eyebrow">Promosi</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">{sale.name}</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            {formatDate(sale.starts_at)} — {formatDate(sale.ends_at)}
+          </p>
         </div>
+        <span
+          className={cn(
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest",
+            statusInfo.className,
+          )}
+        >
+          {statusInfo.label}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Left: edit form */}
         <div className="xl:col-span-1">
-          <div className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Edit Flash Sale</h2>
-            </div>
-            <div className="p-4">
-              <FlashSaleForm
-                initialData={sale}
-                redirectTo={`/admin/promotions/flash-sale/${id}`}
-              />
-            </div>
+          <div className="admin-utility-card space-y-4 p-6">
+            <h2 className="admin-section-title">Edit Flash Sale</h2>
+            <FlashSaleForm initialData={sale} redirectTo={`/admin/promotions/flash-sale/${id}`} />
           </div>
         </div>
 
-        {/* Right: products */}
         <div className="xl:col-span-2">
           <FlashSaleProducts
             flashSaleId={id}

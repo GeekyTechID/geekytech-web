@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
@@ -24,6 +24,26 @@ type BannerFormProps = {
   };
 };
 
+const labelClass =
+  "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
+function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="admin-utility-card overflow-hidden">
+      <div className="admin-utility-card-header">
+        <h2 className="admin-section-title text-foreground">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export function BannerForm({ initialData }: BannerFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -37,14 +57,10 @@ export function BannerForm({ initialData }: BannerFormProps) {
   const [sortOrder, setSortOrder] = useState(initialData?.sort_order ?? 0);
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
   const [startsAt, setStartsAt] = useState(
-    initialData?.starts_at
-      ? initialData.starts_at.slice(0, 16)
-      : ""
+    initialData?.starts_at ? initialData.starts_at.slice(0, 16) : "",
   );
   const [endsAt, setEndsAt] = useState(
-    initialData?.ends_at
-      ? initialData.ends_at.slice(0, 16)
-      : ""
+    initialData?.ends_at ? initialData.ends_at.slice(0, 16) : "",
   );
 
   const handleUpload = async (files: FileList | null) => {
@@ -91,32 +107,37 @@ export function BannerForm({ initialData }: BannerFormProps) {
     startTransition(async () => {
       if (initialData) {
         const { error } = await updateBanner(initialData.id, data);
-        if (error) { toast.error(error); return; }
+        if (error) {
+          toast.error(error);
+          return;
+        }
         toast.success("Banner berhasil diperbarui.");
       } else {
         const { error } = await createBanner(data);
-        if (error) { toast.error(error); return; }
+        if (error) {
+          toast.error(error);
+          return;
+        }
         toast.success("Banner berhasil dibuat.");
       }
       router.push("/admin/banners");
     });
   };
 
+  const inputFieldClass = "h-10 rounded-lg text-[17px] leading-[1.47]";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Image upload */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Gambar Banner *</h2>
-        </div>
-        <div className="p-4 space-y-3">
+      <FormSection title="Gambar Banner *">
+        <div className="space-y-3 p-5">
           {imageUrl ? (
-            <div className="relative w-full aspect-[3/1] max-h-48 border border-border overflow-hidden bg-muted/30">
+            <div className="relative aspect-[3/1] max-h-48 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
               <Image src={imageUrl} alt="Preview banner" fill className="object-cover" />
               <button
                 type="button"
                 onClick={() => setImageUrl("")}
-                className="absolute top-2 right-2 p-1.5 bg-destructive text-white hover:opacity-80 transition-opacity"
+                className="absolute right-2 top-2 rounded-lg bg-destructive p-2 text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                aria-label="Hapus gambar"
               >
                 <Trash2 size={12} />
               </button>
@@ -127,20 +148,22 @@ export function BannerForm({ initialData }: BannerFormProps) {
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
               className={cn(
-                "w-full border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 py-12 transition-colors text-muted-foreground",
-                "hover:border-foreground hover:text-foreground",
-                uploading && "opacity-50 cursor-not-allowed"
+                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-12 text-muted-foreground transition-colors dark:border-border",
+                "hover:border-brand/50 hover:text-brand",
+                uploading && "cursor-not-allowed opacity-50",
               )}
             >
               {uploading ? (
-                <Loader2 size={24} className="animate-spin" />
+                <Loader2 size={24} className="animate-spin text-brand" />
               ) : (
                 <ImagePlus size={24} />
               )}
-              <span className="text-xs font-bold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase tracking-widest">
                 {uploading ? "Mengupload..." : "Upload gambar banner"}
               </span>
-              <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB · Rasio 3:1 direkomendasikan</span>
+              <span className="text-center text-[12px] leading-snug text-muted-foreground">
+                JPG, PNG, WebP — maks. 5 MB · Rasio 3:1 direkomendasikan
+              </span>
             </button>
           )}
           <input
@@ -151,116 +174,111 @@ export function BannerForm({ initialData }: BannerFormProps) {
             onChange={(e) => handleUpload(e.target.files)}
           />
         </div>
-      </div>
+      </FormSection>
 
-      {/* Content fields */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Konten</h2>
-        </div>
-        <div className="p-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FormSection title="Konten">
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-title" className={labelClass}>
               Judul
             </label>
             <Input
+              id="banner-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Promo Akhir Tahun"
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-subtitle" className={labelClass}>
               Subtitle
             </label>
             <Input
+              id="banner-subtitle"
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="Diskon hingga 50%"
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-link" className={labelClass}>
               URL Link (opsional)
             </label>
             <Input
+              id="banner-link"
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               placeholder="/products?category=laptop"
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
         </div>
-      </div>
+      </FormSection>
 
-      {/* Settings */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Pengaturan</h2>
-        </div>
-        <div className="p-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <FormSection title="Pengaturan">
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-sort" className={labelClass}>
               Urutan Tampil
             </label>
             <Input
+              id="banner-sort"
               type="number"
               value={sortOrder}
               onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
               min={0}
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-start" className={labelClass}>
               Mulai Tayang
             </label>
             <Input
+              id="banner-start"
               type="datetime-local"
               value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)}
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label htmlFor="banner-end" className={labelClass}>
               Berakhir
             </label>
             <Input
+              id="banner-end"
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
-              className="h-9 rounded-none text-sm"
+              className={inputFieldClass}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Status
-            </label>
+            <span className={labelClass}>Status</span>
             <button
               type="button"
               onClick={() => setIsActive((v) => !v)}
               className={cn(
-                "flex h-9 w-full items-center justify-center gap-2 border border-border text-xs font-bold uppercase tracking-widest transition-colors",
+                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
                 isActive
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-muted text-muted-foreground"
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                  : "bg-muted text-muted-foreground",
               )}
             >
               {isActive ? "Aktif" : "Nonaktif"}
             </button>
           </div>
         </div>
-      </div>
+      </FormSection>
 
-      {/* Submit */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           type="submit"
           disabled={isPending || uploading}
-          className="h-10 px-6 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity disabled:opacity-50"
+          className="h-11 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : initialData ? "Perbarui Banner" : "Buat Banner"}
         </button>
@@ -268,7 +286,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
           type="button"
           onClick={() => router.push("/admin/banners")}
           disabled={isPending}
-          className="h-10 px-4 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
+          className="h-11 rounded-full border border-brand bg-transparent px-5 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/10 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
         </button>

@@ -8,16 +8,19 @@ export const metadata: Metadata = { title: "Tambah Banner — Admin GeekyTech" }
 
 export default function AdminBannerNewPage() {
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full space-y-8 p-6 lg:p-8">
       <div>
         <Link
           href="/admin/banners"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
+          className="admin-text-link mb-4 inline-flex items-center gap-1.5"
         >
           <ArrowLeft size={13} />
           Kembali ke daftar banner
         </Link>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Tambah Banner</h1>
+        <p className="text-swiss-eyebrow">Konten</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+          Tambah Banner
+        </h1>
       </div>
 
       <BannerForm />

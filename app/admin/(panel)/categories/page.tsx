@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 import { CategoryFilters } from "./_components/category-filters";
 import { CategoryTable } from "./_components/category-table";
 import { buildFlatCategoryTree, type CategoryRow } from "./_lib/flat-category-tree";
@@ -46,40 +45,35 @@ export default async function AdminCategoriesPage({
   const flatRows = buildFlatCategoryTree((categories ?? []) as CategoryRow[]);
   const totalCount = flatRows.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
-  const page = Math.min(
-    Math.max(1, parseInt(params.page ?? "1", 10)),
-    totalPages
-  );
+  const page = Math.min(Math.max(1, parseInt(params.page ?? "1", 10)), totalPages);
   const from = (page - 1) * PER_PAGE;
   const pagedRows = flatRows.slice(from, from + PER_PAGE);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Kategori</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Katalog</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+            Kategori
+          </h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {totalCount} kategori{q ? ` untuk "${q}"` : ""}
           </p>
         </div>
-        <Button
-          asChild
-          className="h-11 shrink-0 rounded-none border-0 bg-[#EA5329] px-4 font-bold uppercase tracking-widest text-xs text-white hover:bg-[#D44820]"
+        <Link
+          href="/admin/categories/new"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Link href="/admin/categories/new">
-            <Plus size={13} className="mr-1.5" />
-            Tambah Kategori
-          </Link>
-        </Button>
+          <Plus size={14} strokeWidth={2} />
+          Tambah Kategori
+        </Link>
       </div>
 
-      {/* Filters */}
       <Suspense>
         <CategoryFilters />
       </Suspense>
 
-      {/* Table */}
       <Suspense>
         <CategoryTable
           rows={pagedRows}

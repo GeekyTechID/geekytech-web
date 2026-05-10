@@ -34,122 +34,120 @@ export function CustomerTable({ customers, page, totalPages }: CustomerTableProp
 
   if (customers.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Users size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada pelanggan</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada pelanggan</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Pelanggan
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-                No. HP
-              </th>
-              <th className="hidden px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-                Total Order
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground lg:table-cell">
-                Bergabung
-              </th>
-              <th className="w-12 px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map((customer) => {
-              const initials = customer.full_name
-                ? customer.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-                : "?";
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Pelanggan
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  No. HP
+                </th>
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Total Order
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                  Bergabung
+                </th>
+                <th className="w-12 px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+              {customers.map((customer) => {
+                const initials = customer.full_name
+                  ? customer.full_name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()
+                  : "?";
 
-              return (
-                <tr
-                  key={customer.id}
-                  className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-                >
-                  {/* Name + avatar */}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-foreground text-[10px] font-black text-background">
-                        {initials}
+                return (
+                  <tr key={customer.id} className="transition-colors hover:bg-muted/30">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-semibold text-foreground">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">
+                            {customer.full_name ?? (
+                              <span className="italic text-muted-foreground">Belum diisi</span>
+                            )}
+                          </p>
+                          <p className="font-mono text-[11px] text-muted-foreground">{customer.id.slice(0, 8)}…</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold">
-                          {customer.full_name ?? <span className="italic text-muted-foreground">Belum diisi</span>}
-                        </p>
-                        <p className="font-mono text-[10px] text-muted-foreground">
-                          {customer.id.slice(0, 8)}…
-                        </p>
-                      </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Phone */}
-                  <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-sm text-muted-foreground">
-                      {customer.phone ?? "—"}
-                    </span>
-                  </td>
+                    <td className="hidden px-4 py-3 sm:table-cell">
+                      <span className="text-sm text-muted-foreground">{customer.phone ?? "—"}</span>
+                    </td>
 
-                  {/* Order count */}
-                  <td className="hidden px-4 py-3 text-center md:table-cell">
-                    <span className="text-sm font-bold">{customer.order_count}</span>
-                  </td>
+                    <td className="hidden px-4 py-3 text-center md:table-cell">
+                      <span className="text-sm font-semibold">{customer.order_count}</span>
+                    </td>
 
-                  {/* Join date */}
-                  <td className="hidden px-4 py-3 lg:table-cell">
-                    <span className="text-xs text-muted-foreground">
-                      {formatRelativeDate(customer.created_at)}
-                    </span>
-                  </td>
+                    <td className="hidden px-4 py-3 lg:table-cell">
+                      <span className="text-xs text-muted-foreground">
+                        {formatRelativeDate(customer.created_at)}
+                      </span>
+                    </td>
 
-                  {/* View */}
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/customers/${customer.id}`}
-                      className="inline-flex p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      aria-label="Lihat detail"
-                    >
-                      <Eye size={15} />
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/customers/${customer.id}`}
+                        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        aria-label="Lihat detail"
+                      >
+                        <Eye size={15} />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 1 ? (
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-muted-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
             <button
+              type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronLeft size={14} />
             </button>
             <button
+              type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronRight size={14} />
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

@@ -34,7 +34,9 @@ function StarRating({ rating }: { rating: number }) {
         <Star
           key={i}
           size={11}
-          className={i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}
+          className={cn(
+            i < rating ? "fill-brand/80 text-brand" : "text-muted-foreground/30",
+          )}
         />
       ))}
     </div>
@@ -73,28 +75,31 @@ function ReviewActions({ review }: { review: ReviewRow }) {
     <div className="flex items-center gap-1">
       {!review.is_approved ? (
         <button
+          type="button"
           onClick={handleApprove}
           disabled={isPending}
           title="Setujui ulasan"
-          className="p-1.5 text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors disabled:opacity-50"
+          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-700 disabled:opacity-50 dark:hover:text-emerald-400"
         >
           <CheckCircle2 size={15} />
         </button>
       ) : (
         <button
+          type="button"
           onClick={handleReject}
           disabled={isPending}
           title="Tolak ulasan"
-          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors disabled:opacity-50"
+          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
         >
           <XCircle size={15} />
         </button>
       )}
       <button
+        type="button"
         onClick={handleDelete}
         disabled={isPending}
         title="Hapus ulasan"
-        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors disabled:opacity-50"
+        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
       >
         <Trash2 size={15} />
       </button>
@@ -115,127 +120,118 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
 
   if (reviews.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <MessageSquare size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada ulasan</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada ulasan</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Pelanggan
-              </th>
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Produk
-              </th>
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Rating
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-                Komentar
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-                Tanggal
-              </th>
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status
-              </th>
-              <th className="w-24 px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {reviews.map((review) => (
-              <tr
-                key={review.id}
-                className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-              >
-                {/* Customer */}
-                <td className="px-4 py-3">
-                  <span className="text-sm font-medium">
-                    {review.profiles?.full_name ?? "—"}
-                  </span>
-                </td>
-
-                {/* Product */}
-                <td className="px-4 py-3">
-                  <span className="text-xs text-muted-foreground line-clamp-1">
-                    {review.products?.name ?? "—"}
-                  </span>
-                </td>
-
-                {/* Rating */}
-                <td className="px-4 py-3">
-                  <StarRating rating={review.rating} />
-                </td>
-
-                {/* Comment */}
-                <td className="hidden px-4 py-3 md:table-cell">
-                  <p className="text-xs text-muted-foreground line-clamp-2 max-w-xs">
-                    {review.comment ?? <span className="italic">Tidak ada komentar</span>}
-                  </p>
-                </td>
-
-                {/* Date */}
-                <td className="hidden px-4 py-3 sm:table-cell">
-                  <span className="text-xs text-muted-foreground">
-                    {formatRelativeDate(review.created_at)}
-                  </span>
-                </td>
-
-                {/* Status badge */}
-                <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-                      review.is_approved
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                    )}
-                  >
-                    {review.is_approved ? "Disetujui" : "Menunggu"}
-                  </span>
-                </td>
-
-                {/* Actions */}
-                <td className="px-4 py-3">
-                  <ReviewActions review={review} />
-                </td>
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Pelanggan
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Produk
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Rating
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Komentar
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  Tanggal
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Status
+                </th>
+                <th className="w-24 px-4 py-3" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+              {reviews.map((review) => (
+                <tr key={review.id} className="transition-colors hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <span className="text-sm font-medium">{review.profiles?.full_name ?? "—"}</span>
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <span className="line-clamp-1 text-xs text-muted-foreground">
+                      {review.products?.name ?? "—"}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <StarRating rating={review.rating} />
+                  </td>
+
+                  <td className="hidden px-4 py-3 md:table-cell">
+                    <p className="line-clamp-2 max-w-xs text-xs text-muted-foreground">
+                      {review.comment ?? <span className="italic">Tidak ada komentar</span>}
+                    </p>
+                  </td>
+
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    <span className="text-xs text-muted-foreground">
+                      {formatRelativeDate(review.created_at)}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <span
+                      className={cn(
+                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                        review.is_approved
+                          ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                          : "bg-brand/10 text-brand",
+                      )}
+                    >
+                      {review.is_approved ? "Disetujui" : "Menunggu"}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <ReviewActions review={review} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 1 ? (
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-muted-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
             <button
+              type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronLeft size={14} />
             </button>
             <button
+              type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
             >
               <ChevronRight size={14} />
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

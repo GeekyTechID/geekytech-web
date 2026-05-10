@@ -40,75 +40,73 @@ interface FlashSaleProductsProps {
   availableVariants: VariantOption[];
 }
 
-function EditRow({
-  product,
-  onDone,
-}: {
-  product: FlashSaleProductRow;
-  onDone: () => void;
-}) {
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
+function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: () => void }) {
   const [isPending, startTransition] = useTransition();
   const normalPrice = product.product_variants?.price ?? 0;
   const initialDiscount =
-    normalPrice > 0
-      ? Math.round(((normalPrice - product.sale_price) / normalPrice) * 100)
-      : 0;
+    normalPrice > 0 ? Math.round(((normalPrice - product.sale_price) / normalPrice) * 100) : 0;
   const [discountPercent, setDiscountPercent] = useState(initialDiscount);
   const [quota, setQuota] = useState(product.quota);
 
-  const computedPrice =
-    normalPrice > 0 ? Math.round(normalPrice * (1 - discountPercent / 100)) : 0;
+  const computedPrice = normalPrice > 0 ? Math.round(normalPrice * (1 - discountPercent / 100)) : 0;
 
   const handleSave = () => {
     startTransition(async () => {
       const { error } = await updateFlashSaleProduct(product.id, computedPrice, quota);
       if (error) toast.error(error);
-      else { toast.success("Produk diperbarui."); onDone(); }
+      else {
+        toast.success("Produk diperbarui.");
+        onDone();
+      }
     });
   };
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2">
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Diskon:</span>
+        <span className={labelClass}>Diskon:</span>
         <div className="relative">
           <Input
             type="number"
             value={discountPercent}
-            onChange={(e) => setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-            className="h-7 w-20 rounded-none text-xs pr-6"
+            onChange={(e) =>
+              setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))
+            }
+            className="h-8 w-20 rounded-lg border-[#e0e0e0] pr-7 text-xs dark:border-border"
             min={0}
             max={99}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">%</span>
-        </div>
-        {normalPrice > 0 && (
-          <span className="text-[10px] font-bold text-[#EA5329]">
-            → {formatRupiah(computedPrice)}
+          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+            %
           </span>
-        )}
+        </div>
+        {normalPrice > 0 && <span className="text-[11px] font-semibold text-brand">→ {formatRupiah(computedPrice)}</span>}
       </div>
       <div className="flex items-center gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Kuota:</span>
+        <span className={labelClass}>Kuota:</span>
         <Input
           type="number"
           value={quota}
           onChange={(e) => setQuota(parseInt(e.target.value, 10) || 0)}
-          className="h-7 w-20 rounded-none text-xs"
+          className="h-8 w-20 rounded-lg border-[#e0e0e0] text-xs dark:border-border"
           min={1}
         />
       </div>
       <button
+        type="button"
         onClick={handleSave}
         disabled={isPending}
-        className="p-1.5 bg-swiss-black text-swiss-white transition-opacity disabled:opacity-50"
+        className="rounded-lg bg-brand p-1.5 text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
       >
         <Save size={13} />
       </button>
       <button
+        type="button"
         onClick={onDone}
         disabled={isPending}
-        className="p-1.5 border border-border hover:bg-muted transition-colors disabled:opacity-50"
+        className="rounded-lg border border-[#e0e0e0] p-1.5 transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
       >
         <X size={13} />
       </button>
@@ -130,15 +128,25 @@ function AddProductForm({
   const [quota, setQuota] = useState(10);
 
   const selectedVariant = availableVariants.find((v) => v.id === variantId);
-  const computedPrice = selectedVariant
-    ? Math.round(selectedVariant.price * (1 - discountPercent / 100))
-    : 0;
+  const computedPrice = selectedVariant ? Math.round(selectedVariant.price * (1 - discountPercent / 100)) : 0;
 
   const handleAdd = () => {
-    if (!variantId) { toast.error("Pilih variant terlebih dahulu."); return; }
-    if (discountPercent <= 0 || discountPercent >= 100) { toast.error("Diskon harus antara 1% – 99%."); return; }
-    if (computedPrice <= 0) { toast.error("Harga flash sale harus lebih dari 0."); return; }
-    if (quota <= 0) { toast.error("Kuota harus lebih dari 0."); return; }
+    if (!variantId) {
+      toast.error("Pilih variant terlebih dahulu.");
+      return;
+    }
+    if (discountPercent <= 0 || discountPercent >= 100) {
+      toast.error("Diskon harus antara 1% – 99%.");
+      return;
+    }
+    if (computedPrice <= 0) {
+      toast.error("Harga flash sale harus lebih dari 0.");
+      return;
+    }
+    if (quota <= 0) {
+      toast.error("Kuota harus lebih dari 0.");
+      return;
+    }
 
     startTransition(async () => {
       const { error } = await addFlashSaleProduct({
@@ -147,7 +155,10 @@ function AddProductForm({
         sale_price: computedPrice,
         quota,
       });
-      if (error) { toast.error(error); return; }
+      if (error) {
+        toast.error(error);
+        return;
+      }
       toast.success("Produk ditambahkan ke flash sale.");
       setOpen(false);
       setVariantId("");
@@ -159,8 +170,9 @@ function AddProductForm({
   if (!open) {
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 h-9 px-4 border border-dashed border-border text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:border-foreground transition-colors"
+        className="inline-flex h-10 items-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
       >
         <Plus size={14} />
         Tambah Produk
@@ -169,12 +181,13 @@ function AddProductForm({
   }
 
   return (
-    <div className="border border-border p-4 space-y-4">
+    <div className="space-y-4 rounded-lg border border-[#e0e0e0] p-4 dark:border-border">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-black uppercase tracking-widest">Tambah Produk Flash Sale</h3>
+        <h3 className="admin-section-title">Tambah Produk Flash Sale</h3>
         <button
+          type="button"
           onClick={() => setOpen(false)}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <X size={14} />
         </button>
@@ -182,15 +195,13 @@ function AddProductForm({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5 sm:col-span-2">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Pilih Variant *
-          </label>
+          <label className={labelClass}>Pilih Variant *</label>
           <select
             value={variantId}
             onChange={(e) => {
               setVariantId(e.target.value);
             }}
-            className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
           >
             <option value="">-- Pilih variant --</option>
             {availableVariants.map((v) => (
@@ -201,10 +212,10 @@ function AddProductForm({
           </select>
         </div>
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <label className={labelClass}>
             Diskon *
             {selectedVariant && (
-              <span className="ml-1 normal-case text-muted-foreground/60">
+              <span className="ml-1 normal-case font-normal text-muted-foreground/60">
                 (Normal: {formatRupiah(selectedVariant.price)})
               </span>
             )}
@@ -213,47 +224,49 @@ function AddProductForm({
             <Input
               type="number"
               value={discountPercent}
-              onChange={(e) => setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-              className="h-9 rounded-none text-sm pr-8"
+              onChange={(e) =>
+                setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))
+              }
+              className="h-10 rounded-lg border-[#e0e0e0] pr-9 text-[17px] dark:border-border"
               min={1}
               max={99}
               placeholder="20"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+              %
+            </span>
           </div>
           {selectedVariant && (
-            <p className="text-xs font-bold text-[#EA5329]">
-              Harga flash sale: {formatRupiah(computedPrice)}
-            </p>
+            <p className="text-xs font-semibold text-brand">Harga flash sale: {formatRupiah(computedPrice)}</p>
           )}
         </div>
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Kuota *
-          </label>
+          <label className={labelClass}>Kuota *</label>
           <Input
             type="number"
             value={quota}
             onChange={(e) => setQuota(parseInt(e.target.value, 10) || 0)}
-            className="h-9 rounded-none text-sm"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
             min={1}
             placeholder="10"
           />
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
+          type="button"
           onClick={handleAdd}
           disabled={isPending}
-          className="h-9 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity disabled:opacity-50"
+          className="h-9 rounded-full bg-brand px-4 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menambahkan..." : "Tambahkan"}
         </button>
         <button
+          type="button"
           onClick={() => setOpen(false)}
           disabled={isPending}
-          className="h-9 px-3 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
+          className="h-9 rounded-full border border-brand/40 px-4 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50"
         >
           Batal
         </button>
@@ -262,11 +275,7 @@ function AddProductForm({
   );
 }
 
-export function FlashSaleProducts({
-  flashSaleId,
-  products,
-  availableVariants,
-}: FlashSaleProductsProps) {
+export function FlashSaleProducts({ flashSaleId, products, availableVariants }: FlashSaleProductsProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -280,82 +289,66 @@ export function FlashSaleProducts({
   };
 
   return (
-    <div className="border border-border">
-      <div className="border-b border-border px-4 py-3 flex items-center justify-between">
-        <h2 className="text-xs font-black uppercase tracking-widest">
-          Produk Flash Sale ({products.length})
-        </h2>
+    <div className="admin-utility-card overflow-hidden p-0">
+      <div className="admin-utility-card-header">
+        <h2 className="admin-section-title">Produk Flash Sale ({products.length})</h2>
       </div>
 
       {products.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
           <Package size={28} strokeWidth={1} />
-          <p className="text-xs font-bold uppercase tracking-widest">Belum ada produk</p>
+          <p className="text-xs font-semibold uppercase tracking-widest">Belum ada produk</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Produk / Variant
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Harga Normal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Harga Flash
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Diskon
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Kuota / Terjual
                 </th>
                 <th className="w-24 px-4 py-3" />
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {products.map((product) => {
                 const normalPrice = product.product_variants?.price ?? 0;
                 const discount =
-                  normalPrice > 0
-                    ? Math.round(((normalPrice - product.sale_price) / normalPrice) * 100)
-                    : 0;
+                  normalPrice > 0 ? Math.round(((normalPrice - product.sale_price) / normalPrice) * 100) : 0;
 
                 return (
-                  <tr
-                    key={product.id}
-                    className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-                  >
+                  <tr key={product.id} className="transition-colors hover:bg-muted/30">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-sm">
-                        {product.product_variants?.products?.name ?? "—"}
-                      </p>
+                      <p className="text-sm font-semibold">{product.product_variants?.products?.name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">
                         {product.product_variants?.name} · {product.product_variants?.sku}
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-muted-foreground">
-                        {formatRupiah(normalPrice)}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{formatRupiah(normalPrice)}</span>
                     </td>
                     <td className="px-4 py-3">
                       {editingId === product.id ? (
-                        <EditRow
-                          product={product}
-                          onDone={() => setEditingId(null)}
-                        />
+                        <EditRow product={product} onDone={() => setEditingId(null)} />
                       ) : (
-                        <span className="text-xs font-bold text-[#EA5329]">
-                          {formatRupiah(product.sale_price)}
-                        </span>
+                        <span className="text-xs font-semibold text-brand">{formatRupiah(product.sale_price)}</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       {discount > 0 && (
-                        <span className="inline-block px-1.5 py-0.5 bg-[#EA5329] text-white text-[10px] font-black">
+                        <span className="inline-block rounded-md bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-white">
                           -{discount}%
                         </span>
                       )}
@@ -365,9 +358,9 @@ export function FlashSaleProducts({
                         <span className="font-medium">{product.sold}</span>
                         <span className="text-muted-foreground"> / {product.quota}</span>
                       </div>
-                      <div className="mt-1 h-1 w-20 bg-muted overflow-hidden">
+                      <div className="mt-1 h-1 w-20 overflow-hidden bg-muted">
                         <div
-                          className="h-full bg-[#EA5329] transition-all"
+                          className="h-full bg-brand transition-all"
                           style={{
                             width: `${Math.min(100, (product.sold / product.quota) * 100)}%`,
                           }}
@@ -378,16 +371,18 @@ export function FlashSaleProducts({
                       {editingId !== product.id && (
                         <div className="flex items-center gap-1">
                           <button
+                            type="button"
                             onClick={() => setEditingId(product.id)}
-                            className="p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             title="Edit"
                           >
                             <Pencil size={13} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleRemove(product.id)}
                             disabled={isPending}
-                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors disabled:opacity-50"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
                             title="Hapus"
                           >
                             <Trash2 size={13} />
@@ -403,8 +398,7 @@ export function FlashSaleProducts({
         </div>
       )}
 
-      {/* Add product form */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-[#e0e0e0] p-4 dark:border-border">
         <AddProductForm flashSaleId={flashSaleId} availableVariants={availableVariants} />
       </div>
     </div>

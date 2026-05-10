@@ -7,17 +7,18 @@ export const metadata: Metadata = { title: "Tambah FAQ — Admin GeekyTech" };
 
 export default function AdminFaqNewPage() {
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center gap-3">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div>
         <Link
           href="/admin/settings/faq"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="admin-text-link mb-3 inline-flex items-center gap-1 text-xs font-medium"
         >
           <ChevronLeft size={14} />
           Kelola FAQ
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Tambah FAQ</h1>
+        <p className="text-swiss-eyebrow">Toko</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Tambah FAQ</h1>
+        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Buat entri pertanyaan dan jawaban baru.</p>
       </div>
 
       <FaqForm />

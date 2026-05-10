@@ -45,44 +45,47 @@ export default async function AdminSettingsShippingPage() {
   const freeShippingThreshold = (get("free_shipping_threshold") as number) ?? 200000;
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center gap-3">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-2">
         <Link
           href="/admin/settings"
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="admin-text-link inline-flex w-fit items-center gap-1 text-xs font-medium"
         >
           <ChevronLeft size={14} />
           Pengaturan
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Pengiriman</h1>
+        <div>
+          <p className="text-swiss-eyebrow">Toko</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Pengiriman</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            Alamat origin dan threshold gratis ongkir.
+          </p>
+        </div>
       </div>
 
       <SettingsNav />
 
-      <div className="space-y-4">
-        {/* Store Origin */}
-        <div className="border border-border">
-          <div className="border-b border-border px-4 py-3">
-            <h2 className="text-xs font-black uppercase tracking-widest">Alamat Origin Toko</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+      <div className="space-y-6">
+        <div className="admin-utility-card overflow-hidden p-0">
+          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+            <h2 className="admin-section-title">Alamat Origin Toko</h2>
+            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
               Alamat pengirim yang digunakan saat kalkulasi ongkos kirim dan pembuatan pengiriman.
             </p>
           </div>
-          <div className="p-4">
+          <div className="p-6">
             <OriginForm initialValue={storeOrigin} />
           </div>
         </div>
 
-        {/* Free Shipping Threshold */}
-        <div className="border border-border">
-          <div className="border-b border-border px-4 py-3">
-            <h2 className="text-xs font-black uppercase tracking-widest">Threshold Free Ongkir</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+        <div className="admin-utility-card overflow-hidden p-0">
+          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+            <h2 className="admin-section-title">Threshold Free Ongkir</h2>
+            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
               Pelanggan mendapat gratis ongkir jika total belanja mencapai nominal ini.
             </p>
           </div>
-          <div className="p-4">
+          <div className="p-6">
             <ThresholdForm initialValue={freeShippingThreshold} />
           </div>
         </div>

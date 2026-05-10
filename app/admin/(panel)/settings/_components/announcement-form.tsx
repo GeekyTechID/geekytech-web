@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { saveSetting } from "../_actions";
 
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const saveClass =
+  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+
 interface AnnouncementFormProps {
   initialText: string;
   initialActive: boolean;
@@ -27,42 +31,33 @@ export function AnnouncementForm({ initialText, initialActive }: AnnouncementFor
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Teks Pengumuman
-        </label>
+        <label className={labelClass}>Teks Pengumuman</label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Gratis ongkir untuk pembelian di atas Rp 200.000!"
           rows={3}
-          className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground resize-none rounded-none"
+          className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-border"
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Status
-        </label>
+        <label className={labelClass}>Status</label>
         <button
           type="button"
           onClick={() => setIsActive((v) => !v)}
           className={cn(
-            "flex h-9 items-center gap-2 border border-border px-4 text-xs font-bold uppercase tracking-widest transition-colors",
+            "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase tracking-widest transition-colors",
             isActive
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-              : "bg-muted text-muted-foreground"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
+              : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",
           )}
         >
           {isActive ? "Aktif" : "Nonaktif"}
         </button>
       </div>
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className="h-10 px-6 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity disabled:opacity-50"
-      >
+      <button type="button" onClick={handleSave} disabled={isPending} className={saveClass}>
         {isPending ? "Menyimpan..." : "Simpan"}
       </button>
     </div>

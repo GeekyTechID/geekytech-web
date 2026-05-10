@@ -18,7 +18,7 @@ import {
   type BrandOption,
 } from "./product-brand-selector";
 
-// ── Template-specific extra fields ──────────────────────────────────────────
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 function SecondProductsConfig({
   config,
@@ -29,13 +29,11 @@ function SecondProductsConfig({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-        Urutan Tampil
-      </label>
+      <label className={labelClass}>Urutan Tampil</label>
       <select
         value={(config.sort_by as string) ?? "rating"}
         onChange={(e) => onChange({ ...config, sort_by: e.target.value })}
-        className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+        className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
       >
         <option value="rating">Rating tertinggi</option>
         <option value="price_asc">Harga termurah</option>
@@ -58,13 +56,11 @@ function FeaturedProductsConfig({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Urutan Tampil
-        </label>
+        <label className={labelClass}>Urutan Tampil</label>
         <select
           value={(config.sort_by as string) ?? "newest"}
           onChange={(e) => onChange({ ...config, sort_by: e.target.value })}
-          className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+          className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
         >
           <option value="manual">Urutan manual</option>
           <option value="newest">Terbaru</option>
@@ -74,13 +70,13 @@ function FeaturedProductsConfig({
       </div>
       {categories && categories.length > 0 && (
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Filter Kategori <span className="normal-case text-muted-foreground/60">(opsional)</span>
+          <label className={labelClass}>
+            Filter Kategori <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
           </label>
           <select
             value={(config.category_id as string) ?? ""}
             onChange={(e) => onChange({ ...config, category_id: e.target.value || undefined })}
-            className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
           >
             <option value="">Semua kategori</option>
             {categories.map((c) => (
@@ -107,13 +103,11 @@ function TopRatedConfig({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Rating Minimum
-        </label>
+        <label className={labelClass}>Rating Minimum</label>
         <select
           value={(config.min_rating as number) ?? 4}
           onChange={(e) => onChange({ ...config, min_rating: Number(e.target.value) })}
-          className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+          className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
         >
           <option value={5}>5 bintang</option>
           <option value={4}>4+ bintang</option>
@@ -122,13 +116,13 @@ function TopRatedConfig({
       </div>
       {categories && categories.length > 0 && (
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Filter Kategori <span className="normal-case text-muted-foreground/60">(opsional)</span>
+          <label className={labelClass}>
+            Filter Kategori <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
           </label>
           <select
             value={(config.category_id as string) ?? ""}
             onChange={(e) => onChange({ ...config, category_id: e.target.value || undefined })}
-            className="w-full h-9 border border-border bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
           >
             <option value="">Semua kategori</option>
             {categories.map((c) => (
@@ -142,8 +136,6 @@ function TopRatedConfig({
     </div>
   );
 }
-
-// ── Main Form ────────────────────────────────────────────────────────────────
 
 export type PromotionInitialData = {
   id: string;
@@ -190,26 +182,25 @@ export function PromotionForm({
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
   const [maxItems, setMaxItems] = useState(initialData?.max_items ?? 8);
   const [selectionMode, setSelectionMode] = useState<"manual" | "brand">(
-    initialData?.selection_mode ?? "manual"
+    initialData?.selection_mode ?? "manual",
   );
-  const [config, setConfig] = useState<Record<string, unknown>>(
-    initialData?.config ?? getDefaultConfig(type)
-  );
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>(
-    initialData?.product_ids ?? []
-  );
-  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>(
-    initialData?.brand_ids ?? []
-  );
+  const [config, setConfig] = useState<Record<string, unknown>>(initialData?.config ?? getDefaultConfig(type));
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>(initialData?.product_ids ?? []);
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>(initialData?.brand_ids ?? []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) { toast.error("Judul promosi wajib diisi."); return; }
+    if (!title.trim()) {
+      toast.error("Judul promosi wajib diisi.");
+      return;
+    }
     if (selectionMode === "manual" && selectedProductIds.length === 0) {
-      toast.error("Pilih minimal 1 produk."); return;
+      toast.error("Pilih minimal 1 produk.");
+      return;
     }
     if (selectionMode === "brand" && selectedBrandIds.length === 0) {
-      toast.error("Pilih minimal 1 brand."); return;
+      toast.error("Pilih minimal 1 brand.");
+      return;
     }
 
     const data: PromotionFormData = {
@@ -227,12 +218,18 @@ export function PromotionForm({
     startTransition(async () => {
       if (initialData) {
         const { error } = await updatePromotion(initialData.id, data);
-        if (error) { toast.error(error); return; }
+        if (error) {
+          toast.error(error);
+          return;
+        }
         toast.success("Promosi diperbarui.");
         router.push(redirectPath);
       } else {
         const { error, id } = await createPromotion(data);
-        if (error || !id) { toast.error(error ?? "Gagal membuat promosi."); return; }
+        if (error || !id) {
+          toast.error(error ?? "Gagal membuat promosi.");
+          return;
+        }
         toast.success("Promosi berhasil dibuat.");
         router.push(`${redirectPath}/${id}`);
       }
@@ -241,63 +238,54 @@ export function PromotionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic info */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Informasi Promosi</h2>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">
-            Template: {TYPE_LABELS[type]}
-          </p>
+      <div className="admin-utility-card space-y-4 p-6">
+        <div>
+          <h2 className="admin-section-title">Informasi Promosi</h2>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">Template: {TYPE_LABELS[type]}</p>
         </div>
-        <div className="p-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Judul *
-            </label>
+            <label className={labelClass}>Judul *</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={`Contoh: ${getPlaceholderTitle(type)}`}
-              className="h-9 rounded-none text-sm"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               required
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Subtitle <span className="normal-case text-muted-foreground/60">(opsional)</span>
+            <label className={labelClass}>
+              Subtitle <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
             </label>
             <Input
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="Deskripsi singkat promosi ini"
-              className="h-9 rounded-none text-sm"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Maks. Produk Ditampilkan
-            </label>
+            <label className={labelClass}>Maks. Produk Ditampilkan</label>
             <Input
               type="number"
               value={maxItems}
               onChange={(e) => setMaxItems(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="h-9 rounded-none text-sm"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
               min={1}
               max={50}
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Status
-            </label>
+            <label className={labelClass}>Status</label>
             <button
               type="button"
               onClick={() => setIsActive((v) => !v)}
               className={cn(
-                "flex h-9 w-full items-center justify-center gap-2 border border-border text-xs font-bold uppercase tracking-widest transition-colors",
+                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
                 isActive
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-muted text-muted-foreground"
+                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                  : "bg-muted text-muted-foreground",
               )}
             >
               {isActive ? "Aktif" : "Nonaktif"}
@@ -306,53 +294,41 @@ export function PromotionForm({
         </div>
       </div>
 
-      {/* Template-specific config */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Pengaturan Template</h2>
-        </div>
-        <div className="p-4">
-          {type === "second_products" && (
-            <SecondProductsConfig config={config} onChange={setConfig} />
-          )}
+      <div className="admin-utility-card space-y-4 p-6">
+        <h2 className="admin-section-title">Pengaturan Template</h2>
+        <div>
+          {type === "second_products" && <SecondProductsConfig config={config} onChange={setConfig} />}
           {type === "featured_products" && (
             <FeaturedProductsConfig config={config} onChange={setConfig} categories={categories} />
           )}
-          {type === "top_rated" && (
-            <TopRatedConfig config={config} onChange={setConfig} categories={categories} />
-          )}
+          {type === "top_rated" && <TopRatedConfig config={config} onChange={setConfig} categories={categories} />}
         </div>
       </div>
 
-      {/* Product / Brand selection */}
-      <div className="border border-border">
-        <div className="border-b border-border px-4 py-3">
-          <h2 className="text-xs font-black uppercase tracking-widest">Pilihan Produk</h2>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">
+      <div className="admin-utility-card space-y-4 p-6">
+        <div>
+          <h2 className="admin-section-title">Pilihan Produk</h2>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
             Pilih produk satu per satu atau berdasarkan brand
           </p>
         </div>
-        <div className="p-4">
-          <ProductBrandSelector
-            mode={selectionMode}
-            onModeChange={setSelectionMode}
-            products={type === "second_products"
-              ? products.filter((p) => p.condition === "second")
-              : products}
-            brands={brands}
-            selectedProductIds={selectedProductIds}
-            selectedBrandIds={selectedBrandIds}
-            onProductsChange={setSelectedProductIds}
-            onBrandsChange={setSelectedBrandIds}
-          />
-        </div>
+        <ProductBrandSelector
+          mode={selectionMode}
+          onModeChange={setSelectionMode}
+          products={type === "second_products" ? products.filter((p) => p.condition === "second") : products}
+          brands={brands}
+          selectedProductIds={selectedProductIds}
+          selectedBrandIds={selectedBrandIds}
+          onProductsChange={setSelectedProductIds}
+          onBrandsChange={setSelectedBrandIds}
+        />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           type="submit"
           disabled={isPending}
-          className="h-10 px-6 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity disabled:opacity-50"
+          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:bg-brand-hover disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : initialData ? "Perbarui" : "Buat Promosi"}
         </button>
@@ -360,7 +336,7 @@ export function PromotionForm({
           type="button"
           onClick={() => router.push(backPath)}
           disabled={isPending}
-          className="h-10 px-4 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-50"
+          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
         </button>

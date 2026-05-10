@@ -89,121 +89,117 @@ export function CategoryTable({
 
   if (totalCount === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Grid2X2 size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada kategori</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada kategori</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Nama
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-                Slug
-              </th>
-              <th className="hidden px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-                Urutan
-              </th>
-              <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status
-              </th>
-              <th className="w-12 px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-              >
-                {/* Name */}
-                <td className="px-4 py-3">
-                  <div className={row.depth === 1 ? "ml-4 flex items-center gap-2" : ""}>
-                    {row.depth === 1 && (
-                      <CornerDownRight size={12} className="shrink-0 text-muted-foreground" />
-                    )}
-                    <div>
-                      <p
-                        className={`font-semibold leading-tight ${
-                          row.depth === 0 ? "text-sm" : "text-xs text-muted-foreground"
-                        }`}
-                      >
-                        {row.name}
-                      </p>
-                      {row.depth === 0 && (
-                        <Badge
-                          variant="outline"
-                          className="mt-0.5 rounded-none px-1 py-0 text-[9px] font-bold uppercase tracking-widest"
-                        >
-                          Induk
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </td>
-
-                {/* Slug */}
-                <td className="hidden px-4 py-3 sm:table-cell">
-                  <span className="font-mono text-[11px] text-muted-foreground">/{row.slug}</span>
-                </td>
-
-                {/* Sort order */}
-                <td className="hidden px-4 py-3 text-center md:table-cell">
-                  <span className="text-xs text-muted-foreground">{row.sort_order}</span>
-                </td>
-
-                {/* Toggle */}
-                <td className="px-4 py-3 text-center">
-                  <Switch
-                    checked={row.is_active}
-                    onCheckedChange={(v) => handleToggle(row, v)}
-                    disabled={isPending}
-                  />
-                </td>
-
-                {/* Actions */}
-                <td className="px-4 py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                        <MoreHorizontal size={16} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[140px] rounded-none">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/admin/categories/${row.id}/edit`}
-                          className="flex items-center gap-2 rounded-none"
-                        >
-                          <Edit size={13} />
-                          Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => setDeleteTarget(row)}
-                        className="rounded-none text-destructive focus:text-destructive"
-                      >
-                        <Trash2 size={13} className="mr-2" />
-                        Hapus
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Nama
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  Slug
+                </th>
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Urutan
+                </th>
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Status
+                </th>
+                <th className="w-12 px-4 py-3" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+              {rows.map((row) => (
+                <tr key={row.id} className="transition-colors hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <div className={row.depth === 1 ? "ml-4 flex items-center gap-2" : ""}>
+                      {row.depth === 1 && (
+                        <CornerDownRight size={12} className="shrink-0 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p
+                          className={`font-semibold leading-tight ${
+                            row.depth === 0 ? "text-[17px]" : "text-xs text-muted-foreground"
+                          }`}
+                        >
+                          {row.name}
+                        </p>
+                        {row.depth === 0 && (
+                          <Badge
+                            variant="outline"
+                            className="mt-0.5 border-brand/30 bg-brand/5 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest text-brand"
+                          >
+                            Induk
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    <span className="font-mono text-[11px] text-muted-foreground">/{row.slug}</span>
+                  </td>
+
+                  <td className="hidden px-4 py-3 text-center md:table-cell">
+                    <span className="text-xs text-muted-foreground">{row.sort_order}</span>
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    <Switch
+                      checked={row.is_active}
+                      onCheckedChange={(v) => handleToggle(row, v)}
+                      disabled={isPending}
+                    />
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                          <MoreHorizontal size={16} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[140px] rounded-lg">
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={`/admin/categories/${row.id}/edit`}
+                            className="flex items-center gap-2 rounded-md"
+                          >
+                            <Edit size={13} />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteTarget(row)}
+                          className="rounded-md text-destructive focus:text-destructive"
+                        >
+                          <Trash2 size={13} className="mr-2" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
@@ -214,19 +210,19 @@ export function CategoryTable({
               type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="flex h-8 items-center border-y border-border px-3 text-xs font-bold uppercase tracking-widest">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest dark:border-border">
               {page} / {totalPages}
             </span>
             <button
               type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="border border-border p-2 transition-colors hover:bg-muted disabled:opacity-40"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
@@ -235,32 +231,27 @@ export function CategoryTable({
         </div>
       )}
 
-      {/* Delete dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm rounded-none">
+        <DialogContent className="max-w-sm rounded-lg">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
-              Hapus Kategori?
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold tracking-tight">Hapus Kategori?</DialogTitle>
             <DialogDescription>
               Kategori{" "}
-              <span className="font-bold text-foreground">
-                &quot;{deleteTarget?.name}&quot;
-              </span>{" "}
+              <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span>{" "}
               akan dihapus permanen. Pastikan tidak ada produk atau subkategori di dalamnya.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-none font-bold uppercase tracking-widest text-xs"
+              className="flex-1 rounded-full border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest dark:border-border"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-none border-0 bg-destructive font-bold uppercase tracking-widest text-xs text-destructive-foreground hover:bg-destructive/90"
+              className="flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
               onClick={handleDelete}
               disabled={isPending}
             >

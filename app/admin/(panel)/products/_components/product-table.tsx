@@ -258,9 +258,9 @@ export function ProductTable({
 
   if (products.length === 0) {
     return (
-      <div className="border border-border border-dashed py-20 flex flex-col items-center gap-3 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Package size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada produk</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada produk</p>
       </div>
     );
   }
@@ -269,15 +269,15 @@ export function ProductTable({
     <>
       {/* Bulk Action Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border border-[#EA5329] bg-[#EA5329]/5 px-4 py-2.5">
-          <span className="text-xs font-black uppercase tracking-widest text-[#EA5329]">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-brand/30 bg-brand/5 px-4 py-2.5">
+          <span className="text-xs font-semibold uppercase tracking-widest text-brand">
             {selectedIds.size} dipilih
           </span>
-          <div className="w-px h-4 bg-border mx-1" />
+          <div className="mx-1 h-4 w-px bg-border" />
           <Button
             size="sm"
             variant="outline"
-            className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
             onClick={() => handleBulkStatus(true)}
             disabled={isPending}
           >
@@ -287,7 +287,7 @@ export function ProductTable({
           <Button
             size="sm"
             variant="outline"
-            className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
             onClick={() => handleBulkStatus(false)}
             disabled={isPending}
           >
@@ -298,7 +298,7 @@ export function ProductTable({
             <Button
               size="sm"
               variant="outline"
-              className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest"
+              className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
               onClick={() => setBrandDialogOpen(true)}
               disabled={isPending}
             >
@@ -309,7 +309,7 @@ export function ProductTable({
           <Button
             size="sm"
             variant="outline"
-            className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
             onClick={() => setConditionDialogOpen(true)}
             disabled={isPending}
           >
@@ -317,7 +317,7 @@ export function ProductTable({
           </Button>
           <Button
             size="sm"
-            className="rounded-none h-7 text-[10px] font-bold uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0 ml-auto"
+            className="ml-auto h-7 rounded-md border-0 bg-destructive text-[10px] font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
             onClick={() => setBulkDeleteOpen(true)}
             disabled={isPending}
           >
@@ -325,50 +325,51 @@ export function ProductTable({
             Hapus
           </Button>
           <button
+            type="button"
             onClick={clearSelection}
-            className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+            className="text-[10px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
             Batal pilih
           </button>
         </div>
       )}
 
-      {/* Table */}
-      <div className="border border-border overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 w-10">
-                <Checkbox
-                  checked={allSelected}
-                  data-state={someSelected && !allSelected ? "indeterminate" : undefined}
-                  onCheckedChange={(v) => toggleSelectAll(!!v)}
-                  className="rounded-none"
-                  aria-label="Pilih semua"
-                />
-              </th>
-              <th className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-16">
-                Foto
-              </th>
-              <th className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Produk
-              </th>
-              <th className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hidden md:table-cell">
-                Kategori
-              </th>
-              <th className="text-right px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hidden sm:table-cell">
-                Harga
-              </th>
-              <th className="text-right px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hidden lg:table-cell">
-                Stok
-              </th>
-              <th className="text-center px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status
-              </th>
-              <th className="px-4 py-3 w-12" />
-            </tr>
-          </thead>
-          <tbody>
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="w-10 px-4 py-3">
+                  <Checkbox
+                    checked={allSelected}
+                    data-state={someSelected && !allSelected ? "indeterminate" : undefined}
+                    onCheckedChange={(v) => toggleSelectAll(!!v)}
+                    className="rounded-md"
+                    aria-label="Pilih semua"
+                  />
+                </th>
+                <th className="w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Foto
+                </th>
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Produk
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Kategori
+                </th>
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  Harga
+                </th>
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                  Stok
+                </th>
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Status
+                </th>
+                <th className="w-12 px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
             {products.map((product) => {
               const primaryImage = getPrimaryImage(product.product_images);
               const totalStock = getTotalStock(product.product_variants);
@@ -377,21 +378,19 @@ export function ProductTable({
               return (
                 <tr
                   key={product.id}
-                  className={`border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors ${isSelected ? "bg-muted/40" : ""}`}
+                  className={`transition-colors hover:bg-muted/30 ${isSelected ? "bg-muted/40" : ""}`}
                 >
-                  {/* Checkbox */}
                   <td className="px-4 py-3">
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={(v) => toggleSelect(product.id, !!v)}
-                      className="rounded-none"
+                      className="rounded-md"
                       aria-label={`Pilih ${product.name}`}
                     />
                   </td>
 
-                  {/* Thumbnail */}
                   <td className="px-4 py-3">
-                    <div className="w-10 h-10 border border-border overflow-hidden bg-muted shrink-0">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-[#e0e0e0] bg-muted dark:border-border">
                       {primaryImage ? (
                         <Image
                           src={primaryImage}
@@ -417,25 +416,25 @@ export function ProductTable({
                       <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
                         /{product.slug}
                       </p>
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="mt-1 flex flex-wrap gap-1">
                         <Badge
                           variant="outline"
-                          className={`text-[9px] rounded-none px-1.5 py-0 font-bold uppercase tracking-widest ${
+                          className={`rounded-md px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest ${
                             product.condition === "second"
-                              ? "border-amber-500 text-amber-600"
-                              : "border-emerald-500 text-emerald-600"
+                              ? "border-border text-muted-foreground"
+                              : "border-brand/40 text-brand"
                           }`}
                         >
                           {product.condition === "second" ? "Second" : "Baru"}
                         </Badge>
-                        {product.is_featured && (
+                        {product.is_featured ? (
                           <Badge
                             variant="outline"
-                            className="text-[9px] rounded-none px-1.5 py-0 border-[#EA5329] text-[#EA5329] font-bold uppercase tracking-widest"
+                            className="rounded-md border-brand/50 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest text-brand"
                           >
                             Unggulan
                           </Badge>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </td>
@@ -451,15 +450,13 @@ export function ProductTable({
                   <td className="px-4 py-3 text-right hidden sm:table-cell">
                     {product.sale_price != null ? (
                       <div>
-                        <p className="font-bold text-[#EA5329] text-xs">
-                          {formatRupiah(product.sale_price)}
-                        </p>
+                        <p className="text-xs font-semibold text-brand">{formatRupiah(product.sale_price)}</p>
                         <p className="text-[11px] text-muted-foreground line-through">
                           {formatRupiah(product.base_price)}
                         </p>
                       </div>
                     ) : (
-                      <p className="font-bold text-xs">{formatRupiah(product.base_price)}</p>
+                      <p className="text-xs font-semibold">{formatRupiah(product.base_price)}</p>
                     )}
                   </td>
 
@@ -467,9 +464,7 @@ export function ProductTable({
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <span
                       className={
-                        totalStock <= 5
-                          ? "font-bold text-red-500 text-xs"
-                          : "text-xs font-medium"
+                        totalStock <= 5 ? "text-xs font-semibold text-brand" : "text-xs font-medium text-muted-foreground"
                       }
                     >
                       {totalStock} pcs
@@ -489,15 +484,18 @@ export function ProductTable({
                   <td className="px-4 py-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        <button
+                          type="button"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
                           <MoreHorizontal size={16} />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-none min-w-[140px]">
+                      <DropdownMenuContent align="end" className="min-w-[140px] rounded-lg border-[#e0e0e0] dark:border-border">
                         <DropdownMenuItem asChild>
                           <Link
                             href={`/admin/products/${product.id}/edit`}
-                            className="flex items-center gap-2 rounded-none"
+                            className="flex items-center gap-2 rounded-md"
                           >
                             <Edit size={13} />
                             Edit Produk
@@ -506,7 +504,7 @@ export function ProductTable({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => setDeleteTarget(product)}
-                          className="text-destructive focus:text-destructive rounded-none"
+                          className="rounded-md text-destructive focus:text-destructive"
                         >
                           <Trash2 size={13} className="mr-2" />
                           Hapus Produk
@@ -517,8 +515,9 @@ export function ProductTable({
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
@@ -529,20 +528,22 @@ export function ProductTable({
           </p>
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="px-3 h-8 border-y border-border flex items-center text-xs font-bold uppercase tracking-widest">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest dark:border-border">
               {page} / {totalPages}
             </span>
             <button
+              type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
@@ -553,30 +554,26 @@ export function ProductTable({
 
       {/* Single delete confirm dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent className="rounded-none max-w-sm">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
-              Hapus Produk?
-            </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Hapus Produk?</DialogTitle>
+            <DialogDescription className="text-[17px] leading-[1.47]">
               Produk{" "}
-              <span className="font-bold text-foreground">
-                &quot;{deleteTarget?.name}&quot;
-              </span>{" "}
-              akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
+              <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span> akan dihapus
+              secara permanen. Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2 mt-2">
+          <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs"
+              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0"
+              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDelete}
               disabled={isPending}
             >
@@ -588,26 +585,26 @@ export function ProductTable({
 
       {/* Bulk delete confirm dialog */}
       <Dialog open={bulkDeleteOpen} onOpenChange={(open) => !open && setBulkDeleteOpen(false)}>
-        <DialogContent className="rounded-none max-w-sm">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
+            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">
               Hapus {selectedIds.size} Produk?
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-[17px] leading-[1.47]">
               Semua produk yang dipilih akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2 mt-2">
+          <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs"
+              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
               onClick={() => setBulkDeleteOpen(false)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground border-0"
+              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
               onClick={handleBulkDelete}
               disabled={isPending}
             >
@@ -619,26 +616,24 @@ export function ProductTable({
 
       {/* Bulk condition selector dialog */}
       <Dialog open={conditionDialogOpen} onOpenChange={(open) => { if (!open) setConditionDialogOpen(false); }}>
-        <DialogContent className="rounded-none max-w-sm">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
-              Ganti Kondisi
-            </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Ganti Kondisi</DialogTitle>
+            <DialogDescription className="text-[17px] leading-[1.47]">
               Pilih kondisi baru untuk {selectedIds.size} produk yang dipilih.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
+          <div className="mt-2 space-y-4">
             <div className="flex gap-3">
               {(["new", "second"] as const).map((val) => (
                 <button
                   key={val}
                   type="button"
                   onClick={() => setSelectedCondition(val)}
-                  className={`flex-1 h-9 border text-xs font-bold uppercase tracking-widest transition-colors rounded-none ${
+                  className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase tracking-widest transition-colors ${
                     selectedCondition === val
-                      ? "border-[#EA5329] bg-[#EA5329]/10 text-[#EA5329]"
-                      : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground"
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border"
                   }`}
                 >
                   {val === "new" ? "Baru" : "Second"}
@@ -648,14 +643,14 @@ export function ProductTable({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs"
+                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
                 onClick={() => setConditionDialogOpen(false)}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
+                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90"
                 onClick={handleBulkSetCondition}
                 disabled={isPending}
               >
@@ -668,26 +663,24 @@ export function ProductTable({
 
       {/* Bulk brand selector dialog */}
       <Dialog open={brandDialogOpen} onOpenChange={(open) => { if (!open) { setBrandDialogOpen(false); setSelectedBrandId(""); } }}>
-        <DialogContent className="rounded-none max-w-sm">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
-              Ganti Merek
-            </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Ganti Merek</DialogTitle>
+            <DialogDescription className="text-[17px] leading-[1.47]">
               Pilih merek baru untuk {selectedIds.size} produk yang dipilih.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
+          <div className="mt-2 space-y-4">
             <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
-              <SelectTrigger className="rounded-none h-9 text-sm">
+              <SelectTrigger className="h-10 rounded-lg border-[#e0e0e0] text-sm dark:border-border">
                 <SelectValue placeholder="Pilih merek..." />
               </SelectTrigger>
-              <SelectContent className="rounded-none">
-                <SelectItem value="__none__" className="rounded-none text-muted-foreground">
+              <SelectContent className="rounded-lg border-[#e0e0e0] dark:border-border">
+                <SelectItem value="__none__" className="rounded-md text-muted-foreground">
                   — Tanpa merek
                 </SelectItem>
                 {brands.map((b) => (
-                  <SelectItem key={b.id} value={b.id} className="rounded-none">
+                  <SelectItem key={b.id} value={b.id} className="rounded-md">
                     {b.name}
                   </SelectItem>
                 ))}
@@ -696,14 +689,14 @@ export function ProductTable({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs"
+                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
                 onClick={() => { setBrandDialogOpen(false); setSelectedBrandId(""); }}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="rounded-none flex-1 font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
+                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90"
                 onClick={handleBulkSetBrand}
                 disabled={isPending || !selectedBrandId}
               >

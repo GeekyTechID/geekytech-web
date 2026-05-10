@@ -36,7 +36,7 @@ export default async function AdminComplaintsPage({
       `id, type, reason, status, created_at, resolved_at,
        orders:order_id (order_number),
        profiles:user_id (full_name)`,
-      { count: "exact" }
+      { count: "exact" },
     )
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -55,36 +55,30 @@ export default async function AdminComplaintsPage({
     .eq("status", "open");
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Komplain</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Layanan</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Komplain</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {count ?? 0} komplain
             {q ? ` untuk "${q}"` : ""}
             {status ? ` · filter: ${status.replace("_", " ")}` : ""}
           </p>
         </div>
         {(openCount.count ?? 0) > 0 && (
-          <div className="flex items-center gap-1.5 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-3 py-1.5 text-xs font-bold uppercase tracking-widest">
+          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-brand">
             {openCount.count} komplain baru
           </div>
         )}
       </div>
 
-      {/* Filters */}
       <Suspense>
         <ComplaintFilters />
       </Suspense>
 
-      {/* Table */}
       <Suspense>
-        <ComplaintTable
-          complaints={(complaints ?? []) as ComplaintRow[]}
-          page={page}
-          totalPages={totalPages}
-        />
+        <ComplaintTable complaints={(complaints ?? []) as ComplaintRow[]} page={page} totalPages={totalPages} />
       </Suspense>
     </div>
   );

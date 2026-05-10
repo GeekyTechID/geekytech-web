@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
@@ -19,9 +19,10 @@ export function ComplaintFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const q = searchParams.get("q") ?? "";
-  const status = searchParams.get("status") ?? "all";
+  const status = searchParams.get("status") || "all";
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -31,42 +32,44 @@ export function ComplaintFilters() {
       params.delete("page");
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams]
+    [router, pathname, searchParams],
   );
 
   const hasFilters = q || status !== "all";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {/* Search */}
-      <div className="relative max-w-xs flex-1">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="relative max-w-md flex-1">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
           placeholder="Cari no. order / nama pelanggan..."
           defaultValue={q}
           onChange={(e) => {
             const val = e.target.value;
-            const tid = setTimeout(() => updateParam("q", val), 400);
-            return () => clearTimeout(tid);
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = setTimeout(() => {
+              searchDebounceRef.current = null;
+              updateParam("q", val);
+            }, 400);
           }}
-          className="h-9 rounded-none pl-8 text-sm"
+          className="h-11 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
         />
       </div>
 
-      {/* Status filter */}
-      <div className="flex flex-wrap border border-border">
+      <div className="flex flex-wrap overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
         {STATUS_OPTIONS.map(({ value, label }) => (
           <button
             key={value}
+            type="button"
             onClick={() => updateParam("status", value)}
             className={cn(
-              "h-11 border-r border-border px-4 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
+              "h-11 border-r border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest transition-colors last:border-r-0 dark:border-border",
               status === value || (value === "all" && status === "all")
-                ? "bg-swiss-black text-swiss-white"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-brand/10 text-brand"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
             {label}
@@ -74,11 +77,11 @@ export function ComplaintFilters() {
         ))}
       </div>
 
-      {/* Clear */}
       {hasFilters && (
         <button
+          type="button"
           onClick={() => router.push(pathname)}
-          className="flex h-11 items-center gap-1.5 border border-dashed border-border px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
         >
           <X size={12} />
           Reset

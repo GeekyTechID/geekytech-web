@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Building2, ChevronLeft, ChevronRight, Edit, MoreHorizontal, Trash2 } from "lucide-react";
@@ -81,109 +82,113 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
 
   if (brands.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Building2 size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada merek</p>
+        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada merek</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Nama
-              </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-                Slug
-              </th>
-              <th className="hidden px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-                Urutan
-              </th>
-              <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Status
-              </th>
-              <th className="w-12 px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {brands.map((brand) => (
-              <tr
-                key={brand.id}
-                className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    {brand.logo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={brand.logo_url}
-                        alt={brand.name}
-                        className="h-7 w-7 object-contain border border-border bg-white"
-                      />
-                    ) : (
-                      <div className="h-7 w-7 border border-border bg-muted flex items-center justify-center">
-                        <Building2 size={12} className="text-muted-foreground" />
-                      </div>
-                    )}
-                    <p className="font-semibold text-sm">{brand.name}</p>
-                  </div>
-                </td>
-
-                <td className="hidden px-4 py-3 sm:table-cell">
-                  <span className="font-mono text-[11px] text-muted-foreground">/{brand.slug}</span>
-                </td>
-
-                <td className="hidden px-4 py-3 text-center md:table-cell">
-                  <span className="text-xs text-muted-foreground">{brand.sort_order}</span>
-                </td>
-
-                <td className="px-4 py-3 text-center">
-                  <Switch
-                    checked={brand.is_active}
-                    onCheckedChange={(v) => handleToggle(brand, v)}
-                    disabled={isPending}
-                  />
-                </td>
-
-                <td className="px-4 py-3">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                        <MoreHorizontal size={16} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[140px] rounded-none">
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href={`/admin/brands/${brand.id}/edit`}
-                          className="flex items-center gap-2 rounded-none"
-                        >
-                          <Edit size={13} />
-                          Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => setDeleteTarget(brand)}
-                        className="rounded-none text-destructive focus:text-destructive"
-                      >
-                        <Trash2 size={13} className="mr-2" />
-                        Hapus
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Nama
+                </th>
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                  Slug
+                </th>
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                  Urutan
+                </th>
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Status
+                </th>
+                <th className="w-12 px-4 py-3" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+              {brands.map((brand) => (
+                <tr key={brand.id} className="transition-colors hover:bg-muted/30">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {brand.logo_url ? (
+                        <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white dark:border-border">
+                          <Image
+                            src={brand.logo_url}
+                            alt={brand.name}
+                            fill
+                            sizes="28px"
+                            className="object-contain p-0.5"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
+                          <Building2 size={12} className="text-muted-foreground" />
+                        </div>
+                      )}
+                      <p className="text-[17px] font-semibold leading-tight">{brand.name}</p>
+                    </div>
+                  </td>
+
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    <span className="font-mono text-[11px] text-muted-foreground">/{brand.slug}</span>
+                  </td>
+
+                  <td className="hidden px-4 py-3 text-center md:table-cell">
+                    <span className="text-xs text-muted-foreground">{brand.sort_order}</span>
+                  </td>
+
+                  <td className="px-4 py-3 text-center">
+                    <Switch
+                      checked={brand.is_active}
+                      onCheckedChange={(v) => handleToggle(brand, v)}
+                      disabled={isPending}
+                    />
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                          <MoreHorizontal size={16} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[140px] rounded-lg">
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={`/admin/brands/${brand.id}/edit`}
+                            className="flex items-center gap-2 rounded-md"
+                          >
+                            <Edit size={13} />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteTarget(brand)}
+                          className="rounded-md text-destructive focus:text-destructive"
+                        >
+                          <Trash2 size={13} className="mr-2" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
@@ -191,20 +196,22 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
           </p>
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="px-3 h-8 border-y border-border flex items-center text-xs font-bold uppercase tracking-widest">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest dark:border-border">
               {page} / {totalPages}
             </span>
             <button
+              type="button"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="p-2 border border-border disabled:opacity-40 hover:bg-muted transition-colors"
+              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
@@ -214,30 +221,26 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
       )}
 
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm rounded-none">
+        <DialogContent className="max-w-sm rounded-lg">
           <DialogHeader>
-            <DialogTitle className="font-black uppercase tracking-tight">
-              Hapus Merek?
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold tracking-tight">Hapus Merek?</DialogTitle>
             <DialogDescription>
               Merek{" "}
-              <span className="font-bold text-foreground">
-                &quot;{deleteTarget?.name}&quot;
-              </span>{" "}
+              <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span>{" "}
               akan dihapus permanen. Pastikan tidak ada produk yang menggunakan merek ini.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-none font-bold uppercase tracking-widest text-xs"
+              className="flex-1 rounded-full border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest dark:border-border"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-none border-0 bg-destructive font-bold uppercase tracking-widest text-xs text-destructive-foreground hover:bg-destructive/90"
+              className="flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
               onClick={handleDelete}
               disabled={isPending}
             >

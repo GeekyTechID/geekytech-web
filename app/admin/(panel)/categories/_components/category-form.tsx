@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { createCategory, updateCategory } from "../_actions";
 
-// ─── Schema ─────────────────────────────────────────────────────────────────
-
 const formSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi").max(100, "Nama max 100 karakter"),
   slug: z
@@ -28,8 +26,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 function slugify(name: string) {
   return name
     .toLowerCase()
@@ -41,8 +37,6 @@ function slugify(name: string) {
     .replace(/-+/g, "-");
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type ParentCategory = { id: string; name: string };
 
 interface CategoryFormProps {
@@ -51,7 +45,7 @@ interface CategoryFormProps {
   defaultValues?: Partial<FormValues>;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 export function CategoryForm({ parentCategories, categoryId, defaultValues }: CategoryFormProps) {
   const router = useRouter();
@@ -86,9 +80,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         image_url: null,
       };
 
-      const result = categoryId
-        ? await updateCategory(categoryId, payload)
-        : await createCategory(payload);
+      const result = categoryId ? await updateCategory(categoryId, payload) : await createCategory(payload);
 
       if ("error" in result) {
         toast.error(result.error);
@@ -104,19 +96,17 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Info Dasar */}
-      <div className="space-y-5 border border-border p-6">
-        <h2 className="text-xs font-black uppercase tracking-widest">Info Dasar</h2>
+      <div className="admin-utility-card space-y-5">
+        <h2 className="admin-section-title">Info Dasar</h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {/* Nama */}
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest">
+            <Label htmlFor="name" className={labelClass}>
               Nama <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
-              className="h-9 rounded-none"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               placeholder="Contoh: Laptop"
               {...register("name", {
                 onChange: (e) => {
@@ -126,37 +116,31 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
                 },
               })}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
-          {/* Slug */}
           <div className="space-y-1.5">
-            <Label htmlFor="slug" className="text-xs font-bold uppercase tracking-widest">
+            <Label htmlFor="slug" className={labelClass}>
               Slug <span className="text-destructive">*</span>
             </Label>
             <Input
               id="slug"
-              className="h-9 rounded-none font-mono"
+              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47] dark:border-border"
               placeholder="laptop"
               {...register("slug")}
             />
-            {errors.slug && (
-              <p className="text-xs text-destructive">{errors.slug.message}</p>
-            )}
+            {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
           </div>
         </div>
 
-        {/* Kategori Induk */}
         <div className="space-y-1.5">
-          <Label htmlFor="parent_id" className="text-xs font-bold uppercase tracking-widest">
+          <Label htmlFor="parent_id" className={labelClass}>
             Kategori Induk
           </Label>
           <select
             id="parent_id"
             {...register("parent_id")}
-            className="h-9 w-full rounded-none border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
           >
             <option value="">— Tidak ada (kategori utama) —</option>
             {parentCategories.map((cat) => (
@@ -170,16 +154,15 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
           </p>
         </div>
 
-        {/* Urutan */}
         <div className="w-36 space-y-1.5">
-          <Label htmlFor="sort_order" className="text-xs font-bold uppercase tracking-widest">
+          <Label htmlFor="sort_order" className={labelClass}>
             Urutan Tampil
           </Label>
           <Input
             id="sort_order"
             type="number"
             min="0"
-            className="h-9 rounded-none"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
             {...register("sort_order", { valueAsNumber: true })}
           />
           {errors.sort_order && (
@@ -188,28 +171,21 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         </div>
       </div>
 
-      {/* Status */}
-      <div className="border border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="admin-utility-card">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest">Status Aktif</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Kategori nonaktif tidak tampil di toko.
-            </p>
+            <p className="admin-section-title">Status Aktif</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Kategori nonaktif tidak tampil di toko.</p>
           </div>
-          <Switch
-            checked={isActive}
-            onCheckedChange={(v) => setValue("is_active", v)}
-          />
+          <Switch checked={isActive} onCheckedChange={(v) => setValue("is_active", v)} />
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
           variant="outline"
-          className="rounded-none font-bold uppercase tracking-widest text-xs"
+          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => router.push("/admin/categories")}
           disabled={isLoading}
         >
@@ -217,7 +193,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         </Button>
         <Button
           type="submit"
-          className="rounded-none border-0 bg-[#EA5329] font-bold uppercase tracking-widest text-xs text-white hover:bg-[#D44820]"
+          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white hover:bg-brand-hover active:scale-[0.98]"
           disabled={isLoading}
         >
           {isLoading

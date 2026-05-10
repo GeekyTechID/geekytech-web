@@ -44,6 +44,8 @@ interface BrandFormProps {
   defaultValues?: Partial<FormValues>;
 }
 
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
 export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -99,9 +101,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         logo_url: values.logo_url || null,
       };
 
-      const result = brandId
-        ? await updateBrand(brandId, payload)
-        : await createBrand(payload);
+      const result = brandId ? await updateBrand(brandId, payload) : await createBrand(payload);
 
       if ("error" in result) {
         toast.error(result.error);
@@ -117,17 +117,17 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="space-y-5 border border-border p-6">
-        <h2 className="text-xs font-black uppercase tracking-widest">Info Merek</h2>
+      <div className="admin-utility-card space-y-5">
+        <h2 className="admin-section-title">Info Merek</h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest">
+            <Label htmlFor="name" className={labelClass}>
               Nama <span className="text-destructive">*</span>
             </Label>
             <Input
               id="name"
-              className="h-9 rounded-none"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               placeholder="Contoh: Samsung"
               {...register("name", {
                 onChange: (e) => {
@@ -137,44 +137,37 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
                 },
               })}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="slug" className="text-xs font-bold uppercase tracking-widest">
+            <Label htmlFor="slug" className={labelClass}>
               Slug <span className="text-destructive">*</span>
             </Label>
             <Input
               id="slug"
-              className="h-9 rounded-none font-mono"
+              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47] dark:border-border"
               placeholder="samsung"
               {...register("slug")}
             />
-            {errors.slug && (
-              <p className="text-xs text-destructive">{errors.slug.message}</p>
-            )}
+            {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-bold uppercase tracking-widest">Logo Merek</Label>
+          <Label className={labelClass}>Logo Merek</Label>
           <input type="hidden" {...register("logo_url")} />
 
           {logoUrl ? (
-            <div className="relative w-24 h-24 border border-border bg-white flex items-center justify-center group">
-              <Image
-                src={logoUrl}
-                alt="Logo merek"
-                fill
-                sizes="96px"
-                className="object-contain p-2"
-              />
+            <div className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-[#e0e0e0] bg-white dark:border-border">
+              <Image src={logoUrl} alt="Logo merek" fill sizes="96px" className="object-contain p-2" />
               <button
                 type="button"
-                onClick={() => { setLogoUrl(""); setValue("logo_url", ""); }}
-                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                onClick={() => {
+                  setLogoUrl("");
+                  setValue("logo_url", "");
+                }}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
                 title="Hapus logo"
               >
                 <Trash2 size={16} />
@@ -185,10 +178,10 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="w-full border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground hover:border-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
               {uploading ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
-              <span className="text-xs font-bold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase tracking-widest">
                 {uploading ? "Mengupload..." : "Klik untuk upload logo"}
               </span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB</span>
@@ -200,14 +193,14 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             className="hidden"
-            onChange={(e) => handleLogoUpload(e.target.files)}
+            onChange={(e) => void handleLogoUpload(e.target.files)}
           />
           {logoUrl && (
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+              className="admin-text-link text-[11px]"
             >
               Ganti logo
             </button>
@@ -215,14 +208,14 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         </div>
 
         <div className="w-36 space-y-1.5">
-          <Label htmlFor="sort_order" className="text-xs font-bold uppercase tracking-widest">
+          <Label htmlFor="sort_order" className={labelClass}>
             Urutan Tampil
           </Label>
           <Input
             id="sort_order"
             type="number"
             min="0"
-            className="h-9 rounded-none"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
             {...register("sort_order", { valueAsNumber: true })}
           />
           {errors.sort_order && (
@@ -231,26 +224,23 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         </div>
       </div>
 
-      <div className="border border-border p-6">
-        <div className="flex items-center justify-between">
+      <div className="admin-utility-card">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest">Status Aktif</p>
+            <p className="admin-section-title">Status Aktif</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Merek nonaktif tidak tampil sebagai pilihan produk.
             </p>
           </div>
-          <Switch
-            checked={isActive}
-            onCheckedChange={(v) => setValue("is_active", v)}
-          />
+          <Switch checked={isActive} onCheckedChange={(v) => setValue("is_active", v)} />
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
           variant="outline"
-          className="rounded-none font-bold uppercase tracking-widest text-xs"
+          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => router.push("/admin/brands")}
           disabled={isLoading}
         >
@@ -258,7 +248,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         </Button>
         <Button
           type="submit"
-          className="rounded-none border-0 bg-[#EA5329] font-bold uppercase tracking-widest text-xs text-white hover:bg-[#D44820]"
+          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white hover:bg-brand-hover active:scale-[0.98]"
           disabled={isLoading}
         >
           {isLoading

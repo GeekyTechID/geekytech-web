@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
@@ -23,9 +23,16 @@ export function OrderFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -35,59 +42,61 @@ export function OrderFilters() {
       params.delete("page");
       router.push(`${pathname}?${params.toString()}`);
     },
-    [router, pathname, searchParams]
+    [router, pathname, searchParams],
   );
 
-  const hasFilters = q || status !== "all";
+  const hasFilters = Boolean(q) || status !== "all";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-      {/* Search */}
-      <div className="relative max-w-xs flex-1">
+    <div className="flex flex-col gap-4">
+      <div className="relative max-w-md flex-1">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
           placeholder="Cari no. order / nama penerima..."
           defaultValue={q}
           onChange={(e) => {
             const val = e.target.value;
-            const tid = setTimeout(() => updateParam("q", val), 400);
-            return () => clearTimeout(tid);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => updateParam("q", val), 400);
           }}
-          className="h-9 rounded-none pl-8 text-sm"
+          className="h-11 rounded-full border-[#e0e0e0] pl-10 text-[17px] leading-[1.47] dark:border-border"
         />
       </div>
 
-      {/* Status */}
-      <div className="flex flex-wrap border border-border">
-        {STATUS_OPTIONS.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => updateParam("status", value === "all" ? "" : value)}
-            className={cn(
-              "h-11 border-r border-border px-4 text-xs font-bold uppercase tracking-widest transition-colors last:border-r-0",
-              (value === "all" ? status === "all" : status === value)
-                ? "bg-swiss-black text-swiss-white"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+        <div className="inline-flex max-w-full flex-wrap overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+          {STATUS_OPTIONS.map(({ value, label }, i) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => updateParam("status", value === "all" ? "" : value)}
+              className={cn(
+                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                i > 0 ? "border-l" : "",
+                (value === "all" ? status === "all" : status === value)
+                  ? "bg-brand/10 text-brand"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      {/* Clear */}
-      {hasFilters && (
-        <button
-          onClick={() => router.push(pathname)}
-          className="flex h-11 items-center gap-1.5 border border-dashed border-border px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <X size={12} />
-          Reset
-        </button>
-      )}
+        {hasFilters ? (
+          <button
+            type="button"
+            onClick={() => router.push(pathname)}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
+          >
+            <X size={12} />
+            Reset
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

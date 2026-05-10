@@ -26,24 +26,15 @@ export default async function EditProductPage({
          category_id, brand_id, condition, is_active, is_featured, meta_title, meta_description, deleted_at,
          product_images(url, is_primary, alt_text, sort_order),
          product_variants(id, name, sku, price, stock, weight, length, width, height, is_active),
-         product_tags(tag)`
+         product_tags(tag)`,
       )
       .eq("id", id)
       .is("deleted_at", null)
       .single(),
 
-    supabase
-      .from("categories")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("name"),
+    supabase.from("categories").select("id, name").eq("is_active", true).order("name"),
 
-    supabase
-      .from("brands")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("sort_order")
-      .order("name"),
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order").order("name"),
   ]);
 
   if (!product) notFound();
@@ -75,24 +66,19 @@ export default async function EditProductPage({
   const defaultTags = (product.product_tags ?? []).map((t: any) => t.tag);
 
   return (
-    <div className="p-6 space-y-6 w-full">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link
-          href="/admin/products"
-          className="hover:text-foreground transition-colors font-medium"
-        >
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <Link href="/admin/products" className="admin-text-link font-medium">
           Produk
         </Link>
-        <ChevronRight size={12} />
-        <span className="font-bold text-foreground truncate max-w-xs">
-          {product.name}
-        </span>
+        <ChevronRight size={12} className="shrink-0 opacity-60" />
+        <span className="max-w-xs truncate font-semibold text-foreground">{product.name}</span>
       </nav>
 
       <div>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Edit Produk</h1>
-        <p className="text-sm text-muted-foreground mt-0.5 font-mono">/{product.slug}</p>
+        <p className="text-swiss-eyebrow">Katalog</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Edit Produk</h1>
+        <p className="mt-1 font-mono text-[17px] leading-[1.47] text-muted-foreground">/{product.slug}</p>
       </div>
 
       <ProductForm

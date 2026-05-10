@@ -5,6 +5,10 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { saveSetting } from "../../_actions";
 
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const saveClass =
+  "h-10 shrink-0 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+
 interface ThresholdFormProps {
   initialValue: number;
 }
@@ -15,7 +19,7 @@ export function ThresholdForm({ initialValue }: ThresholdFormProps) {
 
   const handleSave = () => {
     const parsed = parseInt(value.replace(/\D/g, ""), 10);
-    if (isNaN(parsed) || parsed < 0) {
+    if (Number.isNaN(parsed) || parsed < 0) {
       toast.error("Masukkan nominal yang valid.");
       return;
     }
@@ -30,13 +34,11 @@ export function ThresholdForm({ initialValue }: ThresholdFormProps) {
   };
 
   return (
-    <div className="flex items-end gap-3">
+    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Minimum Pembelian (Rp)
-        </label>
-        <div className="flex items-center border border-border h-9">
-          <span className="px-3 text-sm text-muted-foreground border-r border-border h-full flex items-center">
+        <label className={labelClass}>Minimum Pembelian (Rp)</label>
+        <div className="flex h-10 items-center overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+          <span className="flex h-full items-center border-r border-[#e0e0e0] px-3 text-sm text-muted-foreground dark:border-border">
             Rp
           </span>
           <Input
@@ -44,16 +46,11 @@ export function ThresholdForm({ initialValue }: ThresholdFormProps) {
             min={0}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="h-full rounded-none border-0 text-sm focus-visible:ring-0 w-40"
+            className="h-full max-w-[10rem] rounded-none border-0 text-sm focus-visible:ring-0"
           />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className="h-10 px-6 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity disabled:opacity-50"
-      >
+      <button type="button" onClick={handleSave} disabled={isPending} className={saveClass}>
         {isPending ? "Menyimpan..." : "Simpan"}
       </button>
     </div>

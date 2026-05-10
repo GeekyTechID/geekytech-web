@@ -17,19 +17,19 @@ export default async function NewProductPage() {
   ]);
 
   return (
-    <div className="p-6 space-y-6 w-full">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link href="/admin/products" className="hover:text-foreground transition-colors font-medium">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <Link href="/admin/products" className="admin-text-link font-medium">
           Produk
         </Link>
-        <ChevronRight size={12} />
-        <span className="font-bold text-foreground">Tambah Produk</span>
+        <ChevronRight size={12} className="shrink-0 opacity-60" />
+        <span className="font-semibold text-foreground">Tambah Produk</span>
       </nav>
 
       <div>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Tambah Produk</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
+        <p className="text-swiss-eyebrow">Katalog</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Tambah Produk</h1>
+        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
           Isi data produk lengkap termasuk gambar, varian, dan SEO.
         </p>
       </div>

@@ -65,11 +65,11 @@ export default async function AdminCustomersPage({
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
+    <div className="w-full space-y-8 p-6 lg:p-8">
       <div>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Pelanggan</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="text-swiss-eyebrow">Pengguna</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Pelanggan</h1>
+        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
           {count ?? 0} pelanggan{q ? ` untuk "${q}"` : ""}
         </p>
       </div>

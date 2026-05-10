@@ -18,6 +18,11 @@ import { ImageUploader, type ImageItem } from "./image-uploader";
 import { createProduct, updateProduct } from "../_actions";
 import { cn } from "@/lib/utils";
 
+const inputClass = "h-10 rounded-lg border-[#e0e0e0] dark:border-border";
+const textareaClass = "resize-none rounded-lg border-[#e0e0e0] dark:border-border";
+const selectTriggerClass = "h-10 rounded-lg border-[#e0e0e0] dark:border-border";
+const variantInputClass = "h-9 rounded-lg border-[#e0e0e0] text-sm dark:border-border";
+
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
 const variantSchema = z.object({
@@ -391,10 +396,10 @@ export function ProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       {/* ── 2xl: 2 kolom | <2xl: 1 kolom ────────────────────────────── */}
-      <div className="flex flex-col 2xl:flex-row 2xl:items-start gap-8">
+      <div className="flex flex-col gap-8 2xl:flex-row 2xl:items-start">
 
         {/* ── KOLOM KIRI: Info Dasar → Gambar ──────────────────────── */}
-        <div className="2xl:flex-1 space-y-8 min-w-0">
+        <div className="min-w-0 space-y-8 2xl:flex-1">
 
           {/* Informasi Dasar */}
           <Section title="Informasi Dasar">
@@ -403,7 +408,7 @@ export function ProductForm({
                 <Input
                   {...register("name", { onChange: handleNameChange })}
                   placeholder="Contoh: Samsung Galaxy S25 Ultra"
-                  className="rounded-none"
+                  className={inputClass}
                 />
               </Field>
 
@@ -411,7 +416,7 @@ export function ProductForm({
                 <Input
                   {...register("slug")}
                   placeholder="samsung-galaxy-s25-ultra"
-                  className="rounded-none font-mono text-sm"
+                  className={cn(inputClass, "font-mono text-sm")}
                 />
               </Field>
 
@@ -420,7 +425,7 @@ export function ProductForm({
                   {...register("description")}
                   placeholder="Deskripsi lengkap produk..."
                   rows={5}
-                  className="rounded-none resize-none"
+                  className={textareaClass}
                 />
               </Field>
             </div>
@@ -434,7 +439,7 @@ export function ProductForm({
                   type="number"
                   {...register("base_price", { valueAsNumber: true })}
                   placeholder="0"
-                  className="rounded-none"
+                  className={inputClass}
                 />
               </Field>
 
@@ -443,7 +448,7 @@ export function ProductForm({
                   type="number"
                   {...register("min_order_qty", { valueAsNumber: true })}
                   placeholder="1"
-                  className="rounded-none"
+                  className={inputClass}
                 />
               </Field>
             </div>
@@ -465,7 +470,7 @@ export function ProductForm({
                   type="number"
                   {...register("sale_price", { valueAsNumber: true })}
                   placeholder="0"
-                  className="rounded-none"
+                  className={inputClass}
                 />
               </Field>
             )}
@@ -479,7 +484,7 @@ export function ProductForm({
                   value={watch("brand_id") ?? "__none__"}
                   onValueChange={(v) => setValue("brand_id", v === "__none__" ? null : v)}
                 >
-                  <SelectTrigger className="rounded-none">
+                  <SelectTrigger className={selectTriggerClass}>
                     <SelectValue placeholder="Pilih merek..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -498,7 +503,7 @@ export function ProductForm({
                   value={watch("category_id") ?? "__none__"}
                   onValueChange={(v) => setValue("category_id", v === "__none__" ? null : v)}
                 >
-                  <SelectTrigger className="rounded-none">
+                  <SelectTrigger className={selectTriggerClass}>
                     <SelectValue placeholder="Pilih kategori..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -523,10 +528,10 @@ export function ProductForm({
                       type="button"
                       onClick={() => setValue("condition", val)}
                       className={cn(
-                        "flex-1 h-9 border text-xs font-bold uppercase tracking-widest transition-colors",
+                        "h-9 flex-1 rounded-lg border text-xs font-semibold uppercase tracking-widest transition-colors",
                         isSelected
-                          ? "border-[#EA5329] bg-[#EA5329]/10 text-[#EA5329]"
-                          : "border-border bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground"
+                          ? "border-brand bg-brand/10 text-brand"
+                          : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border",
                       )}
                     >
                       {val === "new" ? "Baru" : "Second"}
@@ -563,7 +568,7 @@ export function ProductForm({
         </div>
 
         {/* ── KOLOM KANAN: Gambar → Varian → SEO + Submit ──────────── */}
-        <div className="2xl:flex-1 flex flex-col min-w-0">
+        <div className="flex min-w-0 flex-col 2xl:flex-1">
         <div className="space-y-8">
 
           {/* Gambar Produk */}
@@ -587,18 +592,17 @@ export function ProductForm({
                 const variantErrors = errors.variants?.[i];
 
                 return (
-                  <div key={field._key} className="border border-border">
+                  <div key={field._key} className="overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
                     <input type="hidden" {...register(`variants.${i}.id`)} />
 
-                    {/* Variant header */}
                     <div
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                      className="flex cursor-pointer select-none items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
                       onClick={() => toggleVariantExpand(i)}
                     >
-                      <span className="text-xs font-black uppercase tracking-widest text-muted-foreground w-6">
+                      <span className="w-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                         {i + 1}
                       </span>
-                      <span className="text-sm font-bold flex-1">{variantName}</span>
+                      <span className="flex-1 text-sm font-semibold">{variantName}</span>
 
                       <Switch
                         checked={watch(`variants.${i}.is_active`)}
@@ -624,19 +628,19 @@ export function ProductForm({
 
                     {/* Variant body */}
                     {isExpanded && (
-                      <div className="px-4 pb-4 pt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 border-t border-border">
+                      <div className="grid grid-cols-1 gap-3 border-t border-[#e0e0e0] px-4 pb-4 pt-2 sm:grid-cols-2 lg:grid-cols-3 dark:border-border">
                         <Field label="Nama Varian" error={variantErrors?.name?.message} required>
                           <Input
                             {...register(`variants.${i}.name`)}
                             placeholder="Default / Merah / 128GB"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="SKU" error={variantErrors?.sku?.message} required>
                           <Input
                             {...register(`variants.${i}.sku`)}
                             placeholder="GT-SKU-001"
-                            className="rounded-none text-sm font-mono"
+                            className={cn(variantInputClass, "font-mono")}
                           />
                         </Field>
                         <Field label="Harga (Rp)" error={variantErrors?.price?.message} required>
@@ -644,7 +648,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.price`, { valueAsNumber: true })}
                             placeholder="0"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="Stok" error={variantErrors?.stock?.message} required>
@@ -652,7 +656,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.stock`, { valueAsNumber: true })}
                             placeholder="0"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="Berat (gram)" error={variantErrors?.weight?.message} required>
@@ -660,7 +664,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.weight`, { valueAsNumber: true })}
                             placeholder="500"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="Panjang (cm)" error={variantErrors?.length?.message}>
@@ -668,7 +672,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.length`, { valueAsNumber: true })}
                             placeholder="0"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="Lebar (cm)" error={variantErrors?.width?.message}>
@@ -676,7 +680,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.width`, { valueAsNumber: true })}
                             placeholder="0"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                         <Field label="Tinggi (cm)" error={variantErrors?.height?.message}>
@@ -684,7 +688,7 @@ export function ProductForm({
                             type="number"
                             {...register(`variants.${i}.height`, { valueAsNumber: true })}
                             placeholder="0"
-                            className="rounded-none text-sm"
+                            className={variantInputClass}
                           />
                         </Field>
                       </div>
@@ -698,7 +702,7 @@ export function ProductForm({
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-none font-bold uppercase tracking-widest text-xs h-9 border-dashed"
+              className="h-9 rounded-full border border-dashed border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
               onClick={() => {
                 const nextIndex = fields.length;
                 append({
@@ -723,11 +727,11 @@ export function ProductForm({
           {/* Tags */}
           <Section title="Tags">
             <div className="space-y-2">
-              <div className="flex flex-wrap gap-1.5 min-h-9 p-2 border border-border bg-transparent">
+              <div className="flex min-h-9 flex-wrap gap-1.5 rounded-lg border border-[#e0e0e0] bg-transparent p-2 dark:border-border">
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest bg-foreground text-background px-2 py-0.5"
+                    className="flex items-center gap-1 rounded-md border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-widest text-brand"
                   >
                     {tag}
                     <button
@@ -759,7 +763,7 @@ export function ProductForm({
                 <Input
                   {...register("meta_title")}
                   placeholder="Judul SEO (default: nama produk)"
-                  className="rounded-none"
+                  className={inputClass}
                 />
               </Field>
               <Field label="Meta Description" error={errors.meta_description?.message}>
@@ -767,7 +771,7 @@ export function ProductForm({
                   {...register("meta_description")}
                   placeholder="Deskripsi singkat untuk mesin pencari (max 160 karakter)"
                   rows={3}
-                  className="rounded-none resize-none"
+                  className={textareaClass}
                 />
               </Field>
             </div>
@@ -780,16 +784,16 @@ export function ProductForm({
           <Button
             type="submit"
             disabled={isPending}
-            className="rounded-none font-bold uppercase tracking-widest text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-10 px-6"
+            className="h-10 rounded-full border-0 bg-brand px-6 text-sm font-semibold uppercase tracking-widest text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
           >
-            {isPending && <Loader2 size={14} className="animate-spin mr-2" />}
+            {isPending && <Loader2 size={14} className="mr-2 animate-spin" />}
             {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
           </Button>
 
           <Button
             type="button"
             variant="outline"
-            className="rounded-none font-bold uppercase tracking-widest text-xs h-10"
+            className="h-10 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
             onClick={() => router.back()}
             disabled={isPending}
           >
@@ -813,14 +817,16 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-4 border border-border px-4 py-4 sm:px-6">
-      <h2 className="text-xs font-black uppercase tracking-widest text-black">
-        {title}
-      </h2>
-      {children}
+    <div className="admin-utility-card overflow-hidden p-0">
+      <div className="admin-utility-card-header">
+        <h2 className="admin-section-title">{title}</h2>
+      </div>
+      <div className="space-y-4 p-6">{children}</div>
     </div>
   );
 }
+
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 function Field({
   label,
@@ -835,12 +841,17 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className={cn("text-xs font-bold uppercase tracking-widest", error ? "text-destructive" : "text-foreground/70")}>
+      <Label
+        className={cn(
+          labelClass,
+          error ? "text-destructive" : undefined,
+        )}
+      >
         {label}
-        {required && <span className="text-[#EA5329] ml-0.5">*</span>}
+        {required ? <span className="ml-0.5 text-brand">*</span> : null}
       </Label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

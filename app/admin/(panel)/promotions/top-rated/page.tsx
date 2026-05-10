@@ -28,8 +28,10 @@ export default async function TopRatedPage() {
       supabase.from("promotion_products").select("promotion_id").in("promotion_id", ids),
       supabase.from("promotion_brands").select("promotion_id").in("promotion_id", ids),
     ]);
-    for (const r of pp ?? []) if (r.promotion_id) productCountMap[r.promotion_id] = (productCountMap[r.promotion_id] ?? 0) + 1;
-    for (const r of pb ?? []) if (r.promotion_id) brandCountMap[r.promotion_id] = (brandCountMap[r.promotion_id] ?? 0) + 1;
+    for (const r of pp ?? [])
+      if (r.promotion_id) productCountMap[r.promotion_id] = (productCountMap[r.promotion_id] ?? 0) + 1;
+    for (const r of pb ?? [])
+      if (r.promotion_id) brandCountMap[r.promotion_id] = (brandCountMap[r.promotion_id] ?? 0) + 1;
   }
 
   const rows: PromotionTableRow[] = (promos ?? []).map((p) => ({
@@ -46,19 +48,22 @@ export default async function TopRatedPage() {
   }));
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Produk Rating Tertinggi</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Promosi</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+            Produk Rating Tertinggi
+          </h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {rows.length} promosi · Tampilkan produk dengan ulasan terbaik dari pelanggan
           </p>
         </div>
         <Link
           href={`${BASE_PATH}/new`}
-          className="flex items-center gap-2 h-11 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity hover:opacity-80"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2} />
           Buat Promosi
         </Link>
       </div>

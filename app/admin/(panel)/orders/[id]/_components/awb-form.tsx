@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateOrderAWB } from "../../_actions";
 
+const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
 interface AWBFormProps {
   orderId: string;
   currentAWB?: string | null;
@@ -33,20 +35,20 @@ export function AWBForm({ orderId, currentAWB }: AWBFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor="awb" className="text-xs font-bold uppercase tracking-widest">
+        <Label htmlFor="awb" className={labelClass}>
           Nomor Resi (AWB)
         </Label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             id="awb"
             value={awb}
             onChange={(e) => setAwb(e.target.value)}
             placeholder="Masukkan nomor resi..."
-            className="h-9 flex-1 rounded-none font-mono text-sm"
+            className="h-10 flex-1 rounded-lg border-[#e0e0e0] font-mono text-sm dark:border-border"
           />
           <Button
             type="submit"
-            className="h-9 shrink-0 rounded-none border-0 font-bold uppercase tracking-widest text-xs"
+            className="h-10 shrink-0 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
             disabled={isPending || !awb.trim()}
           >
             {isPending ? "..." : "Simpan"}
@@ -54,12 +56,15 @@ export function AWBForm({ orderId, currentAWB }: AWBFormProps) {
         </div>
       </div>
 
-      {currentAWB && (
+      {currentAWB ? (
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Package size={11} />
-          <span>Resi aktif: <span className="font-mono font-semibold text-foreground">{currentAWB}</span></span>
+          <span>
+            Resi aktif:{" "}
+            <span className="font-mono font-semibold text-foreground">{currentAWB}</span>
+          </span>
         </div>
-      )}
+      ) : null}
     </form>
   );
 }

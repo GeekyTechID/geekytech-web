@@ -7,6 +7,7 @@ import { ChevronRight, MapPin, Package, Phone, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import type { OrderStatus } from "../_actions";
@@ -17,28 +18,6 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }> };
 
 // ─── Status config ────────────────────────────────────────────────────────────
-
-const STATUS_COLORS: Record<string, string> = {
-  pending_payment: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  paid: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  processing: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  shipped: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-  delivered: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
-  completed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  refunded: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending_payment: "Menunggu Bayar",
-  paid: "Dibayar",
-  processing: "Diproses",
-  shipped: "Dikirim",
-  delivered: "Terkirim",
-  completed: "Selesai",
-  cancelled: "Dibatalkan",
-  refunded: "Refund",
-};
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
   pending: "Menunggu",
@@ -81,21 +60,22 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const items = Array.isArray(order.order_items) ? order.order_items : [];
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link href="/admin/orders" className="font-medium transition-colors hover:text-foreground">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <Link href="/admin/orders" className="admin-text-link font-medium">
           Pesanan
         </Link>
-        <ChevronRight size={12} />
-        <span className="font-mono font-bold text-foreground">{order.order_number}</span>
+        <ChevronRight size={12} className="shrink-0 opacity-60" />
+        <span className="font-mono font-semibold text-foreground">{order.order_number}</span>
       </nav>
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-mono text-2xl font-black tracking-tight">{order.order_number}</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Transaksi</p>
+          <h1 className="font-mono text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+            {order.order_number}
+          </h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {formatDate(order.created_at, {
               day: "numeric",
               month: "long",
@@ -107,11 +87,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         </div>
         <span
           className={cn(
-            "px-3 py-1 text-xs font-bold uppercase tracking-widest",
-            STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-700"
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest",
+            adminOrderStatusBadgeClass(order.status),
           )}
         >
-          {STATUS_LABELS[order.status] ?? order.status}
+          {ADMIN_ORDER_STATUS_LABEL[order.status] ?? order.status}
         </span>
       </div>
 
@@ -120,17 +100,17 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         {/* Left: Items + Payment + History */}
         <div className="space-y-6 lg:col-span-2">
           {/* Order Items */}
-          <section className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">
+          <section className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">
                 Item Pesanan ({items.length})
               </h2>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-[#e0e0e0] dark:divide-border">
               {items.map((item) => (
                 <div key={item.id} className="flex gap-3 px-4 py-3">
                   {/* Image */}
-                  <div className="h-14 w-14 shrink-0 overflow-hidden border border-border bg-muted">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
@@ -156,7 +136,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-bold">{formatRupiah(item.subtotal)}</p>
+                      <p className="text-xs font-semibold">{formatRupiah(item.subtotal)}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {item.quantity} × {formatRupiah(item.price)}
                       </p>
@@ -167,16 +147,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </div>
 
             {/* Totals */}
-            <div className="space-y-1.5 border-t border-border bg-muted/30 px-4 py-3">
+            <div className="space-y-1.5 border-t border-[#e0e0e0] bg-muted/30 px-4 py-3 dark:border-border">
               <Row label="Subtotal" value={formatRupiah(order.subtotal)} />
               <Row label={`Ongkir (${order.courier_company ?? "—"} ${order.courier_service ?? ""})`} value={formatRupiah(order.shipping_cost)} />
               {order.shipping_insurance > 0 && (
                 <Row label="Asuransi Pengiriman" value={formatRupiah(order.shipping_insurance)} />
               )}
               {order.discount_amount > 0 && (
-                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-green-600" />
+                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-emerald-600 dark:text-emerald-400" />
               )}
-              <div className="border-t border-border pt-1.5">
+              <div className="border-t border-[#e0e0e0] pt-1.5 dark:border-border">
                 <Row label="Total" value={formatRupiah(order.total)} bold />
               </div>
             </div>
@@ -184,19 +164,19 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
           {/* Payment Info */}
           {payment && (
-            <section className="border border-border">
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-xs font-black uppercase tracking-widest">Info Pembayaran</h2>
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Info Pembayaran</h2>
               </div>
               <div className="space-y-2 px-4 py-4">
                 <InfoRow label="Status" value={
                   <span className={cn(
-                    "px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
+                    "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
                     payment.status === "paid"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                       : payment.status === "pending"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-brand/10 text-brand"
+                        : "bg-destructive/10 text-destructive dark:text-destructive"
                   )}>
                     {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
                   </span>
@@ -226,9 +206,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
           {/* Status History */}
           {history && history.length > 0 && (
-            <section className="border border-border">
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-xs font-black uppercase tracking-widest">Riwayat Status</h2>
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Riwayat Status</h2>
               </div>
               <div className="px-4 py-4">
                 <ol className="space-y-3">
@@ -239,7 +219,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                         <div className={cn(
                           "h-2.5 w-2.5 shrink-0 rounded-full border-2",
                           i === history.length - 1
-                            ? "border-foreground bg-foreground"
+                            ? "border-brand bg-brand"
                             : "border-muted-foreground bg-background"
                         )} />
                         {i < history.length - 1 && (
@@ -250,10 +230,10 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                       <div className="pb-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className={cn(
-                            "px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
-                            STATUS_COLORS[h.status] ?? "bg-gray-100 text-gray-700"
+                            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                            adminOrderStatusBadgeClass(h.status)
                           )}>
-                            {STATUS_LABELS[h.status] ?? h.status}
+                            {ADMIN_ORDER_STATUS_LABEL[h.status] ?? h.status}
                           </span>
                           <span className="text-[11px] text-muted-foreground">
                             {formatDate(h.created_at, {
@@ -275,11 +255,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         </div>
 
         {/* Right: Summary + Actions */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Customer & Shipping */}
-          <section className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Penerima</h2>
+          <section className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Penerima</h2>
             </div>
             <div className="space-y-2.5 px-4 py-4 text-sm">
               <div className="flex items-start gap-2">
@@ -303,9 +283,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
           {/* Courier */}
           {(order.courier_company || shipment) && (
-            <section className="border border-border">
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-xs font-black uppercase tracking-widest">Pengiriman</h2>
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Pengiriman</h2>
               </div>
               <div className="space-y-2 px-4 py-4">
                 {order.courier_company && (
@@ -329,18 +309,18 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
           {/* Notes */}
           {order.notes && (
-            <section className="border border-border">
-              <div className="border-b border-border px-4 py-3">
-                <h2 className="text-xs font-black uppercase tracking-widest">Catatan</h2>
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Catatan</h2>
               </div>
               <p className="px-4 py-3 text-sm text-muted-foreground">{order.notes}</p>
             </section>
           )}
 
           {/* Status Updater */}
-          <section className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Update Status</h2>
+          <section className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Update Status</h2>
             </div>
             <div className="px-4 py-4">
               <StatusUpdater
@@ -351,9 +331,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           </section>
 
           {/* AWB Input */}
-          <section className="border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <h2 className="text-xs font-black uppercase tracking-widest">Input Resi Manual</h2>
+          <section className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Input Resi Manual</h2>
             </div>
             <div className="px-4 py-4">
               <AWBForm orderId={order.id} currentAWB={shipment?.awb} />
@@ -381,7 +361,7 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-2 text-xs">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn(bold && "font-bold text-sm", className)}>{value}</span>
+      <span className={cn(bold && "text-sm font-semibold", className)}>{value}</span>
     </div>
   );
 }

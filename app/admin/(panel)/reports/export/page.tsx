@@ -22,15 +22,13 @@ const EXPORTS: {
   {
     type: "customers",
     label: "Export Pelanggan",
-    description:
-      "Daftar semua pelanggan terdaftar beserta tanggal bergabung.",
+    description: "Daftar semua pelanggan terdaftar beserta tanggal bergabung.",
     icon: Users,
   },
   {
     type: "revenue",
     label: "Export Revenue",
-    description:
-      "Revenue harian dari pesanan yang sudah dibayar, dikelompokkan per hari.",
+    description: "Revenue harian dari pesanan yang sudah dibayar, dikelompokkan per hari.",
     icon: TrendingUp,
   },
 ];
@@ -62,51 +60,40 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">
-            Export Data
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Unduh data dalam format CSV
-          </p>
+          <p className="text-swiss-eyebrow">Analitik</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Export Data</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Unduh data dalam format CSV</p>
         </div>
         <Link
           href="/admin/reports"
-          className="flex items-center gap-2 h-9 px-4 border border-border text-xs font-bold uppercase tracking-widest hover:bg-muted transition-swiss"
+          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-brand/40 px-5 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
         >
           <ArrowLeft size={13} />
           Kembali
         </Link>
       </div>
 
-      {/* Export Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {EXPORTS.map(({ type, label, description, icon: Icon }) => (
-          <div
-            key={type}
-            className="border border-border bg-background p-5 flex flex-col gap-4"
-          >
-            <div className="w-10 h-10 bg-muted flex items-center justify-center">
+          <div key={type} className="admin-utility-card flex flex-col gap-4 p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
               <Icon size={18} className="text-muted-foreground" />
             </div>
             <div className="flex-1 space-y-1">
-              <p className="text-sm font-black uppercase tracking-tight">
-                {label}
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {description}
-              </p>
+              <p className="text-sm font-semibold uppercase tracking-tight">{label}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             </div>
             <button
-              onClick={() => handleDownload(type)}
+              type="button"
+              onClick={() => void handleDownload(type)}
               disabled={loading !== null}
-              className="flex items-center justify-center gap-2 h-9 px-4 bg-swiss-black text-swiss-white text-xs font-bold uppercase tracking-widest transition-swiss disabled:opacity-40 disabled:cursor-not-allowed w-full"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
             >
               {loading === type ? (
-                <span className="inline-block w-3 h-3 border border-background/40 border-t-background rounded-full animate-spin" />
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border border-white/40 border-t-white" />
               ) : (
                 <Download size={13} />
               )}

@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 type Params = Promise<{ id: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { id } = await params;
-  return { title: `Edit Banner — Admin GeekyTech` };
+  await params;
+  return { title: "Edit Banner — Admin GeekyTech" };
 }
 
 export default async function AdminBannerEditPage({ params }: { params: Params }) {
@@ -28,17 +28,20 @@ export default async function AdminBannerEditPage({ params }: { params: Params }
   if (!banner) notFound();
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full space-y-8 p-6 lg:p-8">
       <div>
         <Link
           href="/admin/banners"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
+          className="admin-text-link mb-4 inline-flex items-center gap-1.5"
         >
           <ArrowLeft size={13} />
           Kembali ke daftar banner
         </Link>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Edit Banner</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="text-swiss-eyebrow">Konten</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+          Edit Banner
+        </h1>
+        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
           {banner.title ?? "Banner tanpa judul"}
         </p>
       </div>

@@ -22,16 +22,16 @@ export function SettingsNav() {
   };
 
   return (
-    <div className="flex gap-0 border-b border-border">
+    <div className="flex flex-wrap gap-0 border-b border-[#e0e0e0] dark:border-border">
       {TABS.map(({ label, href }) => (
         <Link
           key={href}
           href={href}
           className={cn(
-            "h-10 px-4 flex items-center text-xs font-bold uppercase tracking-widest border-b-2 transition-colors",
+            "flex h-11 items-center border-b-2 px-4 text-xs font-semibold uppercase tracking-widest transition-colors",
             isActive(href)
-              ? "border-foreground text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-brand text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground",
           )}
         >
           {label}

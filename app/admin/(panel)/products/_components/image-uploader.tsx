@@ -39,9 +39,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
 
     setUploading(true);
     try {
-      const uploads = await Promise.all(
-        Array.from(files).map((f) => uploadFile(f))
-      );
+      const uploads = await Promise.all(Array.from(files).map((f) => uploadFile(f)));
 
       const newImages: ImageItem[] = uploads.map((url, i) => ({
         url,
@@ -72,15 +70,14 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
 
   return (
     <div className="space-y-3">
-      {/* Upload zone */}
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className={cn(
-          "w-full border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 py-8 transition-colors text-muted-foreground",
-          "hover:border-foreground hover:text-foreground",
-          uploading && "opacity-50 cursor-not-allowed"
+          "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors dark:border-border",
+          "hover:border-brand/40 hover:text-foreground",
+          uploading && "cursor-not-allowed opacity-50",
         )}
       >
         {uploading ? (
@@ -88,7 +85,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
         ) : (
           <ImagePlus size={24} />
         )}
-        <span className="text-xs font-bold uppercase tracking-widest">
+        <span className="text-xs font-semibold uppercase tracking-widest">
           {uploading ? "Mengupload..." : "Klik atau drag foto produk"}
         </span>
         <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB</span>
@@ -100,44 +97,40 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
         accept="image/jpeg,image/png,image/webp,image/gif"
         multiple
         className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => void handleFiles(e.target.files)}
       />
 
-      {/* Image grid */}
-      {images.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+      {images.length > 0 ? (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
           {images.map((img, i) => (
-            <div key={img.url} className="relative group aspect-square border border-border overflow-hidden bg-muted/30">
-              <Image
-                src={img.url}
-                alt={img.alt_text || "Gambar produk"}
-                fill
-                sizes="120px"
-                className="object-cover"
-              />
+            <div
+              key={img.url}
+              className="group relative aspect-square overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border"
+            >
+              <Image src={img.url} alt={img.alt_text || "Gambar produk"} fill sizes="120px" className="object-cover" />
 
-              {img.is_primary && (
-                <div className="absolute top-1 left-1 bg-[#EA5329] text-white text-[9px] font-black px-1.5 py-0.5 uppercase tracking-widest">
+              {img.is_primary ? (
+                <div className="absolute left-1 top-1 bg-brand px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
                   Utama
                 </div>
-              )}
+              ) : null}
 
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                {!img.is_primary && (
+              <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                {!img.is_primary ? (
                   <button
                     type="button"
                     onClick={() => setPrimary(i)}
                     title="Jadikan foto utama"
-                    className="p-1.5 bg-white text-black hover:bg-yellow-400 transition-colors"
+                    className="rounded-md bg-card p-1.5 text-foreground transition-colors hover:bg-brand/15 hover:text-brand"
                   >
                     <Star size={12} />
                   </button>
-                )}
+                ) : null}
                 <button
                   type="button"
                   onClick={() => remove(i)}
                   title="Hapus foto"
-                  className="p-1.5 bg-white text-black hover:bg-red-500 hover:text-white transition-colors"
+                  className="rounded-md bg-card p-1.5 text-foreground transition-colors hover:bg-destructive/15 hover:text-destructive"
                 >
                   <Trash2 size={12} />
                 </button>
@@ -145,7 +138,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

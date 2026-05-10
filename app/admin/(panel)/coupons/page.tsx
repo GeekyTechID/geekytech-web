@@ -14,32 +14,29 @@ export default async function AdminCouponsPage() {
   const { data: coupons } = await supabase
     .from("coupons")
     .select(
-      "id, code, type, value, min_purchase, max_discount, max_usage, used_count, is_active, valid_from, valid_until, created_at"
+      "id, code, type, value, min_purchase, max_discount, max_usage, used_count, is_active, valid_from, valid_until, created_at",
     )
     .order("created_at", { ascending: false });
 
   const rows: CouponRow[] = (coupons ?? []) as CouponRow[];
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Kupon</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {rows.length} kupon
-          </p>
+          <p className="text-swiss-eyebrow">Pemasaran</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Kupon</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">{rows.length} kupon</p>
         </div>
         <Link
           href="/admin/coupons/new"
-          className="flex items-center gap-2 h-11 px-4 bg-swiss-black text-swiss-white text-xs font-black uppercase tracking-widest transition-opacity"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Plus size={14} />
+          <Plus size={14} strokeWidth={2} />
           Buat Kupon
         </Link>
       </div>
 
-      {/* Table */}
       <CouponTable coupons={rows} />
     </div>
   );

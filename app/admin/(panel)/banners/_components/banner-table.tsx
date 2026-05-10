@@ -51,27 +51,29 @@ function BannerActions({ banner }: { banner: BannerRow }) {
     <div className="flex items-center gap-1">
       <Link
         href={`/admin/banners/${banner.id}/edit`}
-        className="inline-flex p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="inline-flex rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-brand"
         aria-label="Edit banner"
       >
         <Pencil size={14} />
       </Link>
       <button
+        type="button"
         onClick={handleDelete}
         disabled={isPending}
         title="Hapus banner"
-        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors disabled:opacity-50"
+        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50 active:scale-[0.98]"
       >
         <Trash2 size={14} />
       </button>
       <button
+        type="button"
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-6 px-2 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50",
+          "h-8 rounded-md px-3 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50 active:scale-[0.98]",
           banner.is_active
-            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200"
-            : "bg-muted text-muted-foreground hover:bg-muted/80"
+            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+            : "bg-muted text-muted-foreground hover:bg-muted/80",
         )}
       >
         {banner.is_active ? "Aktif" : "Nonaktif"}
@@ -80,113 +82,107 @@ function BannerActions({ banner }: { banner: BannerRow }) {
   );
 }
 
+const thClass =
+  "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+
 export function BannerTable({ banners }: BannerTableProps) {
   if (banners.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-20 text-muted-foreground">
-        <ImageIcon size={36} strokeWidth={1} />
-        <p className="text-sm font-bold uppercase tracking-widest">Belum ada banner</p>
+      <div className="admin-utility-card flex flex-col items-center gap-3 rounded-lg border border-dashed border-[#e0e0e0] py-20 dark:border-border">
+        <ImageIcon size={36} strokeWidth={1} className="text-muted-foreground" />
+        <p className="admin-section-title text-foreground">Belum ada banner</p>
+        <Link href="/admin/banners/new" className="admin-text-link">
+          Tambah banner pertama
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto border border-border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground w-16">
-              Preview
-            </th>
-            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Judul / Subtitle
-            </th>
-            <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground md:table-cell">
-              Link
-            </th>
-            <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground sm:table-cell">
-              Urutan
-            </th>
-            <th className="hidden px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground lg:table-cell">
-              Periode
-            </th>
-            <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Aksi
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {banners.map((banner) => (
-            <tr
-              key={banner.id}
-              className="border-b border-border transition-colors last:border-b-0 hover:bg-muted/30"
-            >
-              {/* Preview */}
-              <td className="px-4 py-3">
-                <div className="relative w-14 h-9 border border-border overflow-hidden bg-muted/30">
-                  <Image
-                    src={banner.image_url}
-                    alt={banner.title ?? "Banner"}
-                    fill
-                    sizes="56px"
-                    className="object-cover"
-                  />
-                </div>
-              </td>
-
-              {/* Title */}
-              <td className="px-4 py-3">
-                <p className="font-medium text-sm line-clamp-1">
-                  {banner.title ?? <span className="text-muted-foreground italic">Tanpa judul</span>}
-                </p>
-                {banner.subtitle && (
-                  <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                    {banner.subtitle}
-                  </p>
-                )}
-              </td>
-
-              {/* Link */}
-              <td className="hidden px-4 py-3 md:table-cell">
-                {banner.link_url ? (
-                  <a
-                    href={banner.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors line-clamp-1 max-w-[12rem]"
-                  >
-                    {banner.link_url}
-                  </a>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
-              </td>
-
-              {/* Sort order */}
-              <td className="hidden px-4 py-3 sm:table-cell">
-                <span className="text-xs font-mono text-muted-foreground">{banner.sort_order}</span>
-              </td>
-
-              {/* Period */}
-              <td className="hidden px-4 py-3 lg:table-cell">
-                {banner.starts_at || banner.ends_at ? (
-                  <div className="text-xs text-muted-foreground space-y-0.5">
-                    {banner.starts_at && <p>Mulai: {formatDate(banner.starts_at)}</p>}
-                    {banner.ends_at && <p>Berakhir: {formatDate(banner.ends_at)}</p>}
-                  </div>
-                ) : (
-                  <span className="text-xs text-muted-foreground">Tidak terbatas</span>
-                )}
-              </td>
-
-              {/* Actions */}
-              <td className="px-4 py-3">
-                <BannerActions banner={banner} />
-              </td>
+    <div className="admin-utility-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-[17px] leading-[1.47]">
+          <thead>
+            <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <th className={`${thClass} w-16`}>Preview</th>
+              <th className={thClass}>Judul / Subtitle</th>
+              <th className={`${thClass} hidden md:table-cell`}>Link</th>
+              <th className={`${thClass} hidden sm:table-cell`}>Urutan</th>
+              <th className={`${thClass} hidden lg:table-cell`}>Periode</th>
+              <th className={thClass}>Aksi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            {banners.map((banner) => (
+              <tr
+                key={banner.id}
+                className="transition-colors hover:bg-muted/30"
+              >
+                <td className="px-4 py-3">
+                  <div className="relative h-9 w-14 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.title ?? "Banner"}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  </div>
+                </td>
+
+                <td className="px-4 py-3">
+                  <p className="line-clamp-1 text-sm font-medium text-foreground">
+                    {banner.title ?? (
+                      <span className="italic text-muted-foreground">Tanpa judul</span>
+                    )}
+                  </p>
+                  {banner.subtitle && (
+                    <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                      {banner.subtitle}
+                    </p>
+                  )}
+                </td>
+
+                <td className="hidden px-4 py-3 md:table-cell">
+                  {banner.link_url ? (
+                    <a
+                      href={banner.link_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="line-clamp-1 max-w-[12rem] text-sm text-brand transition-opacity hover:opacity-80"
+                    >
+                      {banner.link_url}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">—</span>
+                  )}
+                </td>
+
+                <td className="hidden px-4 py-3 sm:table-cell">
+                  <span className="font-mono text-sm text-muted-foreground tabular-nums">
+                    {banner.sort_order}
+                  </span>
+                </td>
+
+                <td className="hidden px-4 py-3 lg:table-cell">
+                  {banner.starts_at || banner.ends_at ? (
+                    <div className="space-y-0.5 text-sm text-muted-foreground">
+                      {banner.starts_at && <p>Mulai: {formatDate(banner.starts_at)}</p>}
+                      {banner.ends_at && <p>Berakhir: {formatDate(banner.ends_at)}</p>}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Tidak terbatas</span>
+                  )}
+                </td>
+
+                <td className="px-4 py-3">
+                  <BannerActions banner={banner} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -60,22 +60,22 @@ export default async function AdminReviewsPage({
     .eq("is_approved", false);
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Ulasan</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="text-swiss-eyebrow">Konten</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Ulasan</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {count ?? 0} ulasan
             {q ? ` untuk "${q}"` : ""}
             {status ? ` · filter: ${status}` : ""}
           </p>
         </div>
-        {(pendingCount.count ?? 0) > 0 && (
-          <div className="flex items-center gap-1.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 px-3 py-1.5 text-xs font-bold uppercase tracking-widest">
+        {(pendingCount.count ?? 0) > 0 ? (
+          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand">
             {pendingCount.count} menunggu persetujuan
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Filters */}

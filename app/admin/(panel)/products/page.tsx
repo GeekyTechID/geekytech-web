@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 import { ProductFilters } from "./_components/product-filters";
 import { ProductTable, type ProductRow } from "./_components/product-table";
 
@@ -42,18 +41,9 @@ export default async function AdminProductsPage({
   const supabase = await createClient();
 
   const [{ data: categories }, { data: brands }, productsResult] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("name"),
+    supabase.from("categories").select("id, name").eq("is_active", true).order("name"),
 
-    supabase
-      .from("brands")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("sort_order")
-      .order("name"),
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order").order("name"),
 
     (() => {
       let query = supabase
@@ -63,7 +53,7 @@ export default async function AdminProductsPage({
            categories(id, name),
            product_images(url, is_primary),
            product_variants(id, stock, reserved, is_active)`,
-          { count: "exact" }
+          { count: "exact" },
         )
         .is("deleted_at", null);
 
@@ -104,27 +94,24 @@ export default async function AdminProductsPage({
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full space-y-8 p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black uppercase tracking-tight">Produk</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-swiss-eyebrow">Katalog</p>
+          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Produk</h1>
+          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {count ?? 0} produk{q ? ` untuk "${q}"` : ""}
           </p>
         </div>
-        <Button
-          asChild
-          className="rounded-none font-bold uppercase tracking-widest text-xs bg-[#EA5329] hover:bg-[#D44820] text-white border-0 h-11 px-4 shrink-0"
+        <Link
+          href="/admin/products/new"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
-          <Link href="/admin/products/new">
-            <Plus size={13} className="mr-1.5" />
-            Tambah Produk
-          </Link>
-        </Button>
+          <Plus size={14} strokeWidth={2} />
+          Tambah Produk
+        </Link>
       </div>
 
-      {/* Filters */}
       <Suspense>
         <ProductFilters
           categories={categories ?? []}
@@ -132,7 +119,6 @@ export default async function AdminProductsPage({
         />
       </Suspense>
 
-      {/* Table */}
       <Suspense>
         <ProductTable
           products={(products ?? []) as ProductRow[]}

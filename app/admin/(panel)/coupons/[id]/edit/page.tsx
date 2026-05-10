@@ -19,46 +19,45 @@ export default async function AdminEditCouponPage({
 
   const { data: coupon } = await supabase
     .from("coupons")
-    .select(
-      "id, code, type, value, min_purchase, max_discount, max_usage, is_active, valid_from, valid_until"
-    )
+    .select("id, code, type, value, min_purchase, max_discount, max_usage, is_active, valid_from, valid_until")
     .eq("id", id)
     .single();
 
   if (!coupon) notFound();
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/admin/coupons"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft size={14} />
-          Kupon
+    <div className="mx-auto w-full max-w-2xl space-y-8 p-6 lg:p-8">
+      <nav className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Link href="/admin/coupons" className="admin-text-link font-medium">
+          <span className="inline-flex items-center gap-1">
+            <ChevronLeft size={14} />
+            Kupon
+          </span>
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <h1 className="text-2xl font-black uppercase tracking-tight">Edit {coupon.code}</h1>
+        <span className="text-muted-foreground/60">/</span>
+        <span className="font-semibold text-foreground">Edit {coupon.code}</span>
+      </nav>
+
+      <div>
+        <p className="text-swiss-eyebrow">Pemasaran</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Edit Kupon</h1>
+        <p className="mt-1 font-mono text-[17px] leading-[1.47] text-muted-foreground">{coupon.code}</p>
       </div>
 
-      {/* Form */}
-      <div className="max-w-2xl">
-        <CouponForm
-          initialData={{
-            id: coupon.id,
-            code: coupon.code,
-            type: coupon.type as "percentage" | "fixed",
-            value: coupon.value,
-            min_purchase: coupon.min_purchase ?? 0,
-            max_discount: coupon.max_discount ?? null,
-            max_usage: coupon.max_usage ?? null,
-            is_active: coupon.is_active,
-            valid_from: coupon.valid_from ?? null,
-            valid_until: coupon.valid_until ?? null,
-          }}
-        />
-      </div>
+      <CouponForm
+        initialData={{
+          id: coupon.id,
+          code: coupon.code,
+          type: coupon.type as "percentage" | "fixed",
+          value: coupon.value,
+          min_purchase: coupon.min_purchase ?? 0,
+          max_discount: coupon.max_discount ?? null,
+          max_usage: coupon.max_usage ?? null,
+          is_active: coupon.is_active,
+          valid_from: coupon.valid_from ?? null,
+          valid_until: coupon.valid_until ?? null,
+        }}
+      />
     </div>
   );
 }

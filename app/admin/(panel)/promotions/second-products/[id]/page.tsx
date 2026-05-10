@@ -29,19 +29,19 @@ export default async function SecondProductsEditPage({ params }: { params: Param
   if (!promo || promo.type !== "second_products") notFound();
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="mx-auto w-full max-w-4xl space-y-8 p-6 lg:p-8">
+      <Link
+        href={BACK_PATH}
+        className="admin-text-link inline-flex items-center gap-1.5 text-xs font-medium"
+      >
+        <ArrowLeft size={13} />
+        Kembali ke daftar
+      </Link>
+
       <div>
-        <Link
-          href={BACK_PATH}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
-        >
-          <ArrowLeft size={13} />
-          Kembali ke daftar
-        </Link>
-        <h1 className="text-2xl font-black uppercase tracking-tight">{promo.title}</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Template: Produk Second Terbaik
-        </p>
+        <p className="text-swiss-eyebrow">Promosi</p>
+        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">{promo.title}</h1>
+        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Template: Produk Second Terbaik</p>
       </div>
 
       <PromotionForm
