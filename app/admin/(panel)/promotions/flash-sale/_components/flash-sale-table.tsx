@@ -1,12 +1,16 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Eye, Trash2, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { toast } from "sonner";
 
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import {
+  AdminTableDeleteButton,
+  AdminTableDetailLink,
+} from "@/components/admin/admin-table-row-actions";
 import { toggleFlashSaleActive, deleteFlashSale } from "../_actions";
 
 export type FlashSaleRow = {
@@ -45,6 +49,7 @@ function getStatus(sale: FlashSaleRow): { label: string; className: string } {
 
 function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
   const [isPending, startTransition] = useTransition();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const status = getStatus(sale);
 
   const handleToggle = () => {
@@ -56,7 +61,6 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
   };
 
   const handleDelete = () => {
-    if (!confirm("Hapus flash sale ini beserta semua produknya? Tindakan tidak bisa dibatalkan.")) return;
     startTransition(async () => {
       const { error } = await deleteFlashSale(sale.id);
       if (error) toast.error(error);
@@ -65,23 +69,37 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Link
-        href={`/admin/promotions/flash-sale/${sale.id}`}
-        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        aria-label="Lihat detail"
-      >
-        <Eye size={14} />
-      </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isPending}
-        title="Hapus flash sale"
-        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-      >
-        <Trash2 size={14} />
-      </button>
+    <div className="flex flex-wrap items-center gap-1.5">
+      <AdminTableDetailLink href={`/admin/promotions/flash-sale/${sale.id}`}>Detail</AdminTableDetailLink>
+
+      {confirmDelete ? (
+        <>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-destructive">
+            Yakin hapus?
+          </span>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isPending}
+            className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
+          >
+            {isPending ? "..." : "Ya, Hapus"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(false)}
+            disabled={isPending}
+            className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
+          >
+            Batal
+          </button>
+        </>
+      ) : (
+        <AdminTableDeleteButton onClick={() => setConfirmDelete(true)} disabled={isPending}>
+          Hapus
+        </AdminTableDeleteButton>
+      )}
+
       <button
         type="button"
         onClick={handleToggle}

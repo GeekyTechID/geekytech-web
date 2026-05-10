@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 
 import { PromotionForm } from "../../_components/promotion-form";
+import { PromotionBannerSection } from "../../_components/promotion-banner-section";
 import { fetchSelectorData, fetchPromotionWithAssociations } from "../../_lib/fetch-selector-data";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export default async function SecondProductsEditPage({ params }: { params: Param
   if (!promo || promo.type !== "second_products") notFound();
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-8 p-6 lg:p-8">
+    <div className="w-full space-y-8 p-6 lg:p-8">
       <Link
         href={BACK_PATH}
         className="admin-text-link inline-flex items-center gap-1.5 text-xs font-medium"
@@ -61,6 +62,7 @@ export default async function SecondProductsEditPage({ params }: { params: Param
         }}
         products={products}
         brands={brands}
+        bannerSection={<PromotionBannerSection template="second_products" />}
       />
     </div>
   );

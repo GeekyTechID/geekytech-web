@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatRupiah } from "@/lib/format";
 import {
   createPromotion,
   updatePromotion,
+  createPromotionBannerInline,
   type PromotionType,
   type PromotionFormData,
 } from "../_actions";
@@ -20,127 +24,10 @@ import {
 
 const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
-function SecondProductsConfig({
-  config,
-  onChange,
-}: {
-  config: Record<string, unknown>;
-  onChange: (c: Record<string, unknown>) => void;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className={labelClass}>Urutan Tampil</label>
-      <select
-        value={(config.sort_by as string) ?? "rating"}
-        onChange={(e) => onChange({ ...config, sort_by: e.target.value })}
-        className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
-      >
-        <option value="rating">Rating tertinggi</option>
-        <option value="price_asc">Harga termurah</option>
-        <option value="price_desc">Harga termahal</option>
-        <option value="newest">Terbaru</option>
-      </select>
-    </div>
-  );
-}
-
-function FeaturedProductsConfig({
-  config,
-  onChange,
-  categories,
-}: {
-  config: Record<string, unknown>;
-  onChange: (c: Record<string, unknown>) => void;
-  categories?: { id: string; name: string }[];
-}) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="space-y-1.5">
-        <label className={labelClass}>Urutan Tampil</label>
-        <select
-          value={(config.sort_by as string) ?? "newest"}
-          onChange={(e) => onChange({ ...config, sort_by: e.target.value })}
-          className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
-        >
-          <option value="manual">Urutan manual</option>
-          <option value="newest">Terbaru</option>
-          <option value="bestseller">Terlaris</option>
-          <option value="rating">Rating tertinggi</option>
-        </select>
-      </div>
-      {categories && categories.length > 0 && (
-        <div className="space-y-1.5">
-          <label className={labelClass}>
-            Filter Kategori <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
-          </label>
-          <select
-            value={(config.category_id as string) ?? ""}
-            onChange={(e) => onChange({ ...config, category_id: e.target.value || undefined })}
-            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TopRatedConfig({
-  config,
-  onChange,
-  categories,
-}: {
-  config: Record<string, unknown>;
-  onChange: (c: Record<string, unknown>) => void;
-  categories?: { id: string; name: string }[];
-}) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="space-y-1.5">
-        <label className={labelClass}>Rating Minimum</label>
-        <select
-          value={(config.min_rating as number) ?? 4}
-          onChange={(e) => onChange({ ...config, min_rating: Number(e.target.value) })}
-          className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
-        >
-          <option value={5}>5 bintang</option>
-          <option value={4}>4+ bintang</option>
-          <option value={3}>3+ bintang</option>
-        </select>
-      </div>
-      {categories && categories.length > 0 && (
-        <div className="space-y-1.5">
-          <label className={labelClass}>
-            Filter Kategori <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
-          </label>
-          <select
-            value={(config.category_id as string) ?? ""}
-            onChange={(e) => onChange({ ...config, category_id: e.target.value || undefined })}
-            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export type PromotionInitialData = {
   id: string;
   title: string;
-  subtitle: string | null;
+  subtitle?: string | null;
   is_active: boolean;
   max_items: number;
   selection_mode: "manual" | "brand";
@@ -156,7 +43,7 @@ interface PromotionFormProps {
   initialData?: PromotionInitialData;
   products: ProductOption[];
   brands: BrandOption[];
-  categories?: { id: string; name: string }[];
+  bannerSection?: ReactNode;
 }
 
 const TYPE_LABELS: Record<PromotionType, string> = {
@@ -172,19 +59,20 @@ export function PromotionForm({
   initialData,
   products,
   brands,
-  categories,
+  bannerSection,
 }: PromotionFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const bannerFileRef = useRef<HTMLInputElement>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
 
   const [title, setTitle] = useState(initialData?.title ?? "");
-  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
   const [maxItems, setMaxItems] = useState(initialData?.max_items ?? 8);
   const [selectionMode, setSelectionMode] = useState<"manual" | "brand">(
     initialData?.selection_mode ?? "manual",
   );
-  const [config, setConfig] = useState<Record<string, unknown>>(initialData?.config ?? getDefaultConfig(type));
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(initialData?.product_ids ?? []);
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>(initialData?.brand_ids ?? []);
 
@@ -206,22 +94,31 @@ export function PromotionForm({
     const data: PromotionFormData = {
       type,
       title: title.trim(),
-      subtitle: subtitle.trim() || undefined,
+      subtitle: initialData?.subtitle ?? undefined,
       is_active: isActive,
       max_items: maxItems,
       selection_mode: selectionMode,
-      config,
+      config: initialData?.config ?? getDefaultConfig(type),
       product_ids: selectedProductIds,
       brand_ids: selectedBrandIds,
     };
 
     startTransition(async () => {
+      const uploadBanner = async () => {
+        if (!bannerFile) return;
+        const fd = new FormData();
+        fd.append("image", bannerFile);
+        const { error: bannerErr } = await createPromotionBannerInline(type, fd);
+        if (bannerErr) toast.error(`Promosi disimpan, tapi gagal upload banner: ${bannerErr}`);
+      };
+
       if (initialData) {
         const { error } = await updatePromotion(initialData.id, data);
         if (error) {
           toast.error(error);
           return;
         }
+        await uploadBanner();
         toast.success("Promosi diperbarui.");
         router.push(redirectPath);
       } else {
@@ -230,6 +127,7 @@ export function PromotionForm({
           toast.error(error ?? "Gagal membuat promosi.");
           return;
         }
+        await uploadBanner();
         toast.success("Promosi berhasil dibuat.");
         router.push(`${redirectPath}/${id}`);
       }
@@ -252,17 +150,6 @@ export function PromotionForm({
               placeholder={`Contoh: ${getPlaceholderTitle(type)}`}
               className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               required
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <label className={labelClass}>
-              Subtitle <span className="normal-case font-normal text-muted-foreground/70">(opsional)</span>
-            </label>
-            <Input
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Deskripsi singkat promosi ini"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
             />
           </div>
           <div className="space-y-1.5">
@@ -295,17 +182,6 @@ export function PromotionForm({
       </div>
 
       <div className="admin-utility-card space-y-4 p-6">
-        <h2 className="admin-section-title">Pengaturan Template</h2>
-        <div>
-          {type === "second_products" && <SecondProductsConfig config={config} onChange={setConfig} />}
-          {type === "featured_products" && (
-            <FeaturedProductsConfig config={config} onChange={setConfig} categories={categories} />
-          )}
-          {type === "top_rated" && <TopRatedConfig config={config} onChange={setConfig} categories={categories} />}
-        </div>
-      </div>
-
-      <div className="admin-utility-card space-y-4 p-6">
         <div>
           <h2 className="admin-section-title">Pilihan Produk</h2>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -321,8 +197,127 @@ export function PromotionForm({
           selectedBrandIds={selectedBrandIds}
           onProductsChange={setSelectedProductIds}
           onBrandsChange={setSelectedBrandIds}
+          filterBrandsByProducts={type === "second_products"}
         />
+
+        {/* Selected items detail panel */}
+        {selectionMode === "manual" && selectedProductIds.length > 0 && (
+          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03] dark:bg-brand/[0.06]">
+            <div className="border-b border-brand/20 px-4 py-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
+                {selectedProductIds.length} produk dipilih
+              </p>
+            </div>
+            <div className="divide-y divide-brand/10">
+              {selectedProductIds.map((pid) => {
+                const product = products.find((p) => p.id === pid);
+                if (!product) return null;
+                return (
+                  <div key={pid} className="flex items-center gap-3 px-4 py-2.5">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="truncate text-sm font-medium text-foreground">{product.name}</p>
+                        {product.condition === "second" && (
+                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                            second
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {product.brand_name ?? "—"} · {formatRupiah(product.price)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {selectionMode === "brand" && selectedBrandIds.length > 0 && (
+          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03] dark:bg-brand/[0.06]">
+            <div className="border-b border-brand/20 px-4 py-2.5">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
+                {selectedBrandIds.length} brand dipilih
+              </p>
+            </div>
+            <div className="divide-y divide-brand/10">
+              {selectedBrandIds.map((bid) => {
+                const brand = brands.find((b) => b.id === bid);
+                if (!brand) return null;
+                return (
+                  <div key={bid} className="flex items-center gap-3 px-4 py-2.5">
+                    <p className="text-sm font-medium text-foreground">{brand.name}</p>
+                    <p className="ml-auto text-xs text-muted-foreground">{brand.product_count} produk</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Banner upload — only on create */}
+      {!bannerSection && (
+        <div className="admin-utility-card space-y-4 p-6">
+          <div className="flex items-center gap-2">
+            <h2 className="admin-section-title">Banner Promosi</h2>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Opsional
+            </span>
+          </div>
+
+          <input
+            ref={bannerFileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
+              setBannerFile(file);
+              setBannerPreviewUrl(URL.createObjectURL(file));
+              e.target.value = "";
+            }}
+          />
+
+          {bannerPreviewUrl ? (
+            <div className="relative overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={bannerPreviewUrl} alt="Preview banner" className="max-h-48 w-full object-cover" />
+              <div className="absolute right-2 top-2 flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => bannerFileRef.current?.click()}
+                  className="h-7 rounded-full bg-white/90 px-3 text-[10px] font-semibold uppercase tracking-widest text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                >
+                  Ganti
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl); setBannerFile(null); setBannerPreviewUrl(null); }}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-destructive shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => bannerFileRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+            >
+              <ImagePlus size={22} strokeWidth={1.5} />
+              <span className="text-xs font-semibold uppercase tracking-widest">Pilih gambar banner</span>
+              <span className="text-[11px]">JPG, PNG, WebP — maks. 1 MB</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {bannerSection}
 
       <div className="flex flex-wrap gap-3">
         <button

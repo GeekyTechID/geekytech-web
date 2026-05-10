@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Buat Promosi Rating Tertinggi — Ad
 const BACK_PATH = "/admin/promotions/top-rated";
 
 export default async function TopRatedNewPage() {
-  const { products, brands, categories } = await fetchSelectorData();
+  const { products, brands } = await fetchSelectorData();
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8 p-6 lg:p-8">
@@ -38,7 +38,6 @@ export default async function TopRatedNewPage() {
         redirectPath={BACK_PATH}
         products={products}
         brands={brands}
-        categories={categories}
       />
     </div>
   );

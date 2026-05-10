@@ -3,11 +3,15 @@
 import { useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ImageIcon, Pencil, Trash2 } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import {
+  AdminTableDeleteButton,
+  AdminTableEditLink,
+} from "@/components/admin/admin-table-row-actions";
 import { toggleBannerActive, deleteBanner } from "../_actions";
 
 export type BannerRow = {
@@ -25,6 +29,7 @@ export type BannerRow = {
 
 interface BannerTableProps {
   banners: BannerRow[];
+  newHref?: string;
 }
 
 function BannerActions({ banner }: { banner: BannerRow }) {
@@ -48,23 +53,11 @@ function BannerActions({ banner }: { banner: BannerRow }) {
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Link
-        href={`/admin/banners/${banner.id}/edit`}
-        className="inline-flex rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-brand"
-        aria-label="Edit banner"
-      >
-        <Pencil size={14} />
-      </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isPending}
-        title="Hapus banner"
-        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50 active:scale-[0.98]"
-      >
-        <Trash2 size={14} />
-      </button>
+    <div className="flex flex-wrap items-center gap-1.5">
+      <AdminTableEditLink href={`/admin/banners/${banner.id}/edit`}>Edit</AdminTableEditLink>
+      <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
+        Hapus
+      </AdminTableDeleteButton>
       <button
         type="button"
         onClick={handleToggle}
@@ -85,13 +78,13 @@ function BannerActions({ banner }: { banner: BannerRow }) {
 const thClass =
   "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
 
-export function BannerTable({ banners }: BannerTableProps) {
+export function BannerTable({ banners, newHref = "/admin/banners/new" }: BannerTableProps) {
   if (banners.length === 0) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 rounded-lg border border-dashed border-[#e0e0e0] py-20 dark:border-border">
         <ImageIcon size={36} strokeWidth={1} className="text-muted-foreground" />
         <p className="admin-section-title text-foreground">Belum ada banner</p>
-        <Link href="/admin/banners/new" className="admin-text-link">
+        <Link href={newHref} className="admin-text-link">
           Tambah banner pertama
         </Link>
       </div>

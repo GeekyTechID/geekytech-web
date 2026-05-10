@@ -1,10 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
-import Link from "next/link";
-import { HelpCircle, Pencil, Trash2 } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  AdminTableDeleteButton,
+  AdminTableEditLink,
+} from "@/components/admin/admin-table-row-actions";
 import { toggleFaqActive, deleteFaq } from "../_actions";
 
 export type FaqRow = {
@@ -42,23 +45,11 @@ function FaqActions({ faq }: { faq: FaqRow }) {
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Link
-        href={`/admin/settings/faq/${faq.id}/edit`}
-        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        aria-label="Edit FAQ"
-      >
-        <Pencil size={14} />
-      </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isPending}
-        title="Hapus FAQ"
-        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-      >
-        <Trash2 size={14} />
-      </button>
+    <div className="flex flex-wrap items-center gap-1.5">
+      <AdminTableEditLink href={`/admin/settings/faq/${faq.id}/edit`}>Edit</AdminTableEditLink>
+      <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
+        Hapus
+      </AdminTableDeleteButton>
       <button
         type="button"
         onClick={handleToggle}

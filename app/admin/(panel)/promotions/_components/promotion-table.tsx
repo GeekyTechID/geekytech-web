@@ -2,10 +2,13 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
-import { Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import {
+  AdminTableDeleteButton,
+  AdminTableEditLink,
+} from "@/components/admin/admin-table-row-actions";
 import { togglePromotionActive, deletePromotion, type PromotionType } from "../_actions";
 
 export type PromotionTableRow = {
@@ -48,23 +51,11 @@ function RowActions({ row, basePath }: { row: PromotionTableRow; basePath: strin
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <Link
-        href={`${basePath}/${row.id}`}
-        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        title="Edit"
-      >
-        <Eye size={14} />
-      </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isPending}
-        title="Hapus"
-        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-      >
-        <Trash2 size={14} />
-      </button>
+    <div className="flex flex-wrap items-center gap-1.5">
+      <AdminTableEditLink href={`${basePath}/${row.id}`}>Edit</AdminTableEditLink>
+      <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
+        Hapus
+      </AdminTableDeleteButton>
       <button
         type="button"
         onClick={handleToggle}

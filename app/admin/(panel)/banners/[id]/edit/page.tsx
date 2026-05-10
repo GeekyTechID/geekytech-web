@@ -21,7 +21,7 @@ export default async function AdminBannerEditPage({ params }: { params: Params }
 
   const { data: banner } = await supabase
     .from("banners")
-    .select("id, title, subtitle, image_url, link_url, sort_order, is_active, starts_at, ends_at")
+    .select("id, title, subtitle, image_url, link_url, sort_order, is_active, starts_at, ends_at, template")
     .eq("id", id)
     .single();
 

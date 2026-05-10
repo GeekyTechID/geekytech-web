@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { PromotionTable, type PromotionTableRow } from "../_components/promotion-table";
 
 export const metadata: Metadata = { title: "Produk Second — Promosi Admin GeekyTech" };
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const BASE_PATH = "/admin/promotions/second-products";
 
 export default async function SecondProductsPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: promos } = await supabase
     .from("promotions")

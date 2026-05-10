@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Package, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Package, Plus, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { formatRupiah } from "@/lib/format";
+import {
+  AdminTableDeleteButton,
+  AdminTableRowTextButton,
+} from "@/components/admin/admin-table-row-actions";
 import { Input } from "@/components/ui/input";
 import {
   addFlashSaleProduct,
@@ -277,14 +281,17 @@ function AddProductForm({
 
 export function FlashSaleProducts({ flashSaleId, products, availableVariants }: FlashSaleProductsProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleRemove = (productId: string) => {
-    if (!confirm("Hapus produk dari flash sale ini?")) return;
     startTransition(async () => {
       const { error } = await removeFlashSaleProduct(productId, flashSaleId);
       if (error) toast.error(error);
-      else toast.success("Produk dihapus dari flash sale.");
+      else {
+        toast.success("Produk dihapus dari flash sale.");
+        setConfirmDeleteId(null);
+      }
     });
   };
 
@@ -319,7 +326,9 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Kuota / Terjual
                 </th>
-                <th className="w-24 px-4 py-3" />
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -369,24 +378,42 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                     </td>
                     <td className="px-4 py-3">
                       {editingId !== product.id && (
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => setEditingId(product.id)}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            title="Edit"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemove(product.id)}
-                            disabled={isPending}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-                            title="Hapus"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {confirmDeleteId === product.id ? (
+                            <>
+                              <span className="text-[10px] font-semibold uppercase tracking-widest text-destructive">
+                                Yakin?
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemove(product.id)}
+                                disabled={isPending}
+                                className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
+                              >
+                                {isPending ? "..." : "Ya"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                disabled={isPending}
+                                className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
+                              >
+                                Batal
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <AdminTableRowTextButton tone="brand" onClick={() => setEditingId(product.id)}>
+                                Edit
+                              </AdminTableRowTextButton>
+                              <AdminTableDeleteButton
+                                onClick={() => setConfirmDeleteId(product.id)}
+                                disabled={isPending}
+                              >
+                                Hapus
+                              </AdminTableDeleteButton>
+                            </>
+                          )}
                         </div>
                       )}
                     </td>

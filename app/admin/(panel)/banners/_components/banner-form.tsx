@@ -9,8 +9,10 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { createBanner, updateBanner, type BannerFormData } from "../_actions";
+import { templateToPromotionAdminPath } from "@/lib/banner-template-utils";
 
 type BannerFormProps = {
+  template?: string | null;
   initialData?: {
     id: string;
     title: string | null;
@@ -21,6 +23,7 @@ type BannerFormProps = {
     is_active: boolean;
     starts_at: string | null;
     ends_at: string | null;
+    template?: string | null;
   };
 };
 
@@ -44,11 +47,14 @@ function FormSection({
   );
 }
 
-export function BannerForm({ initialData }: BannerFormProps) {
+export function BannerForm({ initialData, template: templateProp }: BannerFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const template = templateProp ?? initialData?.template ?? null;
+  const backHref = templateToPromotionAdminPath(template);
 
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
@@ -102,6 +108,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
       is_active: isActive,
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+      template,
     };
 
     startTransition(async () => {
@@ -120,7 +127,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
         }
         toast.success("Banner berhasil dibuat.");
       }
-      router.push("/admin/banners");
+      router.push(backHref);
     });
   };
 
@@ -178,31 +185,35 @@ export function BannerForm({ initialData }: BannerFormProps) {
 
       <FormSection title="Konten">
         <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="banner-title" className={labelClass}>
-              Judul
-            </label>
-            <Input
-              id="banner-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Promo Akhir Tahun"
-              className={inputFieldClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="banner-subtitle" className={labelClass}>
-              Subtitle
-            </label>
-            <Input
-              id="banner-subtitle"
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Diskon hingga 50%"
-              className={inputFieldClass}
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          {!template && (
+            <>
+              <div className="space-y-1.5">
+                <label htmlFor="banner-title" className={labelClass}>
+                  Judul
+                </label>
+                <Input
+                  id="banner-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Promo Akhir Tahun"
+                  className={inputFieldClass}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="banner-subtitle" className={labelClass}>
+                  Subtitle
+                </label>
+                <Input
+                  id="banner-subtitle"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  placeholder="Diskon hingga 50%"
+                  className={inputFieldClass}
+                />
+              </div>
+            </>
+          )}
+          <div className={cn("space-y-1.5", !template && "sm:col-span-2")}>
             <label htmlFor="banner-link" className={labelClass}>
               URL Link (opsional)
             </label>
@@ -217,62 +228,64 @@ export function BannerForm({ initialData }: BannerFormProps) {
         </div>
       </FormSection>
 
-      <FormSection title="Pengaturan">
-        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-1.5">
-            <label htmlFor="banner-sort" className={labelClass}>
-              Urutan Tampil
-            </label>
-            <Input
-              id="banner-sort"
-              type="number"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
-              min={0}
-              className={inputFieldClass}
-            />
+      {!template && (
+        <FormSection title="Pengaturan">
+          <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <label htmlFor="banner-sort" className={labelClass}>
+                Urutan Tampil
+              </label>
+              <Input
+                id="banner-sort"
+                type="number"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
+                min={0}
+                className={inputFieldClass}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="banner-start" className={labelClass}>
+                Mulai Tayang
+              </label>
+              <Input
+                id="banner-start"
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                className={inputFieldClass}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="banner-end" className={labelClass}>
+                Berakhir
+              </label>
+              <Input
+                id="banner-end"
+                type="datetime-local"
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className={inputFieldClass}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <span className={labelClass}>Status</span>
+              <button
+                type="button"
+                onClick={() => setIsActive((v) => !v)}
+                className={cn(
+                  "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                  isActive
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    : "bg-muted text-muted-foreground",
+                )}
+              >
+                {isActive ? "Aktif" : "Nonaktif"}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label htmlFor="banner-start" className={labelClass}>
-              Mulai Tayang
-            </label>
-            <Input
-              id="banner-start"
-              type="datetime-local"
-              value={startsAt}
-              onChange={(e) => setStartsAt(e.target.value)}
-              className={inputFieldClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="banner-end" className={labelClass}>
-              Berakhir
-            </label>
-            <Input
-              id="banner-end"
-              type="datetime-local"
-              value={endsAt}
-              onChange={(e) => setEndsAt(e.target.value)}
-              className={inputFieldClass}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <span className={labelClass}>Status</span>
-            <button
-              type="button"
-              onClick={() => setIsActive((v) => !v)}
-              className={cn(
-                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
-                isActive
-                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  : "bg-muted text-muted-foreground",
-              )}
-            >
-              {isActive ? "Aktif" : "Nonaktif"}
-            </button>
-          </div>
-        </div>
-      </FormSection>
+        </FormSection>
+      )}
 
       <div className="flex flex-wrap gap-3">
         <button
@@ -284,7 +297,7 @@ export function BannerForm({ initialData }: BannerFormProps) {
         </button>
         <button
           type="button"
-          onClick={() => router.push("/admin/banners")}
+          onClick={() => router.push(backHref)}
           disabled={isPending}
           className="h-11 rounded-full border border-brand bg-transparent px-5 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/10 disabled:opacity-50 active:scale-[0.98]"
         >

@@ -7,14 +7,7 @@ import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { upsertMainBanner, type MainBannerData } from "../_actions";
-
-type InitialData = {
-  id: string;
-  image_url: string;
-  link_url: string | null;
-  is_active: boolean;
-} | null;
+import { addBanner } from "../_actions";
 
 const labelClass =
   "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
@@ -125,15 +118,26 @@ const LINK_GUIDE = [
   },
 ];
 
-export function MainBannerForm({ initialData }: { initialData: InitialData }) {
+export function MainBannerForm() {
   const [isPending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [imageUrl, setImageUrl] = useState(initialData?.image_url ?? "");
-  const [linkUrl, setLinkUrl] = useState(initialData?.link_url ?? "");
-  const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
+  const [title, setTitle] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [sortOrder, setSortOrder] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+
+  const resetForm = () => {
+    setTitle("");
+    setImageUrl("");
+    setLinkUrl("");
+    setSortOrder(0);
+    setIsActive(true);
+    setShowGuide(false);
+  };
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -165,24 +169,63 @@ export function MainBannerForm({ initialData }: { initialData: InitialData }) {
       return;
     }
 
-    const data: MainBannerData = {
-      image_url: imageUrl,
-      link_url: linkUrl || null,
-      is_active: isActive,
-    };
-
     startTransition(async () => {
-      const { error } = await upsertMainBanner(initialData?.id ?? null, data);
+      const { error } = await addBanner({
+        title: title || null,
+        image_url: imageUrl,
+        link_url: linkUrl || null,
+        is_active: isActive,
+        sort_order: sortOrder,
+      });
       if (error) {
         toast.error(error);
         return;
       }
-      toast.success("Main banner berhasil disimpan.");
+      toast.success("Banner berhasil ditambahkan.");
+      resetForm();
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Title + Sort Order */}
+      <FormSection title="Informasi Banner">
+        <div className="space-y-4 p-5">
+          <div className="space-y-1.5">
+            <label htmlFor="mb-title" className={labelClass}>
+              Judul <span className="text-muted-foreground/60">(Opsional)</span>
+            </label>
+            <Input
+              id="mb-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Contoh: Flash Sale Akhir Tahun"
+              className="h-10 rounded-lg text-[17px] leading-[1.47]"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Digunakan sebagai label pengenal di daftar banner admin.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="mb-sort" className={labelClass}>
+              Urutan Tampil
+            </label>
+            <Input
+              id="mb-sort"
+              type="number"
+              min={0}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value))}
+              className="h-10 w-32 rounded-lg text-[17px] leading-[1.47]"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Angka lebih kecil tampil lebih dulu. Default 0.
+            </p>
+          </div>
+        </div>
+      </FormSection>
+
       {/* Image Upload */}
       <FormSection title="Gambar Banner *">
         <div className="space-y-3 p-5">
@@ -374,7 +417,7 @@ export function MainBannerForm({ initialData }: { initialData: InitialData }) {
         disabled={isPending || uploading}
         className="h-11 rounded-full bg-brand px-8 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
       >
-        {isPending ? "Menyimpan..." : "Simpan Main Banner"}
+        {isPending ? "Menyimpan..." : "Tambah Banner"}
       </button>
     </form>
   );

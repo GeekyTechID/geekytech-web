@@ -70,22 +70,24 @@ export async function createPromotion(
   const promoId = promo.id;
 
   if (data.selection_mode === "manual" && data.product_ids.length > 0) {
-    await supabase.from("promotion_products").insert(
+    const { error: ppErr } = await supabase.from("promotion_products").insert(
       data.product_ids.map((pid, i) => ({
         promotion_id: promoId,
         product_id: pid,
         display_order: i,
       }))
     );
+    if (ppErr) return { error: ppErr.message };
   }
 
   if (data.selection_mode === "brand" && data.brand_ids.length > 0) {
-    await supabase.from("promotion_brands").insert(
+    const { error: pbErr } = await supabase.from("promotion_brands").insert(
       data.brand_ids.map((bid) => ({
         promotion_id: promoId,
         brand_id: bid,
       }))
     );
+    if (pbErr) return { error: pbErr.message };
   }
 
   revalidatePromotion(data.type, promoId);
@@ -167,5 +169,36 @@ export async function deletePromotion(
   const { error } = await supabase.from("promotions").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePromotion(type);
+  return {};
+}
+
+export async function createPromotionBannerInline(
+  promotionType: PromotionType,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const file = formData.get("image") as File | null;
+  if (!file || file.size === 0) return {};
+
+  const supabase = await createServiceClient();
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `promotions/${promotionType}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error: upErr } = await supabase.storage
+    .from("banners")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) return { error: upErr.message };
+
+  const { data: { publicUrl } } = supabase.storage.from("banners").getPublicUrl(path);
+
+  const { error } = await supabase.from("banners").insert({
+    image_url: publicUrl,
+    template: promotionType,
+    is_active: true,
+    sort_order: 1,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePromotion(promotionType);
   return {};
 }

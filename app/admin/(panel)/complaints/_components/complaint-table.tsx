@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Eye, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 import { formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
@@ -88,7 +88,9 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Status
                 </th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -135,14 +137,8 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/complaints/${complaint.id}`}
-                        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        aria-label="Lihat detail"
-                      >
-                        <Eye size={15} />
-                      </Link>
+                    <td className="px-4 py-3 text-right">
+                      <AdminTableDetailLink href={`/admin/complaints/${complaint.id}`}>Detail</AdminTableDetailLink>
                     </td>
                   </tr>
                 );

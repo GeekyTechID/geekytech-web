@@ -2,19 +2,8 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Edit,
-  MoreHorizontal,
-  Package,
-  Trash2,
-  Tag,
-  CheckCheck,
-  XCircle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  AdminTableDeleteButton,
+  AdminTableEditLink,
+} from "@/components/admin/admin-table-row-actions";
 import {
   Dialog,
   DialogContent,
@@ -281,7 +267,6 @@ export function ProductTable({
             onClick={() => handleBulkStatus(true)}
             disabled={isPending}
           >
-            <CheckCheck size={12} className="mr-1" />
             Aktifkan
           </Button>
           <Button
@@ -291,7 +276,6 @@ export function ProductTable({
             onClick={() => handleBulkStatus(false)}
             disabled={isPending}
           >
-            <XCircle size={12} className="mr-1" />
             Nonaktifkan
           </Button>
           {brands.length > 0 && (
@@ -302,7 +286,6 @@ export function ProductTable({
               onClick={() => setBrandDialogOpen(true)}
               disabled={isPending}
             >
-              <Tag size={12} className="mr-1" />
               Ganti Merek
             </Button>
           )}
@@ -321,7 +304,6 @@ export function ProductTable({
             onClick={() => setBulkDeleteOpen(true)}
             disabled={isPending}
           >
-            <Trash2 size={12} className="mr-1" />
             Hapus
           </Button>
           <button
@@ -366,7 +348,9 @@ export function ProductTable({
                 <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Status
                 </th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -482,35 +466,14 @@ export function ProductTable({
 
                   {/* Actions */}
                   <td className="px-4 py-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        >
-                          <MoreHorizontal size={16} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[140px] rounded-lg border-[#e0e0e0] dark:border-border">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href={`/admin/products/${product.id}/edit`}
-                            className="flex items-center gap-2 rounded-md"
-                          >
-                            <Edit size={13} />
-                            Edit Produk
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => setDeleteTarget(product)}
-                          className="rounded-md text-destructive focus:text-destructive"
-                        >
-                          <Trash2 size={13} className="mr-2" />
-                          Hapus Produk
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <AdminTableEditLink href={`/admin/products/${product.id}/edit`}>
+                        Edit
+                      </AdminTableEditLink>
+                      <AdminTableDeleteButton onClick={() => setDeleteTarget(product)} disabled={isPending}>
+                        Hapus
+                      </AdminTableDeleteButton>
+                    </div>
                   </td>
                 </tr>
               );

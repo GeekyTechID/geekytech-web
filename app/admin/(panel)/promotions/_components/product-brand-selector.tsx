@@ -31,6 +31,8 @@ interface ProductBrandSelectorProps {
   selectedBrandIds: string[];
   onProductsChange: (ids: string[]) => void;
   onBrandsChange: (ids: string[]) => void;
+  /** When true, brand list is filtered and counted based on the products prop (already filtered externally). */
+  filterBrandsByProducts?: boolean;
 }
 
 export function ProductBrandSelector({
@@ -42,6 +44,7 @@ export function ProductBrandSelector({
   selectedBrandIds,
   onProductsChange,
   onBrandsChange,
+  filterBrandsByProducts = false,
 }: ProductBrandSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
   const [brandSearch, setBrandSearch] = useState("");
@@ -50,7 +53,24 @@ export function ProductBrandSelector({
     `${p.name} ${p.brand_name ?? ""}`.toLowerCase().includes(productSearch.toLowerCase()),
   );
 
-  const filteredBrands = brands.filter((b) => b.name.toLowerCase().includes(brandSearch.toLowerCase()));
+  // When filterBrandsByProducts, derive counts and visibility from the (already filtered) products prop.
+  const brandCountsByName: Record<string, number> = {};
+  if (filterBrandsByProducts) {
+    products.forEach((p) => {
+      if (p.brand_name) brandCountsByName[p.brand_name] = (brandCountsByName[p.brand_name] ?? 0) + 1;
+    });
+  }
+
+  const visibleBrands = filterBrandsByProducts
+    ? brands.filter((b) => (brandCountsByName[b.name] ?? 0) > 0)
+    : brands;
+
+  const filteredBrands = visibleBrands.filter((b) =>
+    b.name.toLowerCase().includes(brandSearch.toLowerCase()),
+  );
+
+  const getBrandCount = (b: BrandOption) =>
+    filterBrandsByProducts ? (brandCountsByName[b.name] ?? 0) : b.product_count;
 
   const toggleProduct = (id: string) => {
     onProductsChange(
@@ -66,12 +86,12 @@ export function ProductBrandSelector({
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+      <div className="flex w-full overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
         <button
           type="button"
           onClick={() => onModeChange("manual")}
           className={cn(
-            "flex h-9 items-center gap-1.5 border-r border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors last:border-r-0 dark:border-border",
+            "flex flex-1 h-9 items-center justify-center gap-1.5 border-r border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
             mode === "manual" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
@@ -82,7 +102,7 @@ export function ProductBrandSelector({
           type="button"
           onClick={() => onModeChange("brand")}
           className={cn(
-            "flex h-9 items-center gap-1.5 px-3 text-xs font-semibold uppercase tracking-widest transition-colors",
+            "flex flex-1 h-9 items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-widest transition-colors",
             mode === "brand" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
@@ -93,7 +113,7 @@ export function ProductBrandSelector({
 
       {mode === "manual" ? (
         <div className="space-y-3">
-          <div className="relative max-w-md">
+          <div className="relative w-full">
             <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={productSearch}
@@ -102,26 +122,6 @@ export function ProductBrandSelector({
               className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
             />
           </div>
-
-          {selectedProductIds.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedProductIds.map((id) => {
-                const p = products.find((x) => x.id === id);
-                if (!p) return null;
-                return (
-                  <span
-                    key={id}
-                    className="inline-flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand"
-                  >
-                    {p.name}
-                    <button type="button" onClick={() => toggleProduct(id)} className="rounded p-0.5 hover:bg-brand/20">
-                      <X size={10} />
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-          )}
 
           <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
             {filteredProducts.length === 0 ? (
@@ -163,7 +163,7 @@ export function ProductBrandSelector({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="relative max-w-md">
+          <div className="relative w-full">
             <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={brandSearch}
@@ -217,7 +217,7 @@ export function ProductBrandSelector({
                     />
                     <div>
                       <p className="text-sm font-medium">{b.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{b.product_count} produk</p>
+                      <p className="text-[11px] text-muted-foreground">{getBrandCount(b)} produk</p>
                     </div>
                   </button>
                 );

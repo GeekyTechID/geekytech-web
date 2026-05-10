@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Eye, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 
 import { formatRelativeDate } from "@/lib/format";
+import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
 
 export type CustomerRow = {
   id: string;
@@ -60,7 +60,9 @@ export function CustomerTable({ customers, page, totalPages }: CustomerTableProp
                 <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
                   Bergabung
                 </th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -106,14 +108,8 @@ export function CustomerTable({ customers, page, totalPages }: CustomerTableProp
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/customers/${customer.id}`}
-                        className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        aria-label="Lihat detail"
-                      >
-                        <Eye size={15} />
-                      </Link>
+                    <td className="px-4 py-3 text-right">
+                      <AdminTableDetailLink href={`/admin/customers/${customer.id}`}>Detail</AdminTableDetailLink>
                     </td>
                   </tr>
                 );

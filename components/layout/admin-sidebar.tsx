@@ -74,7 +74,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Ulasan", href: "/admin/reviews", icon: MessageSquare },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
-      { label: "Banner", href: "/admin/banners", icon: ImageIcon },
       { label: "Kupon", href: "/admin/coupons", icon: Ticket },
     ],
   },

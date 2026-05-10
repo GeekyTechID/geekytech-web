@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Eye, ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 
 import { formatRupiah, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 
 export type OrderRow = {
@@ -70,7 +71,9 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
                 <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Total
                 </th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -121,14 +124,10 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
                     <span className="text-xs font-semibold">{formatRupiah(order.total)}</span>
                   </td>
 
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="inline-flex rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      aria-label="Lihat detail"
-                    >
-                      <Eye size={15} />
-                    </Link>
+                  <td className="px-4 py-3 text-right">
+                    <AdminTableDetailLink href={`/admin/orders/${order.id}`} className="min-w-0">
+                      Detail
+                    </AdminTableDetailLink>
                   </td>
                 </tr>
               ))}

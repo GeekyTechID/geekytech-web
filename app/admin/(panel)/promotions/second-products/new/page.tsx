@@ -13,7 +13,7 @@ export default async function SecondProductsNewPage() {
   const { products, brands } = await fetchSelectorData();
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-8 p-6 lg:p-8">
+    <div className="mx-auto w-full space-y-8 p-6 lg:p-8">
       <Link
         href={BACK_PATH}
         className="admin-text-link inline-flex items-center gap-1.5 text-xs font-medium"

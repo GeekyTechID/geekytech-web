@@ -1,4 +1,7 @@
+import "server-only";
+
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 import type { Database } from "@/types/supabase";
@@ -33,27 +36,19 @@ export async function createClient() {
  * Server client dengan service_role key.
  * Gunakan HANYA di API routes / server actions yang membutuhkan bypass RLS.
  * JANGAN gunakan di Client Components atau expose ke browser.
+ *
+ * Menggunakan createClient dari @supabase/supabase-js (bukan @supabase/ssr)
+ * agar Authorization header benar-benar pakai service role JWT — bukan JWT
+ * user dari cookies — sehingga RLS di-bypass sepenuhnya.
  */
-export async function createServiceClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient<Database>(
+export function createServiceClient() {
+  return createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // no-op in Server Components
-          }
-        },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     },
   );

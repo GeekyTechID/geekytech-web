@@ -3,83 +3,108 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 
-export type MainBannerData = {
+export type BannerRow = {
+  id: string;
+  title: string | null;
   image_url: string;
   link_url: string | null;
   is_active: boolean;
+  sort_order: number;
+  created_at: string;
 };
 
-const SETTINGS_KEY = "main_banner_id";
-
-export async function getMainBanner(): Promise<{
-  id: string;
+export type AddBannerData = {
+  title: string | null;
   image_url: string;
   link_url: string | null;
   is_active: boolean;
-} | null> {
-  const supabase = await createServiceClient();
+  sort_order: number;
+};
 
-  const { data: setting } = await supabase
-    .from("settings")
-    .select("value")
-    .eq("key", SETTINGS_KEY)
-    .maybeSingle();
+export async function addBanner(data: AddBannerData): Promise<{ error?: string }> {
+  if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
-  const bannerId = setting?.value as string | null | undefined;
-  if (!bannerId) return null;
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("banners").insert({
+    title: data.title?.trim() || null,
+    image_url: data.image_url.trim(),
+    link_url: data.link_url?.trim() || null,
+    is_active: data.is_active,
+    sort_order: data.sort_order,
+    starts_at: null,
+    ends_at: null,
+    template: "main_banner",
+  });
 
-  const { data: banner } = await supabase
-    .from("banners")
-    .select("id, image_url, link_url, is_active")
-    .eq("id", bannerId)
-    .maybeSingle();
-
-  return banner ?? null;
+  if (error) return { error: error.message };
+  revalidatePath("/admin/promotions/main-banner");
+  revalidatePath("/");
+  return {};
 }
 
-export async function upsertMainBanner(
-  existingId: string | null,
-  data: MainBannerData,
+export async function listBanners(): Promise<BannerRow[]> {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("banners")
+    .select("id, title, image_url, link_url, is_active, sort_order, created_at")
+    .eq("template", "main_banner")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  return (data ?? []) as BannerRow[];
+}
+
+export type UpdateBannerData = {
+  title: string | null;
+  image_url: string;
+  link_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+};
+
+export async function updateBanner(
+  id: string,
+  data: UpdateBannerData,
 ): Promise<{ error?: string }> {
   if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
-  const supabase = await createServiceClient();
-  let bannerId = existingId;
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("banners")
+    .update({
+      title: data.title?.trim() || null,
+      image_url: data.image_url.trim(),
+      link_url: data.link_url?.trim() || null,
+      is_active: data.is_active,
+      sort_order: data.sort_order,
+    })
+    .eq("id", id);
 
-  if (existingId) {
-    const { error } = await supabase
-      .from("banners")
-      .update({
-        image_url: data.image_url.trim(),
-        link_url: data.link_url?.trim() || null,
-        is_active: data.is_active,
-      })
-      .eq("id", existingId);
-    if (error) return { error: error.message };
-  } else {
-    const { data: created, error } = await supabase
-      .from("banners")
-      .insert({
-        image_url: data.image_url.trim(),
-        link_url: data.link_url?.trim() || null,
-        is_active: data.is_active,
-        sort_order: 0,
-        starts_at: null,
-        ends_at: null,
-      })
-      .select("id")
-      .single();
-    if (error) return { error: error.message };
-    bannerId = created.id;
-  }
-
-  const { error: settingError } = await supabase
-    .from("settings")
-    .upsert({ key: SETTINGS_KEY, value: bannerId }, { onConflict: "key" });
-  if (settingError) return { error: settingError.message };
-
+  if (error) return { error: error.message };
   revalidatePath("/admin/promotions/main-banner");
-  revalidatePath("/admin/banners");
+  revalidatePath("/");
+  return {};
+}
+
+export async function deleteBanner(id: string): Promise<{ error?: string }> {
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("banners").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/promotions/main-banner");
+  revalidatePath("/");
+  return {};
+}
+
+export async function toggleBannerStatus(
+  id: string,
+  isActive: boolean,
+): Promise<{ error?: string }> {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("banners")
+    .update({ is_active: isActive })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/promotions/main-banner");
   revalidatePath("/");
   return {};
 }

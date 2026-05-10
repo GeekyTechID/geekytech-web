@@ -21,7 +21,7 @@ const BACK_PATH = "/admin/promotions/top-rated";
 export default async function TopRatedEditPage({ params }: { params: Params }) {
   const { id } = await params;
 
-  const [{ promo, productIds, brandIds }, { products, brands, categories }] = await Promise.all([
+  const [{ promo, productIds, brandIds }, { products, brands }] = await Promise.all([
     fetchPromotionWithAssociations(id),
     fetchSelectorData(),
   ]);
@@ -61,7 +61,6 @@ export default async function TopRatedEditPage({ params }: { params: Params }) {
         }}
         products={products}
         brands={brands}
-        categories={categories}
       />
     </div>
   );

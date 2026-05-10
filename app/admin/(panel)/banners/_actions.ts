@@ -2,6 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { parseFlashSaleIdFromBannerTemplate } from "@/app/admin/(panel)/promotions/flash-sale/_lib/flash-sale-banner-template";
+
+function revalidateBannerRelatedPaths(template: string | null) {
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
+  const saleId = parseFlashSaleIdFromBannerTemplate(template);
+  if (saleId) {
+    revalidatePath(`/admin/promotions/flash-sale/${saleId}`);
+    revalidatePath("/admin/promotions/flash-sale");
+  }
+}
 
 export type BannerFormData = {
   title: string | null;
@@ -12,6 +23,7 @@ export type BannerFormData = {
   is_active: boolean;
   starts_at: string | null;
   ends_at: string | null;
+  template: string | null;
 };
 
 export async function createBanner(data: BannerFormData): Promise<{ error?: string; id?: string }> {
@@ -29,13 +41,13 @@ export async function createBanner(data: BannerFormData): Promise<{ error?: stri
       is_active: data.is_active,
       starts_at: data.starts_at || null,
       ends_at: data.ends_at || null,
+      template: data.template || null,
     })
     .select("id")
     .single();
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
+  revalidateBannerRelatedPaths(data.template ?? null);
   return { id: banner.id };
 }
 
@@ -57,12 +69,12 @@ export async function updateBanner(
       is_active: data.is_active,
       starts_at: data.starts_at || null,
       ends_at: data.ends_at || null,
+      template: data.template || null,
     })
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
+  revalidateBannerRelatedPaths(data.template ?? null);
   return {};
 }
 
@@ -71,26 +83,25 @@ export async function toggleBannerActive(
   isActive: boolean
 ): Promise<{ error?: string }> {
   const supabase = await createServiceClient();
+  const { data: row } = await supabase.from("banners").select("template").eq("id", id).maybeSingle();
+
   const { error } = await supabase
     .from("banners")
     .update({ is_active: isActive })
     .eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
+  revalidateBannerRelatedPaths(row?.template ?? null);
   return {};
 }
 
 export async function deleteBanner(id: string): Promise<{ error?: string }> {
   const supabase = await createServiceClient();
-  const { error } = await supabase
-    .from("banners")
-    .delete()
-    .eq("id", id);
+  const { data: row } = await supabase.from("banners").select("template").eq("id", id).maybeSingle();
+
+  const { error } = await supabase.from("banners").delete().eq("id", id);
 
   if (error) return { error: error.message };
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
+  revalidateBannerRelatedPaths(row?.template ?? null);
   return {};
 }

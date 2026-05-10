@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ImageIcon } from "lucide-react";
 
-import { getMainBanner } from "./_actions";
+import { listBanners } from "./_actions";
 import { MainBannerForm } from "./_components/main-banner-form";
+import { MainBannerTable } from "./_components/main-banner-table";
 
 export const metadata: Metadata = {
   title: "Main Banner — Promosi Admin GeekyTech",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function MainBannerPage() {
-  const banner = await getMainBanner();
+  const banners = await listBanners();
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -24,17 +24,15 @@ export default async function MainBannerPage() {
         </p>
       </div>
 
-      {!banner && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/40 dark:bg-amber-900/10">
-          <ImageIcon size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-[13px] text-amber-700 dark:text-amber-300">
-            Belum ada main banner yang dikonfigurasi. Upload gambar dan simpan untuk mulai menampilkan
-            hero banner di beranda.
-          </p>
-        </div>
-      )}
+      <div className="space-y-3">
+        <h2 className="admin-section-title text-foreground">Daftar Banner</h2>
+        <MainBannerTable banners={banners} />
+      </div>
 
-      <MainBannerForm initialData={banner} />
+      <div className="space-y-3">
+        <h2 className="admin-section-title text-foreground">Tambah Banner Baru</h2>
+        <MainBannerForm />
+      </div>
     </div>
   );
 }

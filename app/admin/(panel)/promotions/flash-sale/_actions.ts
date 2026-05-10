@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { flashSaleBannerTemplate } from "./_lib/flash-sale-banner-template";
 
 export type FlashSaleFormData = {
   name: string;
@@ -90,12 +91,11 @@ export async function toggleFlashSaleActive(
 
 export async function deleteFlashSale(id: string): Promise<{ error?: string }> {
   const supabase = await createServiceClient();
-  const { error } = await supabase
-    .from("flash_sales")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("flash_sales").delete().eq("id", id);
 
   if (error) return { error: error.message };
+
+  await supabase.from("banners").delete().eq("template", flashSaleBannerTemplate(id));
   revalidatePath("/admin/promotions/flash-sale");
   revalidatePath("/");
   return {};
@@ -147,6 +147,70 @@ export async function updateFlashSaleProduct(
 
   if (error) return { error: error.message };
   revalidatePath("/admin/promotions/flash-sale");
+  return {};
+}
+
+export async function bulkAddFlashSaleProducts(
+  flashSaleId: string,
+  entries: { variant_id: string; sale_price: number }[]
+): Promise<{ error?: string }> {
+  if (entries.length === 0) return {};
+
+  const supabase = await createServiceClient();
+
+  const { data: existing } = await supabase
+    .from("flash_sale_products")
+    .select("variant_id")
+    .eq("flash_sale_id", flashSaleId);
+
+  const existingIds = new Set((existing ?? []).map((r) => r.variant_id));
+  const newEntries = entries.filter((e) => !existingIds.has(e.variant_id));
+  if (newEntries.length === 0) return {};
+
+  const { error } = await supabase.from("flash_sale_products").insert(
+    newEntries.map((e) => ({
+      flash_sale_id: flashSaleId,
+      variant_id: e.variant_id,
+      sale_price: e.sale_price > 0 ? e.sale_price : 1,
+      quota: 1,
+      sold: 0,
+    }))
+  );
+
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/promotions/flash-sale/${flashSaleId}`);
+  return {};
+}
+
+export async function createFlashSaleBannerInline(
+  flashSaleId: string,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const file = formData.get("image") as File | null;
+  if (!file || file.size === 0) return {};
+
+  const supabase = await createServiceClient();
+
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const path = `flash-sale/${flashSaleId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error: upErr } = await supabase.storage
+    .from("banners")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) return { error: upErr.message };
+
+  const { data: { publicUrl } } = supabase.storage.from("banners").getPublicUrl(path);
+
+  const template = flashSaleBannerTemplate(flashSaleId);
+  const { error } = await supabase.from("banners").insert({
+    image_url: publicUrl,
+    template,
+    is_active: true,
+    sort_order: 1,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath(`/admin/promotions/flash-sale/${flashSaleId}`);
   return {};
 }
 

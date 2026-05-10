@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Buat Rekomendasi Produk — Admin Ge
 const BACK_PATH = "/admin/promotions/featured-products";
 
 export default async function FeaturedProductsNewPage() {
-  const { products, brands, categories } = await fetchSelectorData();
+  const { products, brands } = await fetchSelectorData();
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8 p-6 lg:p-8">
@@ -38,7 +38,6 @@ export default async function FeaturedProductsNewPage() {
         redirectPath={BACK_PATH}
         products={products}
         brands={brands}
-        categories={categories}
       />
     </div>
   );

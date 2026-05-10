@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -49,6 +50,10 @@ function CustomTooltip({
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="h-48 w-full" />;
+
   return (
     <div className="h-48 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -90,6 +95,10 @@ export function RevenueChart({ data }: RevenueChartProps) {
 }
 
 export function OrdersChart({ data }: RevenueChartProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="h-48 w-full" />;
+
   return (
     <div className="h-48 w-full">
       <ResponsiveContainer width="100%" height="100%">

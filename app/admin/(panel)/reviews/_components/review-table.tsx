@@ -2,11 +2,15 @@
 
 import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { CheckCircle2, ChevronLeft, ChevronRight, MessageSquare, Star, Trash2, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquare, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import {
+  AdminTableDeleteButton,
+  AdminTableRowTextButton,
+} from "@/components/admin/admin-table-row-actions";
 import { approveReview, rejectReview, deleteReview } from "../_actions";
 
 export type ReviewRow = {
@@ -72,37 +76,19 @@ function ReviewActions({ review }: { review: ReviewRow }) {
   };
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5">
       {!review.is_approved ? (
-        <button
-          type="button"
-          onClick={handleApprove}
-          disabled={isPending}
-          title="Setujui ulasan"
-          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-700 disabled:opacity-50 dark:hover:text-emerald-400"
-        >
-          <CheckCircle2 size={15} />
-        </button>
+        <AdminTableRowTextButton tone="positive" onClick={handleApprove} disabled={isPending}>
+          Setujui
+        </AdminTableRowTextButton>
       ) : (
-        <button
-          type="button"
-          onClick={handleReject}
-          disabled={isPending}
-          title="Tolak ulasan"
-          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-        >
-          <XCircle size={15} />
-        </button>
+        <AdminTableRowTextButton tone="danger" onClick={handleReject} disabled={isPending}>
+          Tolak
+        </AdminTableRowTextButton>
       )}
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isPending}
-        title="Hapus ulasan"
-        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive disabled:opacity-50"
-      >
-        <Trash2 size={15} />
-      </button>
+      <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
+        Hapus
+      </AdminTableDeleteButton>
     </div>
   );
 }
@@ -152,7 +138,9 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Status
                 </th>
-                <th className="w-24 px-4 py-3" />
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">

@@ -1,8 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import type { ProductOption, BrandOption } from "../_components/product-brand-selector";
 
 export async function fetchSelectorData() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [{ data: rawProducts }, { data: rawBrands }, { data: rawCategories }] = await Promise.all([
     supabase
@@ -50,7 +50,7 @@ export async function fetchSelectorData() {
 }
 
 export async function fetchPromotionWithAssociations(id: string) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const [{ data: promo }, { data: promoProducts }, { data: promoBrands }] = await Promise.all([
     supabase

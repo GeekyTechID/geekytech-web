@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { PromotionTable, type PromotionTableRow } from "../_components/promotion-table";
+import { PromotionBannerSection } from "../_components/promotion-banner-section";
 
 export const metadata: Metadata = { title: "Rekomendasi Produk — Promosi Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 const BASE_PATH = "/admin/promotions/featured-products";
 
 export default async function FeaturedProductsPage() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: promos } = await supabase
     .from("promotions")
@@ -68,6 +69,7 @@ export default async function FeaturedProductsPage() {
         </Link>
       </div>
       <PromotionTable rows={rows} basePath={BASE_PATH} emptyLabel="Belum ada promosi rekomendasi produk" />
+      <PromotionBannerSection template="featured_products" />
     </div>
   );
 }

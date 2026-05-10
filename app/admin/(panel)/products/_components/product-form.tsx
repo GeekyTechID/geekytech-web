@@ -46,8 +46,6 @@ const productSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug hanya huruf kecil, angka, dan tanda -"),
   description: z.string(),
   base_price: z.number().min(0, "Harga dasar tidak boleh negatif"),
-  has_sale: z.boolean(),
-  sale_price: z.number().nullable(),
   min_order_qty: z.number().min(1, "Min. order minimal 1"),
   category_id: z.string().nullable(),
   brand_id: z.string().nullable(),
@@ -64,8 +62,6 @@ type FormValues = {
   slug: string;
   description: string;
   base_price: number;
-  has_sale: boolean;
-  sale_price: number | null;
   min_order_qty: number;
   category_id: string | null;
   brand_id: string | null;
@@ -201,8 +197,6 @@ export function ProductForm({
       slug: dv?.slug ?? defaultProduct?.slug ?? "",
       description: dv?.description ?? defaultProduct?.description ?? "",
       base_price: dv?.base_price ?? defaultProduct?.base_price ?? 0,
-      has_sale: dv?.has_sale ?? (defaultProduct ? defaultProduct.sale_price !== null : false),
-      sale_price: dv?.sale_price ?? defaultProduct?.sale_price ?? null,
       min_order_qty: dv?.min_order_qty ?? defaultProduct?.min_order_qty ?? 1,
       category_id: dv?.category_id ?? defaultProduct?.category_id ?? null,
       brand_id: dv?.brand_id ?? defaultProduct?.brand_id ?? null,
@@ -248,8 +242,6 @@ export function ProductForm({
   // internal tracker sehingga values.variants[i].id bisa tidak terbaca saat submit,
   // yang menyebabkan server action memperlakukan semua varian sebagai INSERT baru.
   const { fields, append, remove } = useFieldArray({ control, name: "variants", keyName: "_key" });
-
-  const hasSale = watch("has_sale");
 
   // ── Draft persistence ─────────────────────────────────────────────────────
   // Gunakan ref agar form.watch callback selalu dapat nilai terbaru images/tags
@@ -358,7 +350,7 @@ export function ProductForm({
       slug: values.slug,
       description: values.description,
       base_price: values.base_price,
-      sale_price: values.has_sale ? values.sale_price : null,
+      sale_price: null,
       min_order_qty: values.min_order_qty,
       category_id: values.category_id,
       brand_id: values.brand_id,
@@ -453,27 +445,6 @@ export function ProductForm({
               </Field>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <Switch
-                id="has_sale"
-                checked={hasSale}
-                onCheckedChange={(v) => setValue("has_sale", v)}
-              />
-              <Label htmlFor="has_sale" className="text-sm font-medium cursor-pointer">
-                Aktifkan harga diskon
-              </Label>
-            </div>
-
-            {hasSale && (
-              <Field label="Harga Diskon (Rp)" error={errors.sale_price?.message}>
-                <Input
-                  type="number"
-                  {...register("sale_price", { valueAsNumber: true })}
-                  placeholder="0"
-                  className={inputClass}
-                />
-              </Field>
-            )}
           </Section>
 
           {/* Kategori & Status */}

@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { FlashSaleForm } from "../_components/flash-sale-form";
+import { FlashSaleForm } from "../_components/flash-sale-form-client";
+import { FlashSaleBannersSection } from "../_components/flash-sale-banners-section";
 import {
   FlashSaleProducts,
   type FlashSaleProductRow,
@@ -121,21 +122,20 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-1">
-          <div className="admin-utility-card space-y-4 p-6">
-            <h2 className="admin-section-title">Edit Flash Sale</h2>
-            <FlashSaleForm initialData={sale} redirectTo={`/admin/promotions/flash-sale/${id}`} />
-          </div>
-        </div>
-
-        <div className="xl:col-span-2">
-          <FlashSaleProducts
-            flashSaleId={id}
-            products={(fspData ?? []) as FlashSaleProductRow[]}
-            availableVariants={availableVariants}
+      <div className="flex flex-col gap-6">
+        <div className="admin-utility-card space-y-0 p-6">
+          <FlashSaleForm
+            initialData={sale}
+            redirectTo={`/admin/promotions/flash-sale/${id}`}
+            bannerSection={<FlashSaleBannersSection flashSaleId={id} />}
           />
         </div>
+
+        <FlashSaleProducts
+          flashSaleId={id}
+          products={(fspData ?? []) as FlashSaleProductRow[]}
+          availableVariants={availableVariants}
+        />
       </div>
     </div>
   );

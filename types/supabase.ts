@@ -79,6 +79,7 @@ export type Database = {
           sort_order: number
           starts_at: string | null
           subtitle: string | null
+          template: string | null
           title: string | null
           updated_at: string
         }
@@ -92,6 +93,7 @@ export type Database = {
           sort_order?: number
           starts_at?: string | null
           subtitle?: string | null
+          template?: string | null
           title?: string | null
           updated_at?: string
         }
@@ -105,6 +107,7 @@ export type Database = {
           sort_order?: number
           starts_at?: string | null
           subtitle?: string | null
+          template?: string | null
           title?: string | null
           updated_at?: string
         }

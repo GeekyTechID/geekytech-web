@@ -2,11 +2,14 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Building2, ChevronLeft, ChevronRight, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  AdminTableDeleteButton,
+  AdminTableEditLink,
+} from "@/components/admin/admin-table-row-actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,13 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { deleteBrand, toggleBrandStatus } from "../_actions";
 
@@ -108,7 +104,9 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                 <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Status
                 </th>
-                <th className="w-12 px-4 py-3" />
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
@@ -152,35 +150,12 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                   </td>
 
                   <td className="px-4 py-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        >
-                          <MoreHorizontal size={16} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-[140px] rounded-lg">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href={`/admin/brands/${brand.id}/edit`}
-                            className="flex items-center gap-2 rounded-md"
-                          >
-                            <Edit size={13} />
-                            Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => setDeleteTarget(brand)}
-                          className="rounded-md text-destructive focus:text-destructive"
-                        >
-                          <Trash2 size={13} className="mr-2" />
-                          Hapus
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <AdminTableEditLink href={`/admin/brands/${brand.id}/edit`}>Edit</AdminTableEditLink>
+                      <AdminTableDeleteButton onClick={() => setDeleteTarget(brand)} disabled={isPending}>
+                        Hapus
+                      </AdminTableDeleteButton>
+                    </div>
                   </td>
                 </tr>
               ))}
