@@ -29,19 +29,19 @@ export async function StoreFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative mt-auto overflow-hidden bg-[#121212] text-white">
+    <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
       <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
+        <div className="flex justify-between gap-12 lg:gap-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
           <div className="space-y-4">
             <h2 className="text-2xl font-black leading-tight tracking-tight text-white md:text-3xl">
-              Venenatis id Nunc
-              <br />
-              Lorem tempor
+              Mau Jadi yang Pertama Tahu? <br /> Daftar Newsletter Kami!
             </h2>
+
             <p className="max-w-sm text-sm leading-relaxed text-white/60">
-              Nisi vitae ullamcorper Donec massa sodales. amet, lobortis, nulla,
+              Dapatkan info produk rating tertinggi dan promo eksklusif Gebyar Merdeka langsung di inbox-mu.
             </p>
-            <form className="relative mt-6 max-w-md" action="#" method="post">
+            
+            <form className="relative mt-2 max-w-md" action="#" method="post">
               <label htmlFor="footer-newsletter" className="sr-only">
                 Email newsletter
               </label>
@@ -61,6 +61,10 @@ export async function StoreFooter() {
                 <ArrowRight className="h-4 w-4" />
               </button>
             </form>
+
+            <p className="relative z-10 mt-14 text-xs text-white/45">
+              © {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.
+            </p>
           </div>
 
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -76,6 +80,7 @@ export async function StoreFooter() {
                 ))}
               </ul>
             </div>
+
             <div>
               <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-white/45">Discover</p>
               <ul className="space-y-2.5 text-sm text-white/90">
@@ -114,14 +119,10 @@ export async function StoreFooter() {
             </div>
           </div>
         </div>
-
-        <p className="relative z-10 mt-14 text-xs text-white/45">
-          © {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.
-        </p>
       </div>
 
       <p
-        className="pointer-events-none absolute bottom-0 left-1/2 z-0 w-[120%] -translate-x-1/2 select-none text-center text-[clamp(3.5rem,18vw,10rem)] font-thin leading-none tracking-tight text-white/[0.06]"
+        className="pointer-events-none bottom-0 select-none text-center text-[25rem] font-thin leading-none tracking-tight text-white/[0.06]"
         aria-hidden
       >
         geekytech

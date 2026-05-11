@@ -76,6 +76,7 @@ export type HomeShelfProduct = {
   name: string;
   slug: string;
   eyebrow: string;
+  variantName: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
   currentPrice: number;
@@ -102,7 +103,7 @@ type ProductQueryRow = {
   brands: BrandRel | BrandRel[];
   categories: CategoryRel | CategoryRel[];
   product_images: ProductImageRow[] | null;
-  product_variants: { id: string; price: number; is_active: boolean | null }[] | null;
+  product_variants: { id: string; price: number; name: string | null; is_active: boolean | null }[] | null;
 };
 
 function firstRel<T>(rel: T | T[] | null | undefined): T | null {
@@ -140,6 +141,7 @@ function productRowToShelf(p: ProductQueryRow): HomeShelfProduct | null {
     name: p.name,
     slug: p.slug,
     eyebrow: eyebrowParts.join(" · ") || "Produk",
+    variantName: minVariant.name ?? null,
     imageUrl: img?.url ?? null,
     imageAlt: img?.alt ?? p.name,
     currentPrice,
@@ -160,7 +162,7 @@ async function fetchProductsByIdsOrdered(ids: string[]): Promise<HomeShelfProduc
        brands:brand_id(name),
        categories:category_id(name),
        product_images(url, is_primary, sort_order, alt_text),
-       product_variants(id, price, is_active)`,
+       product_variants(id, price, name, is_active)`,
     )
     .in("id", ids)
     .eq("is_active", true)
@@ -196,7 +198,7 @@ async function fetchProductsForBrandPromotion(
        brands:brand_id(name),
        categories:category_id(name),
        product_images(url, is_primary, sort_order, alt_text),
-       product_variants(id, price, is_active)`,
+       product_variants(id, price, name, is_active)`,
     )
     .in("brand_id", brandIds)
     .eq("is_active", true)
@@ -399,6 +401,7 @@ function flashRowToShelf(
     name: pr.name,
     slug: pr.slug,
     eyebrow: eyebrowParts.join(" · ") || "Flash sale",
+    variantName: pv.name ?? null,
     imageUrl: img?.url ?? null,
     imageAlt: img?.alt ?? pr.name,
     currentPrice: sale,
@@ -572,7 +575,7 @@ async function fetchDefaultHomeShelfProducts(limit: number): Promise<HomeShelfPr
          brands:brand_id(name),
          categories:category_id(name),
          product_images(url, is_primary, sort_order, alt_text),
-         product_variants(id, price, is_active)`,
+         product_variants(id, price, name, is_active)`,
       )
       .eq("is_active", true)
       .is("deleted_at", null)

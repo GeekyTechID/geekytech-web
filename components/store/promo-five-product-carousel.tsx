@@ -8,98 +8,76 @@ import type { HomeShelfProduct } from "@/lib/data/home-storefront";
 import { HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS } from "@/lib/constants/home-product-row-slot";
 import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 5;
-
-function chunkProducts(items: HomeShelfProduct[], size: number): HomeShelfProduct[][] {
-  const pages: HomeShelfProduct[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    pages.push(items.slice(i, i + size));
-  }
-  return pages;
-}
+const VISIBLE = 5;
 
 type PromoFiveProductCarouselProps = {
   products: HomeShelfProduct[];
-  /** Label aksesibilitas untuk area carousel */
   "aria-label"?: string;
 };
 
 export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: PromoFiveProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const pages = chunkProducts(products, PAGE_SIZE);
-  const [pageIndex, setPageIndex] = useState(0);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(products.length > VISIBLE);
 
-  const scrollToPage = useCallback(
-    (i: number) => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const clamped = Math.max(0, Math.min(i, pages.length - 1));
-      el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
-      setPageIndex(clamped);
-    },
-    [pages.length],
-  );
-
-  const goDir = useCallback(
-    (dir: -1 | 1) => {
-      const el = scrollRef.current;
-      if (!el || pages.length <= 1) return;
-      const w = el.clientWidth;
-      if (w <= 0) return;
-      const current = Math.round(el.scrollLeft / w);
-      scrollToPage(current + dir);
-    },
-    [pages.length, scrollToPage],
-  );
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 1);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || pages.length <= 1) return;
+    if (!el) return;
+    updateArrows();
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    return () => el.removeEventListener("scroll", updateArrows);
+  }, [updateArrows]);
 
-    const onScroll = () => {
-      const w = el.clientWidth;
-      if (w <= 0) return;
-      const i = Math.round(el.scrollLeft / w);
-      setPageIndex(Math.max(0, Math.min(i, pages.length - 1)));
-    };
-
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, [pages.length]);
+  const go = useCallback((dir: -1 | 1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const firstSlot = el.firstElementChild as HTMLElement | null;
+    if (!firstSlot) return;
+    const gap = parseFloat(getComputedStyle(el).gap) || 12;
+    el.scrollTo({ left: el.scrollLeft + dir * (firstSlot.offsetWidth + gap), behavior: "smooth" });
+  }, []);
 
   if (products.length === 0) return null;
+
+  const showChevrons = products.length > VISIBLE;
 
   return (
     <div
       className="relative"
       role="region"
       aria-label={ariaLabel ?? "Deretan produk"}
-      aria-roledescription={pages.length > 1 ? "carousel" : undefined}
     >
-      {pages.length > 1 && (
+      {showChevrons && (
         <button
           type="button"
-          onClick={() => goDir(-1)}
-          disabled={pageIndex <= 0}
+          onClick={() => go(-1)}
+          disabled={!canLeft}
           className={cn(
             "absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:left-2 dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800",
-            pageIndex <= 0 && "pointer-events-none opacity-40",
+            !canLeft && "pointer-events-none opacity-40",
           )}
-          aria-label="Halaman produk sebelumnya"
+          aria-label="Produk sebelumnya"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
       )}
-      {pages.length > 1 && (
+      {showChevrons && (
         <button
           type="button"
-          onClick={() => goDir(1)}
-          disabled={pageIndex >= pages.length - 1}
+          onClick={() => go(1)}
+          disabled={!canRight}
           className={cn(
             "absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:right-2 dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800",
-            pageIndex >= pages.length - 1 && "pointer-events-none opacity-40",
+            !canRight && "pointer-events-none opacity-40",
           )}
-          aria-label="Halaman produk berikutnya"
+          aria-label="Produk berikutnya"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
@@ -108,24 +86,17 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
       <div
         ref={scrollRef}
         className={cn(
-          "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none]",
-          "pl-14 pr-14 sm:pl-16 sm:pr-16 md:pl-[4.5rem] md:pr-[4.5rem] lg:pl-20 lg:pr-20",
-          "[&::-webkit-scrollbar]:hidden",
+          "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1 gap-3 sm:gap-4",
+          "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          showChevrons && "pl-14 pr-14 sm:pl-16 sm:pr-16 md:pl-[4.5rem] md:pr-[4.5rem] lg:pl-20 lg:pr-20",
         )}
       >
-        {pages.map((group, pageI) => (
+        {products.map((p) => (
           <div
-            key={pageI}
-            className="flex min-w-full shrink-0 snap-start gap-3 sm:gap-4"
+            key={`${p.productId}-${p.variantId}`}
+            className={cn(HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS, "snap-start")}
           >
-            {group.map((p) => (
-              <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS}>
-                <HomeProductTile product={p} layout="promoRow" />
-              </div>
-            ))}
-            {Array.from({ length: Math.max(0, PAGE_SIZE - group.length) }, (_, i) => (
-              <div key={`pad-${pageI}-${i}`} className={HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS} aria-hidden />
-            ))}
+            <HomeProductTile product={p} layout="promoRow" />
           </div>
         ))}
       </div>

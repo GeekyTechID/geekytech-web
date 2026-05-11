@@ -52,6 +52,9 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
         <Link href={href} className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-black hover:text-brand dark:text-foreground">
           {product.name}
         </Link>
+        {product.variantName && (
+          <p className="line-clamp-1 text-[14px] text-neutral-500 dark:text-muted-foreground">{product.variantName}</p>
+        )}
         <div className="mt-auto space-y-0.5">
           <p className="text-sm font-bold text-black dark:text-foreground">{formatRupiah(product.currentPrice)}</p>
           {showCompare && (

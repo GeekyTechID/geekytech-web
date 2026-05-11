@@ -69,6 +69,7 @@ export function PromotionForm({
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
 
   const [title, setTitle] = useState(initialData?.title ?? "");
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
   const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
   const [maxItems, setMaxItems] = useState(initialData?.max_items ?? 8);
   const [selectionMode, setSelectionMode] = useState<"manual" | "brand">(
@@ -95,7 +96,7 @@ export function PromotionForm({
     const data: PromotionFormData = {
       type,
       title: title.trim(),
-      subtitle: initialData?.subtitle ?? undefined,
+      subtitle: subtitle.trim() || undefined,
       is_active: isActive,
       max_items: maxItems,
       selection_mode: selectionMode,
@@ -151,6 +152,15 @@ export function PromotionForm({
               placeholder={`Contoh: ${getPlaceholderTitle(type)}`}
               className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               required
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <label className={labelClass}>Subtitle <span className="normal-case font-normal tracking-normal text-muted-foreground">(opsional)</span></label>
+            <Input
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Contoh: Temukan produk terbaik dengan harga spesial"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
             />
           </div>
           <div className="space-y-1.5">

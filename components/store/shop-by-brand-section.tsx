@@ -20,18 +20,18 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
           keunggulannya di seluruh dunia. Jelajahi katalog lengkap kami sekarang untuk mendapatkan barang original langsung dari brand kesayangan Anda.
         </p>
 
-        {brands.length === 0 ? (
+        {brands.filter((b) => b.name.toLowerCase() !== "lainnya").length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">Belum ada merek aktif.</p>
         ) : (
           <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {brands.map((b) => (
+            {brands.filter((b) => b.name.toLowerCase() !== "lainnya").map((b) => (
               <Link
                 key={b.id}
                 href={`/products?brand=${encodeURIComponent(b.slug)}`}
                 className="cursor-pointer group flex items-center justify-center px-4 transition hover:border-brand/40 dark:border-border dark:bg-muted"
               >
                 {b.logo_url ? (
-                  <div className="relative h-15 w-full max-w-[7rem] transition group-hover:grayscale-0">
+                  <div className="relative h-15 w-90 transition group-hover:grayscale-0">
                     <Image src={b.logo_url} alt={b.name} fill className="object-contain" sizes="100px" />
                   </div>
                 ) : (

@@ -11,12 +11,13 @@ const AUTO_MS = 6500;
 
 type HomeMainHeroProps = {
   banners: StoreBanner[];
+  hideNav?: boolean;
 };
 
 function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolean }) {
   const inner = (
-    <div className="relative grid min-h-[220px] overflow-hidden md:min-h-[320px] lg:min-h-[380px]">
-      <div className="relative min-h-[200px] md:min-h-0">
+    <div className="relative grid min-h-[220px] overflow-hidden md:min-h-[320px] lg:min-h-[400px]">
+      <div className="relative min-h-[220px] md:min-h-0">
         {/* eslint-disable-next-line @next/next/no-img-element -- URL banner dari admin bisa domain eksternal */}
         <img
           src={banner.image_url}
@@ -43,7 +44,7 @@ function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolea
   return <div className="min-w-full shrink-0">{inner}</div>;
 }
 
-export function HomeMainHero({ banners }: HomeMainHeroProps) {
+export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
   const [index, setIndex] = useState(0);
   const n = banners.length;
 
@@ -73,7 +74,7 @@ export function HomeMainHero({ banners }: HomeMainHeroProps) {
 
   return (
     <section
-      className="group/hero relative border-b border-neutral-200 shadow-[0_12px_24px_-18px_rgba(0,0,0,0.35)] dark:border-border"
+      className="group/hero relative shadow-[0_12px_24px_-18px_rgba(0,0,0,0.35)] dark:border-border"
       aria-roledescription="carousel"
       aria-label="Banner utama"
     >
@@ -88,7 +89,7 @@ export function HomeMainHero({ banners }: HomeMainHeroProps) {
         </div>
       </div>
 
-      {n > 1 && (
+      {n > 1 && !hideNav && (
         <>
           <button
             type="button"

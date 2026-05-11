@@ -5,6 +5,8 @@ import { StoreFooter } from "@/components/store/store-footer";
 import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
+import { HomeMainHero } from "@/components/store/home-main-hero";
+import { fetchMainHeroBanners } from "@/lib/data/home-storefront";
 
 async function getMaintenanceMode(): Promise<boolean> {
   try {
@@ -41,7 +43,11 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isMaintenance, categories] = await Promise.all([getMaintenanceMode(), getNavCategories()]);
+  const [isMaintenance, categories, heroBanners] = await Promise.all([
+    getMaintenanceMode(),
+    getNavCategories(),
+    fetchMainHeroBanners(),
+  ]);
 
   if (isMaintenance) {
     return <MaintenancePage />;
@@ -52,6 +58,7 @@ export default async function PublicLayout({
       <AnnouncementBarServer />
       <StoreHeader categories={categories} />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      {heroBanners.length > 0 && <HomeMainHero banners={heroBanners} hideNav />}
       <StoreFooter />
       <BottomNavBar />
       <WhatsAppButton />
