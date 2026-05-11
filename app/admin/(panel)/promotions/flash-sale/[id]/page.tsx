@@ -54,7 +54,7 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
 
   const { data: sale } = await supabase
     .from("flash_sales")
-    .select("id, name, starts_at, ends_at, is_active, created_at")
+    .select("id, name, subtitle, starts_at, ends_at, is_active, created_at")
     .eq("id", id)
     .single();
 

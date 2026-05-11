@@ -468,9 +468,9 @@ export function HomeSectionsEditor({
       ════════════════════════════════════════════════════════════════════ */}
       <div className="admin-utility-card overflow-hidden p-0">
         <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
-          <h2 className="admin-section-title">Susunan Seksi Beranda</h2>
+          <h2 className="admin-section-title">Section 4 Beranda</h2>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Atur urutan tampilan seksi dan aktif/nonaktifkan masing-masing.
+            Atur urutan tampilan section 4 dan aktif/nonaktifkan masing-masing.
           </p>
         </div>
 

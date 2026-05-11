@@ -1,29 +1,57 @@
 import type { Metadata } from "next";
 
+import { HomeDynamicPromoBlocks } from "@/components/store/home-dynamic-promo-blocks";
+import { HomeFlashSaleBlock } from "@/components/store/home-flash-sale-block";
+import { HomeMainHero } from "@/components/store/home-main-hero";
+import { ShopByBrandSection } from "@/components/store/shop-by-brand-section";
+import { HOME_HERO_FLASH_SALE_CAMPAIGN_NAME } from "@/lib/constants/home-flash-sale";
+import {
+  fetchDynamicHomePromoBlocks,
+  fetchFlashSaleBlockByCampaignName,
+  fetchMainHeroBanners,
+  fetchShopBrands,
+} from "@/lib/data/home-storefront";
+
 export const metadata: Metadata = {
-  title: "GeekyTech — Toko Tech & Gadget",
+  title: "Beranda",
   description:
     "Toko tech & gadget terpercaya. Produk original bergaransi resmi. Pengiriman ke seluruh Indonesia.",
 };
 
-export default function HomePage() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 flex flex-col items-center justify-center min-h-[60vh] text-center">
-      <div className="space-y-6 max-w-2xl">
-        <p className="text-swiss-eyebrow">Selamat datang di</p>
-        <h1 className="text-swiss-display">
-          Geeky
-          <span className="text-brand">Tech</span>
-        </h1>
-        <p className="text-muted-foreground text-lg leading-relaxed">
-          Toko tech &amp; gadget terpercaya. Produk original bergaransi resmi.
-          Pengiriman ke seluruh Indonesia.
-        </p>
-        <div className="w-12 h-px bg-brand mx-auto" />
-        <p className="text-sm text-muted-foreground">
-          Halaman beranda sedang disiapkan — FASE 4
-        </p>
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const loaded = await Promise.all([
+    fetchMainHeroBanners(),
+    fetchFlashSaleBlockByCampaignName(HOME_HERO_FLASH_SALE_CAMPAIGN_NAME),
+    fetchShopBrands(),
+  ]).catch(() => null);
+
+  if (loaded === null) {
+    return (
+      <div className="mx-auto max-w-[1400px] px-4 py-16 text-center">
+        <p className="text-sm text-muted-foreground">Gagal memuat beranda. Silakan muat ulang halaman.</p>
       </div>
+    );
+  }
+
+  const [heroBanners, flashSaleBlock, brands] = loaded;
+
+  let dynamicBlocks: Awaited<ReturnType<typeof fetchDynamicHomePromoBlocks>> = [];
+  try {
+    dynamicBlocks = await fetchDynamicHomePromoBlocks({
+      excludeFlashSaleIds: flashSaleBlock?.saleId ? [flashSaleBlock.saleId] : [],
+    });
+  } catch {
+    dynamicBlocks = [];
+  }
+
+  return (
+    <div className="bg-white dark:bg-background">
+      <HomeMainHero banners={heroBanners} />
+      <HomeFlashSaleBlock block={flashSaleBlock} />
+      <ShopByBrandSection brands={brands} />
+      <HomeDynamicPromoBlocks blocks={dynamicBlocks} />
     </div>
   );
 }

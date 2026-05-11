@@ -6,6 +6,7 @@ import { flashSaleBannerTemplate } from "./_lib/flash-sale-banner-template";
 
 export type FlashSaleFormData = {
   name: string;
+  subtitle?: string;
   starts_at: string;
   ends_at: string;
   is_active: boolean;
@@ -33,6 +34,7 @@ export async function createFlashSale(
     .from("flash_sales")
     .insert({
       name: data.name.trim(),
+      subtitle: data.subtitle?.trim() || null,
       starts_at: data.starts_at,
       ends_at: data.ends_at,
       is_active: data.is_active,
@@ -60,6 +62,7 @@ export async function updateFlashSale(
     .from("flash_sales")
     .update({
       name: data.name.trim(),
+      subtitle: data.subtitle?.trim() || null,
       starts_at: data.starts_at,
       ends_at: data.ends_at,
       is_active: data.is_active,

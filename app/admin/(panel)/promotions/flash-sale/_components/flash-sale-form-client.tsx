@@ -29,6 +29,7 @@ type FlashSaleFormProps = {
   initialData?: {
     id: string;
     name: string;
+    subtitle?: string | null;
     starts_at: string;
     ends_at: string;
     is_active: boolean;
@@ -55,6 +56,7 @@ export function FlashSaleForm({
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
 
   const [name, setName] = useState(initialData?.name ?? "");
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
   const [startsAt, setStartsAt] = useState(
     initialData?.starts_at ? initialData.starts_at.slice(0, 16) : "",
   );
@@ -151,6 +153,7 @@ export function FlashSaleForm({
 
     const data: FlashSaleFormData = {
       name: name.trim(),
+      subtitle: subtitle.trim() || undefined,
       starts_at: new Date(startsAt).toISOString(),
       ends_at: new Date(endsAt).toISOString(),
       is_active: isActive,
@@ -220,6 +223,15 @@ export function FlashSaleForm({
               placeholder="Flash Sale 12.12"
               className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
               required
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <label className={labelClass}>Subtitle</label>
+            <Input
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Penawaran terbaik hari ini — stok terbatas!"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[15px] leading-[1.47] dark:border-border"
             />
           </div>
           <div className="space-y-1.5">

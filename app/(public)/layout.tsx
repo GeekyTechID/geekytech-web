@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AnnouncementBarServer } from "@/components/layout/announcement-bar-server";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
+import { StoreHeader } from "@/components/store/store-header";
+import { StoreFooter } from "@/components/store/store-footer";
 import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
@@ -20,23 +20,39 @@ async function getMaintenanceMode(): Promise<boolean> {
   }
 }
 
+async function getNavCategories() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, slug")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) return [];
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const isMaintenance = await getMaintenanceMode();
+  const [isMaintenance, categories] = await Promise.all([getMaintenanceMode(), getNavCategories()]);
 
   if (isMaintenance) {
     return <MaintenancePage />;
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-background">
       <AnnouncementBarServer />
-      <Navbar />
+      <StoreHeader categories={categories} />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
-      <Footer />
+      <StoreFooter />
       <BottomNavBar />
       <WhatsAppButton />
     </div>

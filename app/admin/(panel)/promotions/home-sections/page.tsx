@@ -65,53 +65,62 @@ export default async function HomeSectionsPage() {
   const ppCountMap: Record<string, number>    = {};
   const pbCountMap: Record<string, number>    = {};
 
-  for (const r of fspRows ?? []) fsCountMap[r.flash_sale_id] = (fsCountMap[r.flash_sale_id] ?? 0) + 1;
-  for (const r of ppRows  ?? []) ppCountMap[r.promotion_id]  = (ppCountMap[r.promotion_id]  ?? 0) + 1;
-  for (const r of pbRows  ?? []) pbCountMap[r.promotion_id]  = (pbCountMap[r.promotion_id]  ?? 0) + 1;
+  for (const r of fspRows ?? []) {
+    if (r.flash_sale_id == null) continue;
+    fsCountMap[r.flash_sale_id] = (fsCountMap[r.flash_sale_id] ?? 0) + 1;
+  }
+  for (const r of ppRows ?? []) {
+    if (r.promotion_id == null) continue;
+    ppCountMap[r.promotion_id] = (ppCountMap[r.promotion_id] ?? 0) + 1;
+  }
+  for (const r of pbRows ?? []) {
+    if (r.promotion_id == null) continue;
+    pbCountMap[r.promotion_id] = (pbCountMap[r.promotion_id] ?? 0) + 1;
+  }
 
   // ── Shape data ────────────────────────────────────────────────────────────
   const banners = (rawBanners ?? []).map((b) => ({
-    id:         b.id,
-    title:      b.title,
-    is_active:  b.is_active,
-    sort_order: b.sort_order,
-    created_at: b.created_at,
+    id: b.id,
+    title: b.title,
+    is_active: b.is_active === true,
+    sort_order: b.sort_order ?? 0,
+    created_at: b.created_at ?? "",
   }));
 
   const flashSales = (rawFlashSales ?? []).map((f) => ({
-    id:            f.id,
-    name:          f.name,
-    is_active:     f.is_active,
-    starts_at:     f.starts_at,
-    ends_at:       f.ends_at,
-    created_at:    f.created_at,
+    id: f.id,
+    name: f.name,
+    is_active: f.is_active === true,
+    starts_at: f.starts_at ?? "",
+    ends_at: f.ends_at ?? "",
+    created_at: f.created_at ?? "",
     product_count: fsCountMap[f.id] ?? 0,
   }));
 
   const secondPromos = (rawPromos ?? [])
     .filter((p) => p.type === "second_products")
     .map((p) => ({
-      id:             p.id,
-      title:          p.title,
-      is_active:      p.is_active,
-      max_items:      p.max_items,
+      id: p.id,
+      title: p.title,
+      is_active: p.is_active === true,
+      max_items: p.max_items ?? 12,
       selection_mode: p.selection_mode as "manual" | "brand",
-      created_at:     p.created_at,
-      product_count:  ppCountMap[p.id] ?? 0,
-      brand_count:    pbCountMap[p.id] ?? 0,
+      created_at: p.created_at ?? "",
+      product_count: ppCountMap[p.id] ?? 0,
+      brand_count: pbCountMap[p.id] ?? 0,
     }));
 
   const featuredPromos = (rawPromos ?? [])
     .filter((p) => p.type === "featured_products")
     .map((p) => ({
-      id:             p.id,
-      title:          p.title,
-      is_active:      p.is_active,
-      max_items:      p.max_items,
+      id: p.id,
+      title: p.title,
+      is_active: p.is_active === true,
+      max_items: p.max_items ?? 12,
       selection_mode: p.selection_mode as "manual" | "brand",
-      created_at:     p.created_at,
-      product_count:  ppCountMap[p.id] ?? 0,
-      brand_count:    pbCountMap[p.id] ?? 0,
+      created_at: p.created_at ?? "",
+      product_count: ppCountMap[p.id] ?? 0,
+      brand_count: pbCountMap[p.id] ?? 0,
     }));
 
   // ── Merge settings with defaults ─────────────────────────────────────────
