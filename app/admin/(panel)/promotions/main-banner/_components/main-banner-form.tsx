@@ -91,12 +91,6 @@ const LINK_GUIDE = [
         example: "/products?promo=featured",
         desc: "Produk rekomendasi pilihan admin",
       },
-      {
-        label: "Rating Tertinggi",
-        pattern: "/products?sort=rating",
-        example: "/products?sort=rating",
-        desc: "Produk dengan rating terbaik",
-      },
     ],
   },
   {

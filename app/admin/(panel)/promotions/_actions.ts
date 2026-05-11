@@ -4,12 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/supabase";
 
-export type PromotionType = "second_products" | "featured_products" | "top_rated";
+export type PromotionType = "second_products" | "featured_products";
 
 export type PromotionConfig =
   | { sort_by?: "rating" | "price_asc" | "price_desc" | "newest" }
-  | { sort_by?: "manual" | "newest" | "bestseller" | "rating"; category_id?: string }
-  | { min_rating?: number; category_id?: string };
+  | { sort_by?: "manual" | "newest" | "bestseller" | "rating"; category_id?: string };
 
 export type PromotionFormData = {
   type: PromotionType;

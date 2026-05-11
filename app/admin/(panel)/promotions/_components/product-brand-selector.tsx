@@ -6,6 +6,29 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/format";
 
+const selectClass =
+  "h-10 w-full rounded-full border border-[#e0e0e0] bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand dark:border-border";
+
+type ProductSort = "name_asc" | "name_desc" | "price_asc" | "price_desc" | "rating_desc" | "reviews_desc" | "sold_desc";
+type BrandSort = "name_asc" | "name_desc" | "count_desc" | "count_asc";
+
+const PRODUCT_SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: "name_asc",     label: "Nama A–Z" },
+  { value: "name_desc",    label: "Nama Z–A" },
+  { value: "price_asc",    label: "Harga Terendah" },
+  { value: "price_desc",   label: "Harga Tertinggi" },
+  { value: "rating_desc",  label: "Rating Tertinggi" },
+  { value: "reviews_desc", label: "Ulasan Terbanyak" },
+  { value: "sold_desc",    label: "Terlaris" },
+];
+
+const BRAND_SORT_OPTIONS: { value: BrandSort; label: string }[] = [
+  { value: "name_asc",   label: "Nama A–Z" },
+  { value: "name_desc",  label: "Nama Z–A" },
+  { value: "count_desc", label: "Produk Terbanyak" },
+  { value: "count_asc",  label: "Produk Tersedikit" },
+];
+
 export type ProductOption = {
   id: string;
   name: string;
@@ -14,6 +37,11 @@ export type ProductOption = {
   brand_name: string | null;
   condition: string;
   image_url: string | null;
+  category_id: string | null;
+  category_name: string | null;
+  average_rating: number;
+  review_count: number;
+  total_sold: number;
 };
 
 export type BrandOption = {
@@ -27,6 +55,7 @@ interface ProductBrandSelectorProps {
   onModeChange: (mode: "manual" | "brand") => void;
   products: ProductOption[];
   brands: BrandOption[];
+  categories?: { id: string; name: string }[];
   selectedProductIds: string[];
   selectedBrandIds: string[];
   onProductsChange: (ids: string[]) => void;
@@ -40,6 +69,7 @@ export function ProductBrandSelector({
   onModeChange,
   products,
   brands,
+  categories = [],
   selectedProductIds,
   selectedBrandIds,
   onProductsChange,
@@ -47,30 +77,62 @@ export function ProductBrandSelector({
   filterBrandsByProducts = false,
 }: ProductBrandSelectorProps) {
   const [productSearch, setProductSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [productSort, setProductSort] = useState<ProductSort>("name_asc");
   const [brandSearch, setBrandSearch] = useState("");
+  const [brandSort, setBrandSort] = useState<BrandSort>("name_asc");
 
-  const filteredProducts = products.filter((p) =>
-    `${p.name} ${p.brand_name ?? ""}`.toLowerCase().includes(productSearch.toLowerCase()),
-  );
+  // ── Per-produk logic ──────────────────────────────────────────────────────
+  const filteredProducts = products.filter((p) => {
+    const matchSearch = `${p.name} ${p.brand_name ?? ""}`.toLowerCase().includes(productSearch.toLowerCase());
+    const matchCategory = !filterCategory || p.category_id === filterCategory;
+    return matchSearch && matchCategory;
+  });
 
-  // When filterBrandsByProducts, derive counts and visibility from the (already filtered) products prop.
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (productSort) {
+      case "name_desc":    return b.name.localeCompare(a.name);
+      case "price_asc":   return a.price - b.price;
+      case "price_desc":  return b.price - a.price;
+      case "rating_desc": return b.average_rating - a.average_rating;
+      case "reviews_desc":return b.review_count - a.review_count;
+      case "sold_desc":   return b.total_sold - a.total_sold;
+      default:            return a.name.localeCompare(b.name); // name_asc
+    }
+  });
+
+  // ── Per-brand logic ───────────────────────────────────────────────────────
+  // Derive brand counts from products prop, respecting both condition filter
+  // (already applied externally via props) and the active category filter.
+  const productsForBrands = filterCategory
+    ? products.filter((p) => p.category_id === filterCategory)
+    : products;
+
   const brandCountsByName: Record<string, number> = {};
-  if (filterBrandsByProducts) {
-    products.forEach((p) => {
-      if (p.brand_name) brandCountsByName[p.brand_name] = (brandCountsByName[p.brand_name] ?? 0) + 1;
-    });
-  }
+  productsForBrands.forEach((p) => {
+    if (p.brand_name) brandCountsByName[p.brand_name] = (brandCountsByName[p.brand_name] ?? 0) + 1;
+  });
 
-  const visibleBrands = filterBrandsByProducts
+  const shouldFilterBrands = filterBrandsByProducts || !!filterCategory;
+
+  const visibleBrands = shouldFilterBrands
     ? brands.filter((b) => (brandCountsByName[b.name] ?? 0) > 0)
     : brands;
+
+  const getBrandCount = (b: BrandOption) => brandCountsByName[b.name] ?? 0;
 
   const filteredBrands = visibleBrands.filter((b) =>
     b.name.toLowerCase().includes(brandSearch.toLowerCase()),
   );
 
-  const getBrandCount = (b: BrandOption) =>
-    filterBrandsByProducts ? (brandCountsByName[b.name] ?? 0) : b.product_count;
+  const sortedBrands = [...filteredBrands].sort((a, b) => {
+    switch (brandSort) {
+      case "name_desc":  return b.name.localeCompare(a.name);
+      case "count_desc": return getBrandCount(b) - getBrandCount(a);
+      case "count_asc":  return getBrandCount(a) - getBrandCount(b);
+      default:           return a.name.localeCompare(b.name); // name_asc
+    }
+  });
 
   const toggleProduct = (id: string) => {
     onProductsChange(
@@ -86,6 +148,7 @@ export function ProductBrandSelector({
 
   return (
     <div className="space-y-4">
+      {/* Mode toggle */}
       <div className="flex w-full overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
         <button
           type="button"
@@ -113,21 +176,44 @@ export function ProductBrandSelector({
 
       {mode === "manual" ? (
         <div className="space-y-3">
-          <div className="relative w-full">
-            <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={productSearch}
-              onChange={(e) => setProductSearch(e.target.value)}
-              placeholder="Cari produk..."
-              className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
-            />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative">
+              <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Cari produk..."
+                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
+              />
+            </div>
+            {categories.length > 0 && (
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Semua Kategori</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+            <select
+              value={productSort}
+              onChange={(e) => setProductSort(e.target.value as ProductSort)}
+              className={selectClass}
+            >
+              {PRODUCT_SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
-            {filteredProducts.length === 0 ? (
+            {sortedProducts.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">Tidak ada produk</p>
             ) : (
-              filteredProducts.map((p) => {
+              sortedProducts.map((p) => {
                 const selected = selectedProductIds.includes(p.id);
                 return (
                   <button
@@ -163,14 +249,37 @@ export function ProductBrandSelector({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="relative w-full">
-            <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={brandSearch}
-              onChange={(e) => setBrandSearch(e.target.value)}
-              placeholder="Cari brand..."
-              className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
-            />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="relative">
+              <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                placeholder="Cari brand..."
+                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
+              />
+            </div>
+            {categories.length > 0 && (
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Semua Kategori</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+            <select
+              value={brandSort}
+              onChange={(e) => setBrandSort(e.target.value as BrandSort)}
+              className={selectClass}
+            >
+              {BRAND_SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
 
           {selectedBrandIds.length > 0 && (
@@ -194,10 +303,10 @@ export function ProductBrandSelector({
           )}
 
           <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
-            {filteredBrands.length === 0 ? (
+            {sortedBrands.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">Tidak ada brand</p>
             ) : (
-              filteredBrands.map((b) => {
+              sortedBrands.map((b) => {
                 const selected = selectedBrandIds.includes(b.id);
                 return (
                   <button

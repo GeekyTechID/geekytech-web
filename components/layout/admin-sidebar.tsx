@@ -12,6 +12,7 @@ import {
   FileText,
   Grid2X2,
   ImageIcon,
+  LayoutList,
   Layers,
   LogOut,
   MessageSquare,
@@ -22,7 +23,6 @@ import {
   Star,
   Tag,
   Ticket,
-  TrendingUp,
   Users,
   Zap,
 } from "lucide-react";
@@ -85,7 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Flash Sale", href: "/admin/promotions/flash-sale", icon: Zap },
       { label: "Produk Second", href: "/admin/promotions/second-products", icon: PackageSearch },
       { label: "Rekomendasi", href: "/admin/promotions/featured-products", icon: Star },
-      { label: "Rating Tertinggi", href: "/admin/promotions/top-rated", icon: TrendingUp },
+      { label: "Tampilan Beranda", href: "/admin/promotions/home-sections", icon: LayoutList },
     ],
   },
   {

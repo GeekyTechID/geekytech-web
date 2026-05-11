@@ -22,7 +22,7 @@ const BACK_PATH = "/admin/promotions/second-products";
 export default async function SecondProductsEditPage({ params }: { params: Params }) {
   const { id } = await params;
 
-  const [{ promo, productIds, brandIds }, { products, brands }] = await Promise.all([
+  const [{ promo, productIds, brandIds }, { products, brands, categories }] = await Promise.all([
     fetchPromotionWithAssociations(id),
     fetchSelectorData(),
   ]);
@@ -62,6 +62,7 @@ export default async function SecondProductsEditPage({ params }: { params: Param
         }}
         products={products}
         brands={brands}
+        categories={categories}
         bannerSection={<PromotionBannerSection template="second_products" />}
       />
     </div>

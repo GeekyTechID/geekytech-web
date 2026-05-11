@@ -4,7 +4,6 @@ import { Plus } from "lucide-react";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { PromotionTable, type PromotionTableRow } from "../_components/promotion-table";
-import { PromotionBannerSection } from "../_components/promotion-banner-section";
 
 export const metadata: Metadata = { title: "Rekomendasi Produk — Promosi Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -69,7 +68,6 @@ export default async function FeaturedProductsPage() {
         </Link>
       </div>
       <PromotionTable rows={rows} basePath={BASE_PATH} emptyLabel="Belum ada promosi rekomendasi produk" />
-      <PromotionBannerSection template="featured_products" />
     </div>
   );
 }

@@ -4,10 +4,10 @@ import type { ProductOption, BrandOption } from "../_components/product-brand-se
 export async function fetchSelectorData() {
   const supabase = createServiceClient();
 
-  const [{ data: rawProducts }, { data: rawBrands }, { data: rawCategories }] = await Promise.all([
+  const [{ data: rawProducts }, { data: rawBrands }] = await Promise.all([
     supabase
       .from("products")
-      .select("id, name, slug, condition, brands:brand_id(name), product_variants(price)")
+      .select("id, name, slug, condition, average_rating, review_count, total_sold, brands:brand_id(name), categories:category_id(id, name), product_variants(price)")
       .eq("is_active", true)
       .is("deleted_at", null)
       .order("name", { ascending: true }),
@@ -16,17 +16,17 @@ export async function fetchSelectorData() {
       .select("id, name")
       .eq("is_active", true)
       .order("name", { ascending: true }),
-    supabase
-      .from("categories")
-      .select("id, name")
-      .eq("is_active", true)
-      .order("name", { ascending: true }),
   ]);
+
+  const categoryMap = new Map<string, string>();
 
   const products: ProductOption[] = (rawProducts ?? []).map((p) => {
     const brand = Array.isArray(p.brands) ? p.brands[0] : p.brands;
+    const category = Array.isArray(p.categories) ? p.categories[0] : p.categories;
+    const typedCategory = category as { id: string; name: string } | null | undefined;
     const variants = (p.product_variants ?? []) as { price: number }[];
     const minPrice = variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : 0;
+    if (typedCategory) categoryMap.set(typedCategory.id, typedCategory.name);
     return {
       id: p.id,
       name: p.name,
@@ -35,6 +35,11 @@ export async function fetchSelectorData() {
       brand_name: (brand as { name: string } | null)?.name ?? null,
       condition: p.condition ?? "new",
       image_url: null,
+      category_id: typedCategory?.id ?? null,
+      category_name: typedCategory?.name ?? null,
+      average_rating: p.average_rating ?? 0,
+      review_count: p.review_count ?? 0,
+      total_sold: p.total_sold ?? 0,
     };
   });
 
@@ -44,7 +49,9 @@ export async function fetchSelectorData() {
     product_count: 0,
   }));
 
-  const categories = (rawCategories ?? []).map((c) => ({ id: c.id, name: c.name }));
+  const categories = Array.from(categoryMap.entries())
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return { products, brands, categories };
 }

@@ -43,13 +43,13 @@ interface PromotionFormProps {
   initialData?: PromotionInitialData;
   products: ProductOption[];
   brands: BrandOption[];
+  categories?: { id: string; name: string }[];
   bannerSection?: ReactNode;
 }
 
 const TYPE_LABELS: Record<PromotionType, string> = {
   second_products: "Produk Second Terbaik",
   featured_products: "Rekomendasi Produk",
-  top_rated: "Produk Rating Tertinggi",
 };
 
 export function PromotionForm({
@@ -59,6 +59,7 @@ export function PromotionForm({
   initialData,
   products,
   brands,
+  categories,
   bannerSection,
 }: PromotionFormProps) {
   const router = useRouter();
@@ -193,6 +194,7 @@ export function PromotionForm({
           onModeChange={setSelectionMode}
           products={type === "second_products" ? products.filter((p) => p.condition === "second") : products}
           brands={brands}
+          categories={categories}
           selectedProductIds={selectedProductIds}
           selectedBrandIds={selectedBrandIds}
           onProductsChange={setSelectedProductIds}
@@ -343,13 +345,11 @@ export function PromotionForm({
 function getDefaultConfig(type: PromotionType): Record<string, unknown> {
   if (type === "second_products") return { sort_by: "rating" };
   if (type === "featured_products") return { sort_by: "newest" };
-  if (type === "top_rated") return { min_rating: 4 };
   return {};
 }
 
 function getPlaceholderTitle(type: PromotionType): string {
   if (type === "second_products") return "Produk Second Pilihan Kami";
   if (type === "featured_products") return "Rekomendasi untuk Kamu";
-  if (type === "top_rated") return "Produk Terbaik Berdasarkan Review";
   return "Judul Promosi";
 }
