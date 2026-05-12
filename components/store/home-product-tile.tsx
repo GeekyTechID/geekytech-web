@@ -24,7 +24,7 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
   return (
     <article
       className={cn(
-        "flex snap-start flex-col bg-white dark:border-border dark:bg-background",
+        "flex snap-start flex-col dark:border-border dark:bg-background",
         layout === "default" && "w-[min(100%,11.5rem)] shrink-0 sm:w-52",
         layout === "promoRow" && "h-full w-full min-w-0 shrink-0",
         layout === "fluidRow" && "h-full min-h-0 w-full min-w-0",

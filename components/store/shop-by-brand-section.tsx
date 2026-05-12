@@ -23,12 +23,12 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
         {brands.filter((b) => b.name.toLowerCase() !== "lainnya").length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">Belum ada merek aktif.</p>
         ) : (
-          <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-10 grid justify-start items-start grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {brands.filter((b) => b.name.toLowerCase() !== "lainnya").map((b) => (
               <Link
                 key={b.id}
                 href={`/brands/${encodeURIComponent(b.slug)}`}
-                className="cursor-pointer group flex items-center justify-center px-4 transition hover:border-brand/40 dark:border-border dark:bg-muted"
+                className="cursor-pointer group flex items-center justify-center transition hover:border-brand/40 dark:border-border dark:bg-muted"
               >
                 {b.logo_url ? (
                   <div className="relative h-15 w-90 transition group-hover:grayscale-0">
