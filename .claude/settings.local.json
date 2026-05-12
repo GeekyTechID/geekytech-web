@@ -4,7 +4,12 @@
       "Bash(npx tsc *)",
       "Bash(grep -v \"^$\")",
       "Bash(npx next *)",
-      "Bash(dir G:\\\\WebsiteDevelopment\\\\GeekyTechWebsite\\\\geekytech-web\\\\app\\\\admin\\\\\\(panel\\)\\\\brands *)"
+      "Bash(dir G:\\\\WebsiteDevelopment\\\\GeekyTechWebsite\\\\geekytech-web\\\\app\\\\admin\\\\\\(panel\\)\\\\brands *)",
+      "Bash(kill 8129)",
+      "Bash(npm run *)",
+      "Bash(echo \"PID: $!\")",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot"
     ]
   }
 }

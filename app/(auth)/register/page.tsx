@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
+import { AUTH_INPUT_CLASS } from "@/lib/auth/auth-field-classes";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,9 @@ export default function RegisterPage() {
   }, []);
 
   const onSubmit = async (values: RegisterFormValues) => {
-    const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    const hasTurnstile =
+      !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY &&
+      process.env.NODE_ENV === "production";
     if (hasTurnstile && !turnstileToken) {
       toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
       return;
@@ -46,11 +49,17 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       const supabase = createClient();
+      const fullName = `${values.first_name.trim()} ${values.last_name.trim()}`.trim();
       const { error } = await supabase.auth.signUp({
-        email: values.email,
+        email: values.email.trim(),
         password: values.password,
         options: {
-          data: { full_name: values.full_name },
+          data: {
+            full_name: fullName,
+            phone: values.phone.trim(),
+            first_name: values.first_name.trim(),
+            last_name: values.last_name.trim(),
+          },
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
       });
@@ -69,7 +78,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/verify-email?email=" + encodeURIComponent(values.email));
+      router.push("/verify-email?email=" + encodeURIComponent(values.email.trim()));
     } catch {
       toast.error("Terjadi kesalahan. Coba lagi.");
     } finally {
@@ -96,167 +105,197 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Heading */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tight uppercase">Daftar</h1>
-        <p className="text-sm text-muted-foreground">
-          Sudah punya akun?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-foreground underline-offset-4 hover:underline"
-          >
-            Masuk di sini
-          </Link>
+    <div className="space-y-10">
+      <div className="space-y-2">
+        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+          Selamat Datang Kembali!
+        </h1>
+        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+          Silahkan masukan detail Anda.
         </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        {/* Nama Lengkap */}
-        <div className="space-y-1.5">
-          <Label htmlFor="full_name" className="text-xs font-bold uppercase tracking-widest">
-            Nama Lengkap
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="first_name"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            >
+              Nama Depan
+            </Label>
+            <Input
+              id="first_name"
+              type="text"
+              autoComplete="given-name"
+              placeholder="Masukin nama depan"
+              aria-invalid={!!errors.first_name}
+              className={AUTH_INPUT_CLASS}
+              {...register("first_name")}
+            />
+            {errors.first_name && (
+              <p className="text-[14px] text-destructive">{errors.first_name.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="last_name"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            >
+              Nama Belakang
+            </Label>
+            <Input
+              id="last_name"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Masukin nama belakang"
+              aria-invalid={!!errors.last_name}
+              className={AUTH_INPUT_CLASS}
+              {...register("last_name")}
+            />
+            {errors.last_name && (
+              <p className="text-[14px] text-destructive">{errors.last_name.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="phone"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
+            No Telepon
           </Label>
           <Input
-            id="full_name"
-            type="text"
-            autoComplete="name"
-            placeholder="Nama kamu"
-            aria-invalid={!!errors.full_name}
-            className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none"
-            {...register("full_name")}
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="Masukin nomor telepon kamu"
+            aria-invalid={!!errors.phone}
+            className={AUTH_INPUT_CLASS}
+            {...register("phone")}
           />
-          {errors.full_name && (
-            <p className="text-xs text-destructive">{errors.full_name.message}</p>
+          {errors.phone && (
+            <p className="text-[14px] text-destructive">{errors.phone.message}</p>
           )}
         </div>
 
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest">
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
             Email
           </Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="nama@email.com"
+            placeholder="Masukin email kamu"
             aria-invalid={!!errors.email}
-            className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none"
+            className={AUTH_INPUT_CLASS}
             {...register("email")}
           />
           {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
+            <p className="text-[14px] text-destructive">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest">
-            Password
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
+            Kata Sandi
           </Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="Min. 8 karakter, 1 huruf besar, 1 angka"
+              placeholder="••••••••••"
               aria-invalid={!!errors.password}
-              className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none pr-10"
+              className={`${AUTH_INPUT_CLASS} pr-12`}
               {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+              aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-destructive">{errors.password.message}</p>
+            <p className="text-[14px] text-destructive">{errors.password.message}</p>
           )}
         </div>
 
-        {/* Confirm Password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="confirm_password" className="text-xs font-bold uppercase tracking-widest">
-            Konfirmasi Password
+        <div className="space-y-2">
+          <Label
+            htmlFor="confirm_password"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
+            Konfirmasi Kata Sandi
           </Label>
           <div className="relative">
             <Input
               id="confirm_password"
               type={showConfirm ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="Ulangi password"
+              placeholder="••••••••••"
               aria-invalid={!!errors.confirm_password}
-              className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none pr-10"
+              className={`${AUTH_INPUT_CLASS} pr-12`}
               {...register("confirm_password")}
             />
             <button
               type="button"
               onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showConfirm ? "Sembunyikan password" : "Tampilkan password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+              aria-label={showConfirm ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
             >
-              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.confirm_password && (
-            <p className="text-xs text-destructive">
-              {errors.confirm_password.message}
-            </p>
+            <p className="text-[14px] text-destructive">{errors.confirm_password.message}</p>
           )}
         </div>
 
-        {/* Turnstile */}
         <TurnstileWidget onVerify={handleTurnstileVerify} />
 
-        {/* Terms */}
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-[12px] font-normal leading-relaxed tracking-[-0.01em] text-[#7a7a7a]">
           Dengan mendaftar, kamu setuju dengan{" "}
-          <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+          <Link href="/terms" className="text-[#EA5329] underline-offset-2 hover:underline">
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}
-          <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+          <Link href="/privacy" className="text-[#EA5329] underline-offset-2 hover:underline">
             Kebijakan Privasi
           </Link>{" "}
           GeekyTech.
         </p>
 
-        {/* Submit */}
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 rounded-none font-bold uppercase tracking-widest text-sm bg-black text-white hover:bg-black/80"
+          className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
         >
-          {isLoading && <Loader2 size={16} className="animate-spin mr-2" />}
-          Buat Akun
+          {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
+          Daftar
         </Button>
       </form>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4">
-        <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground uppercase tracking-widest">
-          atau
-        </span>
-        <Separator className="flex-1" />
-      </div>
-
-      {/* Google OAuth */}
       <Button
         type="button"
         variant="outline"
         onClick={handleGoogleRegister}
         disabled={isGoogleLoading}
-        className="w-full h-11 rounded-none font-semibold border-foreground/30 hover:border-foreground"
+        className="-mt-10 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
       >
         {isGoogleLoading ? (
-          <Loader2 size={16} className="animate-spin mr-2" />
+          <Loader2 size={16} className="mr-2 animate-spin" />
         ) : (
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -277,8 +316,18 @@ export default function RegisterPage() {
             />
           </svg>
         )}
-        Daftar dengan Google
+        Daftar dengan google
       </Button>
+
+      <p className="text-center text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        Sudah punya akun?{" "}
+        <Link
+          href="/login"
+          className="font-semibold text-[#EA5329] underline-offset-4 transition-colors hover:text-[#d44820] hover:underline"
+        >
+          masuk
+        </Link>
+      </p>
     </div>
   );
 }

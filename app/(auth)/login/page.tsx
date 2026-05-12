@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useCallback } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,8 +10,10 @@ import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
+import { AUTH_INPUT_CLASS } from "@/lib/auth/auth-field-classes";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +26,8 @@ export default function LoginPage() {
   );
 }
 
+const REMEMBER_EMAIL_KEY = "geekytech-login-email";
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,6 +35,7 @@ function LoginForm() {
   const urlError = searchParams.get("error");
 
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -38,10 +43,24 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_EMAIL_KEY);
+      if (saved) {
+        setValue("email", saved);
+        setRememberMe(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [setValue]);
 
   const handleTurnstileVerify = useCallback((token: string) => {
     setTurnstileToken(token);
@@ -81,6 +100,15 @@ function LoginForm() {
       }
 
       toast.success("Selamat datang kembali!");
+      try {
+        if (rememberMe) {
+          localStorage.setItem(REMEMBER_EMAIL_KEY, values.email.trim());
+        } else {
+          localStorage.removeItem(REMEMBER_EMAIL_KEY);
+        }
+      } catch {
+        /* ignore */
+      }
       router.push(redirectTo);
       router.refresh();
     } catch {
@@ -109,119 +137,113 @@ function LoginForm() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Heading */}
-      <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tight uppercase">Masuk</h1>
-        <p className="text-sm text-muted-foreground">
-          Belum punya akun?{" "}
-          <Link
-            href="/register"
-            className="font-semibold text-foreground underline-offset-4 hover:underline"
-          >
-            Daftar sekarang
-          </Link>
+    <div className="space-y-10">
+      <div className="space-y-2">
+        <h1 className="text-[28px] font-semibold text-[#1d1d1f]">
+          Selamat Datang Kembali!
+        </h1>
+        <p className="text-[17px] font-normal text-[#1d1d1f]">
+          Silahkan masukan detail Anda.
         </p>
       </div>
 
-      {/* URL error from OAuth callback */}
       {urlError && (
-        <div className="border border-destructive bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/40 bg-white px-4 py-3 text-[14px] leading-[1.43] text-destructive">
           {urlError}
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-2">
+          <Label
+            htmlFor="email"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
             Email
           </Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="nama@email.com"
+            placeholder="Masukin email kamu"
             aria-invalid={!!errors.email}
-            className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none"
+            className={AUTH_INPUT_CLASS}
             {...register("email")}
           />
           {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
+            <p className="text-[14px] text-destructive">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Password */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest">
-              Password
-            </Label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >
-              Lupa password?
-            </Link>
-          </div>
+        <div className="space-y-2">
+          <Label
+            htmlFor="password"
+            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+          >
+            Kata Sandi
+          </Label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="••••••••••"
               aria-invalid={!!errors.password}
-              className="h-11 border-foreground/30 focus-visible:border-foreground rounded-none pr-10"
+              className={`${AUTH_INPUT_CLASS} pr-12`}
               {...register("password")}
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+              aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           {errors.password && (
-            <p className="text-xs text-destructive">{errors.password.message}</p>
+            <p className="text-[14px] text-destructive">{errors.password.message}</p>
           )}
         </div>
 
-        {/* Turnstile */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="flex cursor-pointer items-center gap-2.5 text-[14px] font-normal leading-[1.43] text-[#1d1d1f]">
+            <Checkbox
+              checked={rememberMe}
+              onCheckedChange={(v) => setRememberMe(v === true)}
+              className="size-[18px] rounded-[4px] border-[#e0e0e0] data-checked:border-[#EA5329] data-checked:bg-[#EA5329]"
+            />
+            Ingat saya
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-[14px] font-semibold leading-[1.43] tracking-[-0.014em] text-[#1d1d1f] underline-offset-4 transition-colors hover:text-[#EA5329] hover:underline"
+          >
+            Lupa Kata Sandi
+          </Link>
+        </div>
+
         <TurnstileWidget onVerify={handleTurnstileVerify} />
 
-        {/* Submit */}
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 rounded-none font-bold uppercase tracking-widest text-sm bg-black text-white hover:bg-black/80"
+          className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
         >
-          {isLoading && <Loader2 size={16} className="animate-spin mr-2" />}
+          {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
           Masuk
         </Button>
       </form>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4">
-        <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground uppercase tracking-widest">
-          atau
-        </span>
-        <Separator className="flex-1" />
-      </div>
-
-      {/* Google OAuth */}
       <Button
         type="button"
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={isGoogleLoading}
-        className="w-full h-11 rounded-none font-semibold border-foreground/30 hover:border-foreground"
+        className="-mt-10 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
       >
         {isGoogleLoading ? (
-          <Loader2 size={16} className="animate-spin mr-2" />
+          <Loader2 size={16} className="mr-2 animate-spin" />
         ) : (
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
             <path
@@ -242,8 +264,18 @@ function LoginForm() {
             />
           </svg>
         )}
-        Masuk dengan Google
+        Masuk dengan google
       </Button>
+
+      <p className="text-center text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        Tidak punya akun?{" "}
+        <Link
+          href="/register"
+          className="font-semibold text-[#EA5329] underline-offset-4 transition-colors hover:text-[#d44820] hover:underline"
+        >
+          daftar
+        </Link>
+      </p>
     </div>
   );
 }

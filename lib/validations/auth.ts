@@ -7,10 +7,21 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
   .object({
-    full_name: z
+    first_name: z
       .string()
-      .min(2, { message: "Nama minimal 2 karakter" })
-      .max(100, { message: "Nama maksimal 100 karakter" }),
+      .min(1, { message: "Nama depan wajib diisi" })
+      .max(50, { message: "Nama depan maksimal 50 karakter" }),
+    last_name: z
+      .string()
+      .min(1, { message: "Nama belakang wajib diisi" })
+      .max(50, { message: "Nama belakang maksimal 50 karakter" }),
+    phone: z
+      .string()
+      .min(10, { message: "Nomor telepon minimal 10 digit" })
+      .max(20, { message: "Nomor telepon terlalu panjang" })
+      .regex(/^[0-9+\-\s()]+$/, {
+        message: "Nomor telepon hanya boleh angka, spasi, +, -, atau tanda kurung",
+      }),
     email: z.string().email({ message: "Email tidak valid" }),
     password: z
       .string()
