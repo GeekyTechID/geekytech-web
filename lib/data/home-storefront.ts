@@ -90,7 +90,7 @@ type ProductImageRow = { url: string; is_primary: boolean | null; sort_order: nu
 type BrandRel = { name: string } | null;
 type CategoryRel = { name: string } | null;
 
-type ProductQueryRow = {
+export type ProductQueryRow = {
   id: string;
   name: string;
   slug: string;
@@ -117,7 +117,7 @@ function pickPrimaryImage(images: ProductImageRow[] | null | undefined): { url: 
   return primary ? { url: primary.url, alt: primary.alt_text } : null;
 }
 
-function productRowToShelf(p: ProductQueryRow): HomeShelfProduct | null {
+export function productRowToShelf(p: ProductQueryRow): HomeShelfProduct | null {
   const variants = (p.product_variants ?? []).filter((v) => v.is_active !== false);
   if (variants.length === 0) return null;
   const minVariant = variants.reduce((a, b) => (a.price <= b.price ? a : b));

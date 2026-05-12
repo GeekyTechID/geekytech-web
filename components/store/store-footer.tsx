@@ -73,7 +73,7 @@ export async function StoreFooter() {
               <ul className="space-y-2.5 text-sm text-white/90">
                 {brands.slice(0, 12).map((b) => (
                   <li key={b.id}>
-                    <Link href={`/products?brand=${encodeURIComponent(b.slug)}`} className="transition hover:text-brand">
+                    <Link href={`/brands/${encodeURIComponent(b.slug)}`} className="transition hover:text-brand">
                       {b.name}
                     </Link>
                   </li>

@@ -57,7 +57,7 @@ export default async function PublicLayout({
     <div className="flex min-h-screen flex-col bg-white dark:bg-background">
       <AnnouncementBarServer />
       <StoreHeader categories={categories} />
-      <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      <main className="flex-1 pb-16 mb-20 md:pb-0">{children}</main>
       {heroBanners.length > 0 && <HomeMainHero banners={heroBanners} hideNav />}
       <StoreFooter />
       <BottomNavBar />

@@ -27,7 +27,7 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
             {brands.filter((b) => b.name.toLowerCase() !== "lainnya").map((b) => (
               <Link
                 key={b.id}
-                href={`/products?brand=${encodeURIComponent(b.slug)}`}
+                href={`/brands/${encodeURIComponent(b.slug)}`}
                 className="cursor-pointer group flex items-center justify-center px-4 transition hover:border-brand/40 dark:border-border dark:bg-muted"
               >
                 {b.logo_url ? (

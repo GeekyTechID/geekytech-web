@@ -20,7 +20,7 @@ export default async function EditBrandPage({
 
   const { data: brand } = await supabase
     .from("brands")
-    .select("id, name, slug, logo_url, sort_order, is_active")
+    .select("id, name, slug, description, logo_url, banner_url, banner_secondary_url, sort_order, is_active")
     .eq("id", id)
     .single();
 
@@ -49,7 +49,10 @@ export default async function EditBrandPage({
         defaultValues={{
           name: brand.name,
           slug: brand.slug,
+          description: brand.description,
           logo_url: brand.logo_url ?? "",
+          banner_url: brand.banner_url,
+          banner_secondary_url: brand.banner_secondary_url,
           sort_order: brand.sort_order,
           is_active: brand.is_active,
         }}

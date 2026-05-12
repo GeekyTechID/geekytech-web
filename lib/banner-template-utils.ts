@@ -9,6 +9,9 @@ function parseFlashSaleId(template: string | null): string | null {
 
 export function templateToPromotionAdminPath(template: string | null): string {
   if (!template) return "/admin/banners";
+  if (template.startsWith("brand_main:") || template.startsWith("brand_secondary:")) {
+    return "/admin/banners";
+  }
   const flashSaleId = parseFlashSaleId(template);
   if (flashSaleId) return `/admin/promotions/flash-sale/${flashSaleId}`;
   return `/admin/promotions/${template.replace(/_/g, "-")}`;

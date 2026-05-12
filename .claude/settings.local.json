@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(grep -v \"^$\")",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(dir G:\\\\WebsiteDevelopment\\\\GeekyTechWebsite\\\\geekytech-web\\\\app\\\\admin\\\\\\(panel\\)\\\\brands *)"
     ]
   }
 }

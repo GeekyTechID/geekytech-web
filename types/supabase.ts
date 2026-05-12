@@ -115,7 +115,10 @@ export type Database = {
       }
       brands: {
         Row: {
+          banner_secondary_url: string | null
+          banner_url: string | null
           created_at: string
+          description: string | null
           id: string
           is_active: boolean
           logo_url: string | null
@@ -125,7 +128,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_secondary_url?: string | null
+          banner_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -135,7 +141,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_secondary_url?: string | null
+          banner_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           logo_url?: string | null

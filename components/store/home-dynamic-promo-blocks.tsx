@@ -10,11 +10,11 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
   if (blocks.length === 0) return null;
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 mb-10">
       {blocks.map((block, blockIndex) => (
         <section
           key={`${block.sectionKey}-${blockIndex}`}
-          className="border-b border-neutral-200 bg-white py-10 dark:border-border dark:bg-background"
+          className="bg-white py-10 dark:border-border dark:bg-background"
         >
           {block.banners.length > 0 ? (
             <div className="relative left-1/2 w-screen max-w-none -translate-x-1/2">
