@@ -21,7 +21,7 @@ export default async function AddressesPage() {
   const rows = await fetchUserAddresses(user.id);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Pengiriman</p>

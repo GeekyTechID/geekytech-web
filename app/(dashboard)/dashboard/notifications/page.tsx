@@ -19,7 +19,7 @@ export default async function NotificationsPage() {
   const items = await fetchUserNotifications(user.id, 80);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Kotak masuk</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Notifikasi</h1>
 

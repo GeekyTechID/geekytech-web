@@ -25,7 +25,7 @@ export default async function VouchersPage() {
   const coupons = await fetchActiveCouponsForStore();
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Promo</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Voucher aktif</h1>
       <p className="mt-2 text-sm text-[#5c5c5c]">Gunakan kode saat checkout sesai syarat minimum belanja.</p>

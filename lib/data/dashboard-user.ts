@@ -112,6 +112,115 @@ export async function fetchUserOrders(
   }
 }
 
+export type DashboardOrderListPreview = {
+  id: string;
+  order_number: string;
+  status: OrderStatus;
+  total: number;
+  created_at: string;
+  previewName: string | null;
+  previewImage: string | null;
+  previewQty: number;
+  previewUnitPrice: number;
+};
+
+export async function fetchProcessingOrdersCount(userId: string): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { count, error } = await supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .in("status", ["paid", "processing", "shipped"]);
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function fetchPaidAndShippedOrderCounts(
+  userId: string,
+): Promise<{ paid: number; shipped: number }> {
+  try {
+    const supabase = await createClient();
+    const [paidRes, shippedRes] = await Promise.all([
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "paid"),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("status", "shipped"),
+    ]);
+    return {
+      paid: paidRes.count ?? 0,
+      shipped: shippedRes.count ?? 0,
+    };
+  } catch {
+    return { paid: 0, shipped: 0 };
+  }
+}
+
+export async function fetchRecentOrdersListPreview(
+  userId: string,
+  limit: number,
+): Promise<DashboardOrderListPreview[]> {
+  try {
+    const supabase = await createClient();
+    const { data: orders, error: oErr } = await supabase
+      .from("orders")
+      .select("id, order_number, status, total, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (oErr || !orders?.length) return [];
+
+    const orderIds = orders.map((o) => o.id);
+    const { data: items, error: iErr } = await supabase
+      .from("order_items")
+      .select("order_id, product_name, image_url, quantity, price, id")
+      .in("order_id", orderIds)
+      .order("id", { ascending: true });
+    if (iErr) return [];
+
+    const firstByOrder = new Map<
+      string,
+      { product_name: string; image_url: string | null; quantity: number; price: number }
+    >();
+    for (const it of items ?? []) {
+      if (!firstByOrder.has(it.order_id)) {
+        firstByOrder.set(it.order_id, {
+          product_name: it.product_name,
+          image_url: it.image_url,
+          quantity: it.quantity,
+          price: it.price,
+        });
+      }
+    }
+
+    return orders.map((o) => {
+      const fi = firstByOrder.get(o.id);
+      return {
+        id: o.id,
+        order_number: o.order_number,
+        status: o.status as OrderStatus,
+        total: o.total,
+        created_at: o.created_at,
+        previewName: fi?.product_name ?? null,
+        previewImage: fi?.image_url ?? null,
+        previewQty: fi?.quantity ?? 0,
+        previewUnitPrice: fi?.price ?? 0,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 export const fetchOrderDetailForUser = cache(async (userId: string, orderId: string): Promise<DashboardOrderDetail | null> => {
   try {
     const supabase = await createClient();

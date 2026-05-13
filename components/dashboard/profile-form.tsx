@@ -21,7 +21,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
   return (
     <form
-      className="mx-auto max-w-lg space-y-5 rounded-xl border border-[#e0e0e0] bg-white p-6"
+      className="mx-auto w-full max-w-lg space-y-5 rounded-xl border border-[#e0e0e0] bg-white p-6"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);

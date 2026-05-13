@@ -21,7 +21,7 @@ export default async function EditAddressPage({ params }: { params: Promise<{ id
   if (!row) notFound();
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Alamat</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Edit alamat</h1>
       <div className="mt-10">

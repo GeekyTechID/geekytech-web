@@ -28,6 +28,9 @@ export type CartLineView = {
   unitPrice: number;
   discountPercent: number | null;
   images: { url: string; alt: string | null }[];
+  sku: string;
+  /** Berat per unit (gram), untuk ongkir/checkout */
+  weightGrams: number;
 };
 
 export function CartLineCard({ line }: { line: CartLineView }) {
@@ -71,9 +74,9 @@ export function CartLineCard({ line }: { line: CartLineView }) {
   };
 
   return (
-    <article className="flex flex-col gap-4 rounded-xl border border-[#e8e4dc] bg-white p-4 shadow-sm sm:flex-row sm:gap-5 sm:p-5">
+    <article className="flex flex-col gap-4 sm:flex-row sm:gap-5">
       <div className="relative mx-auto w-full max-w-[200px] shrink-0 sm:mx-0 sm:w-44">
-        <div className="relative aspect-square overflow-hidden rounded-lg border border-[#e8e4dc] bg-[#faf9f7]">
+        <div className="relative aspect-square overflow-hidden rounded-lg">
           {currentImg?.url ? (
             <Image src={currentImg.url} alt={currentImg.alt ?? line.productName} fill className="object-contain p-2" sizes="200px" />
           ) : (
@@ -126,9 +129,9 @@ export function CartLineCard({ line }: { line: CartLineView }) {
           <span>{line.soldCount} terjual</span>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-[#f0ebe3] pt-4">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xl font-black tabular-nums text-[#1d1d1f]">{formatRupiah(line.unitPrice)}</p>
+            <p className="text-lg font-normal tabular-nums text-[#1d1d1f]">{formatRupiah(line.unitPrice)}</p>
             {line.listPrice > line.unitPrice ? (
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-[#9a9590] line-through">{formatRupiah(line.listPrice)}</span>
@@ -180,11 +183,11 @@ export function CartLineCard({ line }: { line: CartLineView }) {
         </div>
 
         <p className="mt-3 text-right text-xs font-semibold text-[#7a7a7a] sm:hidden">Subtotal baris: {formatRupiah(lineTotal)}</p>
-      </div>
 
-      <p className="hidden shrink-0 self-start text-right text-base font-bold tabular-nums text-[#1d1d1f] sm:block sm:pt-1 sm:text-lg">
-        {formatRupiah(lineTotal)}
-      </p>
+        <p className="mt-5 hidden shrink-0 self-start text-left text-base font-bold tabular-nums text-[#1d1d1f] sm:block sm:pt-1 sm:text-xl">
+          {formatRupiah(lineTotal)}
+        </p>
+      </div>
     </article>
   );
 }

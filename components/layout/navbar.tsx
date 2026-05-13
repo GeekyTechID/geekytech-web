@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -92,12 +91,15 @@ export function Navbar() {
   };
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    reset();
-    toast.success("Berhasil keluar.");
-    router.push("/");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      window.location.href = "/";
+    }
   };
 
   const userInitials = profile?.full_name

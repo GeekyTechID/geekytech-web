@@ -30,7 +30,7 @@ export function OrderSubNav({
   const items = tabs(orderId);
 
   return (
-    <div className="mb-8 border-b border-[#e0e0e0] pb-6">
+    <div className="mb-8 w-full border-b border-[#e0e0e0] pb-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Pesanan</p>

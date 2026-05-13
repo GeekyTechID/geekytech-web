@@ -24,7 +24,7 @@ export default async function DashboardOrderSegmentLayout({
   if (!detail) notFound();
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <OrderSubNav orderId={id} orderNumber={detail.order.order_number} status={detail.order.status} />
       {children}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, startTransition } from "react";
+import { useCallback, useEffect, useRef, useState, startTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -16,9 +16,17 @@ import {
   User,
   X,
 } from "lucide-react";
+
+type SearchResult = {
+  id: string;
+  name: string;
+  slug: string;
+  base_price: number;
+  sale_price: number | null;
+  image: string | null;
+};
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
@@ -47,10 +55,14 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -75,29 +87,100 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
     };
   }, [mobileMenuOpen]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const fetchSearchResults = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`);
+      const data = await res.json();
+      setSearchResults(data.results ?? []);
+      setShowDropdown(true);
+    } catch {
+      // ignore
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchQuery(value);
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => fetchSearchResults(value), 300);
+    },
+    [fetchSearchResults],
+  );
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const q = searchQuery.trim();
     if (!q) return;
+    setShowDropdown(false);
     router.push(`/search?q=${encodeURIComponent(q)}`);
     setSearchQuery("");
+    setSearchResults([]);
   };
 
-  const handleLogout = () => {
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") setShowDropdown(false);
+  };
+
+  const closeDropdown = () => setTimeout(() => setShowDropdown(false), 150);
+
+  const searchDropdown = showDropdown && searchResults.length > 0 ? (
+    <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg dark:border-border dark:bg-background">
+      {searchResults.map((r) => (
+        <Link
+          key={r.id}
+          href={`/products/${r.slug}`}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => { setShowDropdown(false); setSearchQuery(""); setSearchResults([]); }}
+          className="flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-muted"
+        >
+          {r.image ? (
+            <Image src={r.image} alt={r.name} width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+          ) : (
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-neutral-100 dark:bg-muted" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-neutral-900 dark:text-foreground">{r.name}</p>
+            <p className="text-xs text-neutral-500">
+              {r.sale_price
+                ? `Rp${r.sale_price.toLocaleString("id-ID")}`
+                : `Rp${r.base_price.toLocaleString("id-ID")}`}
+            </p>
+          </div>
+        </Link>
+      ))}
+      <Link
+        href={`/search?q=${encodeURIComponent(searchQuery.trim())}`}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => { setShowDropdown(false); setSearchQuery(""); setSearchResults([]); }}
+        className="flex items-center justify-center border-t border-neutral-100 px-3 py-2 text-xs font-medium text-[#EA5329] hover:bg-neutral-50 dark:border-border dark:hover:bg-muted"
+      >
+        Lihat semua hasil untuk &ldquo;{searchQuery.trim()}&rdquo; →
+      </Link>
+    </div>
+  ) : null;
+
+  const handleLogout = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
-
-    const supabase = createClient();
-    // Jangan di-await — SDK tetap membuat network request meski scope: "local",
-    // sehingga await akan hang selamanya jika Supabase free tier paused/unreachable.
-    // Fire-and-forget: sesi lokal langsung dihapus, logout berjalan tanpa menunggu server.
-    supabase.auth.signOut({ scope: "local" }).catch(() => {});
-
-    reset();
-    toast.success("Berhasil keluar.");
-    setIsLoggingOut(false);
-    router.refresh();
-    router.push("/");
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      setIsLoggingOut(false);
+      window.location.href = "/";
+    }
   };
 
   const userInitials = profile?.full_name
@@ -136,27 +219,28 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
             </Link>
 
             <form
-              onSubmit={handleSearch}
-              className="mx-auto hidden min-w-0 max-w-2xl flex-1 items-center md:flex"
+              onSubmit={handleSearchSubmit}
+              className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 md:block"
             >
-              <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 dark:border-border dark:bg-muted">
+              <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3 dark:border-border dark:bg-muted">
+                <Search size={14} className="mr-2 shrink-0 text-neutral-400" />
                 <input
                   ref={searchInputRef}
                   type="search"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari..."
+                  onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
+                  onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                  onBlur={closeDropdown}
+                  placeholder="Cari produk..."
                   className="h-11 min-w-0 flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500 dark:text-foreground dark:placeholder:text-muted-foreground"
                   aria-label="Cari produk"
+                  aria-expanded={showDropdown}
+                  aria-autocomplete="list"
                 />
-                <button
-                  type="submit"
-                  className="m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-white transition hover:bg-neutral-800 dark:bg-foreground dark:text-background"
-                  aria-label="Cari"
-                >
-                  <Search size={16} strokeWidth={2.5} />
-                </button>
+                {isSearching && <Loader2 size={14} className="shrink-0 animate-spin text-neutral-400" />}
               </div>
+              {searchDropdown}
             </form>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
@@ -241,24 +325,23 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
           </div>
 
           {/* Pencarian mobile */}
-          <form onSubmit={handleSearch} className="pb-3 md:hidden">
-            <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 dark:border-border dark:bg-muted">
-              <Search size={16} className="shrink-0 text-neutral-500" />
+          <form onSubmit={handleSearchSubmit} className="relative pb-3 md:hidden">
+            <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3 dark:border-border dark:bg-muted">
+              <Search size={15} className="shrink-0 text-neutral-500" />
               <input
                 type="search"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari..."
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
+                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                onBlur={closeDropdown}
+                placeholder="Cari produk..."
                 className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-neutral-500"
+                aria-label="Cari produk"
               />
-              <button
-                type="submit"
-                className="m-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-white"
-                aria-label="Cari"
-              >
-                <Search size={14} />
-              </button>
+              {isSearching && <Loader2 size={13} className="shrink-0 animate-spin text-neutral-400" />}
             </div>
+            {searchDropdown}
           </form>
 
           {/* Kategori */}

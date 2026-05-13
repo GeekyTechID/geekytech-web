@@ -7,6 +7,7 @@ import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
 import { HomeMainHero } from "@/components/store/home-main-hero";
 import { fetchMainHeroBanners } from "@/lib/data/home-storefront";
+import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 
 async function getMaintenanceMode(): Promise<boolean> {
   try {
@@ -22,47 +23,6 @@ async function getMaintenanceMode(): Promise<boolean> {
   }
 }
 
-async function getNavCategories() {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("categories")
-      .select("id, name, slug")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true });
-    if (error) return [];
-    return data ?? [];
-  } catch {
-    return [];
-  }
-}
-
-async function getCartCount(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return 0;
-
-    const { data: cart } = await supabase
-      .from("carts")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!cart) return 0;
-
-    const { data: items } = await supabase
-      .from("cart_items")
-      .select("quantity")
-      .eq("cart_id", cart.id);
-    if (!items) return 0;
-
-    return items.reduce((sum, item) => sum + item.quantity, 0);
-  } catch {
-    return 0;
-  }
-}
-
 export default async function PublicLayout({
   children,
 }: {
@@ -70,9 +30,9 @@ export default async function PublicLayout({
 }) {
   const [isMaintenance, categories, heroBanners, initialCartCount] = await Promise.all([
     getMaintenanceMode(),
-    getNavCategories(),
+    fetchStoreHeaderCategories(),
     fetchMainHeroBanners(),
-    getCartCount(),
+    fetchStoreHeaderCartCount(),
   ]);
 
   if (isMaintenance) {

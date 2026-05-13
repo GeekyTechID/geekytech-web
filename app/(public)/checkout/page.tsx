@@ -1,22 +1,55 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+import { fetchUserAddresses } from "@/lib/data/dashboard-user";
+import { fetchUserCartWithLines } from "@/lib/data/user-cart-lines";
+import { CheckoutPageClient } from "@/components/checkout/checkout-page-client";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Checkout",
   description: "Selesaikan pembayaran pesanan GeekyTech Anda.",
 };
 
-export default function CheckoutPlaceholderPage() {
+export default async function CheckoutPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect(`/login?redirectTo=${encodeURIComponent("/checkout")}`);
+  }
+
+  const cart = await fetchUserCartWithLines(user.id);
+  if (!cart || cart.lines.length === 0) {
+    redirect("/cart");
+  }
+
+  const addresses = await fetchUserAddresses(user.id);
+  if (addresses.length === 0) {
+    redirect(`/dashboard/addresses/new?redirectTo=${encodeURIComponent("/checkout")}`);
+  }
+
+  const defaultAddr = addresses.find((a) => a.is_default)?.id ?? addresses[0]?.id ?? null;
+
   return (
-    <div className="mx-auto max-w-lg px-4 py-24 text-center text-[#1d1d1f]">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Checkout</p>
-      <h1 className="mt-3 text-2xl font-bold tracking-tight">Segera hadir</h1>
-      <p className="mt-3 text-sm leading-relaxed text-[#5c5c5c]">
-        Alur checkout penuh (alamat, pengiriman, pembayaran) sedang diintegrasikan. Barang Anda tetap aman di keranjang.
-      </p>
-      <Link href="/cart" className="mt-8 inline-block text-sm font-semibold text-[#EA5329] hover:underline">
-        Kembali ke keranjang
-      </Link>
-    </div>
+    <CheckoutPageClient
+      lines={cart.lines}
+      addresses={addresses.map((a) => ({
+        id: a.id,
+        label: a.label,
+        recipient: a.recipient,
+        phone: a.phone,
+        full_address: a.full_address,
+        district: a.district,
+        city: a.city,
+        province: a.province,
+        postal_code: a.postal_code,
+        is_default: a.is_default,
+      }))}
+      initialAddressId={defaultAddr}
+    />
   );
 }

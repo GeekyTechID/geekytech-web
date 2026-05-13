@@ -22,7 +22,7 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[#5c5c5c]">{items.filter((i) => !i.is_read).length} belum dibaca</p>
         <Button

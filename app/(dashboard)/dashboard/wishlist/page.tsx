@@ -20,7 +20,7 @@ export default async function WishlistPage() {
   const items = await fetchWishlistForUser(user.id);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="w-full">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Favorit</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Wishlist</h1>
 

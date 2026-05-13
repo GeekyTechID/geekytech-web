@@ -78,10 +78,16 @@ function LoginForm() {
     setIsLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 15000),
+      );
+      const { error } = await Promise.race([
+        supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        }),
+        timeout,
+      ]);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
@@ -111,8 +117,12 @@ function LoginForm() {
       }
       router.push(redirectTo);
       router.refresh();
-    } catch {
-      toast.error("Terjadi kesalahan. Coba lagi.");
+    } catch (err) {
+      if (err instanceof Error && err.message === "timeout") {
+        toast.error("Koneksi timeout. Periksa koneksi internet kamu dan coba lagi.");
+      } else {
+        toast.error("Terjadi kesalahan. Coba lagi.");
+      }
     } finally {
       setIsLoading(false);
     }

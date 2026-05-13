@@ -77,7 +77,7 @@ export function OrderToolbar({
   }
 
   return (
-    <div className="mt-6 flex flex-wrap gap-3 border-t border-[#e0e0e0] pt-6">
+    <div className="mt-6 flex w-full flex-wrap gap-3 border-t border-[#e0e0e0] pt-6">
       {canCancel ? (
         <Button type="button" variant="outline" disabled={pending} onClick={onCancel} className="border-red-200 text-red-600 hover:bg-red-50">
           Batalkan pesanan

@@ -18,7 +18,7 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
 
   return (
     <form
-      className="mx-auto max-w-xl space-y-4 rounded-xl border border-[#e0e0e0] bg-white p-6"
+      className="mx-auto w-full max-w-xl space-y-4 rounded-xl border border-[#e0e0e0] bg-white p-6"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);

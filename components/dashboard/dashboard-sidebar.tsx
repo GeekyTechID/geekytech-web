@@ -1,91 +1,149 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Gift,
   Heart,
   Home,
   KeyRound,
-  LogOut,
   MapPin,
   Package,
   User,
 } from "lucide-react";
-import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
-import { SiteLogo } from "@/components/shared/site-logo";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 type NavItem = { label: string; href: string; icon: typeof Home; exact?: boolean };
 
-const NAV_ITEMS: NavItem[] = [
+const NAV_PRIMARY: NavItem[] = [
   { label: "Ringkasan", href: "/dashboard", icon: Home, exact: true },
   { label: "Pesanan", href: "/dashboard/orders", icon: Package },
   { label: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
-  { label: "Profil", href: "/dashboard/profile", icon: User },
-  { label: "Alamat", href: "/dashboard/addresses", icon: MapPin },
   { label: "Notifikasi", href: "/dashboard/notifications", icon: Bell },
+  { label: "Alamat", href: "/dashboard/addresses", icon: MapPin },
+];
+
+const NAV_SECONDARY: NavItem[] = [
+  { label: "Profil", href: "/dashboard/profile", icon: User },
   { label: "Voucher", href: "/dashboard/vouchers", icon: Gift },
   { label: "Ganti password", href: "/dashboard/change-password", icon: KeyRound },
 ];
 
-export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      toast.success("Berhasil keluar.");
-      router.push("/");
-      router.refresh();
-    } catch {
-      toast.error("Gagal keluar.");
-    }
-  };
+function NavLink({
+  item,
+  pathname,
+  onNavigate,
+  unreadOverride,
+}: {
+  item: NavItem;
+  pathname: string;
+  onNavigate?: () => void;
+  unreadOverride?: number;
+}) {
+  const active = item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const Icon = item.icon;
+  const badge =
+    item.href === "/dashboard/notifications" && unreadOverride !== undefined && unreadOverride > 0
+      ? unreadOverride
+      : undefined;
 
   return (
-    <aside className="flex h-full w-[min(100%,17rem)] flex-col border-r border-[#e0e0e0] bg-white">
-      <div className="border-b border-[#e0e0e0] px-5 py-4">
-        <Link href="/" className="block" onClick={onNavigate}>
-          <SiteLogo asStatic variant="adminSidebar" className="h-8 w-auto" />
-        </Link>
-        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Akun</p>
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={cn(
+        "relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-medium leading-[1.43] tracking-[-0.224px] transition",
+        active
+          ? "bg-gradient-to-r from-transparant to-[#EA5329]/25 text-[#1d1d1f]"
+          : "text-[#333333] hover:bg-white/50",
+      )}
+    >
+      {active ? (
+        <span
+          className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-[#EA5329]"
+          aria-hidden
+        />
+      ) : null}
+      <Icon className={cn("h-4 w-4 shrink-0", active ? "text-[#1d1d1f]" : "text-[#7a7a7a]")} strokeWidth={2} />
+      <span className={cn("flex-1 text-left", active && "font-semibold")}>{item.label}</span>
+      {badge !== undefined && badge > 0 ? (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#e8e8ed] px-1.5 text-[10px] font-bold tabular-nums text-[#1d1d1f]">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+export function DashboardSidebar({
+  onNavigate,
+  className,
+  unreadNotifications = 0,
+}: {
+  onNavigate?: () => void;
+  className?: string;
+  unreadNotifications?: number;
+}) {
+  const pathname = usePathname();
+  const { profile, user } = useAuth();
+
+  const displayName = profile?.full_name?.trim() || user?.email?.split("@")[0] || "Pengguna";
+  const initials = profile?.full_name
+    ? profile.full_name
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  return (
+    <aside
+      className={cn(
+        "flex h-full min-h-0 w-full flex-col bg-gradient-to-r from-transparant to-[#f5f0eb]",
+        className,
+      )}
+    >
+      <div className="mx-3 mt-4 flex items-center gap-3 rounded-2xl px-3 py-3">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[13px] font-semibold text-white">
+          {initials}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-semibold leading-tight tracking-[-0.12px] text-[#1d1d1f]">
+            {displayName}
+          </p>
+          {user?.email ? (
+            <p className="mt-0.5 truncate text-[11px] leading-snug text-[#7a7a7a]">{user.email}</p>
+          ) : null}
+        </div>
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Menu dashboard">
-        {NAV_ITEMS.map((item) => {
-          const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                active ? "bg-black text-white" : "text-[#1d1d1f] hover:bg-[#f5f5f7]",
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
-              {item.label}
-            </Link>
-          );
-        })}
+
+      <nav className="mt-5 w-full flex-1 space-y-1 overflow-y-auto px-3 pb-3" aria-label="Menu dashboard">
+        <p className="px-3 pb-1 text-[10px] font-semibold uppercase text-[#7a7a7a]">Menu</p>
+        {NAV_PRIMARY.map((item) => (
+          <NavLink
+            key={item.href}
+            item={item}
+            pathname={pathname}
+            onNavigate={onNavigate}
+            unreadOverride={unreadNotifications}
+          />
+        ))}
+        <div className="my-3 border-t border-[#e8e4df]" />
+        <p className="px-3 pb-1 text-[10px] font-semibold uppercase text-[#7a7a7a]">
+          Pengaturan
+        </p>
+        {NAV_SECONDARY.map((item) => (
+          <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
+        ))}
       </nav>
-      <div className="border-t border-[#e0e0e0] p-3">
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
-        >
-          <LogOut className="h-4 w-4 shrink-0" strokeWidth={2} />
-          Keluar
-        </button>
-      </div>
     </aside>
   );
 }
