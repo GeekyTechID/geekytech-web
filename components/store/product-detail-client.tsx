@@ -15,6 +15,7 @@ import {
 import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } from "@/lib/types/product-detail";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useCartStore } from "@/store/cart-store";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
 const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
@@ -49,6 +50,7 @@ export function ProductDetailClient({
 }: ProductDetailClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const incrementCart = useCartStore((s) => s.incrementCart);
   const defaultId = useMemo(
     () => pickDefaultVariantId(product.variants, product.basePrice, product.salePrice),
     [product.variants, product.basePrice, product.salePrice],
@@ -116,6 +118,7 @@ export function ProductDetailClient({
         toast.error(res.error);
         return;
       }
+      incrementCart(q);
       toast.success("Ditambahkan ke keranjang.");
       router.refresh();
       if (thenRedirect) {

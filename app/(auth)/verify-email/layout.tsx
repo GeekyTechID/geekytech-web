@@ -1,9 +1,27 @@
+import { AuthSplitShell } from "@/components/auth/auth-split-shell";
+
 export default function VerifyEmailLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 shadow-none">
-        {children}
-      </div>
-    </div>
+    <AuthSplitShell
+      imageSrc="/image-daftar.jpg"
+      formMaxWidthClass="max-w-lg"
+      leftPanel={
+        <>
+          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] tracking-[-0.02em] text-white">
+            Hampir selesai!
+            <br />
+            Cek email kamu.
+            <br />
+            <span className="normal-case text-[#EA5329]">GeekyTech.</span>
+          </p>
+          <p className="mt-6 max-w-md text-[16px] font-normal text-white lg:max-w-xs">
+            Satu langkah lagi untuk mulai berbelanja gadget & aksesoris pilihan
+            terbaik.
+          </p>
+        </>
+      }
+    >
+      {children}
+    </AuthSplitShell>
   );
 }

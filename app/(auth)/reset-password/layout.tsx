@@ -1,13 +1,30 @@
+import { AuthSplitShell } from "@/components/auth/auth-split-shell";
+
 export default function ResetPasswordLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 shadow-none">
-        {children}
-      </div>
-    </div>
+    <AuthSplitShell
+      imageSrc="/image-masuk.jpg"
+      formMaxWidthClass="max-w-md"
+      leftPanel={
+        <>
+          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] tracking-[-0.02em] text-white">
+            Buat kata
+            <br />
+            sandi baru.
+            <br />
+            <span className="normal-case text-[#EA5329]">GeekyTech.</span>
+          </p>
+          <p className="mt-6 max-w-md text-[16px] font-normal leading-relaxed text-white lg:max-w-xs">
+            Pilih kata sandi yang kuat untuk melindungi akunmu.
+          </p>
+        </>
+      }
+    >
+      {children}
+    </AuthSplitShell>
   );
 }

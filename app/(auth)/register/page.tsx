@@ -108,10 +108,10 @@ export default function RegisterPage() {
     <div className="space-y-10">
       <div className="space-y-2">
         <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
-          Selamat Datang Kembali!
+          Buat Akun Baru
         </h1>
         <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
-          Silahkan masukan detail Anda.
+          Daftar untuk mulai belanja di GeekyTech.
         </p>
       </div>
 
@@ -159,108 +159,110 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="phone"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
-          >
-            No Telepon
-          </Label>
-          <Input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="Masukin nomor telepon kamu"
-            aria-invalid={!!errors.phone}
-            className={AUTH_INPUT_CLASS}
-            {...register("phone")}
-          />
-          {errors.phone && (
-            <p className="text-[14px] text-destructive">{errors.phone.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label
-            htmlFor="email"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
-          >
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="Masukin email kamu"
-            aria-invalid={!!errors.email}
-            className={AUTH_INPUT_CLASS}
-            {...register("email")}
-          />
-          {errors.email && (
-            <p className="text-[14px] text-destructive">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label
-            htmlFor="password"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
-          >
-            Kata Sandi
-          </Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              placeholder="••••••••••"
-              aria-invalid={!!errors.password}
-              className={`${AUTH_INPUT_CLASS} pr-12`}
-              {...register("password")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
-              aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="phone"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+              No Telepon
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="Masukin nomor telepon kamu"
+              aria-invalid={!!errors.phone}
+              className={AUTH_INPUT_CLASS}
+              {...register("phone")}
+            />
+            {errors.phone && (
+              <p className="text-[14px] text-destructive">{errors.phone.message}</p>
+            )}
           </div>
-          {errors.password && (
-            <p className="text-[14px] text-destructive">{errors.password.message}</p>
-          )}
+          <div className="space-y-2">
+            <Label
+              htmlFor="email"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            >
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="Masukin email kamu"
+              aria-invalid={!!errors.email}
+              className={AUTH_INPUT_CLASS}
+              {...register("email")}
+            />
+            {errors.email && (
+              <p className="text-[14px] text-destructive">{errors.email.message}</p>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="confirm_password"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
-          >
-            Konfirmasi Kata Sandi
-          </Label>
-          <div className="relative">
-            <Input
-              id="confirm_password"
-              type={showConfirm ? "text" : "password"}
-              autoComplete="new-password"
-              placeholder="••••••••••"
-              aria-invalid={!!errors.confirm_password}
-              className={`${AUTH_INPUT_CLASS} pr-12`}
-              {...register("confirm_password")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
-              aria-label={showConfirm ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="password"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
             >
-              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+              Kata Sandi
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="••••••••••"
+                aria-invalid={!!errors.password}
+                className={`${AUTH_INPUT_CLASS} pr-12`}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+                aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-[14px] text-destructive">{errors.password.message}</p>
+            )}
           </div>
-          {errors.confirm_password && (
-            <p className="text-[14px] text-destructive">{errors.confirm_password.message}</p>
-          )}
+          <div className="space-y-2">
+            <Label
+              htmlFor="confirm_password"
+              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            >
+              Konfirmasi Kata Sandi
+            </Label>
+            <div className="relative">
+              <Input
+                id="confirm_password"
+                type={showConfirm ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="••••••••••"
+                aria-invalid={!!errors.confirm_password}
+                className={`${AUTH_INPUT_CLASS} pr-12`}
+                {...register("confirm_password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+                aria-label={showConfirm ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {errors.confirm_password && (
+              <p className="text-[14px] text-destructive">{errors.confirm_password.message}</p>
+            )}
+          </div>
         </div>
 
         <TurnstileWidget onVerify={handleTurnstileVerify} />
@@ -292,7 +294,7 @@ export default function RegisterPage() {
         variant="outline"
         onClick={handleGoogleRegister}
         disabled={isGoogleLoading}
-        className="-mt-10 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
+        className="!-mt-4 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
       >
         {isGoogleLoading ? (
           <Loader2 size={16} className="mr-2 animate-spin" />

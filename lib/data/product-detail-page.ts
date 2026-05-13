@@ -324,3 +324,61 @@ export async function fetchRandomProductPicks(params: {
     return [];
   }
 }
+
+const CART_CROSS_SELL_POOL = 96;
+
+/**
+ * Produk acak untuk keranjang: hindari kategori yang sudah ada di isi keranjang,
+ * dan hindari produk yang sedang ada di keranjang.
+ */
+export async function fetchCartCrossSellProducts(params: {
+  excludedCategoryIds: string[];
+  excludedProductIds: string[];
+  limit?: number;
+}): Promise<HomeShelfProduct[]> {
+  const limit = Math.min(Math.max(params.limit ?? 5, 1), 10);
+  const excludeCats = new Set(params.excludedCategoryIds.filter(Boolean));
+  const excludeProducts = new Set(params.excludedProductIds.filter(Boolean));
+
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(OTHER_SHELF_SELECT)
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .limit(CART_CROSS_SELL_POOL);
+
+    if (error || !data?.length) return [];
+
+    const shelves: HomeShelfProduct[] = [];
+    for (const raw of data) {
+      const row = raw as unknown as ProductQueryRow & { category_id?: string | null };
+      const cid = row.category_id ?? null;
+      if (cid && excludeCats.has(cid)) continue;
+      if (excludeProducts.has(row.id)) continue;
+      const shelf = productRowToShelf(row as ProductQueryRow);
+      if (shelf) shelves.push(shelf);
+    }
+
+    if (shelves.length < limit) {
+      const picked = new Set(shelves.map((s) => s.productId));
+      for (const raw of data) {
+        if (shelves.length >= limit) break;
+        const row = raw as unknown as ProductQueryRow & { category_id?: string | null };
+        if (excludeProducts.has(row.id)) continue;
+        if (picked.has(row.id)) continue;
+        const shelf = productRowToShelf(row as ProductQueryRow);
+        if (shelf) {
+          shelves.push(shelf);
+          picked.add(row.id);
+        }
+      }
+    }
+
+    shuffleInPlace(shelves);
+    return shelves.slice(0, limit);
+  } catch {
+    return [];
+  }
+}

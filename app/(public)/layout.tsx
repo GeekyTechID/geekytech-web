@@ -38,15 +38,41 @@ async function getNavCategories() {
   }
 }
 
+async function getCartCount(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 0;
+
+    const { data: cart } = await supabase
+      .from("carts")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!cart) return 0;
+
+    const { data: items } = await supabase
+      .from("cart_items")
+      .select("quantity")
+      .eq("cart_id", cart.id);
+    if (!items) return 0;
+
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  } catch {
+    return 0;
+  }
+}
+
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isMaintenance, categories, heroBanners] = await Promise.all([
+  const [isMaintenance, categories, heroBanners, initialCartCount] = await Promise.all([
     getMaintenanceMode(),
     getNavCategories(),
     fetchMainHeroBanners(),
+    getCartCount(),
   ]);
 
   if (isMaintenance) {
@@ -56,8 +82,8 @@ export default async function PublicLayout({
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-background">
       <AnnouncementBarServer />
-      <StoreHeader categories={categories} />
-      <main className="flex-1 pb-16 mb-20 md:pb-0">{children}</main>
+      <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      <main className="flex-1 pb-16 md:pb-0">{children}</main>
       {heroBanners.length > 0 && <HomeMainHero banners={heroBanners} hideNav />}
       <StoreFooter />
       <BottomNavBar />

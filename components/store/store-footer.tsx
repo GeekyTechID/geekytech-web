@@ -30,7 +30,7 @@ export async function StoreFooter() {
 
   return (
     <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
-      <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+      <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16 lg:pb-5">
         <div className="flex justify-between gap-12 lg:gap-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
           <div className="space-y-4">
             <h2 className="text-2xl font-black leading-tight tracking-tight text-white md:text-3xl">
@@ -122,7 +122,7 @@ export async function StoreFooter() {
       </div>
 
       <p
-        className="pointer-events-none bottom-0 select-none text-center text-[25rem] font-thin leading-none tracking-tight text-white/[0.06]"
+        className="pointer-events-none bottom-0 select-none text-center text-[25rem] font-thin leading-none tracking-tight text-white"
         aria-hidden
       >
         geekytech

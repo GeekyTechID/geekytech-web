@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
   return (
@@ -33,6 +32,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const urlError = searchParams.get("error");
+  const urlMessage = searchParams.get("message");
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -147,6 +147,12 @@ function LoginForm() {
         </p>
       </div>
 
+      {urlMessage && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-[14px] leading-[1.43] text-green-800">
+          {urlMessage}
+        </div>
+      )}
+
       {urlError && (
         <div className="rounded-lg border border-destructive/40 bg-white px-4 py-3 text-[14px] leading-[1.43] text-destructive">
           {urlError}
@@ -240,7 +246,7 @@ function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={isGoogleLoading}
-        className="-mt-10 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
+        className="!-mt-4 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
       >
         {isGoogleLoading ? (
           <Loader2 size={16} className="mr-2 animate-spin" />

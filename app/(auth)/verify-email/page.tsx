@@ -53,47 +53,40 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Icon */}
-      <div className="w-16 h-16 bg-black flex items-center justify-center">
-        <MailCheck className="text-white" size={28} />
+    <div className="space-y-10">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EA5329]/10">
+        <MailCheck className="text-[#EA5329]" size={28} />
       </div>
 
-      {/* Content */}
       <div className="space-y-3">
-        <h1 className="text-3xl font-black tracking-tight uppercase">
+        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
           Verifikasi Email
         </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
           Kami telah mengirimkan link verifikasi ke{" "}
           {email ? (
-            <span className="font-semibold text-foreground">{email}</span>
+            <span className="font-semibold">{email}</span>
           ) : (
             "emailmu"
           )}
           . Klik link tersebut untuk mengaktifkan akunmu.
         </p>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#7a7a7a]">
           Tidak menerima email? Cek folder{" "}
-          <span className="font-semibold text-foreground">spam</span> atau kirim
+          <span className="font-semibold text-[#1d1d1f]">spam</span> atau kirim
           ulang di bawah.
         </p>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-border" />
-
-      {/* Actions */}
       <div className="space-y-3">
         {email && (
           <Button
             type="button"
-            variant="outline"
             onClick={handleResend}
             disabled={isResending}
-            className="w-full h-11 rounded-none font-semibold border-foreground/30 hover:border-foreground"
+            className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
           >
-            {isResending && <Loader2 size={16} className="animate-spin mr-2" />}
+            {isResending && <Loader2 size={16} className="mr-2 animate-spin" />}
             Kirim ulang email verifikasi
           </Button>
         )}
@@ -102,7 +95,7 @@ function VerifyEmailContent() {
           <Button
             type="button"
             variant="ghost"
-            className="w-full h-11 rounded-none font-semibold"
+            className="h-12 w-full rounded-lg text-[17px] font-normal text-[#1d1d1f] shadow-none hover:bg-[#f5f5f7] active:scale-[0.95]"
           >
             <ArrowLeft size={16} className="mr-2" />
             Kembali ke halaman masuk

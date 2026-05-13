@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+import { fetchAddressForUser } from "@/lib/data/dashboard-user";
+import { AddressForm } from "@/components/dashboard/address-form";
+
+export const metadata: Metadata = {
+  title: "Edit alamat",
+};
+
+export default async function EditAddressPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?redirectTo=/dashboard/addresses/${id}/edit`);
+
+  const row = await fetchAddressForUser(user.id, id);
+  if (!row) notFound();
+
+  return (
+    <div className="mx-auto max-w-4xl">
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Alamat</p>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Edit alamat</h1>
+      <div className="mt-10">
+        <AddressForm mode="edit" initial={row} />
+      </div>
+    </div>
+  );
+}

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ChevronDown,
+  Loader2,
   LogOut,
   Menu,
   Package,
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
+import { useCartStore } from "@/store/cart-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,17 +30,25 @@ export type StoreHeaderCategory = { id: string; name: string; slug: string };
 
 type StoreHeaderProps = {
   categories: StoreHeaderCategory[];
+  initialCartCount?: number;
 };
 
-export function StoreHeader({ categories }: StoreHeaderProps) {
+export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
   const { reset } = useAuthStore();
+  const cartCount = useCartStore((s) => s.cartCount);
+  const setCartCount = useCartStore((s) => s.setCartCount);
+
+  useEffect(() => {
+    setCartCount(initialCartCount);
+  }, [initialCartCount, setCartCount]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,13 +83,21 @@ export function StoreHeader({ categories }: StoreHeaderProps) {
     setSearchQuery("");
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
     const supabase = createClient();
-    await supabase.auth.signOut();
+    // Jangan di-await — SDK tetap membuat network request meski scope: "local",
+    // sehingga await akan hang selamanya jika Supabase free tier paused/unreachable.
+    // Fire-and-forget: sesi lokal langsung dihapus, logout berjalan tanpa menunggu server.
+    supabase.auth.signOut({ scope: "local" }).catch(() => {});
+
     reset();
     toast.success("Berhasil keluar.");
-    router.push("/");
+    setIsLoggingOut(false);
     router.refresh();
+    router.push("/");
   };
 
   const userInitials = profile?.full_name
@@ -144,10 +162,15 @@ export function StoreHeader({ categories }: StoreHeaderProps) {
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               <Link
                 href="/cart"
-                className="hidden p-2 text-neutral-600 hover:text-black sm:block dark:text-muted-foreground dark:hover:text-foreground"
-                aria-label="Keranjang"
+                className="relative hidden p-2 text-neutral-600 hover:text-black sm:block dark:text-muted-foreground dark:hover:text-foreground"
+                aria-label={`Keranjang${cartCount > 0 ? ` (${cartCount})` : ""}`}
               >
                 <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#EA5329] px-1 text-[10px] font-bold leading-none text-white">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Link>
               <ThemeToggle className="hidden sm:flex" />
 
@@ -184,9 +207,14 @@ export function StoreHeader({ categories }: StoreHeaderProps) {
                         type="button"
                         role="menuitem"
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        disabled={isLoggingOut}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
                       >
-                        <LogOut size={14} />
+                        {isLoggingOut ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <LogOut size={14} />
+                        )}
                         Keluar
                       </button>
                     </div>
@@ -301,9 +329,14 @@ export function StoreHeader({ categories }: StoreHeaderProps) {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-2 py-2 text-sm text-red-600"
+                    disabled={isLoggingOut}
+                    className="flex w-full items-center gap-2 py-2 text-sm text-red-600 disabled:opacity-50"
                   >
-                    <LogOut size={16} />
+                    {isLoggingOut ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <LogOut size={16} />
+                    )}
                     Keluar
                   </button>
                 </div>
