@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { createServiceClient } from "@/lib/supabase/server";
 import { FlashSaleForm } from "../_components/flash-sale-form-client";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Buat Flash Sale — Admin GeekyTech" };
 
 export default async function AdminFlashSaleNewPage() {

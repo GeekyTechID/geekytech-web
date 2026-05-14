@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { PromotionForm } from "../../_components/promotion-form";
 import { fetchSelectorData } from "../../_lib/fetch-selector-data";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Buat Rekomendasi Produk — Admin GeekyTech" };
 
 const BACK_PATH = "/admin/promotions/featured-products";
