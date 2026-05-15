@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ChevronDown,
+  LayoutDashboard,
   Loader2,
   LogOut,
   Menu,
@@ -220,7 +221,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
 
             <form
               onSubmit={handleSearchSubmit}
-              className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 md:block"
+              className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 sm:block"
             >
               <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3 dark:border-border dark:bg-muted">
                 <Search size={14} className="mr-2 shrink-0 text-neutral-400" />
@@ -281,6 +282,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                         <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Pengguna"}</p>
                         <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
                       </div>
+                      <HeaderMenuLink icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
                       <HeaderMenuLink icon={User} label="Profil" href="/dashboard/profile" />
                       <HeaderMenuLink icon={Package} label="Pesanan" href="/dashboard/orders" />
                       {isAdmin && (
@@ -325,7 +327,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
           </div>
 
           {/* Pencarian mobile */}
-          <form onSubmit={handleSearchSubmit} className="relative pb-3 md:hidden">
+          <form onSubmit={handleSearchSubmit} className="relative pb-3 sm:hidden">
             <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3 dark:border-border dark:bg-muted">
               <Search size={15} className="shrink-0 text-neutral-500" />
               <input
@@ -347,7 +349,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
           {/* Kategori */}
           <nav
             aria-label="Kategori produk"
-            className="scrollbar-none flex gap-4 overflow-x-auto py-3 text-sm font-medium text-black dark:border-border dark:text-foreground"
+            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6 dark:border-border dark:text-foreground"
           >
             {categories.length === 0 ? (
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Kategori segera hadir</span>
@@ -406,6 +408,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                 </div>
               ) : (
                 <div className="space-y-1 px-2">
+                  <HeaderMenuLink icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
                   <HeaderMenuLink icon={User} label="Profil" href="/dashboard/profile" />
                   <HeaderMenuLink icon={Package} label="Pesanan" href="/dashboard/orders" />
                   {isAdmin && <HeaderMenuLink icon={Settings} label="Admin" href="/admin" />}

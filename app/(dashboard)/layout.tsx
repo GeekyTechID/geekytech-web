@@ -45,7 +45,7 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         {children}
       </DashboardShell>
 
-      <div className="mt-20">
+      <div className="mt-10 md:mt-16">
         {heroBanners.length > 0 ? <HomeMainHero banners={heroBanners} hideNav /> : null}
       </div>
       

@@ -13,7 +13,7 @@ function BreadcrumbNav({ items }: { items: { label: string; href?: string }[] })
   return (
     <nav aria-label="Breadcrumb" className="border-b border-[#e0e0e0] bg-white py-3">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <ol className="flex items-center gap-2 text-[13px]">
+        <ol className="scrollbar-none flex min-w-0 items-center gap-2 overflow-x-auto py-1 text-[13px]">
           {items.map((item, i) => (
             <li key={i} className="flex items-center gap-2">
               {i > 0 && <span className="text-[#c8c8cc]" aria-hidden>/</span>}

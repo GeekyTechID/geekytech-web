@@ -40,7 +40,7 @@ export default async function PublicLayout({
     <div className="flex min-h-screen flex-col bg-white dark:bg-background">
       <AnnouncementBarServer />
       <StoreHeader categories={categories} initialCartCount={initialCartCount} />
-      <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">{children}</main>
       <StoreFooter />
       <BottomNavBar />
       <WhatsAppButton />

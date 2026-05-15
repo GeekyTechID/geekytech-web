@@ -25,7 +25,7 @@ export function DashboardOrdersFilters() {
           const v = e.target.value as OrderStatus | "";
           router.push(v ? `/dashboard/orders?status=${encodeURIComponent(v)}` : "/dashboard/orders");
         }}
-        className={cn(selectClass, "min-w-[14rem]")}
+        className={cn(selectClass, "w-full min-w-0 sm:w-auto sm:min-w-[14rem]")}
       >
         {ORDER_STATUS_FILTER_OPTIONS.map((opt) => (
           <option key={opt.value || "all"} value={opt.value}>

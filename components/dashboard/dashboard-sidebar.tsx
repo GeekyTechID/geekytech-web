@@ -57,7 +57,7 @@ function NavLink({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-medium leading-[1.43] tracking-[-0.224px] transition",
+        "relative flex w-full min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium leading-snug tracking-[-0.02em] transition",
         active
           ? "bg-gradient-to-r from-transparant to-[#EA5329]/25 text-[#1d1d1f]"
           : "text-[#333333] hover:bg-white/50",
@@ -106,12 +106,12 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "flex h-full min-h-0 w-full flex-col bg-gradient-to-r from-transparant to-[#f5f0eb]",
+        "flex h-full min-h-0 w-full flex-col bg-gradient-to-r from-transparent to-[#f5f0eb]",
         className,
       )}
     >
-      <div className="mx-3 mt-4 flex items-center gap-3 rounded-2xl px-3 py-3">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[13px] font-semibold text-white">
+      <div className="mx-2 mt-2 flex min-w-0 items-center gap-3 rounded-2xl px-2 py-3 sm:mx-3 sm:mt-3 sm:px-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[13px] font-semibold text-white sm:h-12 sm:w-12">
           {initials}
         </span>
 
@@ -125,7 +125,10 @@ export function DashboardSidebar({
         </div>
       </div>
 
-      <nav className="mt-5 w-full flex-1 space-y-1 overflow-y-auto px-3 pb-3" aria-label="Menu dashboard">
+      <nav
+        className="mt-4 w-full flex-1 space-y-0.5 overflow-y-auto overscroll-y-contain px-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:mt-5 sm:space-y-1 sm:px-3 sm:pb-3"
+        aria-label="Menu dashboard"
+      >
         <p className="px-3 pb-1 text-[10px] font-semibold uppercase text-[#7a7a7a]">Menu</p>
         {NAV_PRIMARY.map((item) => (
           <NavLink

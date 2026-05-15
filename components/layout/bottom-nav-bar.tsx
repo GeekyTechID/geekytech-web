@@ -25,10 +25,10 @@ export function BottomNavBar() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-background border-t border-border"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)] md:hidden"
       aria-label="Navigasi bawah"
     >
-      <ul className="grid grid-cols-4 h-16">
+      <ul className="grid h-16 min-h-16 grid-cols-4">
         {NAV_ITEMS.map(({ href, label, icon: Icon, ...rest }) => {
           const resolvedHref =
             "authHref" in rest && !isAuthenticated ? rest.authHref : href;

@@ -71,8 +71,8 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
         <h2 className="text-lg font-bold text-[#1d1d1f]">Item pesanan</h2>
         <ul className="mt-4 divide-y divide-[#e0e0e0] rounded-xl border border-[#e0e0e0] bg-white">
           {items.map((line) => (
-            <li key={line.id} className="flex gap-4 px-4 py-4">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-[#fafafa]">
+            <li key={line.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:gap-4">
+              <div className="relative mx-auto h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-[#fafafa] sm:mx-0 sm:h-16 sm:w-16">
                 {line.image_url ? <img src={line.image_url} alt="" className="h-full w-full object-cover" /> : null}
               </div>
               <div className="min-w-0 flex-1">
@@ -89,7 +89,9 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                   </Link>
                 ) : null}
               </div>
-              <p className="shrink-0 text-sm font-bold tabular-nums text-[#1d1d1f]">{formatRupiah(line.subtotal)}</p>
+              <p className="w-full text-right text-base font-bold tabular-nums text-[#1d1d1f] sm:w-auto sm:shrink-0 sm:self-start sm:text-sm">
+                {formatRupiah(line.subtotal)}
+              </p>
             </li>
           ))}
         </ul>

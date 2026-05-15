@@ -225,7 +225,7 @@ export default async function AdminDashboardPage() {
   } = await fetchDashboardData();
 
   return (
-    <div className="w-full p-6 lg:p-8 space-y-8">
+    <div className="w-full space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
       {/* Header */}
       <div>
         <p className="text-swiss-eyebrow">Overview</p>
@@ -235,7 +235,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ── Stat Cards ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Revenue Hari Ini"
           value={formatRupiah(stats.revenueToday, true)}

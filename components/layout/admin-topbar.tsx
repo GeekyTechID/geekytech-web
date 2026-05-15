@@ -112,14 +112,12 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         <Menu size={20} />
       </button>
 
-      {/* Page title */}
-      <div className="flex items-center gap-2 min-w-0">
-        <h1 className="truncate text-[21px] font-semibold uppercase tracking-tight text-foreground">
+      {/* Judul halaman — memakai ruang antara menu & aksi */}
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-base font-semibold uppercase tracking-tight text-foreground sm:text-[21px]">
           {pageTitle}
         </h1>
       </div>
-
-      <div className="flex-1" />
 
       {/* Actions kanan */}
       <div className="flex items-center gap-1">

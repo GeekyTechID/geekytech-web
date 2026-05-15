@@ -252,14 +252,14 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#f4f1ea]/50 to-transparent pb-20 pt-6 text-[#1d1d1f] sm:pt-8">
+    <div className="bg-gradient-to-b from-[#f4f1ea]/50 to-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-6 text-[#1d1d1f] sm:pt-8 md:pb-20 lg:pb-20">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="px-2 py-2 sm:px-4">
+        <div className="py-2 sm:py-3">
           <CartCheckoutStepper current={2} />
         </div>
 
-        <div className="mt-8 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
-          <div className="lg:col-span-7">
+        <div className="mt-6 md:mt-8 md:grid md:grid-cols-12 md:items-start md:gap-6 lg:gap-8">
+          <div className="md:col-span-7">
             <div className="rounded-2xl border border-[#e8e4dc] bg-white p-4 sm:p-6">
               <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f] sm:text-2xl">Checkout</h1>
               <p className="mt-1 text-sm text-[#5c5c5c]">Periksa barang sebelum memilih pengiriman dan pembayaran.</p>
@@ -273,7 +273,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
             </div>
           </div>
 
-          <aside className="mt-8 space-y-4 lg:col-span-5 lg:mt-0">
+          <aside className="mt-6 space-y-4 md:col-span-5 md:mt-0">
             <div className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm">
               <div className="flex items-center justify-between bg-[#2a2a2c] px-4 py-3 text-white">
                 <span className="text-sm font-semibold uppercase tracking-wider">Pilih alamat</span>

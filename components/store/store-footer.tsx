@@ -31,8 +31,8 @@ export async function StoreFooter() {
   return (
     <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
       <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16 lg:pb-5">
-        <div className="flex justify-between gap-12 lg:gap-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
-          <div className="space-y-4">
+        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-20">
+          <div className="min-w-0 space-y-4 lg:max-w-xl">
             <h2 className="text-2xl font-black leading-tight tracking-tight text-white md:text-3xl">
               Mau Jadi yang Pertama Tahu? <br /> Daftar Newsletter Kami!
             </h2>
@@ -67,7 +67,7 @@ export async function StoreFooter() {
             </p>
           </div>
 
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="min-w-0 grid gap-10 grid-cols-2 sm:grid-cols-4">
             <div>
               <p className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-white/45">Brand</p>
               <ul className="space-y-2.5 text-sm text-white/90">
@@ -122,7 +122,7 @@ export async function StoreFooter() {
       </div>
 
       <p
-        className="pointer-events-none bottom-0 select-none text-center text-[25rem] font-thin leading-none tracking-tight text-white"
+        className="pointer-events-none bottom-0 select-none text-center sm:text-[2rem] md:text-[10rem] lg:text-[13rem] xl:text-[16rem] 2xl:text-[20rem] font-thin leading-none tracking-tight text-white"
         aria-hidden
       >
         geekytech

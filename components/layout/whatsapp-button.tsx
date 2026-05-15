@@ -18,7 +18,7 @@ export function WhatsAppButton({ className }: { className?: string }) {
       rel="noopener noreferrer"
       aria-label="Hubungi CS via WhatsApp"
       className={cn(
-        "fixed bottom-20 right-4 z-50 md:bottom-6 md:right-6",
+        "fixed z-50 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] md:bottom-6 md:right-6",
         "flex items-center gap-2 px-4 py-3",
         "bg-[#25D366] text-white",
         "shadow-lg hover:bg-[#20B358]",

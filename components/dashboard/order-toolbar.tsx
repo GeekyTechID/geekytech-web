@@ -77,19 +77,30 @@ export function OrderToolbar({
   }
 
   return (
-    <div className="mt-6 flex w-full flex-wrap gap-3 border-t border-[#e0e0e0] pt-6">
+    <div className="mt-6 flex w-full min-w-0 flex-col gap-3 border-t border-[#e0e0e0] pt-6 sm:flex-row sm:flex-wrap">
       {canCancel ? (
-        <Button type="button" variant="outline" disabled={pending} onClick={onCancel} className="border-red-200 text-red-600 hover:bg-red-50">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          onClick={onCancel}
+          className="w-full border-red-200 text-red-600 hover:bg-red-50 sm:w-auto"
+        >
           Batalkan pesanan
         </Button>
       ) : null}
       {canConfirm ? (
-        <Button type="button" disabled={pending} onClick={onConfirm} className="bg-[#EA5329] text-white hover:bg-[#d94a24]">
+        <Button
+          type="button"
+          disabled={pending}
+          onClick={onConfirm}
+          className="w-full bg-[#EA5329] text-white hover:bg-[#d94a24] sm:w-auto"
+        >
           Konfirmasi terima barang
         </Button>
       ) : null}
       {hasPendingPayment && status === "pending_payment" ? (
-        <Button type="button" variant="secondary" disabled={pending} onClick={onRetryPayment}>
+        <Button type="button" variant="secondary" disabled={pending} onClick={onRetryPayment} className="w-full sm:w-auto">
           Bantuan lanjut bayar (WhatsApp)
         </Button>
       ) : null}

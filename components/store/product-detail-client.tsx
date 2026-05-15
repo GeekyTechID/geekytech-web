@@ -177,9 +177,9 @@ export function ProductDetailClient({
       {/* Atas: kiri info + galeri, kanan kartu belanja */}
       <section className="py-8">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
-            <div className="min-w-0 lg:col-span-7">
-              <div className="grid gap-8 md:grid-cols-2 md:items-start">
+          <div className="grid gap-10 md:grid-cols-12 md:gap-8 lg:gap-12">
+            <div className="min-w-0 md:col-span-7">
+              <div className="grid gap-8 sm:grid-cols-2 sm:items-start">
                 {/* Galeri */}
                 <div className="min-w-0">
                   <div className="relative aspect-square w-full overflow-hidden">
@@ -189,7 +189,7 @@ export function ProductDetailClient({
                         alt={currentImage.alt ?? product.name}
                         fill
                         className="object-contain"
-                        sizes="(max-width: 768px) 100vw, 360px"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
                         priority
                       />
                     ) : (
@@ -303,7 +303,7 @@ export function ProductDetailClient({
             </div>
 
             {/* Kartu belanja */}
-            <aside className="lg:col-span-5">
+            <aside className="md:col-span-5">
               <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-8">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-0 rounded-full border border-[#e0e0e0] bg-white">
@@ -422,7 +422,7 @@ export function ProductDetailClient({
       {/* Bawah: deskripsi | rating & ulasan */}
       <section className="py-12 md:py-16">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-10 lg:gap-16">
             <div>
               <div className="flex gap-8 border-b border-[#e0e0e0]">
                 <button

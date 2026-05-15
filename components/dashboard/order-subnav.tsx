@@ -30,7 +30,7 @@ export function OrderSubNav({
   const items = tabs(orderId);
 
   return (
-    <div className="mb-8 w-full border-b border-[#e0e0e0] pb-6">
+    <div className="mb-8 w-full min-w-0 border-b border-[#e0e0e0] pb-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Pesanan</p>
@@ -38,7 +38,10 @@ export function OrderSubNav({
           <p className="mt-1 text-sm text-[#5c5c5c]">{orderStatusLabel(status)}</p>
         </div>
       </div>
-      <nav className="mt-6 flex flex-wrap gap-2" aria-label="Submenu pesanan">
+      <nav
+        className="scrollbar-none -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+        aria-label="Submenu pesanan"
+      >
         {items.map((tab) => {
           const active = tab.exact
             ? pathname === tab.href
@@ -48,7 +51,7 @@ export function OrderSubNav({
               key={tab.href}
               href={tab.href}
               className={cn(
-                "rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition",
+                "inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition sm:min-h-0",
                 active
                   ? "border-black bg-black text-white"
                   : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#1d1d1f]",

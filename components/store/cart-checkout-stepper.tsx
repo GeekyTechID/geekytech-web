@@ -10,7 +10,7 @@ const steps = [
 
 export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
   return (
-    <nav aria-label="Langkah belanja" className="flex items-center justify-center gap-2 sm:gap-6">
+    <nav aria-label="Langkah belanja" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-3 sm:gap-x-4 md:gap-x-6">
       {steps.map((s, i) => {
         const active = s.step === current;
         const done = s.step < current;
