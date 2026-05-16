@@ -15,6 +15,7 @@ type BiteshipRatesResponse = {
   success?: boolean;
   pricing?: BiteshipPricingRow[];
   message?: string;
+  error?: string;
 };
 
 function etdFromRow(row: BiteshipPricingRow): string {
@@ -39,8 +40,8 @@ export async function fetchBiteshipCourierRates(params: {
   const base = isProd ? "https://api.biteship.com" : "https://api.biteship.com";
 
   const body = {
-    origin_postal_code: params.originPostal,
-    destination_postal_code: params.destinationPostal,
+    origin_postal_code: String(params.originPostal),
+    destination_postal_code: String(params.destinationPostal),
     couriers: "jne,sicepat,anteraja,tiki",
     items: params.items.map((i) => ({
       name: i.name,
@@ -50,7 +51,6 @@ export async function fetchBiteshipCourierRates(params: {
       length: i.length && i.length > 0 ? i.length : 10,
       width: i.width && i.width > 0 ? i.width : 10,
       height: i.height && i.height > 0 ? i.height : 10,
-      category: "electronic" as const,
     })),
   };
 
@@ -63,11 +63,14 @@ export async function fetchBiteshipCourierRates(params: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      cache: "no-store",
     });
 
     const json = (await res.json()) as BiteshipRatesResponse;
     if (!res.ok || !json.success || !Array.isArray(json.pricing)) {
-      return { ok: false, error: json.message ?? "Gagal mengambil tarif Biteship." };
+      const errMsg = json.message ?? json.error ?? `Biteship error ${res.status}`;
+      console.error("[Biteship rates]", res.status, errMsg, JSON.stringify(body));
+      return { ok: false, error: errMsg };
     }
 
     const options: CheckoutShippingOption[] = json.pricing

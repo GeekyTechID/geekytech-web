@@ -93,6 +93,7 @@ export function DashboardSidebar({
   const { profile, user } = useAuth();
 
   const displayName = profile?.full_name?.trim() || user?.email?.split("@")[0] || "Pengguna";
+  const avatarUrl = profile?.avatar_url?.trim() || (user?.user_metadata?.picture as string | undefined)?.trim() || "";
   const initials = profile?.full_name
     ? profile.full_name
         .split(/\s+/)
@@ -111,8 +112,14 @@ export function DashboardSidebar({
       )}
     >
       <div className="mx-2 mt-2 flex min-w-0 items-center gap-3 rounded-2xl px-2 py-3 sm:mx-3 sm:mt-3 sm:px-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[13px] font-semibold text-white sm:h-12 sm:w-12">
-          {initials}
+        <span className="relative flex h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#1d1d1f] sm:h-12 sm:w-12">
+          {avatarUrl ? (
+            <img key={avatarUrl} src={avatarUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-[13px] font-semibold text-white">
+              {initials}
+            </span>
+          )}
         </span>
 
         <div className="min-w-0 flex-1">

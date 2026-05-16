@@ -20,6 +20,7 @@ export type Database = {
           full_address: string
           id: string
           is_default: boolean
+          kelurahan: string
           label: string | null
           phone: string
           postal_code: string
@@ -35,6 +36,7 @@ export type Database = {
           full_address: string
           id?: string
           is_default?: boolean
+          kelurahan?: string
           label?: string | null
           phone: string
           postal_code: string
@@ -50,6 +52,7 @@ export type Database = {
           full_address?: string
           id?: string
           is_default?: boolean
+          kelurahan?: string
           label?: string | null
           phone?: string
           postal_code?: string

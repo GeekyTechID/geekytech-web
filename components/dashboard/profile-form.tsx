@@ -10,6 +10,18 @@ import { updateProfileAction } from "@/app/(dashboard)/dashboard/profile/_action
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/store/auth-store";
+
+async function refreshProfileInAuthStore() {
+  try {
+    const res = await fetch("/api/profile/me");
+    if (!res.ok) return;
+    const { profile } = await res.json();
+    if (profile) useAuthStore.getState().setProfile(profile);
+  } catch {
+    /* ignore */
+  }
+}
 
 type Profile = {
   full_name: string | null;
@@ -40,6 +52,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       const data = await res.json();
       if (data.success) {
         setAvatarUrl(data.url);
+        const current = useAuthStore.getState().profile;
+        if (current) useAuthStore.getState().setProfile({ ...current, avatar_url: data.url });
+        await refreshProfileInAuthStore();
         toast.success("Foto berhasil diunggah.");
       } else {
         toast.error(data.error ?? "Gagal mengunggah foto.");
@@ -66,6 +81,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           });
           if (res.success) {
             toast.success("Profil diperbarui.");
+            await refreshProfileInAuthStore();
             router.refresh();
           } else {
             toast.error(res.error);

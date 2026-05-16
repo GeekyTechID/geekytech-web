@@ -17,6 +17,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 type SearchResult = {
   id: string;
@@ -34,8 +35,25 @@ import { useCartStore } from "@/store/cart-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { Tables } from "@/types/supabase";
 
 export type StoreHeaderCategory = { id: string; name: string; slug: string };
+
+/** URL avatar: profil DB dulu, lalu metadata OAuth (picture). */
+function resolveStoreHeaderAvatarUrl(
+  profile: Tables<"profiles"> | null,
+  user: SupabaseUser | null,
+): string {
+  const fromProfile = profile?.avatar_url?.trim();
+  if (fromProfile) return fromProfile;
+  const meta = user?.user_metadata;
+  if (!meta || typeof meta !== "object") return "";
+  const picture = meta.picture;
+  if (typeof picture === "string" && picture.trim() !== "") return picture.trim();
+  const metaAvatar = meta.avatar_url;
+  if (typeof metaAvatar === "string" && metaAvatar.trim() !== "") return metaAvatar.trim();
+  return "";
+}
 
 type StoreHeaderProps = {
   categories: StoreHeaderCategory[];
@@ -184,6 +202,8 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
     }
   };
 
+  const avatarUrl = resolveStoreHeaderAvatarUrl(profile, user);
+
   const userInitials = profile?.full_name
     ? profile.full_name
         .split(" ")
@@ -264,14 +284,33 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                   <button
                     type="button"
                     onClick={() => setUserMenuOpen((v) => !v)}
-                    className="flex h-9 items-center gap-1.5 rounded-md border border-neutral-200 px-2 text-sm font-medium dark:border-border"
+                    className="flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium dark:border-border"
                     aria-expanded={userMenuOpen}
                     aria-haspopup="menu"
+                    aria-label="Menu akun"
                   >
-                    <span className="flex h-6 w-6 items-center justify-center bg-black text-[10px] font-black text-white dark:bg-foreground dark:text-background">
-                      {userInitials}
+                    <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full bg-black dark:bg-foreground">
+                      {avatarUrl ? (
+                        <img
+                          key={avatarUrl}
+                          src={avatarUrl}
+                          alt=""
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-[10px] font-black text-white dark:text-background">
+                          {userInitials}
+                        </span>
+                      )}
                     </span>
-                    <ChevronDown size={12} className={cn("text-neutral-500", userMenuOpen && "rotate-180")} />
+                    <ChevronDown
+                      size={12}
+                      className={cn(
+                        "shrink-0 text-muted-foreground transition-transform duration-150",
+                        userMenuOpen && "rotate-180",
+                      )}
+                    />
                   </button>
                   {userMenuOpen && (
                     <div

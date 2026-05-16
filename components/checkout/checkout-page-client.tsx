@@ -343,6 +343,18 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                     </div>
                   ) : null}
                   <div className="flex justify-between gap-4">
+                    <dt className="text-white/75">Ongkir</dt>
+                    <dd className="shrink-0 font-semibold tabular-nums">
+                      {ratesLoading ? (
+                        <span className="text-white/50">Menghitung…</span>
+                      ) : shippingFee > 0 ? (
+                        formatRupiah(shippingFee)
+                      ) : (
+                        <span className="text-white/50">Belum dipilih</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
                     <dt className="text-white/75">Pajak</dt>
                     <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(tax)}</dd>
                   </div>

@@ -30,6 +30,21 @@ export async function POST(req: Request) {
 
     const { data: { publicUrl } } = service.storage.from("avatars").getPublicUrl(path);
 
+    const { error: profileErr } = await service
+      .from("profiles")
+      .update({
+        avatar_url: publicUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (profileErr) {
+      return NextResponse.json(
+        { success: false, error: `Upload ok, gagal simpan URL profil: ${profileErr.message}` },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json({ success: true, url: publicUrl });
   } catch {
     return NextResponse.json({ success: false, error: "Terjadi kesalahan." }, { status: 500 });

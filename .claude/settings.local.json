@@ -9,7 +9,10 @@
       "Bash(npm run *)",
       "Bash(echo \"PID: $!\")",
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page",
-      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot"
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot",
+      "mcp__claude_ai_Vercel__list_teams",
+      "mcp__claude_ai_Vercel__get_deployment",
+      "mcp__claude_ai_Vercel__list_projects"
     ]
   }
 }
