@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
       {
+        // Google OAuth profile pictures
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
         // Placeholder images untuk development (seed data)
         protocol: "https",
         hostname: "placehold.co",

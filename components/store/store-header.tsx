@@ -79,6 +79,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
   const [isSearching, setIsSearching] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [avatarImgError, setAvatarImgError] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -290,13 +291,14 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                     aria-label="Menu akun"
                   >
                     <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full bg-black dark:bg-foreground">
-                      {avatarUrl ? (
+                      {avatarUrl && !avatarImgError ? (
                         <img
                           key={avatarUrl}
                           src={avatarUrl}
                           alt=""
                           className="h-full w-full object-cover"
                           referrerPolicy="no-referrer"
+                          onError={() => setAvatarImgError(true)}
                         />
                       ) : (
                         <span className="flex h-full w-full items-center justify-center text-[10px] font-black text-white dark:text-background">

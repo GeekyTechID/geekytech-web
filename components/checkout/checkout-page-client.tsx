@@ -109,8 +109,10 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
       setRatesSource(json.data.source);
       setShippingOptions(json.data.options);
       setSelectedShipping(json.data.options[0] ?? null);
-      if (json.data.source === "mock" && json.data.message) {
-        toast.message("Ongkir estimasi", { description: json.data.message });
+      if (json.data.source === "mock") {
+        toast.message("Ongkir estimasi", {
+          description: "Tarif ongkir bersifat estimasi. Konfirmasi final akan diberikan setelah order diproses.",
+        });
       }
     } catch {
       toast.error("Gagal memuat ongkir.");
