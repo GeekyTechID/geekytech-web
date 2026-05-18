@@ -29,7 +29,7 @@ export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
         const label = (
           <span
             className={cn(
-              "text-xs font-semibold uppercase tracking-wider sm:text-sm",
+              "text-xs font-semibold uppercase sm:text-sm",
               active && "text-[#1d1d1f]",
               done && !active && "text-[#EA5329]",
               !active && !done && "text-[#9a9590]",

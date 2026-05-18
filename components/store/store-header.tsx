@@ -269,7 +269,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               <Link
                 href="/cart"
-                className="relative hidden p-2 text-neutral-600 hover:text-black sm:block dark:text-muted-foreground dark:hover:text-foreground"
+                className="relative hidden items-center justify-center rounded-full p-2 text-neutral-600 outline-none transition-colors hover:bg-black/[0.04] hover:text-black focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 sm:inline-flex dark:text-muted-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
                 aria-label={`Keranjang${cartCount > 0 ? ` (${cartCount})` : ""}`}
               >
                 <ShoppingCart size={20} />
@@ -360,7 +360,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                   </Link>
                   <Button
                     asChild
-                    className="h-9 rounded-none border-0 bg-brand px-4 text-xs font-bold uppercase tracking-wide text-white hover:bg-brand/90"
+                    className="h-9 rounded-none border-0 bg-brand px-4 text-xs font-bold uppercase text-white hover:bg-brand/90"
                   >
                     <Link href="/register">Daftar</Link>
                   </Button>
@@ -395,7 +395,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
             className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6 dark:border-border dark:text-foreground"
           >
             {categories.length === 0 ? (
-              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Kategori segera hadir</span>
+              <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>
             ) : (
               categories.map((c) => (
                 <Link
@@ -420,13 +420,13 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
           />
           <aside className="fixed left-0 top-0 z-[60] flex h-full w-[min(100%,20rem)] flex-col border-r border-neutral-200 bg-white dark:border-border dark:bg-background md:hidden">
             <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-border">
-              <span className="text-sm font-black uppercase tracking-widest">Menu</span>
+              <span className="text-sm font-black uppercase">Menu</span>
               <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-2" aria-label="Tutup">
                 <X size={18} />
               </button>
             </div>
             <nav className="flex-1 overflow-y-auto px-3 py-4">
-              <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Kategori</p>
+              <p className="mb-2 px-2 text-[10px] font-semibold uppercase text-muted-foreground">Kategori</p>
               <ul className="space-y-0.5">
                 {categories.map((c) => (
                   <li key={c.id}>
@@ -473,7 +473,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
             </nav>
             <div className="border-t border-neutral-100 p-4 dark:border-border">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tema</span>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Tema</span>
                 <ThemeToggle variant="full" />
               </div>
             </div>

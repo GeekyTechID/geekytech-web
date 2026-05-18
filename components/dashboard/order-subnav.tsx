@@ -33,8 +33,8 @@ export function OrderSubNav({
     <div className="mb-8 w-full min-w-0 border-b border-[#e0e0e0] pb-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Pesanan</p>
-          <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f] sm:text-2xl">{orderNumber}</h1>
+          <p className="text-[10px] font-bold uppercase text-[#7a7a7a]">Pesanan</p>
+          <h1 className="text-xl font-bold text-[#1d1d1f] sm:text-2xl">{orderNumber}</h1>
           <p className="mt-1 text-sm text-[#5c5c5c]">{orderStatusLabel(status)}</p>
         </div>
       </div>
@@ -51,7 +51,7 @@ export function OrderSubNav({
               key={tab.href}
               href={tab.href}
               className={cn(
-                "inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wider transition sm:min-h-0",
+                "inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold uppercase transition sm:min-h-0",
                 active
                   ? "border-black bg-black text-white"
                   : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#1d1d1f]",

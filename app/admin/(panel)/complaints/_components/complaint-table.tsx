@@ -58,7 +58,7 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <FileText size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada komplain</p>
+        <p className="text-sm font-semibold uppercase">Belum ada komplain</p>
       </div>
     );
   }
@@ -70,25 +70,25 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Pelanggan
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   No. Order
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Tipe
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
                   Alasan
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -129,7 +129,7 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                     <td className="px-4 py-3">
                       <span
                         className={cn(
-                          "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                          "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                           statusCfg.className,
                         )}
                       >

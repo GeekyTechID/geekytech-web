@@ -27,7 +27,7 @@ export function FaqAccordion({ id, question, answer, isDark }: FaqAccordionProps
       className={`w-full text-left rounded-[18px] border transition-all ${bgClass} ${borderClass} p-6 hover:border-[#EA5329] dark:hover:border-[#FFAD88]`}
     >
       <div className="flex items-start justify-between gap-4">
-        <h3 className="text-[17px] font-semibold tracking-[-0.374px] text-[#1d1d1f] dark:text-white flex-1 text-left">
+        <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white flex-1 text-left">
           {question}
         </h3>
         <ChevronDown
@@ -39,7 +39,7 @@ export function FaqAccordion({ id, question, answer, isDark }: FaqAccordionProps
 
       {isOpen && (
         <div className="mt-4 pt-4 border-t border-[#e0e0e0] dark:border-[#3a3a3a]">
-          <p className="text-[15px] font-normal leading-[1.5] tracking-[-0.224px] text-[#7a7a7a] dark:text-[#cccccc] whitespace-pre-line">
+          <p className="text-[15px] font-normal leading-[1.5] text-[#7a7a7a] dark:text-[#cccccc] whitespace-pre-line">
             {answer}
           </p>
         </div>

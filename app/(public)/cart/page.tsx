@@ -31,7 +31,6 @@ export default async function CartPage() {
   if (!cart) {
     return (
       <div className="min-h-[50vh] bg-[#f4f1ea] px-4 py-20 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] text-center text-[#1d1d1f] md:pb-20">
-        <CartCheckoutStepper current={1} />
         <h1 className="mx-auto mt-12 max-w-lg text-2xl font-bold">Keranjang</h1>
         <p className="mx-auto mt-3 max-w-lg text-[17px] text-[#7a7a7a]">Keranjang Anda masih kosong.</p>
         <Link href="/" className="mt-8 inline-block text-[15px] font-semibold text-[#EA5329] hover:underline">
@@ -45,9 +44,6 @@ export default async function CartPage() {
   if (lines.length === 0) {
     return (
       <div className="min-h-[50vh] bg-[#f4f1ea] px-4 py-20 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] text-center text-[#1d1d1f] md:pb-20">
-        <div className="mx-auto max-w-3xl">
-          <CartCheckoutStepper current={1} />
-        </div>
         <h1 className="mx-auto mt-12 max-w-lg text-2xl font-bold">Keranjang</h1>
         <p className="mx-auto mt-3 max-w-lg text-[17px] text-[#7a7a7a]">Belum ada barang di keranjang.</p>
         <Link href="/" className="mt-8 inline-block text-[15px] font-semibold text-[#EA5329] hover:underline">
@@ -92,7 +88,7 @@ export default async function CartPage() {
 
           <aside className="mt-6 md:col-span-5 md:mt-0">
             <div className="md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto rounded-2xl bg-[#1a1a1a] p-5 text-white shadow-lg sm:p-6">
-              <h2 className="text-lg font-bold tracking-tight">Ringkasan pesanan</h2>
+              <h2 className="text-lg font-bold">Ringkasan pesanan</h2>
               <dl className="mt-6 space-y-4 border-b border-white/15 pb-6 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-white/75">Sub total ({itemCount} item)</dt>
@@ -125,7 +121,7 @@ export default async function CartPage() {
 
         {crossSell.length > 0 ? (
           <section className="mt-16 border-t border-[#e8e4dc] pt-12">
-            <h2 className="text-lg font-bold tracking-tight text-[#1d1d1f] sm:text-xl">Produk acak dari kategori lainnya</h2>
+            <h2 className="text-lg font-bold text-[#1d1d1f] sm:text-xl">Produk acak dari kategori lainnya</h2>
             <p className="mt-1 text-sm text-[#7a7a7a]">Kurasi otomatis di luar kategori barang di keranjang Anda.</p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
               {crossSell.map((p) => (

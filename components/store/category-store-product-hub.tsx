@@ -53,7 +53,7 @@ function CategoryIndexView({ categories }: { categories: CategoryStorePublicCate
                     href={`/products?category=${encodeURIComponent(c.slug)}`}
                     className="group flex min-h-[168px] flex-col justify-between p-8 transition active:scale-[0.98] md:min-h-[200px]"
                   >
-                    <h2 className="text-[28px] font-semibold leading-[1.14] tracking-[-0.01em] transition group-hover:text-[#EA5329]">
+                    <h2 className="text-[28px] font-semibold leading-[1.14] transition group-hover:text-[#EA5329]">
                       {c.name}
                     </h2>
                     <span className="text-[17px] font-normal text-[#EA5329]">Telusuri</span>
@@ -123,14 +123,14 @@ function CategoryByBrandView({
                       </div>
                     ) : (
                       <div
-                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#e0e0e0] bg-white text-xs font-bold uppercase tracking-widest md:h-16 md:w-16"
+                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#e0e0e0] bg-white text-xs font-bold uppercase md:h-16 md:w-16"
                         aria-hidden
                       >
                         {g.brandName.slice(0, 2)}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <h2 className="mt-1 text-[clamp(1.75rem,4vw,2.125rem)] font-semibold leading-tight tracking-[-0.02em]">
+                      <h2 className="mt-1 text-[clamp(1.75rem,4vw,2.125rem)] font-semibold leading-tight">
                         {g.brandName}
                       </h2>
                     </div>
@@ -139,7 +139,7 @@ function CategoryByBrandView({
                   {g.brandSlug ? (
                     <Link
                       href={`/brands/${encodeURIComponent(g.brandSlug)}`}
-                      className="shrink-0 text-[17px] font-medium tracking-[-0.022em] text-[#EA5329] transition hover:text-[#d44820]"
+                      className="shrink-0 text-[17px] font-medium text-[#EA5329] transition hover:text-[#d44820]"
                     >
                       Lihat halaman {g.brandName}
                     </Link>

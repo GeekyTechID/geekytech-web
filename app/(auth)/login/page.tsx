@@ -173,7 +173,7 @@ function LoginForm() {
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
           >
             Email
           </Label>
@@ -194,7 +194,7 @@ function LoginForm() {
         <div className="space-y-2">
           <Label
             htmlFor="password"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
           >
             Kata Sandi
           </Label>
@@ -233,7 +233,7 @@ function LoginForm() {
           </label>
           <Link
             href="/forgot-password"
-            className="text-[14px] font-semibold leading-[1.43] tracking-[-0.014em] text-[#1d1d1f] underline-offset-4 transition-colors hover:text-[#EA5329] hover:underline"
+            className="text-[14px] font-semibold leading-[1.43] text-[#1d1d1f] underline-offset-4 transition-colors hover:text-[#EA5329] hover:underline"
           >
             Lupa Kata Sandi
           </Link>
@@ -283,7 +283,7 @@ function LoginForm() {
         Masuk dengan google
       </Button>
 
-      <p className="text-center text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+      <p className="text-center text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
         Tidak punya akun?{" "}
         <Link
           href="/register"

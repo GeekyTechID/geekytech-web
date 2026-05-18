@@ -17,7 +17,7 @@ export default function AdminFaqNewPage() {
           Kelola FAQ
         </Link>
         <p className="text-swiss-eyebrow">Toko</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Tambah FAQ</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Tambah FAQ</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Buat entri pertanyaan dan jawaban baru.</p>
       </div>
 

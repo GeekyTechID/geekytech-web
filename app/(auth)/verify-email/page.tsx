@@ -59,10 +59,10 @@ function VerifyEmailContent() {
       </div>
 
       <div className="space-y-3">
-        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+        <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
           Verifikasi Email
         </h1>
-        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
           Kami telah mengirimkan link verifikasi ke{" "}
           {email ? (
             <span className="font-semibold">{email}</span>
@@ -71,7 +71,7 @@ function VerifyEmailContent() {
           )}
           . Klik link tersebut untuk mengaktifkan akunmu.
         </p>
-        <p className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#7a7a7a]">
+        <p className="text-[14px] font-normal leading-[1.43] text-[#7a7a7a]">
           Tidak menerima email? Cek folder{" "}
           <span className="font-semibold text-[#1d1d1f]">spam</span> atau kirim
           ulang di bawah.

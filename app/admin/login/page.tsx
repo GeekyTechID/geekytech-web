@@ -72,13 +72,13 @@ function AdminLoginContent() {
 
           <div className="flex items-center gap-2 border border-border px-3 py-2 w-fit">
             <ShieldCheck size={14} className="text-[#EA5329]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="text-xs font-bold uppercase text-muted-foreground">
               Admin Panel
             </span>
           </div>
 
           <div>
-            <h1 className="text-3xl font-black tracking-tight uppercase leading-tight">
+            <h1 className="text-3xl font-black uppercase leading-tight">
               Masuk ke
               <br />
               <span className="text-[#EA5329]">Admin Panel</span>
@@ -101,7 +101,7 @@ function AdminLoginContent() {
           <div className="space-y-1.5">
             <Label
               htmlFor="email"
-              className="text-xs font-bold uppercase tracking-widest"
+              className="text-xs font-bold uppercase"
             >
               Email
             </Label>
@@ -122,7 +122,7 @@ function AdminLoginContent() {
           <div className="space-y-1.5">
             <Label
               htmlFor="password"
-              className="text-xs font-bold uppercase tracking-widest"
+              className="text-xs font-bold uppercase"
             >
               Password
             </Label>
@@ -153,7 +153,7 @@ function AdminLoginContent() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-none font-bold uppercase tracking-widest text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
+            className="w-full h-11 rounded-none font-bold uppercase text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
           >
             {isLoading ? (
               <>

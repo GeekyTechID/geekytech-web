@@ -37,7 +37,7 @@ export function ConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-none border-foreground sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="font-black uppercase tracking-tight">{title}</DialogTitle>
+          <DialogTitle className="font-black uppercase">{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter className="rounded-none">

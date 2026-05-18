@@ -39,13 +39,13 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
       }}
     >
       <div>
-        <Label htmlFor="reason" className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">
+        <Label htmlFor="reason" className="text-xs font-semibold uppercase text-[#7a7a7a]">
           Ringkasan masalah
         </Label>
         <Input id="reason" name="reason" required minLength={3} className="mt-1 border-[#e0e0e0]" placeholder="Contoh: Barang cacat / salah kirim" />
       </div>
       <div className="mt-4">
-        <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">
+        <Label htmlFor="description" className="text-xs font-semibold uppercase text-[#7a7a7a]">
           Detail (opsional)
         </Label>
         <Textarea id="description" name="description" rows={5} className="mt-1 border-[#e0e0e0]" placeholder="Jelaskan kejadian beserta nomor SKU bila perlu." />

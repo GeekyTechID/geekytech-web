@@ -108,7 +108,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <MessageSquare size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada ulasan</p>
+        <p className="text-sm font-semibold uppercase">Belum ada ulasan</p>
       </div>
     );
   }
@@ -120,25 +120,25 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Pelanggan
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Produk
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Rating
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Komentar
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -175,7 +175,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   <td className="px-4 py-3">
                     <span
                       className={cn(
-                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                         review.is_approved
                           ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                           : "bg-brand/10 text-brand",

@@ -80,10 +80,10 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+          <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
             Cek Email Kamu
           </h1>
-          <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+          <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
             Link reset password telah dikirim ke{" "}
             <span className="font-semibold">{sentEmail}</span>. Cek inbox dan
             folder spam kamu.
@@ -118,10 +118,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-2">
-        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+        <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
           Lupa Kata Sandi?
         </h1>
-        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
           Masukkan emailmu dan kami kirimkan link untuk membuat kata sandi baru.
         </p>
       </div>
@@ -130,7 +130,7 @@ export default function ForgotPasswordPage() {
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
           >
             Email
           </Label>
@@ -160,7 +160,7 @@ export default function ForgotPasswordPage() {
 
       <Link
         href="/login"
-        className="flex items-center gap-2 text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
+        className="flex items-center gap-2 text-[14px] font-normal leading-[1.43] text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
       >
         <ArrowLeft size={14} />
         Kembali ke halaman masuk

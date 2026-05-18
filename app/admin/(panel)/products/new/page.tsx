@@ -28,7 +28,7 @@ export default async function NewProductPage() {
 
       <div>
         <p className="text-swiss-eyebrow">Katalog</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Tambah Produk</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Tambah Produk</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
           Isi data produk lengkap termasuk gambar, varian, dan SEO.
         </p>

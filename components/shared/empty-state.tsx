@@ -24,7 +24,7 @@ export function EmptyState({ icon: Icon, title, description, action, className }
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-black uppercase tracking-tight">{title}</h3>
+        <h3 className="text-lg font-black uppercase">{title}</h3>
         {description && <p className="max-w-xs text-sm text-muted-foreground">{description}</p>}
       </div>
       {action &&

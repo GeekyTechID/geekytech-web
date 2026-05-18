@@ -53,7 +53,7 @@ export function BottomNavBar() {
                 />
                 <span
                   className={cn(
-                    "text-[10px] font-bold uppercase tracking-wide",
+                    "text-[10px] font-bold uppercase",
                     active && "text-brand",
                   )}
                 >

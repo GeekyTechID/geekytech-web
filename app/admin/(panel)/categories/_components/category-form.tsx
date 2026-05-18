@@ -45,7 +45,7 @@ interface CategoryFormProps {
   defaultValues?: Partial<FormValues>;
 }
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 export function CategoryForm({ parentCategories, categoryId, defaultValues }: CategoryFormProps) {
   const router = useRouter();
@@ -185,7 +185,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         <Button
           type="button"
           variant="outline"
-          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
+          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => router.push("/admin/categories")}
           disabled={isLoading}
         >
@@ -193,7 +193,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         </Button>
         <Button
           type="submit"
-          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white hover:bg-brand-hover active:scale-[0.98]"
+          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white hover:bg-brand-hover active:scale-[0.98]"
           disabled={isLoading}
         >
           {isLoading

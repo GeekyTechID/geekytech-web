@@ -36,7 +36,7 @@ export function CustomerTable({ customers, page, totalPages }: CustomerTableProp
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Users size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada pelanggan</p>
+        <p className="text-sm font-semibold uppercase">Belum ada pelanggan</p>
       </div>
     );
   }
@@ -48,19 +48,19 @@ export function CustomerTable({ customers, page, totalPages }: CustomerTableProp
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Pelanggan
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   No. HP
                 </th>
-                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Total Order
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
                   Bergabung
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>

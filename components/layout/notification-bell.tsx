@@ -121,7 +121,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={handleBellClick}
-        className="p-2 text-muted-foreground hover:text-foreground transition-swiss relative"
+        className="relative inline-flex items-center justify-center rounded-full p-2 text-neutral-600 outline-none transition-colors hover:bg-black/[0.04] hover:text-[#1d1d1f] focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 dark:hover:bg-white/10 dark:hover:text-foreground"
         aria-label="Notifikasi"
         aria-expanded={open}
         aria-haspopup="true"
@@ -136,56 +136,60 @@ export function NotificationBell() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-80 bg-background border border-border z-50 shadow-sm">
-          {/* Header */}
-          <div className="flex items-center px-4 py-3 border-b border-border gap-2">
-            <span className="text-sm font-bold">Notifikasi</span>
+        <div
+          className="absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white/95 shadow-none backdrop-blur-xl backdrop-saturate-150"
+          role="dialog"
+          aria-label="Daftar notifikasi"
+        >
+          {/* Header — strip gelap seperti utility / sub-nav (design.mdc) */}
+          <div className="flex items-center gap-2 border-b border-black/10 bg-[#2a2a2c] px-4 py-3 text-white">
+            <span className="text-[14px] font-semibold leading-[1.29] text-white">Notifikasi</span>
             {unread > 0 && (
-              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#EA5329]/10 text-[#EA5329] text-[10px] font-black">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1.5 text-[10px] font-semibold tabular-nums text-white">
                 {unread}
               </span>
             )}
           </div>
 
-          {/* List */}
-          <div className="max-h-72 overflow-y-auto">
+          {/* List — kartu utilitas; baris: hover parchment lembut (tanpa shadow) */}
+          <div className="max-h-72 overflow-y-auto bg-white">
             {loading ? (
               <div>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="px-4 py-3 border-b border-border/50 last:border-b-0">
-                    <div className="h-3 w-40 bg-muted animate-pulse rounded mb-2" />
-                    <div className="h-2.5 w-56 bg-muted animate-pulse rounded" />
+                  <div key={i} className="border-b border-[#e0e0e0] px-4 py-3 last:border-b-0">
+                    <div className="mb-2 h-3 w-40 animate-pulse rounded bg-[#f5f5f7]" />
+                    <div className="h-2.5 w-56 animate-pulse rounded bg-[#f5f5f7]" />
                   </div>
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <Bell size={24} className="mx-auto text-muted-foreground/40 mb-2" />
-                <p className="text-xs text-muted-foreground">Belum ada notifikasi</p>
+              <div className="px-4 py-10 text-center">
+                <Bell size={24} className="mx-auto mb-2 text-[#7a7a7a]/50" aria-hidden />
+                <p className="text-[14px] leading-[1.43] text-[#7a7a7a]">Belum ada notifikasi</p>
               </div>
             ) : (
               items.map((notif) => (
                 <div
                   key={notif.id}
                   className={cn(
-                    "px-4 py-3 border-b border-border/50 last:border-b-0",
-                    !notif.is_read && "bg-[#EA5329]/5",
+                    "border-b border-[#e0e0e0] px-4 py-3 transition-colors last:border-b-0",
+                    !notif.is_read
+                      ? "bg-[#fff8f5] hover:bg-[#f5f5f7]"
+                      : "bg-white hover:bg-[#f5f5f7]",
                   )}
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-3">
                     {!notif.is_read && (
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#EA5329]" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#EA5329]" aria-hidden />
                     )}
-                    <div className={cn("min-w-0", notif.is_read && "pl-3.5")}>
-                      <p className="text-xs font-semibold text-foreground leading-snug truncate">
+                    <div className={cn("min-w-0 flex-1", notif.is_read && "pl-0")}>
+                      <p className="truncate text-[14px] font-semibold leading-[1.29] text-[#1d1d1f]">
                         {notif.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      <p className="mt-1 line-clamp-2 text-[14px] font-normal leading-[1.43] text-[#5c5c5c]">
                         {notif.body}
                       </p>
-                      <p className="mt-1 text-[10px] text-muted-foreground/60">
-                        {timeAgo(notif.created_at)}
-                      </p>
+                      <p className="mt-1.5 text-[12px] leading-none text-[#7a7a7a]">{timeAgo(notif.created_at)}</p>
                     </div>
                   </div>
                 </div>
@@ -193,21 +197,21 @@ export function NotificationBell() {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between border-t border-border px-3 py-2 gap-2">
+          {/* Footer — parchment ringan + hairline */}
+          <div className="flex items-center justify-between gap-2 border-t border-[#e0e0e0] bg-[#f5f5f7] px-3 py-2.5">
             <button
               type="button"
               onClick={handleMarkAllRead}
               disabled={pending || unread === 0}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-swiss"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] font-medium leading-[1.29] text-[#333333] outline-none transition-colors hover:bg-white hover:text-[#EA5329] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#333333] focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2"
             >
-              <CheckCheck size={13} />
+              <CheckCheck size={14} className="shrink-0" aria-hidden />
               Tandai semua dibaca
             </button>
             <Link
               href="/dashboard/notifications"
               onClick={() => setOpen(false)}
-              className="text-[11px] font-semibold text-[#EA5329] hover:underline"
+              className="rounded-full px-3 py-1.5 text-[13px] font-medium leading-[1.29] text-[#EA5329] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 hover:underline"
             >
               Lihat selengkapnya
             </Link>

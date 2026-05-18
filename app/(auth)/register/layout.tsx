@@ -7,7 +7,7 @@ export default function RegisterLayout({ children }: { children: React.ReactNode
       formMaxWidthClass="max-w-lg"
       leftPanel={
         <>
-          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] tracking-[-0.02em] text-white">
+          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] text-white">
             Mulai koleksi
             <br />
             gadget terbaikmu.

@@ -16,7 +16,7 @@ export default async function MainBannerPage() {
     <div className="w-full space-y-8 p-6 lg:p-8">
       <div className="flex flex-col gap-2">
         <p className="text-swiss-eyebrow">Promosi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Main Banner
         </h1>
         <p className="text-[17px] leading-[1.47] text-muted-foreground">

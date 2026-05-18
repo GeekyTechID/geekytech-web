@@ -29,7 +29,7 @@ export function AuthSplitShell({
     <div className="relative min-h-screen min-h-svh bg-[#111111] p-3 pt-[max(2.75rem,env(safe-area-inset-top,0px)+0.75rem)] sm:p-4 lg:p-6 lg:pt-6">
       <Link
         href={STORE_HREF}
-        className="absolute right-[max(1.25rem,env(safe-area-inset-right,0px))] top-[max(1.25rem,env(safe-area-inset-top,0px)+0.25rem)] z-30 text-[14px] font-normal leading-[1.29] tracking-[-0.014em] text-[#EA5329] transition-colors hover:text-[#d44820] active:scale-95 lg:right-15 lg:top-15"
+        className="absolute right-[max(1.25rem,env(safe-area-inset-right,0px))] top-[max(1.25rem,env(safe-area-inset-top,0px)+0.25rem)] z-30 text-[14px] font-normal leading-[1.29] text-[#EA5329] transition-colors hover:text-[#d44820] active:scale-95 lg:right-15 lg:top-15"
       >
         Kunjungi GeekyTech
       </Link>

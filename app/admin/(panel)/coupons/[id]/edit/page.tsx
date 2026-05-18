@@ -40,7 +40,7 @@ export default async function AdminEditCouponPage({
 
       <div>
         <p className="text-swiss-eyebrow">Pemasaran</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Edit Kupon</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Edit Kupon</h1>
         <p className="mt-1 font-mono text-[17px] leading-[1.47] text-muted-foreground">{coupon.code}</p>
       </div>
 

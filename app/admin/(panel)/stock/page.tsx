@@ -98,7 +98,7 @@ export default async function AdminStockPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Inventaris</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Stok</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Stok</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {totalVariants} varian{alertOnly ? " stok kritis" : ""}
           </p>
@@ -106,7 +106,7 @@ export default async function AdminStockPage({
         <Link
           href={alertOnly ? "/admin/stock" : "/admin/stock?alert=1"}
           className={cn(
-            "inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-xs font-semibold uppercase tracking-widest transition-opacity active:scale-[0.98]",
+            "inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-xs font-semibold uppercase transition-opacity active:scale-[0.98]",
             alertOnly
               ? "border-transparent bg-brand text-white hover:opacity-90"
               : "border-[#e0e0e0] text-muted-foreground hover:border-brand/40 hover:text-foreground dark:border-border",
@@ -132,7 +132,7 @@ export default async function AdminStockPage({
                 {["Produk", "Varian", "SKU", "Stok", "Reserved", "Tersedia", "Status"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
                   >
                     {h}
                   </th>
@@ -176,7 +176,7 @@ export default async function AdminStockPage({
                       <td className="px-5 py-3">
                         <span
                           className={cn(
-                            "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                            "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                             badgeCls,
                           )}
                         >
@@ -203,7 +203,7 @@ export default async function AdminStockPage({
                 {["Tanggal", "Produk / Varian", "Tipe", "Jumlah", "Catatan"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
                   >
                     {h}
                   </th>
@@ -251,7 +251,7 @@ export default async function AdminStockPage({
                       <td className="px-5 py-3">
                         <span
                           className={cn(
-                            "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                            "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                             typeCls,
                           )}
                         >

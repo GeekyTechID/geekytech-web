@@ -56,7 +56,7 @@ export default async function OrderInvoicePage({ params }: { params: Promise<{ i
       )}
 
       <div className="mt-10 border-t border-[#e0e0e0] pt-8">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-[#7a7a7a]">Ringkasan item</h3>
+        <h3 className="text-sm font-bold uppercase text-[#7a7a7a]">Ringkasan item</h3>
         <ul className="mt-4 space-y-2 text-sm">
           {items.map((it) => (
             <li key={it.id} className="flex justify-between gap-4">

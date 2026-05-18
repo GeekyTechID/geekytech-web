@@ -154,7 +154,7 @@ export function ProductBrandSelector({
           type="button"
           onClick={() => onModeChange("manual")}
           className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 border-r border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+            "flex flex-1 h-9 items-center justify-center gap-1.5 border-r border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
             mode === "manual" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
@@ -165,7 +165,7 @@ export function ProductBrandSelector({
           type="button"
           onClick={() => onModeChange("brand")}
           className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-widest transition-colors",
+            "flex flex-1 h-9 items-center justify-center gap-1.5 text-xs font-semibold uppercase transition-colors",
             mode === "brand" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >

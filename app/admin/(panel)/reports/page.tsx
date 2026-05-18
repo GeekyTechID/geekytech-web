@@ -154,12 +154,12 @@ export default async function AdminReportsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Analitik</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Laporan</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Laporan</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Ringkasan performa penjualan</p>
         </div>
         <Link
           href="/admin/reports/export"
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
           <Download size={14} strokeWidth={2} />
           Export Data
@@ -214,7 +214,7 @@ export default async function AdminReportsPage() {
                 {["#", "Produk", "Qty Terjual", "Share"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
                   >
                     {h}
                   </th>
@@ -281,10 +281,10 @@ function StatCard({
           : "admin-utility-card p-6"
       }
     >
-      <p className={accent ? "text-xs font-semibold uppercase tracking-widest text-white/85" : "admin-section-title"}>
+      <p className={accent ? "text-xs font-semibold uppercase text-white/85" : "admin-section-title"}>
         {label}
       </p>
-      <p className={`mt-2 text-3xl font-semibold tracking-tight leading-none ${accent ? "text-white" : ""}`}>{value}</p>
+      <p className={`mt-2 text-3xl font-semibold leading-none ${accent ? "text-white" : ""}`}>{value}</p>
       <p className={`mt-2 text-xs ${accent ? "text-white/75" : "text-muted-foreground"}`}>{sub}</p>
     </div>
   );

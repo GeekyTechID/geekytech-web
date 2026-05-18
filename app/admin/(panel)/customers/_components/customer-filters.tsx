@@ -54,7 +54,7 @@ export function CustomerFilters() {
         <button
           type="button"
           onClick={() => router.push(pathname)}
-          className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
+          className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
         >
           <X size={12} />
           Reset

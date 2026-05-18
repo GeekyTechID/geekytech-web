@@ -37,13 +37,13 @@ export function BrandStoreBrandOverview({ brand, aggregate, bestSellers }: Brand
                 />
               </div>
             ) : (
-              <p className="text-xl font-semibold tracking-tight text-[#1d1d1f]">{brand.name}</p>
+              <p className="text-xl font-semibold text-[#1d1d1f]">{brand.name}</p>
             )}
           </div>
 
           <div className="min-w-0 flex-1">
             {brand.description ? (
-              <p className="max-w-3xl text-[17px] leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">{brand.description}</p>
+              <p className="max-w-3xl text-[17px] leading-[1.47] text-[#1d1d1f]">{brand.description}</p>
             ) : (
               <p className="max-w-3xl text-sm text-[#1d1d1f]">
                 Belum ada deskripsi merek. Tambahkan di Admin → Brand setelah migrasi kolom `description` diterapkan.
@@ -69,7 +69,7 @@ export function BrandStoreBrandOverview({ brand, aggregate, bestSellers }: Brand
         </div>
 
         <div className="mt-12">
-          <h2 className="text-[21px] font-semibold leading-snug tracking-[-0.02em] text-[#1d1d1f]">Produk terlaris</h2>
+          <h2 className="text-[21px] font-semibold leading-snug text-[#1d1d1f]">Produk terlaris</h2>
           {bestSellers.length === 0 ? (
             <p className="mt-4 text-sm text-[#7a7a7a]">Belum ada produk terjual untuk merek ini.</p>
           ) : (

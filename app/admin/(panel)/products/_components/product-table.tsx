@@ -239,7 +239,7 @@ export function ProductTable({
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Package size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada produk</p>
+        <p className="text-sm font-semibold uppercase">Belum ada produk</p>
       </div>
     );
   }
@@ -249,14 +249,14 @@ export function ProductTable({
       {/* Bulk Action Toolbar */}
       {selectedIds.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-brand/30 bg-brand/5 px-4 py-2.5">
-          <span className="text-xs font-semibold uppercase tracking-widest text-brand">
+          <span className="text-xs font-semibold uppercase text-brand">
             {selectedIds.size} dipilih
           </span>
           <div className="mx-1 h-4 w-px bg-border" />
           <Button
             size="sm"
             variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
             onClick={() => handleBulkStatus(true)}
             disabled={isPending}
           >
@@ -265,7 +265,7 @@ export function ProductTable({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
             onClick={() => handleBulkStatus(false)}
             disabled={isPending}
           >
@@ -275,7 +275,7 @@ export function ProductTable({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
+              className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
               onClick={() => setBrandDialogOpen(true)}
               disabled={isPending}
             >
@@ -285,7 +285,7 @@ export function ProductTable({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase tracking-widest dark:border-border"
+            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
             onClick={() => setConditionDialogOpen(true)}
             disabled={isPending}
           >
@@ -293,7 +293,7 @@ export function ProductTable({
           </Button>
           <Button
             size="sm"
-            className="ml-auto h-7 rounded-md border-0 bg-destructive text-[10px] font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
+            className="ml-auto h-7 rounded-md border-0 bg-destructive text-[10px] font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
             onClick={() => setBulkDeleteOpen(true)}
             disabled={isPending}
           >
@@ -323,25 +323,25 @@ export function ProductTable({
                     aria-label="Pilih semua"
                   />
                 </th>
-                <th className="w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Foto
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Produk
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Kategori
                 </th>
-                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Harga
                 </th>
-                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
                   Stok
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -396,7 +396,7 @@ export function ProductTable({
                       <div className="mt-1 flex flex-wrap gap-1">
                         <Badge
                           variant="outline"
-                          className={`rounded-md px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest ${
+                          className={`rounded-md px-1.5 py-0 text-[9px] font-semibold uppercase ${
                             product.condition === "second"
                               ? "border-border text-muted-foreground"
                               : "border-brand/40 text-brand"
@@ -407,7 +407,7 @@ export function ProductTable({
                         {product.is_featured ? (
                           <Badge
                             variant="outline"
-                            className="rounded-md border-brand/50 px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest text-brand"
+                            className="rounded-md border-brand/50 px-1.5 py-0 text-[9px] font-semibold uppercase text-brand"
                           >
                             Unggulan
                           </Badge>
@@ -492,7 +492,7 @@ export function ProductTable({
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest dark:border-border">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
               {page} / {totalPages}
             </span>
             <button
@@ -512,7 +512,7 @@ export function ProductTable({
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Hapus Produk?</DialogTitle>
+            <DialogTitle className="text-lg font-semibold uppercase">Hapus Produk?</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
               Produk{" "}
               <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span> akan dihapus
@@ -522,14 +522,14 @@ export function ProductTable({
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
+              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDelete}
               disabled={isPending}
             >
@@ -543,7 +543,7 @@ export function ProductTable({
       <Dialog open={bulkDeleteOpen} onOpenChange={(open) => !open && setBulkDeleteOpen(false)}>
         <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">
+            <DialogTitle className="text-lg font-semibold uppercase">
               Hapus {selectedIds.size} Produk?
             </DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
@@ -553,14 +553,14 @@ export function ProductTable({
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
               onClick={() => setBulkDeleteOpen(false)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90"
+              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
               onClick={handleBulkDelete}
               disabled={isPending}
             >
@@ -574,7 +574,7 @@ export function ProductTable({
       <Dialog open={conditionDialogOpen} onOpenChange={(open) => { if (!open) setConditionDialogOpen(false); }}>
         <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Ganti Kondisi</DialogTitle>
+            <DialogTitle className="text-lg font-semibold uppercase">Ganti Kondisi</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
               Pilih kondisi baru untuk {selectedIds.size} produk yang dipilih.
             </DialogDescription>
@@ -586,7 +586,7 @@ export function ProductTable({
                   key={val}
                   type="button"
                   onClick={() => setSelectedCondition(val)}
-                  className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase tracking-widest transition-colors ${
+                  className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors ${
                     selectedCondition === val
                       ? "border-brand bg-brand/10 text-brand"
                       : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border"
@@ -599,14 +599,14 @@ export function ProductTable({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
                 onClick={() => setConditionDialogOpen(false)}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90"
+                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase text-white hover:opacity-90"
                 onClick={handleBulkSetCondition}
                 disabled={isPending}
               >
@@ -621,7 +621,7 @@ export function ProductTable({
       <Dialog open={brandDialogOpen} onOpenChange={(open) => { if (!open) { setBrandDialogOpen(false); setSelectedBrandId(""); } }}>
         <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">Ganti Merek</DialogTitle>
+            <DialogTitle className="text-lg font-semibold uppercase">Ganti Merek</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
               Pilih merek baru untuk {selectedIds.size} produk yang dipilih.
             </DialogDescription>
@@ -648,14 +648,14 @@ export function ProductTable({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
                 onClick={() => { setBrandDialogOpen(false); setSelectedBrandId(""); }}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90"
+                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase text-white hover:opacity-90"
                 onClick={handleBulkSetBrand}
                 disabled={isPending || !selectedBrandId}
               >

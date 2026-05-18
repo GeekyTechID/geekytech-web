@@ -88,7 +88,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
       <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[#7a7a7a]">ID Transaksi</p>
+            <p className="text-[11px] font-bold uppercase text-[#7a7a7a]">ID Transaksi</p>
             <p className="mt-1 font-mono text-base font-bold text-[#1d1d1f]">{order.order_number}</p>
             <p className="mt-1 text-xs text-[#7a7a7a]">
               {formatDate(order.created_at, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -106,7 +106,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           <div className="flex gap-2.5">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#EA5329]" />
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Penerima</p>
+              <p className="text-[11px] font-bold uppercase text-[#7a7a7a]">Penerima</p>
               <p className="mt-1 text-sm font-semibold text-[#1d1d1f]">{order.recipient_name}</p>
               <p className="text-sm text-[#5c5c5c]">{order.recipient_phone}</p>
               <p className="mt-1 text-sm leading-relaxed text-[#5c5c5c]">
@@ -118,7 +118,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           <div className="flex gap-2.5">
             <Truck className="mt-0.5 h-4 w-4 shrink-0 text-[#EA5329]" />
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Kurir</p>
+              <p className="text-[11px] font-bold uppercase text-[#7a7a7a]">Kurir</p>
               <p className="mt-1 text-sm font-semibold text-[#1d1d1f]">
                 {courierLabel(order.courier_company)} · {order.courier_service ?? "—"}
               </p>
@@ -227,7 +227,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                 <dl className="mt-4 grid gap-y-2.5 gap-x-4 text-sm sm:grid-cols-2">
                   {paidPayment.payment_type ? (
                     <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Metode</dt>
+                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Metode</dt>
                       <dd className="mt-0.5 font-medium text-[#1d1d1f]">
                         {PAYMENT_METHOD_LABELS[paidPayment.payment_type] ?? paidPayment.payment_type}
                       </dd>
@@ -235,7 +235,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                   ) : null}
                   {paidPayment.paid_at ? (
                     <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Waktu bayar</dt>
+                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Waktu bayar</dt>
                       <dd className="mt-0.5 text-[#1d1d1f]">
                         {formatDate(paidPayment.paid_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </dd>
@@ -243,13 +243,13 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                   ) : null}
                   {paidPayment.va_number ? (
                     <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Nomor VA</dt>
+                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Nomor VA</dt>
                       <dd className="mt-0.5 font-mono text-[#1d1d1f]">{paidPayment.va_number}</dd>
                     </div>
                   ) : null}
                   {paidPayment.midtrans_transaction_id ? (
                     <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">ID Transaksi Midtrans</dt>
+                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">ID Transaksi Midtrans</dt>
                       <dd className="mt-0.5 font-mono text-xs text-[#5c5c5c]">{paidPayment.midtrans_transaction_id}</dd>
                     </div>
                   ) : null}
@@ -278,7 +278,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                   <dl className="mt-4 grid gap-y-2.5 gap-x-4 text-sm sm:grid-cols-2">
                     {p.payment_type ? (
                       <div>
-                        <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Metode</dt>
+                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Metode</dt>
                         <dd className="mt-0.5 font-medium text-[#1d1d1f]">
                           {PAYMENT_METHOD_LABELS[p.payment_type] ?? p.payment_type}
                         </dd>
@@ -286,19 +286,19 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                     ) : null}
                     {p.va_number ? (
                       <div>
-                        <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Nomor VA</dt>
+                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Nomor VA</dt>
                         <dd className="mt-0.5 font-mono text-[#1d1d1f]">{p.va_number}</dd>
                       </div>
                     ) : null}
                     {p.payment_code ? (
                       <div>
-                        <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Kode bayar</dt>
+                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Kode bayar</dt>
                         <dd className="mt-0.5 font-mono text-[#1d1d1f]">{p.payment_code}</dd>
                       </div>
                     ) : null}
                     {p.expiry_time ? (
                       <div>
-                        <dt className="text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">Batas bayar</dt>
+                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Batas bayar</dt>
                         <dd className="mt-0.5 text-[#1d1d1f]">
                           {formatDate(p.expiry_time, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </dd>
@@ -317,7 +317,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             {/* Problem payments */}
             {problemPayments.length > 0 ? (
               <div className="border-t border-[#f0f0f0] px-5 py-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#7a7a7a]">Riwayat percobaan</p>
+                <p className="text-xs font-bold uppercase text-[#7a7a7a]">Riwayat percobaan</p>
                 <ul className="mt-2 space-y-1">
                   {problemPayments.map((p) => (
                     <li key={p.id} className="flex items-center justify-between gap-4 text-xs text-[#5c5c5c]">

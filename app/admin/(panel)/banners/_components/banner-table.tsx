@@ -63,7 +63,7 @@ function BannerActions({ banner }: { banner: BannerRow }) {
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-8 rounded-md px-3 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50 active:scale-[0.98]",
+          "h-8 rounded-md px-3 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50 active:scale-[0.98]",
           banner.is_active
             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
             : "bg-muted text-muted-foreground hover:bg-muted/80",
@@ -76,7 +76,7 @@ function BannerActions({ banner }: { banner: BannerRow }) {
 }
 
 const thClass =
-  "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase text-muted-foreground";
 
 export function BannerTable({ banners, newHref = "/admin/banners/new" }: BannerTableProps) {
   if (banners.length === 0) {

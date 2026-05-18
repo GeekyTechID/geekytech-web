@@ -26,8 +26,8 @@ export default async function VouchersPage() {
 
   return (
     <div className="w-full">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Promo</p>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Voucher aktif</h1>
+      <p className="text-[10px] font-bold uppercase text-[#7a7a7a]">Promo</p>
+      <h1 className="mt-2 text-2xl font-bold text-[#1d1d1f] sm:text-3xl">Voucher aktif</h1>
       <p className="mt-2 text-sm text-[#5c5c5c]">Gunakan kode saat checkout sesai syarat minimum belanja.</p>
 
       {coupons.length === 0 ? (
@@ -36,8 +36,8 @@ export default async function VouchersPage() {
         <ul className="mt-10 grid gap-4 sm:grid-cols-2">
           {coupons.map((c) => (
             <li key={c.id} className="rounded-xl border border-[#e0e0e0] bg-white p-5">
-              <p className="font-mono text-lg font-black tracking-tight text-[#EA5329]">{c.code}</p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-[#7a7a7a]">{couponTypeLabel(c.type)}</p>
+              <p className="font-mono text-lg font-black text-[#EA5329]">{c.code}</p>
+              <p className="mt-2 text-xs font-semibold uppercase text-[#7a7a7a]">{couponTypeLabel(c.type)}</p>
               <p className="mt-2 text-sm text-[#1d1d1f]">
                 Nilai:{" "}
                 <span className="font-bold">

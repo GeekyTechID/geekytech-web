@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { addBanner } from "../_actions";
 
 const labelClass =
-  "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  "text-[11px] font-semibold uppercase text-muted-foreground";
 
 function FormSection({
   title,
@@ -256,7 +256,7 @@ export function MainBannerForm() {
               ) : (
                 <ImagePlus size={24} />
               )}
-              <span className="text-xs font-semibold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase">
                 {uploading ? "Mengupload..." : "Upload gambar hero banner"}
               </span>
               <span className="text-center text-[12px] leading-snug text-muted-foreground">
@@ -300,7 +300,7 @@ export function MainBannerForm() {
               onClick={() => setShowGuide((v) => !v)}
               className="flex w-full items-center justify-between px-4 py-3 text-left"
             >
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                 Panduan Format Link
               </span>
               <ChevronDown
@@ -325,7 +325,7 @@ export function MainBannerForm() {
                 <div className="space-y-4">
                   {LINK_GUIDE.map((group) => (
                     <div key={group.group}>
-                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      <p className="mb-1.5 text-[10px] font-semibold uppercase text-muted-foreground">
                         {group.group}
                       </p>
                       <div className="overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
@@ -388,7 +388,7 @@ export function MainBannerForm() {
             type="button"
             onClick={() => setIsActive((v) => !v)}
             className={cn(
-              "flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border sm:w-48",
+              "flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border sm:w-48",
               isActive
                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                 : "bg-muted text-muted-foreground",
@@ -409,7 +409,7 @@ export function MainBannerForm() {
       <button
         type="submit"
         disabled={isPending || uploading}
-        className="h-11 rounded-full bg-brand px-8 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+        className="h-11 rounded-full bg-brand px-8 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
       >
         {isPending ? "Menyimpan..." : "Tambah Banner"}
       </button>

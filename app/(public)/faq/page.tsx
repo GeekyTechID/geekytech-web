@@ -231,10 +231,10 @@ export default function FAQPage() {
       {/* Hero — light tile */}
       <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white dark:bg-background">
         <div className="mx-auto max-w-[980px]">
-          <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#EA5329] mb-4">
+          <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Bantuan & Dukungan
           </p>
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] tracking-[-0.28px] text-[#1d1d1f] dark:text-white mb-6">
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6">
             Pertanyaan yang<br className="hidden sm:block" /> sering diajukan
           </h1>
           <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto">
@@ -255,7 +255,7 @@ export default function FAQPage() {
         >
           <div className="mx-auto max-w-[980px]">
             <div className="text-center mb-12">
-              <h2 className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-[#1d1d1f] dark:text-white">
+              <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white">
                 {cat.category}
               </h2>
             </div>
@@ -278,18 +278,18 @@ export default function FAQPage() {
       {/* CTA — dark tile */}
       <section className="w-full px-6 py-[80px] bg-[#272729]">
         <div className="mx-auto max-w-[980px] text-center">
-          <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#FFAD88] mb-4">
+          <p className="text-[14px] font-semibold text-[#FFAD88] mb-4">
             Tidak menemukan jawaban?
           </p>
-          <h2 className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-white mb-6">
+          <h2 className="text-[34px] font-semibold leading-[1.1] text-white mb-6">
             Tim kami siap membantu
           </h2>
-          <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#cccccc] max-w-[600px] mx-auto mb-8">
+          <p className="text-[17px] font-normal leading-[1.47] text-[#cccccc] max-w-[600px] mx-auto mb-8">
             Hubungi customer service kami melalui WhatsApp, email, atau form kontak. Kami akan merespon dalam waktu singkat.
           </p>
           <a
             href="/contact"
-            className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] tracking-[-0.374px] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
+            className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
           >
             Hubungi Support
           </a>

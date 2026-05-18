@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { createCoupon, updateCoupon, type CouponFormData } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 type InitialData = {
   id: string;
@@ -135,7 +135,7 @@ export function CouponForm({ initialData }: CouponFormProps) {
                 type="button"
                 onClick={() => setType("percentage")}
                 className={cn(
-                  "h-10 flex-1 px-3 text-xs font-semibold uppercase tracking-widest transition-colors",
+                  "h-10 flex-1 px-3 text-xs font-semibold uppercase transition-colors",
                   type === "percentage"
                     ? "bg-brand/10 text-brand"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -147,7 +147,7 @@ export function CouponForm({ initialData }: CouponFormProps) {
                 type="button"
                 onClick={() => setType("fixed")}
                 className={cn(
-                  "h-10 flex-1 border-l border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                  "h-10 flex-1 border-l border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
                   type === "fixed"
                     ? "bg-brand/10 text-brand"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -245,7 +245,7 @@ export function CouponForm({ initialData }: CouponFormProps) {
               type="button"
               onClick={() => setIsActive((v) => !v)}
               className={cn(
-                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
                 isActive
                   ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                   : "bg-muted text-muted-foreground",
@@ -283,7 +283,7 @@ export function CouponForm({ initialData }: CouponFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:bg-brand-hover disabled:opacity-50 active:scale-[0.98]"
+          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:bg-brand-hover disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : initialData ? "Perbarui Kupon" : "Buat Kupon"}
         </button>
@@ -291,7 +291,7 @@ export function CouponForm({ initialData }: CouponFormProps) {
           type="button"
           onClick={() => router.push("/admin/coupons")}
           disabled={isPending}
-          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
+          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
         </button>

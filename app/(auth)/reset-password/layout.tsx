@@ -11,7 +11,7 @@ export default function ResetPasswordLayout({
       formMaxWidthClass="max-w-md"
       leftPanel={
         <>
-          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] tracking-[-0.02em] text-white">
+          <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] text-white">
             Buat kata
             <br />
             sandi baru.

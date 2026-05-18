@@ -35,7 +35,7 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
                     <Image src={b.logo_url} alt={b.name} fill className="object-contain" sizes="100px" />
                   </div>
                 ) : (
-                  <span className="text-center text-xs font-bold uppercase tracking-widest text-neutral-600 group-hover:text-brand dark:text-muted-foreground">
+                  <span className="text-center text-xs font-bold uppercase text-neutral-600 group-hover:text-brand dark:text-muted-foreground">
                     {b.name}
                   </span>
                 )}

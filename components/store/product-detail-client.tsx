@@ -106,7 +106,7 @@ export function ProductDetailClient({
   const totalReviews = histogram.reduce((s, h) => s + h.count, 0) || product.reviewCount;
   const histMax = Math.max(1, ...histogram.map((h) => h.count));
 
-  const handleAddCart = (thenRedirect: boolean) => {
+  const handleAddCart = () => {
     if (!variant || variant.stock < 1) {
       toast.error("Varian tidak tersedia atau stok habis.");
       return;
@@ -121,9 +121,23 @@ export function ProductDetailClient({
       incrementCart(q);
       toast.success("Ditambahkan ke keranjang.");
       router.refresh();
-      if (thenRedirect) {
-        router.push("/cart");
+    });
+  };
+
+  const handleBuyNow = () => {
+    if (!variant || variant.stock < 1) {
+      toast.error("Varian tidak tersedia atau stok habis.");
+      return;
+    }
+    const q = clampQty(qty);
+    startTransition(async () => {
+      const res = await addVariantToCart(variant.id, q);
+      if (!res.success) {
+        toast.error(res.error);
+        return;
       }
+      incrementCart(q);
+      router.push("/checkout");
     });
   };
 
@@ -177,11 +191,11 @@ export function ProductDetailClient({
       {/* Atas: kiri info + galeri, kanan kartu belanja */}
       <section className="py-8">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 md:grid-cols-12 md:gap-8 lg:gap-12">
-            <div className="min-w-0 md:col-span-7">
-              <div className="grid gap-8 sm:grid-cols-2 sm:items-start">
+          <div className="flex flex-col lg:flex-row justify-between gap-10">
+            <div className="min-w-0 ">
+              <div className="flex flex-col lg:flex-row justify-between gap-8 sm:items-start">
                 {/* Galeri */}
-                <div className="min-w-0">
+                <div className="mx-auto min-w-0 w-full max-w-[252px] sm:mx-0 sm:max-w-[294px] md:max-w-[315px]">
                   <div className="relative aspect-square w-full overflow-hidden">
                     {currentImage.url ? (
                       <Image
@@ -189,7 +203,7 @@ export function ProductDetailClient({
                         alt={currentImage.alt ?? product.name}
                         fill
                         className="object-contain"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+                        sizes="(max-width: 640px) 252px, (max-width: 768px) 294px, 315px"
                         priority
                       />
                     ) : (
@@ -226,12 +240,12 @@ export function ProductDetailClient({
                           type="button"
                           onClick={() => setImgIndex(i)}
                           className={cn(
-                            "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7]",
+                            "relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7]",
                             i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
                           )}
                         >
                           {im.url ? (
-                            <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
+                            <Image src={im.url} alt="" fill className="object-contain p-1" sizes="48px" />
                           ) : null}
                         </button>
                       ))}
@@ -240,8 +254,8 @@ export function ProductDetailClient({
                 </div>
 
                 {/* Judul, kategori, varian, rating, harga */}
-                <div className="min-w-0 space-y-5">
-                  <h1 className="text-[clamp(1.5rem,4vw,2rem)] font-semibold leading-tight tracking-[-0.02em]">
+                <div className="min-w-0 space-y-3">
+                  <h1 className="text-[clamp(1rem,3.5vw,1.5rem)] font-semibold leading-tight">
                     {product.name}
                   </h1>
                   {product.category ? (
@@ -250,7 +264,7 @@ export function ProductDetailClient({
 
                   {product.variants.length > 1 ? (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#7a7a7a]">Varian</p>
+                      <p className="mb-2 text-xs font-semibold uppercase text-[#7a7a7a]">Varian</p>
                       <div className="flex flex-wrap gap-2">
                         {product.variants.map((v) => (
                           <button
@@ -288,7 +302,7 @@ export function ProductDetailClient({
                   </div>
 
                   <div className="space-y-2 border-t border-[#f0f0f0] pt-5">
-                    <p className="text-[clamp(1.5rem,4vw,2rem)] font-bold tracking-tight">{formatRupiah(unitPrice)}</p>
+                    <p className="text-[clamp(1.5rem,4vw,2rem)] font-bold">{formatRupiah(unitPrice)}</p>
                     {discountPercent != null && discountPercent > 0 ? (
                       <div className="flex flex-wrap items-center gap-2 text-[17px]">
                         <span className="text-[#7a7a7a] line-through">{formatRupiah(listPrice)}</span>
@@ -303,8 +317,8 @@ export function ProductDetailClient({
             </div>
 
             {/* Kartu belanja */}
-            <aside className="md:col-span-5">
-              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-8">
+            <aside className="w-full shrink-0 lg:min-w-[23rem] lg:max-w-[26rem] xl:min-w-[24rem] xl:max-w-[28rem]">
+              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-8 lg:px-10">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-0 rounded-full border border-[#e0e0e0] bg-white">
                     <button
@@ -339,7 +353,7 @@ export function ProductDetailClient({
                 <div className="mt-8 space-y-2 border-t border-[#eadfd8] pt-6">
                   <p className="text-sm text-[#7a7a7a]">
                     Subtotal{" "}
-                    <span className="text-[17px] font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
+                    <span className="text-[23px] font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
                   </p>
                   {discountPercent != null && discountPercent > 0 ? (
                     <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -355,7 +369,7 @@ export function ProductDetailClient({
                   <button
                     type="button"
                     disabled={!variant || variant.stock < 1 || isPending}
-                    onClick={() => handleAddCart(true)}
+                    onClick={handleBuyNow}
                     className="h-12 w-full rounded-full bg-[#EA5329] text-[15px] font-semibold text-white transition hover:bg-[#d44820] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Beli sekarang
@@ -363,14 +377,14 @@ export function ProductDetailClient({
                   <button
                     type="button"
                     disabled={!variant || variant.stock < 1 || isPending}
-                    onClick={() => handleAddCart(false)}
+                    onClick={handleAddCart}
                     className="h-12 w-full rounded-full border-2 border-[#EA5329] bg-white text-[15px] font-semibold text-[#EA5329] transition hover:bg-[#EA5329]/5 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     + Keranjang
                   </button>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-[#eadfd8] pt-6 text-[14px] font-medium">
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 border-t border-[#eadfd8] pt-6 text-[14px] font-medium">
                   <a
                     href={WA_NUMBER ? buildWhatsAppHref(product.name, product.slug) : "#"}
                     onClick={(e) => {
@@ -452,7 +466,7 @@ export function ProductDetailClient({
                   <div className="space-y-4">
                     {description ? (
                       <>
-                        <div className="whitespace-pre-wrap text-[17px] leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+                        <div className="whitespace-pre-wrap text-[17px] leading-[1.47] text-[#1d1d1f]">
                           {descriptionPreview}
                           {!descExpanded && showDescToggle ? "…" : null}
                         </div>
@@ -498,7 +512,7 @@ export function ProductDetailClient({
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">Rating &amp; Ulasan</h2>
+              <h2 className="text-xl font-semibold">Rating &amp; Ulasan</h2>
               <div className="mt-6 flex flex-col gap-8 sm:flex-row sm:items-start">
                 <div className="shrink-0 text-center sm:text-left">
                   <p className="text-4xl font-bold leading-none">{product.averageRating.toFixed(1)}</p>

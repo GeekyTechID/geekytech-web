@@ -107,10 +107,10 @@ export default function RegisterPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-2">
-        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+        <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
           Buat Akun Baru
         </h1>
-        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
           Daftar untuk mulai belanja di GeekyTech.
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="first_name"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               Nama Depan
             </Label>
@@ -140,7 +140,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="last_name"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               Nama Belakang
             </Label>
@@ -163,7 +163,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="phone"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               No Telepon
             </Label>
@@ -183,7 +183,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="email"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               Email
             </Label>
@@ -206,7 +206,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="password"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               Kata Sandi
             </Label>
@@ -236,7 +236,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <Label
               htmlFor="confirm_password"
-              className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+              className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
             >
               Konfirmasi Kata Sandi
             </Label>
@@ -267,7 +267,7 @@ export default function RegisterPage() {
 
         <TurnstileWidget onVerify={handleTurnstileVerify} />
 
-        <p className="text-[12px] font-normal leading-relaxed tracking-[-0.01em] text-[#7a7a7a]">
+        <p className="text-[12px] font-normal leading-relaxed text-[#7a7a7a]">
           Dengan mendaftar, kamu setuju dengan{" "}
           <Link href="/terms" className="text-[#EA5329] underline-offset-2 hover:underline">
             Syarat & Ketentuan
@@ -321,7 +321,7 @@ export default function RegisterPage() {
         Daftar dengan google
       </Button>
 
-      <p className="text-center text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+      <p className="text-center text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
         Sudah punya akun?{" "}
         <Link
           href="/login"

@@ -93,7 +93,7 @@ function BannerEditDialog({
     });
   };
 
-  const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -153,7 +153,7 @@ function BannerEditDialog({
             ) : (
               <ImagePlus size={20} />
             )}
-            <span className="text-[11px] font-semibold uppercase tracking-widest">
+            <span className="text-[11px] font-semibold uppercase">
               {uploading ? "Mengupload..." : "Upload gambar"}
             </span>
           </button>
@@ -185,7 +185,7 @@ function BannerEditDialog({
           type="button"
           onClick={() => setIsActive((v) => !v)}
           className={cn(
-            "flex h-10 w-48 items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-[11px] font-semibold uppercase tracking-widest transition-colors dark:border-border",
+            "flex h-10 w-48 items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-[11px] font-semibold uppercase transition-colors dark:border-border",
             isActive
               ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
               : "bg-muted text-muted-foreground",
@@ -208,14 +208,14 @@ function BannerEditDialog({
           variant="outline"
           onClick={onClose}
           disabled={isPending || uploading}
-          className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase tracking-widest dark:border-border"
+          className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase dark:border-border"
         >
           Batal
         </Button>
         <Button
           type="submit"
           disabled={isPending || uploading}
-          className="flex-1 rounded-full border-0 bg-brand text-[11px] font-semibold uppercase tracking-widest text-white hover:opacity-90 active:scale-[0.98]"
+          className="flex-1 rounded-full border-0 bg-brand text-[11px] font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}
         </Button>
@@ -258,7 +258,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Images size={36} strokeWidth={1} />
-        <p className="text-[11px] font-semibold uppercase tracking-widest">Belum ada banner</p>
+        <p className="text-[11px] font-semibold uppercase">Belum ada banner</p>
       </div>
     );
   }
@@ -270,16 +270,16 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Banner
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Link
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -331,7 +331,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                   <td className="px-4 py-3 text-center">
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest",
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase",
                         banner.is_active
                           ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                           : "bg-muted text-muted-foreground",
@@ -368,7 +368,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                         disabled={isPending}
                         onClick={() => handleToggle(banner.id, banner.is_active)}
                         className={cn(
-                          "ml-1 h-8 rounded-full px-4 text-[11px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50 active:scale-[0.98]",
+                          "ml-1 h-8 rounded-full px-4 text-[11px] font-semibold uppercase transition-colors disabled:opacity-50 active:scale-[0.98]",
                           banner.is_active
                             ? "border border-[#e0e0e0] text-muted-foreground hover:bg-muted dark:border-border"
                             : "bg-emerald-600 text-white hover:bg-emerald-700",
@@ -389,7 +389,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
       <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
         <DialogContent className="max-w-lg rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-[17px] font-semibold tracking-tight">
+            <DialogTitle className="text-[17px] font-semibold">
               Edit Banner
             </DialogTitle>
             <DialogDescription className="text-[13px]">
@@ -410,7 +410,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-[17px] font-semibold tracking-tight">
+            <DialogTitle className="text-[17px] font-semibold">
               Hapus Banner?
             </DialogTitle>
             <DialogDescription className="text-[13px]">
@@ -424,14 +424,14 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase tracking-widest dark:border-border"
+              className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase dark:border-border"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-full border-0 bg-destructive text-[11px] font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
+              className="flex-1 rounded-full border-0 bg-destructive text-[11px] font-semibold uppercase text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
               onClick={handleDelete}
               disabled={isPending}
             >

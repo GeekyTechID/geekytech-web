@@ -42,7 +42,7 @@ export function DashboardShell({
       <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col pt-4 sm:pt-6 lg:pt-8">
         {/* Sidebar kolom dari lg+; tablet (md–lg) pakai drawer agar konten tidak terlalu sempit */}
         <div className="mx-auto flex w-full max-w-[1400px] min-h-0 min-w-0 flex-1 flex-col px-4 sm:px-6 lg:px-8 lg:flex-row lg:gap-6 xl:gap-8">
-          <div className="hidden w-[min(100%,18rem)] shrink-0 lg:flex lg:min-h-0 lg:overflow-y-auto xl:w-[min(100%,19rem)]">
+          <div className="hidden w-[min(100%,18rem)] shrink-0 lg:flex lg:self-start lg:sticky lg:top-28 xl:w-[min(100%,19rem)]">
             <DashboardSidebar className="w-full" unreadNotifications={unreadNotifications} />
           </div>
 
@@ -61,7 +61,7 @@ export function DashboardShell({
                 aria-label="Menu akun"
               >
                 <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#e8e4dc] px-3 py-2.5 pl-[max(0.75rem,env(safe-area-inset-left,0px))] pr-[max(0.5rem,env(safe-area-inset-right,0px))] pt-[max(0.5rem,env(safe-area-inset-top,0px))]">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7a7a7a]">Menu akun</span>
+                  <span className="text-[11px] font-bold uppercase text-[#7a7a7a]">Menu akun</span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -96,7 +96,7 @@ export function DashboardShell({
               >
                 <Menu className="h-5 w-5" strokeWidth={2} />
               </Button>
-              <span className="min-w-0 truncate text-[12px] font-semibold uppercase tracking-wide text-[#1d1d1f] sm:text-[13px]">
+              <span className="min-w-0 truncate text-[12px] font-semibold uppercase text-[#1d1d1f] sm:text-[13px]">
                 Dashboard
               </span>
             </header>

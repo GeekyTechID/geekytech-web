@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { CartLineCard, type CartLineView } from "@/components/store/cart-line-card";
 import { CartCheckoutStepper } from "@/components/store/cart-checkout-stepper";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
@@ -264,12 +265,18 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
 
   if (doneState) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4 py-20 text-[#1d1d1f]">
+      <div className="px-4 py-20 text-[#1d1d1f]">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="py-2 sm:py-3">
+            <CartCheckoutStepper current={3} />
+          </div>
+        </div>
+        <div className="flex min-h-[50vh] items-center justify-center">
         <div className="w-full max-w-md text-center">
           <div className="flex justify-center">
             <CheckCircle2 className="h-16 w-16 text-[#EA5329]" strokeWidth={1.5} />
           </div>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1d1d1f]">
+          <h1 className="mt-6 text-3xl font-semibold text-[#1d1d1f]">
             Pembayaran Berhasil
           </h1>
           <p className="mt-3 text-[17px] leading-relaxed text-[#5c5c5c]">
@@ -288,6 +295,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
             Lihat Pesanan
           </Link>
         </div>
+        </div>
       </div>
     );
   }
@@ -302,7 +310,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
         <div className="mt-6 md:mt-8 md:grid md:grid-cols-12 md:items-start md:gap-6 lg:gap-8">
           <div className="md:col-span-7">
             <div className="rounded-2xl border border-[#e8e4dc] bg-white p-4 sm:p-6">
-              <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f] sm:text-2xl">Checkout</h1>
+              <h1 className="text-xl font-bold text-[#1d1d1f] sm:text-2xl">Checkout</h1>
               <p className="mt-1 text-sm text-[#5c5c5c]">Periksa barang sebelum memilih pengiriman dan pembayaran.</p>
               <ul className="mt-8 space-y-10">
                 {lines.map((line) => (
@@ -317,7 +325,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
           <aside className="mt-6 space-y-4 md:col-span-5 md:mt-0">
             <div className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm">
               <div className="flex items-center justify-between bg-[#2a2a2c] px-4 py-3 text-white">
-                <span className="text-sm font-semibold uppercase tracking-wider">Pilih alamat</span>
+                <span className="text-sm font-semibold uppercase">Pilih alamat</span>
                 <ChevronDown className="h-4 w-4 opacity-80" aria-hidden />
               </div>
               <div className="p-4">
@@ -325,21 +333,18 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                   <p className="text-sm text-[#5c5c5c]">Belum ada alamat tersimpan.</p>
                 ) : (
                   <>
-                    <label htmlFor="checkout-address" className="sr-only">
-                      Alamat pengiriman
-                    </label>
-                    <select
-                      id="checkout-address"
-                      value={addressId}
-                      onChange={(e) => setAddressId(e.target.value)}
-                      className="h-11 w-full rounded-lg border border-[#e0e0e0] bg-white px-3 text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#EA5329]/30"
-                    >
-                      {addresses.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {(a.label ?? "Alamat").trim()} — {a.city}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={addressId} onValueChange={setAddressId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Pilih alamat pengiriman..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {addresses.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {(a.label ?? "Alamat").trim()} — {a.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {selectedAddress ? (
                       <div className="mt-3 text-sm leading-relaxed text-[#333333]">
                         <p className="font-semibold text-[#1d1d1f]">{selectedAddress.recipient}</p>
@@ -363,7 +368,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
 
             <div className="overflow-hidden rounded-2xl border border-[#1a1a1a]/40 bg-[#1a1a1a] text-white shadow-lg">
               <div className="px-5 pt-5">
-                <h2 className="text-lg font-bold tracking-tight">Ringkasan pesanan</h2>
+                <h2 className="text-lg font-bold">Ringkasan pesanan</h2>
                 <dl className="mt-5 space-y-3 border-b border-white/15 pb-5 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-white/75">Sub total ({itemCount} item)</dt>
@@ -461,7 +466,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                 )}
 
                 <div className="border-t border-white/15 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Ada kupon diskon?</p>
+                  <p className="text-xs font-semibold uppercase text-white/60">Ada kupon diskon?</p>
                   <div className="mt-2 flex flex-col gap-2 sm:flex-row">
                     <input
                       value={couponInput}
@@ -482,8 +487,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
 
                 <div className="flex items-end justify-between gap-4 border-t border-white/15 py-5">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Total</p>
-                    <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight">{formatRupiah(grandTotal)}</p>
+                    <p className="text-xs font-semibold uppercase text-white/60">Total</p>
+                    <p className="mt-1 text-2xl font-bold tabular-nums">{formatRupiah(grandTotal)}</p>
                     {couponDiscount > 0 ? (
                       <p className="mt-1 text-[11px] text-white/55">Sudah termasuk diskon kupon.</p>
                     ) : null}
@@ -526,7 +531,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                 type="button"
                 disabled={submitting || !addressId || !selectedShipping || addresses.length === 0}
                 onClick={() => void handleCheckout()}
-                className="mt-6 flex w-full items-center justify-center rounded-full bg-[#EA5329] py-3.5 text-center text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[#d94a24] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+                className="mt-6 flex w-full items-center justify-center rounded-full bg-[#EA5329] py-3.5 text-center text-sm font-bold uppercase text-white transition hover:bg-[#d94a24] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
               >
                 {submitting ? (
                   <>

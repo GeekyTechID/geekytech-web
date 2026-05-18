@@ -24,8 +24,8 @@ export default async function AddressesPage() {
     <div className="w-full">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Pengiriman</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Alamat tersimpan</h1>
+          <p className="text-[10px] font-bold uppercase text-[#7a7a7a]">Pengiriman</p>
+          <h1 className="mt-2 text-2xl font-bold text-[#1d1d1f] sm:text-3xl">Alamat tersimpan</h1>
         </div>
         <Button asChild className="w-fit bg-black text-white hover:bg-[#333]">
           <Link href="/dashboard/addresses/new">Tambah alamat</Link>
@@ -41,11 +41,11 @@ export default async function AddressesPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   {a.is_default ? (
-                    <span className="inline-block rounded-full bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                    <span className="inline-block rounded-full bg-black px-2 py-0.5 text-[10px] font-bold uppercase text-white">
                       Utama
                     </span>
                   ) : null}
-                  {a.label ? <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#7a7a7a]">{a.label}</p> : null}
+                  {a.label ? <p className="mt-2 text-xs font-bold uppercase text-[#7a7a7a]">{a.label}</p> : null}
                   <p className="mt-1 font-semibold text-[#1d1d1f]">{a.recipient}</p>
                   <p className="text-sm text-[#5c5c5c]">{a.phone}</p>
                   <p className="mt-2 text-sm leading-relaxed text-[#1d1d1f]">

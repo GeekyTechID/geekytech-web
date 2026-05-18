@@ -72,7 +72,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Transaksi</p>
-          <h1 className="font-mono text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+          <h1 className="font-mono text-[34px] font-semibold uppercase text-foreground">
             {order.order_number}
           </h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
@@ -87,7 +87,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         </div>
         <span
           className={cn(
-            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest",
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
             adminOrderStatusBadgeClass(order.status),
           )}
         >
@@ -171,7 +171,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               <div className="space-y-2 px-4 py-4">
                 <InfoRow label="Status" value={
                   <span className={cn(
-                    "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                    "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                     payment.status === "paid"
                       ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                       : payment.status === "pending"
@@ -230,7 +230,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                       <div className="pb-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className={cn(
-                            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                             adminOrderStatusBadgeClass(h.status)
                           )}>
                             {ADMIN_ORDER_STATUS_LABEL[h.status] ?? h.status}

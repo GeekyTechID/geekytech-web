@@ -28,7 +28,7 @@ export function SettingsNav() {
           key={href}
           href={href}
           className={cn(
-            "flex h-11 items-center border-b-2 px-4 text-xs font-semibold uppercase tracking-widest transition-colors",
+            "flex h-11 items-center border-b-2 px-4 text-xs font-semibold uppercase transition-colors",
             isActive(href)
               ? "border-brand text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground",

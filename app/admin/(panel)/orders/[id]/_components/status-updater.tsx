@@ -21,7 +21,7 @@ import {
   type OrderStatus,
 } from "../../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 interface StatusUpdaterProps {
   orderId: string;
@@ -58,7 +58,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
         <span className="text-xs text-muted-foreground">Status saat ini:</span>
         <span
           className={cn(
-            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+            "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
             adminOrderStatusBadgeClass(currentStatus),
           )}
         >
@@ -70,7 +70,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
         <Button
           type="button"
           variant="outline"
-          className="w-full rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
+          className="w-full rounded-full border-brand/40 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => setOpen(true)}
         >
           Ubah Status
@@ -82,7 +82,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold uppercase tracking-[-0.02em]">
+            <DialogTitle className="text-lg font-semibold uppercase">
               Ubah Status Pesanan
             </DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
@@ -121,7 +121,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
+                className="flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
@@ -129,7 +129,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
               </Button>
               <Button
                 type="button"
-                className="flex-1 rounded-full bg-brand text-xs font-semibold uppercase tracking-widest text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+                className="flex-1 rounded-full bg-brand text-xs font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
                 onClick={handleSubmit}
                 disabled={!selectedStatus || isPending}
               >

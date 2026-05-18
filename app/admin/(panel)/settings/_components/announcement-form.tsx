@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { saveSetting } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 const saveClass =
-  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
 
 interface AnnouncementFormProps {
   initialText: string;
@@ -48,7 +48,7 @@ export function AnnouncementForm({ initialText, initialActive }: AnnouncementFor
           type="button"
           onClick={() => setIsActive((v) => !v)}
           className={cn(
-            "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase tracking-widest transition-colors",
+            "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase transition-colors",
             isActive
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
               : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",

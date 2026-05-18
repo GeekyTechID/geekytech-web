@@ -65,10 +65,10 @@ export function ContactForm() {
     return (
       <div className="bg-[#f5f5f7] dark:bg-[#2a2a2c] rounded-[18px] p-8 text-center">
         <div className="mb-4 text-4xl">✓</div>
-        <h3 className="text-[17px] font-semibold tracking-[-0.374px] text-[#1d1d1f] dark:text-white mb-2">
+        <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Pesan terkirim!
         </h3>
-        <p className="text-[14px] tracking-[-0.224px] text-[#7a7a7a] dark:text-[#cccccc]">
+        <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
           Terima kasih telah menghubungi kami. Tim kami akan merespon dalam waktu singkat.
         </p>
       </div>
@@ -79,7 +79,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Name */}
       <div>
-        <label htmlFor="name" className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="name" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Nama Lengkap
         </label>
         <input
@@ -96,7 +96,7 @@ export function ContactForm() {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="email" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Email
         </label>
         <input
@@ -113,7 +113,7 @@ export function ContactForm() {
 
       {/* Phone */}
       <div>
-        <label htmlFor="phone" className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="phone" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Nomor Telepon
         </label>
         <input
@@ -130,7 +130,7 @@ export function ContactForm() {
 
       {/* Subject */}
       <div>
-        <label htmlFor="subject" className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="subject" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Subjek
         </label>
         <input
@@ -147,7 +147,7 @@ export function ContactForm() {
 
       {/* Message */}
       <div>
-        <label htmlFor="message" className="block text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="message" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
           Pesan
         </label>
         <textarea
@@ -166,7 +166,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-[#EA5329] hover:bg-[#d44820] text-white text-[17px] font-normal tracking-[-0.374px] rounded-full px-6 py-3 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-[#EA5329] hover:bg-[#d44820] text-white text-[17px] font-normal rounded-full px-6 py-3 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isLoading ? (
           <>
@@ -178,7 +178,7 @@ export function ContactForm() {
         )}
       </button>
 
-      <p className="text-[12px] tracking-[-0.12px] text-[#7a7a7a] dark:text-[#cccccc] text-center">
+      <p className="text-[12px] text-[#7a7a7a] dark:text-[#cccccc] text-center">
         Kami akan merespon dalam waktu 1-24 jam kerja.
       </p>
     </form>

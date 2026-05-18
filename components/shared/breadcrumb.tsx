@@ -32,12 +32,12 @@ export function Breadcrumb({ items, showHome = true, className }: BreadcrumbProp
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                className="font-semibold uppercase text-muted-foreground transition-colors hover:text-foreground"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={cn("font-semibold uppercase tracking-wide", isLast ? "text-foreground" : "text-muted-foreground")}>
+              <span className={cn("font-semibold uppercase", isLast ? "text-foreground" : "text-muted-foreground")}>
                 {item.label}
               </span>
             )}

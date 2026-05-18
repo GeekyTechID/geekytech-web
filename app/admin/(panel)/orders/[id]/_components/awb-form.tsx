@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateOrderAWB } from "../../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 interface AWBFormProps {
   orderId: string;
@@ -48,7 +48,7 @@ export function AWBForm({ orderId, currentAWB }: AWBFormProps) {
           />
           <Button
             type="submit"
-            className="h-10 shrink-0 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+            className="h-10 shrink-0 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
             disabled={isPending || !awb.trim()}
           >
             {isPending ? "..." : "Simpan"}

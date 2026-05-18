@@ -59,7 +59,7 @@ export default async function AdminComplaintsPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Layanan</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Komplain</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Komplain</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {count ?? 0} komplain
             {q ? ` untuk "${q}"` : ""}
@@ -67,7 +67,7 @@ export default async function AdminComplaintsPage({
           </p>
         </div>
         {(openCount.count ?? 0) > 0 && (
-          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-brand">
+          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-4 py-2 text-xs font-semibold uppercase text-brand">
             {openCount.count} komplain baru
           </div>
         )}

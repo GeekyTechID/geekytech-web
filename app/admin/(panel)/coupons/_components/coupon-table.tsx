@@ -80,7 +80,7 @@ function CouponActions({ coupon }: { coupon: CouponRow }) {
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50",
+          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
           status.className,
         )}
       >
@@ -99,7 +99,7 @@ export function CouponTable({ coupons }: CouponTableProps) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Ticket size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada kupon</p>
+        <p className="text-sm font-semibold uppercase">Belum ada kupon</p>
       </div>
     );
   }
@@ -110,25 +110,25 @@ export function CouponTable({ coupons }: CouponTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Kode
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                 Diskon
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                 Min. Belanja
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
                 Pemakaian
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
                 Berlaku
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Aksi
               </th>
             </tr>
@@ -144,7 +144,7 @@ export function CouponTable({ coupons }: CouponTableProps) {
               return (
                 <tr key={coupon.id} className="transition-colors hover:bg-muted/30">
                   <td className="px-4 py-3">
-                    <span className="font-mono text-sm font-semibold tracking-wider">{coupon.code}</span>
+                    <span className="font-mono text-sm font-semibold">{coupon.code}</span>
                   </td>
                   <td className="hidden px-4 py-3 sm:table-cell">
                     <span className="text-xs font-medium">{discountLabel}</span>
@@ -170,7 +170,7 @@ export function CouponTable({ coupons }: CouponTableProps) {
                   <td className="px-4 py-3">
                     <span
                       className={cn(
-                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                         status.className,
                       )}
                     >

@@ -97,7 +97,7 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
       </div>
 
       <div className="rounded-lg border border-[#e8e4dc] bg-[#fafaf8] p-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">
+        <p className="mb-2 text-xs font-semibold uppercase text-[#7a7a7a]">
           Cari area otomatis
         </p>
         <AreaAutocomplete onSelect={handleAreaSelect} />

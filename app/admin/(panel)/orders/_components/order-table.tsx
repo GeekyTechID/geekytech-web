@@ -41,7 +41,7 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <ShoppingBag size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada pesanan</p>
+        <p className="text-sm font-semibold uppercase">Belum ada pesanan</p>
       </div>
     );
   }
@@ -53,25 +53,25 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   No. Order
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Penerima
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Kurir
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
                   Total
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -112,7 +112,7 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
                   <td className="px-4 py-3">
                     <span
                       className={cn(
-                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                         adminOrderStatusBadgeClass(order.status),
                       )}
                     >

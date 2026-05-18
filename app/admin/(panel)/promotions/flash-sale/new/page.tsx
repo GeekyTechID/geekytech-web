@@ -61,7 +61,7 @@ export default async function AdminFlashSaleNewPage() {
 
       <div>
         <p className="text-swiss-eyebrow">Promosi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Buat Flash Sale
         </h1>
       </div>

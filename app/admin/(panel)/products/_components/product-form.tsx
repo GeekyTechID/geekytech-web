@@ -499,7 +499,7 @@ export function ProductForm({
                       type="button"
                       onClick={() => setValue("condition", val)}
                       className={cn(
-                        "h-9 flex-1 rounded-lg border text-xs font-semibold uppercase tracking-widest transition-colors",
+                        "h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors",
                         isSelected
                           ? "border-brand bg-brand/10 text-brand"
                           : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border",
@@ -570,7 +570,7 @@ export function ProductForm({
                       className="flex cursor-pointer select-none items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
                       onClick={() => toggleVariantExpand(i)}
                     >
-                      <span className="w-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      <span className="w-6 text-xs font-semibold uppercase text-muted-foreground">
                         {i + 1}
                       </span>
                       <span className="flex-1 text-sm font-semibold">{variantName}</span>
@@ -673,7 +673,7 @@ export function ProductForm({
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 rounded-full border border-dashed border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+              className="h-9 rounded-full border border-dashed border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
               onClick={() => {
                 const nextIndex = fields.length;
                 append({
@@ -702,7 +702,7 @@ export function ProductForm({
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-1 rounded-md border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-widest text-brand"
+                    className="flex items-center gap-1 rounded-md border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-semibold uppercase text-brand"
                   >
                     {tag}
                     <button
@@ -755,7 +755,7 @@ export function ProductForm({
           <Button
             type="submit"
             disabled={isPending}
-            className="h-10 rounded-full border-0 bg-brand px-6 text-sm font-semibold uppercase tracking-widest text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+            className="h-10 rounded-full border-0 bg-brand px-6 text-sm font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
           >
             {isPending && <Loader2 size={14} className="mr-2 animate-spin" />}
             {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
@@ -764,7 +764,7 @@ export function ProductForm({
           <Button
             type="button"
             variant="outline"
-            className="h-10 rounded-full border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5"
+            className="h-10 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
             onClick={() => router.back()}
             disabled={isPending}
           >
@@ -797,7 +797,7 @@ function Section({
   );
 }
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 function Field({
   label,

@@ -44,6 +44,7 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [avatarImgError, setAvatarImgError] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -105,6 +106,12 @@ export function Navbar() {
   const userInitials = profile?.full_name
     ? profile.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : user?.email?.[0]?.toUpperCase() ?? "?";
+
+  const avatarUrl =
+    profile?.avatar_url?.trim() ||
+    (user?.user_metadata?.picture as string | undefined)?.trim() ||
+    (user?.user_metadata?.avatar_url as string | undefined)?.trim() ||
+    "";
 
   return (
     <>
@@ -194,7 +201,7 @@ export function Navbar() {
               {/* Cart */}
               <Link
                 href="/cart"
-                className="p-2 text-muted-foreground hover:text-foreground transition-swiss"
+                className="relative inline-flex items-center justify-center rounded-full p-2 text-muted-foreground outline-none transition-colors hover:bg-black/[0.04] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 dark:hover:bg-white/10"
                 aria-label="Keranjang belanja"
               >
                 <ShoppingCart size={18} />
@@ -213,8 +220,18 @@ export function Navbar() {
                     aria-haspopup="menu"
                     aria-label="Menu akun"
                   >
-                    <div className="w-5 h-5 bg-foreground text-background text-[10px] font-black flex items-center justify-center">
-                      {userInitials}
+                    <div className="w-5 h-5 overflow-hidden bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0">
+                      {avatarUrl && !avatarImgError ? (
+                        <img
+                          src={avatarUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                          onError={() => setAvatarImgError(true)}
+                        />
+                      ) : (
+                        userInitials
+                      )}
                     </div>
                     <ChevronDown
                       size={12}
@@ -277,7 +294,7 @@ export function Navbar() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 rounded-none text-xs font-bold uppercase tracking-wide"
+                      className="h-8 rounded-none text-xs font-bold uppercase"
                     >
                       Masuk
                     </Button>
@@ -285,7 +302,7 @@ export function Navbar() {
                   <Link href="/register">
                     <Button
                       size="sm"
-                      className="h-8 rounded-none text-xs font-bold uppercase tracking-wide bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black"
+                      className="h-8 rounded-none text-xs font-bold uppercase bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black"
                     >
                       Daftar
                     </Button>
@@ -336,7 +353,7 @@ export function Navbar() {
           <aside className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-background border-r border-border flex flex-col lg:hidden">
             {/* Header drawer */}
             <div className="flex items-center justify-between h-14 px-4 border-b border-border shrink-0">
-              <span className="font-black text-base uppercase tracking-tight">
+              <span className="font-black text-base uppercase">
                 Menu
               </span>
               <button
@@ -410,13 +427,13 @@ export function Navbar() {
                   <Link href="/login" className="block">
                     <Button
                       variant="outline"
-                      className="w-full rounded-none font-bold uppercase tracking-wide text-xs"
+                      className="w-full rounded-none font-bold uppercase text-xs"
                     >
                       Masuk
                     </Button>
                   </Link>
                   <Link href="/register" className="block">
-                    <Button className="w-full rounded-none font-bold uppercase tracking-wide text-xs">
+                    <Button className="w-full rounded-none font-bold uppercase text-xs">
                       Daftar
                     </Button>
                   </Link>
@@ -427,7 +444,7 @@ export function Navbar() {
             {/* Theme toggle di drawer */}
             <div className="border-t border-border p-4 shrink-0">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <span className="text-xs font-bold uppercase text-muted-foreground">
                   Tema
                 </span>
                 <ThemeToggle variant="full" />

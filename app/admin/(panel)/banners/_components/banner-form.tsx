@@ -28,7 +28,7 @@ type BannerFormProps = {
 };
 
 const labelClass =
-  "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  "text-[11px] font-semibold uppercase text-muted-foreground";
 
 function FormSection({
   title,
@@ -165,7 +165,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
               ) : (
                 <ImagePlus size={24} />
               )}
-              <span className="text-xs font-semibold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase">
                 {uploading ? "Mengupload..." : "Upload gambar banner"}
               </span>
               <span className="text-center text-[12px] leading-snug text-muted-foreground">
@@ -274,7 +274,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
                 type="button"
                 onClick={() => setIsActive((v) => !v)}
                 className={cn(
-                  "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                  "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
                   isActive
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                     : "bg-muted text-muted-foreground",
@@ -291,7 +291,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
         <button
           type="submit"
           disabled={isPending || uploading}
-          className="h-11 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+          className="h-11 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : initialData ? "Perbarui Banner" : "Buat Banner"}
         </button>
@@ -299,7 +299,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
           type="button"
           onClick={() => router.push(backHref)}
           disabled={isPending}
-          className="h-11 rounded-full border border-brand bg-transparent px-5 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/10 disabled:opacity-50 active:scale-[0.98]"
+          className="h-11 rounded-full border border-brand bg-transparent px-5 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/10 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
         </button>

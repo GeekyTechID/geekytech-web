@@ -52,7 +52,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
         .toUpperCase()
     : "?";
 
-  const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+  const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -67,7 +67,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Pengguna</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">
             {profile.full_name ?? (
               <span className="italic text-muted-foreground">Belum diisi</span>
             )}
@@ -77,7 +77,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
             {lastSignIn ? ` · Login terakhir ${formatRelativeDate(lastSignIn)}` : ""}
           </p>
         </div>
-        <span className="inline-flex shrink-0 items-center rounded-full border border-[#e0e0e0] px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground dark:border-border">
+        <span className="inline-flex shrink-0 items-center rounded-full border border-[#e0e0e0] px-3 py-1.5 text-xs font-semibold uppercase text-muted-foreground dark:border-border">
           {profile.role}
         </span>
       </div>
@@ -155,7 +155,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
                     <div className="flex shrink-0 items-center gap-3">
                       <span
                         className={cn(
-                          "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                          "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                           adminOrderStatusBadgeClass(order.status),
                         )}
                       >
@@ -169,7 +169,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
             ) : (
               <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
                 <ShoppingBag size={28} strokeWidth={1} />
-                <p className="text-xs font-semibold uppercase tracking-widest">Belum ada pesanan</p>
+                <p className="text-xs font-semibold uppercase">Belum ada pesanan</p>
               </div>
             )}
           </div>
@@ -188,7 +188,7 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-semibold">{addr.recipient}</p>
                       {addr.is_default ? (
-                        <span className="shrink-0 rounded-md border border-[#e0e0e0] px-1.5 py-0 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground dark:border-border">
+                        <span className="shrink-0 rounded-md border border-[#e0e0e0] px-1.5 py-0 text-[9px] font-semibold uppercase text-muted-foreground dark:border-border">
                           Utama
                         </span>
                       ) : null}
@@ -249,7 +249,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="px-4 py-4 text-center">
       <p className="text-lg font-semibold">{value}</p>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground">{label}</p>
     </div>
   );
 }

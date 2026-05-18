@@ -108,7 +108,7 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
               type="button"
               onClick={() => updateParam("status", value === "all" ? "" : value)}
               className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
                 i > 0 ? "border-l" : "",
                 (value === "all" ? status === "all" : status === value)
                   ? "bg-brand/10 text-brand"
@@ -127,7 +127,7 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
               type="button"
               onClick={() => updateParam("condition", value === "all" ? "" : value)}
               className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
                 i > 0 ? "border-l" : "",
                 (value === "all" ? condition === "all" : condition === value)
                   ? "bg-brand/10 text-brand"
@@ -185,7 +185,7 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
           <button
             type="button"
             onClick={clearAll}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
           >
             <X size={12} />
             Reset

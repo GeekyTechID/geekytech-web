@@ -229,7 +229,7 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div>
         <p className="text-swiss-eyebrow">Overview</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Dashboard
         </h1>
       </div>
@@ -324,7 +324,7 @@ export default async function AdminDashboardPage() {
       {lowStockVariants.length > 0 && (
         <div className="admin-utility-card">
           <div className="admin-utility-card-header">
-            <h2 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <AlertTriangle size={14} className="text-brand" />
               Stok hampir habis
             </h2>
@@ -388,7 +388,7 @@ export default async function AdminDashboardPage() {
                 {["No. Order", "Pembeli", "Status", "Total", "Tanggal"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase text-muted-foreground"
                   >
                     {h}
                   </th>
@@ -596,7 +596,7 @@ function StatCard({
       <div className="flex items-center justify-between">
         <p
           className={cn(
-            "text-[11px] font-semibold uppercase tracking-widest",
+            "text-[11px] font-semibold uppercase",
             accent ? "text-white/85" : "text-muted-foreground",
           )}
         >
@@ -608,7 +608,7 @@ function StatCard({
           strokeWidth={1.5}
         />
       </div>
-      <p className="text-3xl font-semibold tracking-tight leading-none">{value}</p>
+      <p className="text-3xl font-semibold leading-none">{value}</p>
       <p className={cn("truncate text-xs leading-relaxed", accent ? "text-white/75" : "text-muted-foreground")}>
         {sub}
       </p>

@@ -7,6 +7,7 @@ import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import type { HomeShelfProduct } from "@/lib/data/home-storefront";
+import { AddToCartButton } from "@/components/store/add-to-cart-button";
 
 type HomeProductTileProps = {
   product: HomeShelfProduct;
@@ -69,12 +70,7 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
           <span className="text-neutral-300 dark:text-border">·</span>
           <span>{product.soldCount} terjual</span>
         </div>
-        <Link
-          href={`${href}?variant=${encodeURIComponent(product.variantId)}`}
-          className="mt-1 inline-flex w-full items-center justify-center rounded-full border border-brand py-2 text-center text-xs font-bold text-brand transition hover:bg-brand hover:text-white"
-        >
-          + Keranjang
-        </Link>
+        <AddToCartButton variantId={product.variantId} />
       </div>
     </article>
   );

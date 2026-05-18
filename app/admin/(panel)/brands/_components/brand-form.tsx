@@ -52,7 +52,7 @@ interface BrandFormProps {
   };
 }
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
   const router = useRouter();
@@ -251,7 +251,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
               {uploading ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
-              <span className="text-xs font-semibold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase">
                 {uploading ? "Mengupload..." : "Klik untuk upload logo"}
               </span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB</span>
@@ -308,7 +308,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
               {uploadingBanner ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
-              <span className="text-xs font-semibold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase">
                 {uploadingBanner ? "Mengupload..." : "Klik untuk upload banner utama"}
               </span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB — rasio 4:1</span>
@@ -365,7 +365,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
               {uploadingBannerSecondary ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
-              <span className="text-xs font-semibold uppercase tracking-widest">
+              <span className="text-xs font-semibold uppercase">
                 {uploadingBannerSecondary ? "Mengupload..." : "Klik untuk upload banner kedua"}
               </span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB — rasio 3:1</span>
@@ -424,7 +424,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         <Button
           type="button"
           variant="outline"
-          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand hover:bg-brand/5 active:scale-[0.98]"
+          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
           onClick={() => router.push("/admin/brands")}
           disabled={isLoading}
         >
@@ -432,7 +432,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         </Button>
         <Button
           type="submit"
-          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white hover:bg-brand-hover active:scale-[0.98]"
+          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white hover:bg-brand-hover active:scale-[0.98]"
           disabled={isLoading}
         >
           {isLoading

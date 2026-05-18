@@ -34,7 +34,7 @@ export default async function AdminSettingsPaymentPage() {
         </Link>
         <div>
           <p className="text-swiss-eyebrow">Toko</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Pembayaran</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Pembayaran</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Batas waktu dan perilaku pembayaran.</p>
         </div>
       </div>

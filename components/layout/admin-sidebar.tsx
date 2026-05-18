@@ -120,7 +120,7 @@ function CollapsibleGroup({
         onClick={() => setOpen((v) => !v)}
         className="mb-1.5 flex w-full items-center justify-between px-2 group"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+        <span className="text-[10px] font-semibold uppercase text-muted-foreground group-hover:text-foreground transition-colors">
           {group.label}
         </span>
         <ChevronDown
@@ -220,7 +220,7 @@ export function AdminSidebar() {
             <CollapsibleGroup key={group.label} group={group} isActive={isActive} />
           ) : (
             <div key={group.label} className="mb-5">
-              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase text-muted-foreground">
                 {group.label}
               </p>
               <ul className="space-y-0.5">

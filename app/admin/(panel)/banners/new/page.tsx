@@ -28,7 +28,7 @@ export default async function AdminBannerNewPage({
           Kembali
         </Link>
         <p className="text-swiss-eyebrow">Konten</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Tambah Banner
         </h1>
       </div>

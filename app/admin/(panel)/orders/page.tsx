@@ -49,7 +49,7 @@ export default async function AdminOrdersPage({
     <div className="w-full space-y-8 p-6 lg:p-8">
       <div>
         <p className="text-swiss-eyebrow">Transaksi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Pesanan</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Pesanan</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
           {count ?? 0} pesanan{q ? ` untuk "${q}"` : ""}
           {status ? ` · filter: ${status.replace("_", " ")}` : ""}

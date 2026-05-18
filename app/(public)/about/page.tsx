@@ -44,12 +44,12 @@ export default function AboutPage() {
       <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white dark:bg-background">
         <div className="mx-auto max-w-[980px]">
           <p
-            className="text-[14px] font-semibold tracking-[-0.224px] text-[#EA5329] mb-4"
+            className="text-[14px] font-semibold text-[#EA5329] mb-4"
           >
             Tentang Kami
           </p>
           <h1
-            className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] tracking-[-0.28px] text-[#1d1d1f] dark:text-white mb-6"
+            className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6"
           >
             Gadget terbaik,<br className="hidden sm:block" /> di tangan yang tepat.
           </h1>
@@ -65,18 +65,18 @@ export default function AboutPage() {
       <section className="w-full px-6 py-[80px] bg-[#272729]">
         <div className="mx-auto max-w-[980px] grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#FFAD88] mb-4">
+            <p className="text-[14px] font-semibold text-[#FFAD88] mb-4">
               Cerita Kami
             </p>
             <h2
-              className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-white mb-6"
+              className="text-[34px] font-semibold leading-[1.1] text-white mb-6"
             >
               Berawal dari passion,<br /> berkembang bersama kepercayaan.
             </h2>
-            <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#cccccc] mb-4">
+            <p className="text-[17px] font-normal leading-[1.47] text-[#cccccc] mb-4">
               GeekyTech dimulai dari kecintaan mendalam terhadap teknologi dan keinginan untuk berbagi akses ke gadget terbaik dengan harga yang adil. Kami memulai perjalanan di Tokopedia dan membangun kepercayaan satu per satu bersama pelanggan kami.
             </p>
-            <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#cccccc]">
+            <p className="text-[17px] font-normal leading-[1.47] text-[#cccccc]">
               Kini, dengan lebih dari 23.000 transaksi yang telah diselesaikan, kami hadir dengan platform sendiri untuk memberikan pengalaman belanja yang lebih baik — lebih cepat, lebih personal, dan lebih terpercaya.
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function AboutPage() {
                 <p className="text-[40px] font-semibold leading-[1.1] text-white mb-2">
                   {stat.value}
                 </p>
-                <p className="text-[14px] font-normal tracking-[-0.224px] text-[#cccccc]">
+                <p className="text-[14px] font-normal text-[#cccccc]">
                   {stat.label}
                 </p>
               </div>
@@ -104,11 +104,11 @@ export default function AboutPage() {
       <section className="w-full px-6 py-[80px] bg-[#f5f5f7] dark:bg-[#1a1a1a]">
         <div className="mx-auto max-w-[980px]">
           <div className="text-center mb-12">
-            <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#EA5329] mb-4">
+            <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
               Nilai Kami
             </p>
             <h2
-              className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-[#1d1d1f] dark:text-white"
+              className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white"
             >
               Mengapa memilih GeekyTech?
             </h2>
@@ -120,10 +120,10 @@ export default function AboutPage() {
                 key={value.title}
                 className="bg-white dark:bg-[#272729] rounded-[18px] border border-[#e0e0e0] dark:border-[#3a3a3a] p-6"
               >
-                <h3 className="text-[17px] font-semibold leading-[1.24] tracking-[-0.374px] text-[#1d1d1f] dark:text-white mb-3">
+                <h3 className="text-[17px] font-semibold leading-[1.24] text-[#1d1d1f] dark:text-white mb-3">
                   {value.title}
                 </h3>
-                <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#7a7a7a] dark:text-[#cccccc]">
+                <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc]">
                   {value.description}
                 </p>
               </div>
@@ -135,11 +135,11 @@ export default function AboutPage() {
       {/* Mission — dark tile */}
       <section className="w-full px-6 py-[80px] bg-[#252527] text-center">
         <div className="mx-auto max-w-[680px]">
-          <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#FFAD88] mb-4">
+          <p className="text-[14px] font-semibold text-[#FFAD88] mb-4">
             Misi Kami
           </p>
           <h2
-            className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-white mb-6"
+            className="text-[34px] font-semibold leading-[1.1] text-white mb-6"
           >
             Mendekatkan teknologi ke semua orang.
           </h2>
@@ -163,13 +163,13 @@ export default function AboutPage() {
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/products"
-              className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] tracking-[-0.374px] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
+              className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
             >
               Lihat Semua Produk
             </Link>
             <Link
               href="/contact"
-              className="inline-block border border-[#EA5329] text-[#EA5329] text-[17px] font-normal leading-[1.47] tracking-[-0.374px] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
+              className="inline-block border border-[#EA5329] text-[#EA5329] text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
             >
               Hubungi Kami
             </Link>

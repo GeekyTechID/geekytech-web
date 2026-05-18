@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { saveSetting } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 const saveClass =
-  "h-10 shrink-0 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+  "h-10 shrink-0 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
 
 interface WhatsappFormProps {
   initialValue: string;

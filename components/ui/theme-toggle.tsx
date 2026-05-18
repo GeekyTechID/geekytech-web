@@ -33,7 +33,10 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
       <Button
         variant="ghost"
         size="icon"
-        className={cn("size-8 rounded-none", className)}
+        className={cn(
+          "size-8 rounded-full transition-colors hover:bg-black/[0.04] dark:hover:bg-white/10",
+          className,
+        )}
         aria-label="Ganti tema"
       >
         <span className="size-4" />
@@ -54,7 +57,7 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
     return (
       <div
         className={cn(
-          "inline-flex border border-border rounded-none overflow-hidden",
+          "inline-flex border border-border rounded overflow-hidden",
           className,
         )}
         role="group"
@@ -65,7 +68,7 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
             key={value}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-swiss",
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase transition-swiss",
               "border-r border-border last:border-r-0",
               theme === value
                 ? "bg-swiss-black text-swiss-white"
@@ -87,7 +90,10 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
       variant="ghost"
       size="icon"
       onClick={cycleTheme}
-      className={cn("size-8 rounded-none", className)}
+      className={cn(
+        "size-8 rounded-full text-neutral-600 transition-colors hover:bg-black/[0.04] hover:text-[#1d1d1f] dark:text-muted-foreground dark:hover:bg-white/10 dark:hover:text-foreground",
+        className,
+      )}
       aria-label={`Tema sekarang: ${currentTheme.label}. Klik untuk ganti.`}
       title={`Tema: ${currentTheme.label}`}
     >

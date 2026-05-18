@@ -41,7 +41,7 @@ export default async function SecondProductsEditPage({ params }: { params: Param
 
       <div>
         <p className="text-swiss-eyebrow">Promosi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">{promo.title}</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">{promo.title}</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Template: Produk Second Terbaik</p>
       </div>
 

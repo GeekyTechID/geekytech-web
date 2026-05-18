@@ -48,7 +48,7 @@ export function ProductCard({ product, onWishlist, isWishlisted = false, classNa
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">No Image</span>
+            <span className="text-xs uppercase text-muted-foreground">No Image</span>
           </div>
         )}
 

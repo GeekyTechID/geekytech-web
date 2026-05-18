@@ -5,9 +5,10 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { createClient } from "@/lib/supabase/server";
-import { fetchUserOrders, ORDERS_PER_PAGE } from "@/lib/data/dashboard-user";
+import { fetchUserOrders, ORDERS_PER_PAGE, type OrderSortOption } from "@/lib/data/dashboard-user";
 import { ORDER_STATUS_FILTER_OPTIONS, orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
 import { formatDate, formatRupiah } from "@/lib/format";
+import { fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { DashboardOrdersFilters } from "@/components/dashboard/dashboard-orders-filters";
 import { DashboardOrdersPagination } from "@/components/dashboard/dashboard-orders-pagination";
 
@@ -43,12 +44,15 @@ function statusBadgeClass(status: OrderStatus): string {
 export default async function DashboardOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; page?: string; category?: string; sort?: string }>;
 }) {
-  const { status: statusRaw, q: qRaw, page: pageRaw } = await searchParams;
+  const { status: statusRaw, q: qRaw, page: pageRaw, category: categoryRaw, sort: sortRaw } = await searchParams;
   const statusFilter = parseStatusFilter(statusRaw);
   const search = qRaw?.trim() ?? "";
   const page = Math.max(1, parseInt(pageRaw ?? "1", 10) || 1);
+  const categoryId = categoryRaw?.trim() || undefined;
+  const VALID_SORTS: OrderSortOption[] = ["newest", "oldest", "total_desc", "total_asc"];
+  const sort: OrderSortOption = VALID_SORTS.includes(sortRaw as OrderSortOption) ? (sortRaw as OrderSortOption) : "newest";
 
   const supabase = await createClient();
   const {
@@ -56,15 +60,18 @@ export default async function DashboardOrdersPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/dashboard/orders");
 
-  const { orders, total } = await fetchUserOrders(user.id, statusFilter, search, page - 1);
+  const [{ orders, total }, categories] = await Promise.all([
+    fetchUserOrders(user.id, statusFilter, search, page - 1, categoryId, sort),
+    fetchStoreHeaderCategories().catch(() => []),
+  ]);
 
   return (
     <div className="w-full">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7a7a7a]">Transaksi</p>
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1d1d1f] sm:text-3xl">Pesanan</h1>
+      <p className="text-[10px] font-bold uppercase text-[#7a7a7a]">Transaksi</p>
+      <h1 className="mt-2 text-2xl font-bold text-[#1d1d1f] sm:text-3xl">Pesanan</h1>
 
       <Suspense fallback={<div className="mt-6 h-10 w-full max-w-[14rem] animate-pulse rounded-lg bg-[#e8e8ed]" />}>
-        <DashboardOrdersFilters />
+        <DashboardOrdersFilters categories={categories} sort={sort} />
       </Suspense>
 
       {orders.length === 0 ? (
@@ -83,7 +90,7 @@ export default async function DashboardOrdersPage({
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3 border-b border-[#f0f0f0] px-4 py-2.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="shrink-0 text-[11px] font-bold uppercase tracking-wider text-[#7a7a7a]">
+                    <span className="shrink-0 text-[11px] font-bold uppercase text-[#7a7a7a]">
                       ID Transaksi
                     </span>
                     <span className="truncate font-mono text-[12px] font-semibold text-[#1d1d1f]">

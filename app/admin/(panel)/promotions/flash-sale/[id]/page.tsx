@@ -107,14 +107,14 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Promosi</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">{sale.name}</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">{sale.name}</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             {formatDate(sale.starts_at)} — {formatDate(sale.ends_at)}
           </p>
         </div>
         <span
           className={cn(
-            "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest",
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold uppercase",
             statusInfo.className,
           )}
         >

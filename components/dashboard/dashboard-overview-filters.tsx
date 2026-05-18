@@ -25,7 +25,7 @@ export function DashboardOverviewFilters({ categories, className }: DashboardOve
       )}
     >
       <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto sm:min-w-[10.5rem]">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">Status pesanan</span>
+        <span className="text-xs font-semibold uppercase text-[#7a7a7a]">Status pesanan</span>
         <label className="sr-only" htmlFor="overview-order-status">
           Status pesanan
         </label>
@@ -48,7 +48,7 @@ export function DashboardOverviewFilters({ categories, className }: DashboardOve
 
       {categories.length > 0 ? (
         <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto sm:min-w-[10.5rem]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">Kategori produk</span>
+          <span className="text-xs font-semibold uppercase text-[#7a7a7a]">Kategori produk</span>
           <label className="sr-only" htmlFor="overview-category">
             Kategori produk
           </label>

@@ -112,7 +112,7 @@ export function Footer() {
           {/* Links */}
           {Object.entries(FOOTER_LINKS).map(([group, links]) => (
             <div key={group}>
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-4">
+              <h3 className="text-xs font-bold uppercase mb-4">
                 {group}
               </h3>
               <ul className="space-y-2.5">
@@ -139,7 +139,7 @@ export function Footer() {
             &copy; {year} GeekyTech. Semua hak dilindungi.
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground">
               Metode Pembayaran
             </span>
             {["BCA", "BNI", "Mandiri", "GoPay", "OVO", "DANA"].map((m) => (

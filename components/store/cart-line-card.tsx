@@ -80,7 +80,7 @@ export function CartLineCard({ line }: { line: CartLineView }) {
           {currentImg?.url ? (
             <Image src={currentImg.url} alt={currentImg.alt ?? line.productName} fill className="object-contain p-2" sizes="200px" />
           ) : (
-            <div className="flex h-full items-center justify-center p-2 text-center text-[10px] font-semibold uppercase tracking-widest text-[#9a9590]">
+            <div className="flex h-full items-center justify-center p-2 text-center text-[10px] font-semibold uppercase text-[#9a9590]">
               Tanpa gambar
             </div>
           )}
@@ -113,7 +113,7 @@ export function CartLineCard({ line }: { line: CartLineView }) {
         <Link href={`/products/${line.slug}`} className="text-lg font-bold leading-snug text-[#1d1d1f] hover:text-[#EA5329]">
           {line.productName}
         </Link>
-        <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-[#9a9590]">{line.categoryLabel}</p>
+        <p className="mt-0.5 text-xs font-semibold uppercase text-[#9a9590]">{line.categoryLabel}</p>
         <p className="mt-1 text-sm font-medium text-[#5c5c5c]">{line.variantName}</p>
         {line.descriptionExcerpt ? (
           <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#5c5c5c]">{line.descriptionExcerpt}</p>

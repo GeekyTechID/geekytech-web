@@ -25,12 +25,12 @@ export default async function AdminCouponsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Pemasaran</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Kupon</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Kupon</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">{rows.length} kupon</p>
         </div>
         <Link
           href="/admin/coupons/new"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
         >
           <Plus size={14} strokeWidth={2} />
           Buat Kupon

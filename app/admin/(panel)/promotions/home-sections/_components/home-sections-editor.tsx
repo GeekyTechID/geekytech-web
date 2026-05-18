@@ -62,12 +62,12 @@ const SECTION_META: Record<HomeSectionKey, {
 };
 
 // ── Small helpers ─────────────────────────────────────────────────────────
-const labelClass = "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[10px] font-semibold uppercase text-muted-foreground";
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
     <span className={cn(
-      "inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+      "inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
       active
         ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
         : "bg-muted text-muted-foreground",
@@ -79,7 +79,7 @@ function StatusBadge({ active }: { active: boolean }) {
 
 function ThCell({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <th className={cn("px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground", className)}>
+    <th className={cn("px-4 py-2.5 text-left text-[10px] font-semibold uppercase text-muted-foreground", className)}>
       {children}
     </th>
   );
@@ -105,7 +105,7 @@ function GroupHeader({
   return (
     <div className="flex items-center gap-2.5 border-b border-[#e0e0e0] bg-muted/40 px-4 py-2.5 dark:border-border">
       <Icon size={13} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground">
+      <span className="text-[11px] font-semibold uppercase text-foreground">
         {label}
       </span>
       <span className="ml-auto text-[10px] text-muted-foreground">{count} item</span>
@@ -192,7 +192,7 @@ export function HomeSectionsEditor({
         type="button"
         onClick={() => assignItem(sectionKey, itemId)}
         className={cn(
-          "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[10px] font-semibold uppercase tracking-widest transition-colors",
+          "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[10px] font-semibold uppercase transition-colors",
           selected
             ? "bg-brand text-white hover:bg-brand-hover"
             : "border border-[#e0e0e0] text-muted-foreground hover:border-brand/40 hover:text-brand dark:border-border",
@@ -553,7 +553,7 @@ export function HomeSectionsEditor({
                         type="button"
                         onClick={() => toggleActive(section.key)}
                         className={cn(
-                          "h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+                          "h-8 rounded-full px-3 text-[11px] font-semibold uppercase transition-colors",
                           section.is_active
                             ? "bg-emerald-500/15 text-emerald-800 hover:bg-emerald-500/25 dark:text-emerald-400"
                             : "bg-muted text-muted-foreground hover:bg-muted/80",
@@ -575,7 +575,7 @@ export function HomeSectionsEditor({
         type="button"
         onClick={handleSave}
         disabled={isPending}
-        className="h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+        className="h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
       >
         {isPending ? "Menyimpan..." : "Simpan Perubahan"}
       </button>

@@ -74,14 +74,14 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
 
       {confirmDelete ? (
         <>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-destructive">
+          <span className="text-[10px] font-semibold uppercase text-destructive">
             Yakin hapus?
           </span>
           <button
             type="button"
             onClick={handleDelete}
             disabled={isPending}
-            className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
+            className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
           >
             {isPending ? "..." : "Ya, Hapus"}
           </button>
@@ -89,7 +89,7 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
             type="button"
             onClick={() => setConfirmDelete(false)}
             disabled={isPending}
-            className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
+            className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
           >
             Batal
           </button>
@@ -105,7 +105,7 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50",
+          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
           status.className,
         )}
       >
@@ -120,7 +120,7 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Zap size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada flash sale</p>
+        <p className="text-sm font-semibold uppercase">Belum ada flash sale</p>
       </div>
     );
   }
@@ -131,22 +131,22 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Nama
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                 Mulai
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                 Berakhir
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                 Produk
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Aksi
               </th>
             </tr>
@@ -180,7 +180,7 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
                   <td className="px-4 py-3">
                     <span
                       className={cn(
-                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                         status.className,
                       )}
                     >

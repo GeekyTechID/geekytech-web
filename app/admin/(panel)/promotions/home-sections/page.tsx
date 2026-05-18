@@ -134,7 +134,7 @@ export default async function HomeSectionsPage() {
     <div className="w-full space-y-8 p-6 lg:p-8">
       <div>
         <p className="text-swiss-eyebrow">Promosi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Tampilan Beranda
         </h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">

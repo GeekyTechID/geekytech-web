@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MoreHorizontal } from "lucide-react";
+import { Bell, ShoppingBag, Tag, Truck, CheckCircle, Info } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchDashboardOverview,
-  fetchProblemPaymentsForUser,
   fetchPaidAndShippedOrderCounts,
   fetchProcessingOrdersCount,
   fetchRecentOrdersListPreview,
   fetchUserProfile,
+  fetchActiveCouponsForStore,
+  fetchSpendingByMonth,
+  fetchPendingPaymentOrders,
+  fetchUserNotifications,
 } from "@/lib/data/dashboard-user";
-import { fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { formatDate, formatRupiah } from "@/lib/format";
-import { paymentStatusLabel } from "@/lib/constants/payment-status-labels";
 import { orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
-import { Button } from "@/components/ui/button";
-import { DashboardOverviewFilters } from "@/components/dashboard/dashboard-overview-filters";
 import { cn } from "@/lib/utils";
+import { SpendingChart } from "@/components/dashboard/spending-chart";
 
 export const metadata: Metadata = {
   title: "Ringkasan akun",
@@ -38,6 +38,48 @@ function statusBadgeClasses(status: OrderStatus): string {
   return "bg-[#f5f5f7] text-[#333333] ring-1 ring-[#e0e0e0]";
 }
 
+type NotifType = string | null;
+
+function notifIcon(type: NotifType) {
+  switch (type) {
+    case "order":
+    case "order_status":
+      return <ShoppingBag className="h-4 w-4" />;
+    case "shipping":
+    case "shipment":
+      return <Truck className="h-4 w-4" />;
+    case "promo":
+    case "voucher":
+    case "coupon":
+      return <Tag className="h-4 w-4" />;
+    case "completed":
+    case "review":
+      return <CheckCircle className="h-4 w-4" />;
+    default:
+      return <Bell className="h-4 w-4" />;
+  }
+}
+
+function notifIconBg(type: NotifType): string {
+  switch (type) {
+    case "order":
+    case "order_status":
+      return "bg-blue-50 text-blue-600";
+    case "shipping":
+    case "shipment":
+      return "bg-[#FFF0E8] text-[#EA5329]";
+    case "promo":
+    case "voucher":
+    case "coupon":
+      return "bg-green-50 text-green-600";
+    case "completed":
+    case "review":
+      return "bg-purple-50 text-purple-600";
+    default:
+      return "bg-[#f5f5f7] text-[#5c5c5c]";
+  }
+}
+
 export default async function DashboardOverviewPage() {
   const supabase = await createClient();
   const {
@@ -45,15 +87,17 @@ export default async function DashboardOverviewPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/dashboard");
 
-  const [overview, problems, processingCount, paidShippedCounts, recentOrders, profile, categories] =
+  const [overview, processingCount, paidShippedCounts, recentOrders, profile, coupons, spending, pendingOrders, notifications] =
     await Promise.all([
       fetchDashboardOverview(user.id),
-      fetchProblemPaymentsForUser(user.id, 10),
       fetchProcessingOrdersCount(user.id),
       fetchPaidAndShippedOrderCounts(user.id),
-      fetchRecentOrdersListPreview(user.id, 6),
+      fetchRecentOrdersListPreview(user.id, 5),
       fetchUserProfile(user.id),
-      fetchStoreHeaderCategories(),
+      fetchActiveCouponsForStore(),
+      fetchSpendingByMonth(user.id, 12),
+      fetchPendingPaymentOrders(user.id, 5),
+      fetchUserNotifications(user.id, 5),
     ]);
 
   const firstName =
@@ -61,85 +105,161 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div className="w-full">
-      <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.01em] text-[#1d1d1f] sm:text-[32px]">
+      <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f] sm:text-[32px]">
         Hi, {firstName}! Selamat datang kembali.
       </h1>
-      <p className="mt-2 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#5c5c5c]">
+      <p className="mt-2 text-[17px] leading-[1.47] text-[#5c5c5c]">
         Ringkasan pesanan dan aktivitas akun Anda.
       </p>
 
-      <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Link
-          href="/dashboard/orders"
-          className="group relative overflow-hidden rounded-2xl bg-[#272729] p-10 text-white ring-1 ring-black/5 transition active:scale-[0.99]"
-        >
-          <p className="text-[14px] font-semibold uppercase text-white/80">Total pesanan</p>
-          <p className="mt-2 text-5xl font-semibold tabular-nums tracking-tight">{overview.orderCount}</p>
-          <p className="mt-2 text-[12px] leading-snug text-white/80">Semua waktu</p>
-        </Link>
-
-        <Link
-          href="/dashboard/orders"
-          className="group relative overflow-hidden rounded-2xl bg-[#2a2a2c] p-10 text-white ring-1 ring-black/5 transition active:scale-[0.99]"
-        >
-          <p className="text-[14px] font-semibold uppercase text-white/80">Sedang diproses</p>
-          <p className="mt-2 text-5xl font-semibold tabular-nums tracking-tight">{processingCount}</p>
-          <p className="mt-2 text-[12px] leading-snug text-white/80">Dibayar, diproses, atau dikirim</p>
-        </Link>
-
-        <Link
-          href="/dashboard/orders?status=paid"
-          className="group relative overflow-hidden rounded-2xl bg-[#272729] p-10 text-white ring-1 ring-black/5 transition active:scale-[0.99]"
-        >
-          <p className="text-[14px] font-semibold uppercase text-white/80">Pembayaran</p>
-          <p className="mt-2 text-5xl font-semibold tabular-nums tracking-tight">{paidShippedCounts.paid}</p>
-          <p className="mt-2 text-[12px] leading-snug text-white/80">Pesanan berstatus dibayar</p>
-        </Link>
-
-        <Link
-          href="/dashboard/orders?status=shipped"
-          className="group relative overflow-hidden rounded-2xl bg-[#2a2a2c] p-10 text-white ring-1 ring-black/5 transition active:scale-[0.99]"
-        >
-          <p className="text-[14px] font-semibold uppercase text-white/80">Pengiriman</p>
-          <p className="mt-2 text-5xl font-semibold tabular-nums tracking-tight">{paidShippedCounts.shipped}</p>
-          <p className="mt-2 text-[12px] leading-snug text-white/80">Sedang dalam pengiriman</p>
-        </Link>
-
-        <Link
-          href="/dashboard/wishlist"
-          className="group relative overflow-hidden rounded-2xl bg-[#252527] p-10 text-white ring-1 ring-black/5 transition active:scale-[0.99] md:col-span-2 xl:col-span-1"
-        >
-          <p className="text-[14px] font-semibold uppercase text-white/80">Wishlist</p>
-          <p className="mt-2 text-5xl font-semibold tabular-nums tracking-tight">{overview.wishlistCount}</p>
-          <p className="mt-2 text-[12px] leading-snug text-white/80">Produk tersimpan</p>
-        </Link>
+      {/* Stats cards */}
+      <div className="mt-10 flex justify-between gap-3 overflow-hidden">
+        {[
+          { href: "/dashboard/orders",                 bg: "bg-[#272729]", label: "Total pesanan", value: overview.orderCount,        sub: "Semua waktu" },
+          { href: "/dashboard/orders",                 bg: "bg-[#2a2a2c]", label: "Diproses",      value: processingCount,            sub: "Dibayar, diproses, dikirim" },
+          { href: "/dashboard/orders?status=paid",     bg: "bg-[#272729]", label: "Pembayaran",    value: paidShippedCounts.paid,     sub: "Berstatus dibayar" },
+          { href: "/dashboard/orders?status=shipped",  bg: "bg-[#2a2a2c]", label: "Pengiriman",    value: paidShippedCounts.shipped,  sub: "Dalam pengiriman" },
+          { href: "/dashboard/wishlist",               bg: "bg-[#252527]", label: "Wishlist",       value: overview.wishlistCount,     sub: "Produk tersimpan" },
+        ].map((card) => (
+          <Link
+            key={card.label}
+            href={card.href}
+            className={`group relative min-w-0 flex-1 overflow-hidden rounded-2xl ${card.bg} p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-6`}
+          >
+            <p className="truncate text-[10px] font-semibold uppercase text-white/80 sm:text-[11px]">{card.label}</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums sm:text-3xl xl:text-4xl">{card.value}</p>
+            <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug text-white/70 sm:text-[11px]">{card.sub}</p>
+          </Link>
+        ))}
       </div>
 
-      <section className="mt-10 rounded-2xl border border-[#e0e0e0] bg-[#fafafa] p-5 sm:p-6">
-        <form
-          action="/search"
-          method="get"
-          className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-4 md:gap-5"
-        >
-          <div className="min-w-0 w-full flex-1">
-            <label htmlFor="dash-search" className="sr-only">
-              Cari produk
-            </label>
-            <input
-              id="dash-search"
-              name="q"
-              type="search"
-              placeholder="Cari produkmu di sini…"
-              className="h-12 w-full rounded-full border border-black/[0.08] bg-white px-5 text-[17px] leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] outline-none placeholder:text-[#7a7a7a] focus-visible:ring-2 focus-visible:ring-[#FF7A52]"
-            />
-          </div>
-          <DashboardOverviewFilters categories={categories} />
-        </form>
-      </section>
+      {/* Pending payment alert — only shown when there are orders waiting */}
+      {pendingOrders.length > 0 && (
+        <section className="mt-8">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                <Info className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-amber-900">
+                  {pendingOrders.length === 1
+                    ? "1 pesanan menunggu pembayaran"
+                    : `${pendingOrders.length} pesanan menunggu pembayaran`}
+                </p>
+                <p className="mt-0.5 text-[12px] text-amber-700">
+                  Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/orders?status=pending_payment"
+                className="shrink-0 rounded-full bg-amber-600 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-amber-700 active:scale-[0.97]"
+              >
+                Lihat semua
+              </Link>
+            </div>
 
+            <ul className="mt-4 flex flex-col divide-y divide-amber-100">
+              {pendingOrders.map((o) => (
+                <li key={o.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                  {/* Thumbnail */}
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-amber-200 bg-white">
+                    {o.previewImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={o.previewImage} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <ShoppingBag className="h-4 w-4 text-amber-300" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-mono text-[12px] font-semibold text-amber-900">{o.order_number}</p>
+                    {o.previewName && (
+                      <p className="truncate text-[11px] text-amber-700">{o.previewName}</p>
+                    )}
+                  </div>
+                  {/* Total + CTA */}
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    <p className="text-[12px] font-semibold tabular-nums text-amber-900">{formatRupiah(o.total)}</p>
+                    <Link
+                      href={`/dashboard/orders/${o.id}`}
+                      className="rounded-full bg-amber-600 px-2.5 py-0.5 text-[11px] font-semibold text-white transition hover:bg-amber-700"
+                    >
+                      Bayar
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* Spending chart */}
+      <SpendingChart data12={spending} />
+
+      {/* Notifications highlights */}
+      {notifications.length > 0 && (
+        <section className="mt-10">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">Notifikasi</h2>
+            <Link
+              href="/dashboard/notifications"
+              className="text-[14px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
+            >
+              Lihat semua
+            </Link>
+          </div>
+          <ul className="mt-4 flex flex-col gap-2">
+            {notifications.map((n) => (
+              <li
+                key={n.id}
+                className={cn(
+                  "flex items-start gap-3 rounded-2xl border px-4 py-3",
+                  n.is_read
+                    ? "border-[#e0e0e0] bg-white"
+                    : "border-[#EA5329]/20 bg-[#FFF8F5]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                    notifIconBg(n.type),
+                  )}
+                >
+                  {notifIcon(n.type)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={cn(
+                      "text-[13px] font-semibold leading-snug",
+                      n.is_read ? "text-[#1d1d1f]" : "text-[#1d1d1f]",
+                    )}
+                  >
+                    {n.title}
+                  </p>
+                  {n.body && (
+                    <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-[#5c5c5c]">{n.body}</p>
+                  )}
+                  <p className="mt-1 text-[11px] text-[#aaa]">
+                    {formatDate(n.created_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                {!n.is_read && (
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#EA5329]" />
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Recent orders */}
       <section className="mt-12">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-[21px] font-semibold leading-[1.19] tracking-[0.01em] text-[#1d1d1f]">
+          <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">
             Pesanan terakhir
           </h2>
           <Link
@@ -153,77 +273,59 @@ export default async function DashboardOverviewPage() {
         {recentOrders.length === 0 ? (
           <p className="mt-6 text-[17px] leading-[1.47] text-[#5c5c5c]">Belum ada pesanan.</p>
         ) : (
-          <ul className="mt-6 flex flex-col gap-4">
+          <ul className="mt-6 flex flex-col divide-y divide-[#f0f0f0] overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white">
             {recentOrders.map((o) => (
-              <li
-                key={o.id}
-                className="flex flex-col gap-4 rounded-2xl border border-[#e0e0e0] bg-white p-4 sm:flex-row sm:items-stretch sm:gap-5 sm:p-5"
-              >
-                <div className="relative h-24 w-full shrink-0 overflow-hidden rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] sm:h-28 sm:w-28">
+              <li key={o.id} className="flex flex-row items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
+                {/* Thumbnail */}
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] sm:h-16 sm:w-16">
                   {o.previewImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- URL snapshot bisa eksternal
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={o.previewImage} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold uppercase tracking-widest text-[#7a7a7a]">
-                      Tanpa gambar
+                    <div className="flex h-full w-full items-center justify-center">
+                      <span className="text-[9px] font-semibold uppercase text-[#aaa]">No img</span>
                     </div>
                   )}
                 </div>
 
+                {/* Info */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="text-[13px] text-[#5c5c5c]">
-                        {formatDate(o.created_at, {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-[12px] font-semibold text-[#1d1d1f] sm:text-[13px]">
+                        {o.order_number}
                       </p>
-                      <p className="mt-1 font-mono text-[14px] font-semibold text-[#1d1d1f]">{o.order_number}</p>
+                      {o.previewName && (
+                        <p className="mt-0.5 truncate text-[12px] text-[#5c5c5c] sm:text-[13px]">
+                          {o.previewName}
+                        </p>
+                      )}
+                      <p className="mt-0.5 text-[11px] text-[#7a7a7a]">
+                        {formatDate(o.created_at, { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
                     </div>
                     <span
                       className={cn(
-                        "inline-flex shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                        "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase",
                         statusBadgeClasses(o.status),
                       )}
                     >
                       {orderStatusLabel(o.status)}
                     </span>
                   </div>
+                </div>
 
-                  {o.previewName ? (
-                    <p className="mt-3 text-[15px] font-semibold leading-snug text-[#1d1d1f]">{o.previewName}</p>
-                  ) : null}
-                  <p className="mt-1 text-[14px] text-[#5c5c5c]">
-                    {o.previewQty} × {formatRupiah(o.previewUnitPrice)}
+                {/* Total + CTA */}
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <p className="text-[13px] font-semibold tabular-nums text-[#1d1d1f] sm:text-[14px]">
+                    {formatRupiah(o.total)}
                   </p>
-                  <p className="mt-3 text-[12px] font-semibold uppercase tracking-wider text-[#7a7a7a]">
-                    Total transaksi
-                  </p>
-                  <p className="text-[17px] font-semibold tabular-nums text-[#1d1d1f]">{formatRupiah(o.total)}</p>
-
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <Link
-                      href={`/dashboard/orders/${o.id}`}
-                      className="text-[14px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
-                    >
-                      Lihat detail transaksi
-                    </Link>
-                    <Button
-                      asChild
-                      className="h-11 rounded-full border-0 bg-[#EA5329] px-6 text-[15px] font-normal text-white hover:bg-[#d44820] active:scale-95"
-                    >
-                      <Link href={`/dashboard/orders/${o.id}`}>Detail</Link>
-                    </Button>
-                    <Link
-                      href={`/dashboard/orders/${o.id}`}
-                      className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e0e0e0] text-[#1d1d1f] transition hover:bg-[#f5f5f7] sm:ml-0"
-                      aria-label="Menu pesanan"
-                    >
-                      <MoreHorizontal className="h-5 w-5" strokeWidth={2} />
-                    </Link>
-                  </div>
+                  <Link
+                    href={`/dashboard/orders/${o.id}`}
+                    className="rounded-full bg-[#1d1d1f] px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-[#3a3a3c] active:scale-[0.97] sm:text-[12px]"
+                  >
+                    Detail
+                  </Link>
                 </div>
               </li>
             ))}
@@ -231,51 +333,35 @@ export default async function DashboardOverviewPage() {
         )}
       </section>
 
-      <section className="mt-14 border-t border-[#e0e0e0] pt-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-[17px] font-semibold leading-[1.24] tracking-[-0.374px] text-[#1d1d1f]">
-              Riwayat pembayaran bermasalah
-            </h2>
-            <p className="mt-1 text-[14px] leading-[1.43] text-[#5c5c5c]">
-              Gagal, kedaluwarsa, atau dibatalkan oleh gateway.
-            </p>
-          </div>
-          <Button asChild variant="outline" className="w-fit rounded-full border-[#e0e0e0]">
-            <Link href="/dashboard/orders?status=pending_payment">Pesanan menunggu bayar</Link>
-          </Button>
+      {/* Active vouchers */}
+      <section className="mt-12">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">Voucher aktif</h2>
+          <Link
+            href="/dashboard/vouchers"
+            className="text-[14px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
+          >
+            Lihat semua
+          </Link>
         </div>
-        {problems.length === 0 ? (
-          <p className="mt-6 text-[17px] leading-[1.47] text-[#5c5c5c]">Belum ada riwayat pembayaran bermasalah.</p>
+        {coupons.length === 0 ? (
+          <p className="mt-6 text-[17px] leading-[1.47] text-[#5c5c5c]">Tidak ada promo aktif saat ini.</p>
         ) : (
-          <ul className="mt-6 divide-y divide-[#e0e0e0] rounded-2xl border border-[#e0e0e0] bg-white">
-            {problems.map((p) => (
-              <li
-                key={p.paymentId}
-                className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <Link
-                    href={`/dashboard/orders/${p.orderId}`}
-                    className="font-mono text-[14px] font-semibold text-[#1d1d1f] underline-offset-2 hover:underline"
-                  >
-                    {p.orderNumber}
-                  </Link>
-                  <p className="text-[12px] text-[#7a7a7a]">
-                    {formatDate(p.created_at, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {coupons.slice(0, 4).map((c) => (
+              <li key={c.id} className="flex items-center gap-4 rounded-2xl border border-[#e0e0e0] bg-white p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FFF0E8]">
+                  <Tag className="h-5 w-5 text-[#EA5329]" />
                 </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-[14px] font-semibold text-[#1d1d1f]">{formatRupiah(p.gross_amount)}</p>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-red-600">
-                    {paymentStatusLabel(p.status)}
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[15px] font-black text-[#EA5329]">{c.code}</p>
+                  <p className="mt-0.5 text-[13px] text-[#5c5c5c]">
+                    {c.type === "percentage" ? `Diskon ${c.value}%` : `Potongan Rp${c.value.toLocaleString("id-ID")}`}
+                    {c.min_purchase > 0 && ` · min. Rp${c.min_purchase.toLocaleString("id-ID")}`}
                   </p>
+                  {c.valid_until && (
+                    <p className="mt-0.5 text-[11px] text-[#7a7a7a]">s/d {formatDate(c.valid_until)}</p>
+                  )}
                 </div>
               </li>
             ))}

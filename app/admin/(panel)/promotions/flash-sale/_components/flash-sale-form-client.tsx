@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { createFlashSale, updateFlashSale, bulkAddFlashSaleProducts, createFlashSaleBannerInline, type FlashSaleFormData } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 const selectClass =
   "h-9 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand dark:border-border";
@@ -260,7 +260,7 @@ export function FlashSaleForm({
               type="button"
               onClick={() => setIsActive((v) => !v)}
               className={cn(
-                "flex h-10 w-full max-w-xs items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "flex h-10 w-full max-w-xs items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
                 isActive
                   ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                   : "bg-muted text-muted-foreground",
@@ -331,11 +331,11 @@ export function FlashSaleForm({
                 onChange={toggleAll}
                 className="h-4 w-4 rounded accent-brand"
               />
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                 {filteredProducts.length} produk ditemukan
               </span>
               {selectedProductIds.length > 0 && (
-                <span className="ml-auto text-[11px] font-semibold uppercase tracking-widest text-brand">
+                <span className="ml-auto text-[11px] font-semibold uppercase text-brand">
                   {selectedProductIds.length} dipilih
                 </span>
               )}
@@ -364,7 +364,7 @@ export function FlashSaleForm({
                           {product.name}
                         </p>
                         {product.condition === "second" && (
-                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-700 dark:text-amber-400">
                             second
                           </span>
                         )}
@@ -390,7 +390,7 @@ export function FlashSaleForm({
               {/* Header + global apply */}
               <div className="flex flex-col gap-3 border-b border-brand/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
+                  <p className="text-[11px] font-semibold uppercase text-brand">
                     Konfigurasi Diskon
                   </p>
                   <p className="mt-0.5 text-[12px] text-muted-foreground">
@@ -398,7 +398,7 @@ export function FlashSaleForm({
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                     Terapkan ke semua
                   </span>
                   <div className="flex items-center rounded-lg border border-[#e0e0e0] bg-background dark:border-border overflow-hidden">
@@ -417,7 +417,7 @@ export function FlashSaleForm({
                   <button
                     type="button"
                     onClick={applyGlobalDiscount}
-                    className="h-8 rounded-full bg-brand px-3 text-[11px] font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                    className="h-8 rounded-full bg-brand px-3 text-[11px] font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
                   >
                     Terapkan
                   </button>
@@ -434,7 +434,7 @@ export function FlashSaleForm({
                     <div key={pid}>
                       {/* Product header */}
                       <div className="bg-muted/30 px-4 py-2">
-                        <p className="truncate text-[11px] font-semibold uppercase tracking-widest text-foreground">
+                        <p className="truncate text-[11px] font-semibold uppercase text-foreground">
                           {product.name}
                         </p>
                       </div>
@@ -491,7 +491,7 @@ export function FlashSaleForm({
         <div className="space-y-3 border-t border-[#e0e0e0] pt-6 dark:border-border">
           <div className="flex items-center gap-2">
             <h2 className="admin-section-title">Banner Flash Sale</h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
               Opsional
             </span>
           </div>
@@ -524,7 +524,7 @@ export function FlashSaleForm({
                 <button
                   type="button"
                   onClick={() => bannerFileRef.current?.click()}
-                  className="h-7 rounded-full bg-white/90 px-3 text-[10px] font-semibold uppercase tracking-widest text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                  className="h-7 rounded-full bg-white/90 px-3 text-[10px] font-semibold uppercase text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
                 >
                   Ganti
                 </button>
@@ -548,7 +548,7 @@ export function FlashSaleForm({
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
             >
               <ImagePlus size={22} strokeWidth={1.5} />
-              <span className="text-xs font-semibold uppercase tracking-widest">Pilih gambar banner</span>
+              <span className="text-xs font-semibold uppercase">Pilih gambar banner</span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 1 MB</span>
             </button>
           )}
@@ -560,7 +560,7 @@ export function FlashSaleForm({
         <button
           type="submit"
           disabled={isPending}
-          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : initialData ? "Perbarui" : "Buat Flash Sale"}
         </button>
@@ -568,7 +568,7 @@ export function FlashSaleForm({
           type="button"
           onClick={() => router.push("/admin/promotions/flash-sale")}
           disabled={isPending}
-          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
+          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
         </button>

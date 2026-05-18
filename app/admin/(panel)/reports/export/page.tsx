@@ -64,12 +64,12 @@ export default function ExportPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Analitik</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Export Data</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Export Data</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Unduh data dalam format CSV</p>
         </div>
         <Link
           href="/admin/reports"
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-brand/40 px-5 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
+          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-brand/40 px-5 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
         >
           <ArrowLeft size={13} />
           Kembali
@@ -83,14 +83,14 @@ export default function ExportPage() {
               <Icon size={18} className="text-muted-foreground" />
             </div>
             <div className="flex-1 space-y-1">
-              <p className="text-sm font-semibold uppercase tracking-tight">{label}</p>
+              <p className="text-sm font-semibold uppercase">{label}</p>
               <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             </div>
             <button
               type="button"
               onClick={() => void handleDownload(type)}
               disabled={loading !== null}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
             >
               {loading === type ? (
                 <span className="inline-block h-3 w-3 animate-spin rounded-full border border-white/40 border-t-white" />

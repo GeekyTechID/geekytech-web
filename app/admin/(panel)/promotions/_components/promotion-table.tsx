@@ -61,7 +61,7 @@ function RowActions({ row, basePath }: { row: PromotionTableRow; basePath: strin
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50",
+          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
           row.is_active
             ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
             : "bg-muted text-muted-foreground",
@@ -77,7 +77,7 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
   if (rows.length === 0) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
-        <p className="text-sm font-semibold uppercase tracking-widest">{emptyLabel}</p>
+        <p className="text-sm font-semibold uppercase">{emptyLabel}</p>
       </div>
     );
   }
@@ -88,19 +88,19 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Judul
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                 Pilihan Produk
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                 Maks. Item
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Aksi
               </th>
             </tr>
@@ -132,7 +132,7 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
                 <td className="px-4 py-3">
                   <span
                     className={cn(
-                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                       row.is_active
                         ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                         : "bg-muted text-muted-foreground",

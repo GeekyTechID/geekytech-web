@@ -35,7 +35,7 @@ export default async function AdminFaqEditPage({ params }: PageProps) {
           Kelola FAQ
         </Link>
         <p className="text-swiss-eyebrow">Toko</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Edit FAQ</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Edit FAQ</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Perbarui pertanyaan atau jawaban.</p>
       </div>
 

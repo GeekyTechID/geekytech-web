@@ -29,7 +29,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
 };
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 export type ComplaintDetail = {
   id: string;
@@ -85,14 +85,14 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-swiss-eyebrow">Layanan</p>
-          <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Detail Komplain</h1>
+          <h1 className="text-[34px] font-semibold uppercase text-foreground">Detail Komplain</h1>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             Dibuat {formatDate(complaint.created_at)}
           </p>
         </div>
         <span
           className={cn(
-            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-widest",
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
             statusCfg.className,
           )}
         >
@@ -179,7 +179,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                 type="button"
                 onClick={handleSaveNote}
                 disabled={isPending}
-                className="h-10 rounded-full bg-brand px-5 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+                className="h-10 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
               >
                 Simpan Catatan
               </button>
@@ -220,7 +220,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                   type="button"
                   onClick={() => handleStatusUpdate("in_review")}
                   disabled={isPending}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
                 >
                   <Clock size={14} />
                   Mulai Tinjau
@@ -233,7 +233,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                     type="button"
                     onClick={() => handleStatusUpdate("resolved")}
                     disabled={isPending}
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <CheckCircle2 size={14} />
                     Tandai Selesai
@@ -242,7 +242,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                     type="button"
                     onClick={() => handleStatusUpdate("rejected")}
                     disabled={isPending}
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-destructive/40 text-xs font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 active:scale-[0.98]"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-destructive/40 text-xs font-semibold uppercase text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <XCircle size={14} />
                     Tolak Komplain
@@ -255,7 +255,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                   type="button"
                   onClick={() => handleStatusUpdate("open")}
                   disabled={isPending}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-brand/40 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-brand/40 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
                 >
                   Buka Kembali
                 </button>

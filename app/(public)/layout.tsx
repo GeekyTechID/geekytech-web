@@ -5,7 +5,9 @@ import { StoreFooter } from "@/components/store/store-footer";
 import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
 import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
+import { InitAuthStore } from "@/components/providers/init-auth-store";
 import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
+import { fetchUserProfile } from "@/lib/data/dashboard-user";
 
 async function getMaintenanceMode(): Promise<boolean> {
   try {
@@ -26,10 +28,14 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isMaintenance, categories, initialCartCount] = await Promise.all([
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const [isMaintenance, categories, initialCartCount, profile] = await Promise.all([
     getMaintenanceMode(),
     fetchStoreHeaderCategories().catch(() => []),
     fetchStoreHeaderCartCount().catch(() => 0),
+    user ? fetchUserProfile(user.id).catch(() => null) : Promise.resolve(null),
   ]);
 
   if (isMaintenance) {
@@ -38,6 +44,7 @@ export default async function PublicLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-background">
+      <InitAuthStore user={user} profile={profile} />
       <AnnouncementBarServer />
       <StoreHeader categories={categories} initialCartCount={initialCartCount} />
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">{children}</main>

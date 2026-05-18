@@ -44,7 +44,7 @@ interface FlashSaleProductsProps {
   availableVariants: VariantOption[];
 }
 
-const labelClass = "text-[11px] font-semibold uppercase tracking-widest text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: () => void }) {
   const [isPending, startTransition] = useTransition();
@@ -176,7 +176,7 @@ function AddProductForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+        className="inline-flex h-10 items-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
       >
         <Plus size={14} />
         Tambah Produk
@@ -262,7 +262,7 @@ function AddProductForm({
           type="button"
           onClick={handleAdd}
           disabled={isPending}
-          className="h-9 rounded-full bg-brand px-4 text-xs font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
+          className="h-9 rounded-full bg-brand px-4 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
         >
           {isPending ? "Menambahkan..." : "Tambahkan"}
         </button>
@@ -270,7 +270,7 @@ function AddProductForm({
           type="button"
           onClick={() => setOpen(false)}
           disabled={isPending}
-          className="h-9 rounded-full border border-brand/40 px-4 text-xs font-semibold uppercase tracking-widest text-brand transition-colors hover:bg-brand/5 disabled:opacity-50"
+          className="h-9 rounded-full border border-brand/40 px-4 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50"
         >
           Batal
         </button>
@@ -304,29 +304,29 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
       {products.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
           <Package size={28} strokeWidth={1} />
-          <p className="text-xs font-semibold uppercase tracking-widest">Belum ada produk</p>
+          <p className="text-xs font-semibold uppercase">Belum ada produk</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Produk / Variant
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Harga Normal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Harga Flash
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Diskon
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Kuota / Terjual
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -381,14 +381,14 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                         <div className="flex flex-wrap items-center gap-1.5">
                           {confirmDeleteId === product.id ? (
                             <>
-                              <span className="text-[10px] font-semibold uppercase tracking-widest text-destructive">
+                              <span className="text-[10px] font-semibold uppercase text-destructive">
                                 Yakin?
                               </span>
                               <button
                                 type="button"
                                 onClick={() => handleRemove(product.id)}
                                 disabled={isPending}
-                                className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase tracking-widest text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
+                                className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
                               >
                                 {isPending ? "..." : "Ya"}
                               </button>
@@ -396,7 +396,7 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                                 type="button"
                                 onClick={() => setConfirmDeleteId(null)}
                                 disabled={isPending}
-                                className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
+                                className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
                               >
                                 Batal
                               </button>

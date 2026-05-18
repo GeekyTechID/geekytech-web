@@ -64,7 +64,7 @@ export function CategoryFilters() {
             type="button"
             onClick={() => updateParam("status", value === "all" ? "" : value)}
             className={cn(
-              "h-11 border-r border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest transition-colors last:border-r-0 dark:border-border",
+              "h-11 border-r border-[#e0e0e0] px-4 text-xs font-semibold uppercase transition-colors last:border-r-0 dark:border-border",
               (value === "all" ? status === "all" : status === value)
                 ? "bg-brand/10 text-brand"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -79,7 +79,7 @@ export function CategoryFilters() {
         <button
           type="button"
           onClick={() => router.push(pathname)}
-          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
         >
           <X size={12} />
           Reset

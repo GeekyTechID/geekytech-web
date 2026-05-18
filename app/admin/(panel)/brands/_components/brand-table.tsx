@@ -80,7 +80,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <Building2 size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada merek</p>
+        <p className="text-sm font-semibold uppercase">Belum ada merek</p>
       </div>
     );
   }
@@ -92,19 +92,19 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Nama
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                   Slug
                 </th>
-                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                   Urutan
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -179,7 +179,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest dark:border-border">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
               {page} / {totalPages}
             </span>
             <button
@@ -198,7 +198,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm rounded-lg">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold tracking-tight">Hapus Merek?</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Hapus Merek?</DialogTitle>
             <DialogDescription>
               Merek{" "}
               <span className="font-semibold text-foreground">&quot;{deleteTarget?.name}&quot;</span>{" "}
@@ -208,14 +208,14 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
           <div className="mt-2 flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 rounded-full border-[#e0e0e0] text-xs font-semibold uppercase tracking-widest dark:border-border"
+              className="flex-1 rounded-full border-[#e0e0e0] text-xs font-semibold uppercase dark:border-border"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase tracking-widest text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
+              className="flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
               onClick={handleDelete}
               disabled={isPending}
             >

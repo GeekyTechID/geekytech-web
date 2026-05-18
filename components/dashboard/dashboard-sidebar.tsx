@@ -58,7 +58,7 @@ function NavLink({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "relative flex w-full min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium leading-snug tracking-[-0.02em] transition",
+        "relative flex w-full min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium leading-snug transition",
         active
           ? "bg-gradient-to-r from-transparant to-[#EA5329]/25 text-[#1d1d1f]"
           : "text-[#333333] hover:bg-white/50",
@@ -113,7 +113,7 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "flex h-full min-h-0 w-full flex-col bg-gradient-to-r from-transparent to-[#f5f0eb]",
+        "flex h-auto w-full flex-col bg-gradient-to-r from-transparent to-[#f5f0eb]",
         className,
       )}
     >
@@ -136,7 +136,7 @@ export function DashboardSidebar({
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold leading-tight tracking-[-0.12px] text-[#1d1d1f]">
+          <p className="truncate text-[15px] font-semibold leading-tight text-[#1d1d1f]">
             {displayName}
           </p>
           {user?.email ? (

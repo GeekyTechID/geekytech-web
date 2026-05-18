@@ -22,7 +22,7 @@ export default function AdminNewCouponPage() {
 
       <div>
         <p className="text-swiss-eyebrow">Pemasaran</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">Buat Kupon</h1>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Buat Kupon</h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Tambahkan kode diskon untuk pelanggan.</p>
       </div>
 

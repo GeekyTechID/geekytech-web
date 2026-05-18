@@ -27,7 +27,7 @@ export function WhatsAppButton({ className }: { className?: string }) {
       )}
     >
       <MessageCircle size={20} className="shrink-0" />
-      <span className="text-xs font-bold uppercase tracking-wide hidden sm:inline">
+      <span className="text-xs font-bold uppercase hidden sm:inline">
         Chat CS
       </span>
     </a>

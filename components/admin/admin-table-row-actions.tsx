@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 /** Dasar tombol/link aksi baris tabel admin — tipografi caption, radius utilitas 8px (design: rounded-sm). */
 export const adminTableRowActionBaseClass =
-  "inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-sm border px-3 text-sm font-normal leading-snug tracking-[-0.224px] transition-colors active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-sm border px-3 text-sm font-normal leading-snug transition-colors active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
 
 export function AdminTableEditLink({
   className,

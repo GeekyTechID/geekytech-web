@@ -79,7 +79,7 @@ export function ReviewFilters() {
               type="button"
               onClick={() => updateParam("status", value)}
               className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
                 i > 0 ? "border-l" : "",
                 status === value || (value === "all" && status === "all")
                   ? "bg-brand/10 text-brand"
@@ -98,7 +98,7 @@ export function ReviewFilters() {
               type="button"
               onClick={() => updateParam("rating", value)}
               className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase tracking-widest transition-colors dark:border-border",
+                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
                 i > 0 ? "border-l" : "",
                 rating === value
                   ? "bg-brand/10 text-brand"
@@ -114,7 +114,7 @@ export function ReviewFilters() {
           <button
             type="button"
             onClick={() => router.push(pathname)}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
           >
             <X size={12} />
             Reset

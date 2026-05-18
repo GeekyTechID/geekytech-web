@@ -64,10 +64,10 @@ export default function ResetPasswordPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-2">
-        <h1 className="text-[28px] font-semibold leading-[1.14] tracking-[0.007em] text-[#1d1d1f]">
+        <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
           Buat Kata Sandi Baru
         </h1>
-        <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.022em] text-[#1d1d1f]">
+        <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
           Pilih kata sandi yang kuat untuk melindungi akunmu.
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
         <div className="space-y-2">
           <Label
             htmlFor="password"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
           >
             Kata Sandi Baru
           </Label>
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
         <div className="space-y-2">
           <Label
             htmlFor="confirm_password"
-            className="text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#1d1d1f]"
+            className="text-[14px] font-normal leading-[1.43] text-[#1d1d1f]"
           >
             Konfirmasi Kata Sandi
           </Label>
@@ -137,7 +137,7 @@ export default function ResetPasswordPage() {
           )}
         </div>
 
-        <ul className="space-y-1.5 text-[14px] font-normal leading-[1.43] tracking-[-0.014em] text-[#7a7a7a]">
+        <ul className="space-y-1.5 text-[14px] font-normal leading-[1.43] text-[#7a7a7a]">
           <li className="flex items-center gap-2">
             <span className="inline-block h-1 w-1 rounded-full bg-[#7a7a7a]" />
             Minimal 8 karakter

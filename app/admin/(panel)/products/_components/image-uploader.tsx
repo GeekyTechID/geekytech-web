@@ -85,7 +85,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
         ) : (
           <ImagePlus size={24} />
         )}
-        <span className="text-xs font-semibold uppercase tracking-widest">
+        <span className="text-xs font-semibold uppercase">
           {uploading ? "Mengupload..." : "Klik atau drag foto produk"}
         </span>
         <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB</span>
@@ -110,7 +110,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
               <Image src={img.url} alt={img.alt_text || "Gambar produk"} fill sizes="120px" className="object-cover" />
 
               {img.is_primary ? (
-                <div className="absolute left-1 top-1 bg-brand px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
+                <div className="absolute left-1 top-1 bg-brand px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">
                   Utama
                 </div>
               ) : null}

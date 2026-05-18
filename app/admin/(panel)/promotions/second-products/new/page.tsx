@@ -25,7 +25,7 @@ export default async function SecondProductsNewPage() {
 
       <div>
         <p className="text-swiss-eyebrow">Promosi</p>
-        <h1 className="text-[34px] font-semibold uppercase tracking-[-0.02em] text-foreground">
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Buat Promosi Produk Second
         </h1>
         <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">

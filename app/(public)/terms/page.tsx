@@ -138,16 +138,16 @@ export default function TermsPage() {
       {/* Hero — light tile */}
       <section className="w-full px-6 py-20 md:py-[80px] md:pb-0 text-center bg-white dark:bg-background">
         <div className="mx-auto max-w-[980px]">
-          <p className="text-[14px] font-semibold tracking-[-0.224px] text-[#EA5329] mb-4">
+          <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Legal
           </p>
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] tracking-[-0.28px] text-[#1d1d1f] dark:text-white mb-6">
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6">
             Syarat & Ketentuan
           </h1>
           <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto mb-8">
             Harap baca syarat dan ketentuan berikut dengan seksama sebelum melakukan transaksi di platform GeekyTech.
           </p>
-          <p className="text-[14px] tracking-[-0.224px] text-[#7a7a7a] dark:text-[#cccccc]">
+          <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
             Terakhir diperbarui: 13 Mei 2026
           </p>
         </div>
@@ -159,14 +159,14 @@ export default function TermsPage() {
           <div className="prose prose-invert dark:prose-invert max-w-none">
             {sections.map((section, idx) => (
               <div key={idx} className="mb-12 last:mb-0">
-                <h2 className="text-[21px] font-semibold leading-[1.19] tracking-[-0.231px] text-[#1d1d1f] dark:text-white mb-4">
+                <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] dark:text-white mb-4">
                   {section.title}
                 </h2>
                 <div className="space-y-4">
                   {section.content.map((text, contentIdx) => (
                     <p
                       key={contentIdx}
-                      className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#1d1d1f] dark:text-[#cccccc]"
+                      className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f] dark:text-[#cccccc]"
                     >
                       {text}
                     </p>
@@ -177,15 +177,15 @@ export default function TermsPage() {
 
             {/* Final CTA */}
             <div className="mt-[80px] pt-[80px] border-t border-[#e0e0e0] dark:border-[#3a3a3a] text-center">
-              <h3 className="text-[21px] font-semibold leading-[1.19] tracking-[-0.231px] text-[#1d1d1f] dark:text-white mb-4">
+              <h3 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] dark:text-white mb-4">
                 Ada pertanyaan tentang syarat dan ketentuan kami?
               </h3>
-              <p className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#7a7a7a] dark:text-[#cccccc] mb-6">
+              <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc] mb-6">
                 Hubungi tim customer service kami dan kami akan membantu menjawab pertanyaanmu.
               </p>
               <a
                 href="/contact"
-                className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] tracking-[-0.374px] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
+                className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
               >
                 Hubungi Customer Service
               </a>
@@ -198,7 +198,7 @@ export default function TermsPage() {
       <section className="w-full px-6 py-[80px] bg-[#f5f5f7] dark:bg-[#1a1a1a]">
         <div className="mx-auto max-w-[980px]">
           <div className="text-center mb-12">
-            <h2 className="text-[34px] font-semibold leading-[1.1] tracking-[-0.374px] text-[#1d1d1f] dark:text-white">
+            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white">
               Dokumen Legal Lainnya
             </h2>
           </div>
@@ -226,10 +226,10 @@ export default function TermsPage() {
                 href={link.href}
                 className="bg-white dark:bg-[#272729] rounded-[18px] border border-[#e0e0e0] dark:border-[#3a3a3a] p-6 hover:border-[#EA5329] dark:hover:border-[#FFAD88] transition-colors"
               >
-                <h3 className="text-[17px] font-semibold tracking-[-0.374px] text-[#1d1d1f] dark:text-white mb-2">
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
                   {link.title}
                 </h3>
-                <p className="text-[14px] tracking-[-0.224px] text-[#7a7a7a] dark:text-[#cccccc]">
+                <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
                   {link.desc}
                 </p>
               </a>

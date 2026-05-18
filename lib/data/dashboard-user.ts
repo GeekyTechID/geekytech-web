@@ -105,29 +105,92 @@ export async function fetchDashboardOverview(userId: string): Promise<DashboardO
 
 export const ORDERS_PER_PAGE = 10;
 
+export type OrderSortOption = "newest" | "oldest" | "total_desc" | "total_asc";
+
 export async function fetchUserOrders(
   userId: string,
   statusFilter: OrderStatus | "" | null,
   search: string,
   page: number,
+  categoryId?: string,
+  sort: OrderSortOption = "newest",
 ): Promise<{ orders: DashboardOrderRow[]; total: number }> {
   try {
     const supabase = await createClient();
     const from = page * ORDERS_PER_PAGE;
     const to = from + ORDERS_PER_PAGE - 1;
+    const trimmed = search.trim();
+
+    // Resolve order IDs from order_items when searching by product name or filtering by category
+    let filteredOrderIds: string[] | null = null;
+    if (trimmed.length > 0 || categoryId) {
+      let matchOrderIds: string[] = [];
+
+      if (categoryId) {
+        const { data: catItems } = await supabase
+          .from("order_items")
+          .select("order_id, product_variants!inner(products!inner(category_id))")
+          .eq("product_variants.products.category_id" as "order_id", categoryId as string);
+        matchOrderIds = [...new Set((catItems ?? []).map((r) => (r as unknown as { order_id: string }).order_id))];
+      }
+
+      if (trimmed.length > 0) {
+        let nameQ = supabase
+          .from("order_items")
+          .select("order_id")
+          .ilike("product_name", `%${trimmed}%`);
+        if (categoryId && matchOrderIds.length > 0) {
+          nameQ = nameQ.in("order_id", matchOrderIds);
+        }
+        const { data: nameItems } = await nameQ;
+        const nameOrderIds = [...new Set((nameItems ?? []).map((r) => r.order_id))];
+        filteredOrderIds = categoryId ? nameOrderIds : nameOrderIds;
+      } else {
+        filteredOrderIds = matchOrderIds;
+      }
+    }
+
+    const sortMap: Record<OrderSortOption, { column: string; ascending: boolean }> = {
+      newest:     { column: "created_at", ascending: false },
+      oldest:     { column: "created_at", ascending: true },
+      total_desc: { column: "total",      ascending: false },
+      total_asc:  { column: "total",      ascending: true },
+    };
+    const { column: sortCol, ascending: sortAsc } = sortMap[sort];
 
     let q = supabase
       .from("orders")
       .select("id, order_number, status, total, created_at, order_items(image_url, quantity, product_name)", { count: "exact" })
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
+      .order(sortCol, { ascending: sortAsc })
       .range(from, to);
 
     if (statusFilter && statusFilter.length > 0) {
       q = q.eq("status", statusFilter);
     }
-    if (search.trim().length > 0) {
-      q = q.ilike("order_number", `%${search.trim()}%`);
+
+    if (trimmed.length > 0 || categoryId) {
+      if (!filteredOrderIds || filteredOrderIds.length === 0) {
+        // also try matching order_number when no category filter
+        if (!categoryId && trimmed.length > 0) {
+          q = q.ilike("order_number", `%${trimmed}%`);
+        } else {
+          return { orders: [], total: 0 };
+        }
+      } else {
+        if (!categoryId && trimmed.length > 0) {
+          // combine: match order_number OR order_ids from product name match
+          const { data: orderNumMatch } = await supabase
+            .from("orders")
+            .select("id")
+            .eq("user_id", userId)
+            .ilike("order_number", `%${trimmed}%`);
+          const combined = [...new Set([...filteredOrderIds, ...(orderNumMatch ?? []).map((r) => r.id)])];
+          q = q.in("id", combined);
+        } else {
+          q = q.in("id", filteredOrderIds);
+        }
+      }
     }
 
     const { data, error, count } = await q;
@@ -455,6 +518,61 @@ export async function fetchWishlistForUser(
   }
 }
 
+export type PendingOrderPreview = {
+  id: string;
+  order_number: string;
+  total: number;
+  created_at: string;
+  previewName: string | null;
+  previewImage: string | null;
+};
+
+export async function fetchPendingPaymentOrders(
+  userId: string,
+  limit = 5,
+): Promise<PendingOrderPreview[]> {
+  const cap = Math.min(Math.max(limit, 1), 20);
+  try {
+    const supabase = await createClient();
+    const { data: orders, error: oErr } = await supabase
+      .from("orders")
+      .select("id, order_number, total, created_at")
+      .eq("user_id", userId)
+      .eq("status", "pending_payment")
+      .order("created_at", { ascending: false })
+      .limit(cap);
+    if (oErr || !orders?.length) return [];
+
+    const orderIds = orders.map((o) => o.id);
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("order_id, product_name, image_url, id")
+      .in("order_id", orderIds)
+      .order("id", { ascending: true });
+
+    const firstByOrder = new Map<string, { product_name: string; image_url: string | null }>();
+    for (const it of items ?? []) {
+      if (!firstByOrder.has(it.order_id)) {
+        firstByOrder.set(it.order_id, { product_name: it.product_name, image_url: it.image_url });
+      }
+    }
+
+    return orders.map((o) => {
+      const fi = firstByOrder.get(o.id);
+      return {
+        id: o.id,
+        order_number: o.order_number,
+        total: o.total,
+        created_at: o.created_at,
+        previewName: fi?.product_name ?? null,
+        previewImage: fi?.image_url ?? null,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchUserNotifications(userId: string, limit: number) {
   const cap = Math.min(Math.max(limit, 1), 100);
   try {
@@ -563,6 +681,59 @@ export async function fetchProblemPaymentsForUser(userId: string, limit = 12): P
       gross_amount: p.gross_amount,
       created_at: p.created_at,
     }));
+  } catch {
+    return [];
+  }
+}
+
+export type SpendingByMonth = {
+  month: string; // "YYYY-MM"
+  label: string; // e.g. "Jan 25"
+  total: number;
+};
+
+export async function fetchSpendingByMonth(
+  userId: string,
+  months = 12,
+): Promise<SpendingByMonth[]> {
+  const cap = Math.min(Math.max(months, 3), 24);
+  try {
+    const supabase = await createClient();
+    const since = new Date();
+    since.setMonth(since.getMonth() - cap + 1);
+    since.setDate(1);
+    since.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from("orders")
+      .select("total, created_at")
+      .eq("user_id", userId)
+      .in("status", ["paid", "processing", "shipped", "delivered", "completed"])
+      .gte("created_at", since.toISOString())
+      .order("created_at", { ascending: true });
+
+    if (error || !data) return [];
+
+    const buckets = new Map<string, number>();
+    for (let i = 0; i < cap; i++) {
+      const d = new Date(since);
+      d.setMonth(d.getMonth() + i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      buckets.set(key, 0);
+    }
+
+    for (const row of data) {
+      const d = new Date(row.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + row.total);
+    }
+
+    const SHORT_MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
+    return Array.from(buckets.entries()).map(([key, total]) => {
+      const [y, m] = key.split("-");
+      const shortYear = String(y).slice(2);
+      return { month: key, label: `${SHORT_MONTHS[parseInt(m, 10) - 1]} ${shortYear}`, total };
+    });
   } catch {
     return [];
   }

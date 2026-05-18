@@ -59,7 +59,7 @@ export function OrderReviewForms({
           <p className="font-semibold text-[#1d1d1f]">{it.product_name}</p>
           <p className="text-xs text-[#7a7a7a]">{it.variant_name}</p>
           <div className="mt-4">
-            <Label htmlFor={`rating-${it.id}`} className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">
+            <Label htmlFor={`rating-${it.id}`} className="text-xs font-semibold uppercase text-[#7a7a7a]">
               Rating
             </Label>
             <select
@@ -77,7 +77,7 @@ export function OrderReviewForms({
             </select>
           </div>
           <div className="mt-4">
-            <Label htmlFor={`comment-${it.id}`} className="text-xs font-semibold uppercase tracking-wider text-[#7a7a7a]">
+            <Label htmlFor={`comment-${it.id}`} className="text-xs font-semibold uppercase text-[#7a7a7a]">
               Komentar (opsional)
             </Label>
             <Textarea id={`comment-${it.id}`} name="comment" rows={4} className="mt-1 border-[#e0e0e0]" placeholder="Ceritakan pengalamanmu dengan produk ini." />

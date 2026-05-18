@@ -55,7 +55,7 @@ function FaqActions({ faq }: { faq: FaqRow }) {
         onClick={handleToggle}
         disabled={isPending}
         className={cn(
-          "h-7 rounded-md px-2 text-[10px] font-semibold uppercase tracking-widest transition-colors disabled:opacity-50",
+          "h-7 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
           faq.is_active
             ? "bg-emerald-500/15 text-emerald-800 hover:bg-emerald-500/25 dark:text-emerald-400"
             : "bg-muted text-muted-foreground hover:bg-muted/80",
@@ -72,7 +72,7 @@ export function FaqTable({ faqs }: FaqTableProps) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
         <HelpCircle size={36} strokeWidth={1} />
-        <p className="text-sm font-semibold uppercase tracking-widest">Belum ada FAQ</p>
+        <p className="text-sm font-semibold uppercase">Belum ada FAQ</p>
       </div>
     );
   }
@@ -83,19 +83,19 @@ export function FaqTable({ faqs }: FaqTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Pertanyaan
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
                 Kategori
               </th>
-              <th className="hidden w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:table-cell">
+              <th className="hidden w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
                 Sort
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                 Aksi
               </th>
             </tr>
@@ -119,7 +119,7 @@ export function FaqTable({ faqs }: FaqTableProps) {
                 <td className="px-4 py-3">
                   <span
                     className={cn(
-                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest",
+                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                       faq.is_active
                         ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                         : "bg-muted text-muted-foreground",
