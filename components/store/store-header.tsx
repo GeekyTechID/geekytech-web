@@ -34,6 +34,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/types/supabase";
 
@@ -279,6 +280,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                 )}
               </Link>
               <ThemeToggle className="hidden sm:flex" />
+              {isAuthenticated && <NotificationBell />}
 
               {isAuthenticated ? (
                 <div ref={userMenuRef} className="relative">

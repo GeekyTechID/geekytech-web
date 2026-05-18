@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CartLineCard, type CartLineView } from "@/components/store/cart-line-card";
@@ -72,6 +72,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   const [couponApplying, setCouponApplying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
   const [submitting, setSubmitting] = useState(false);
+  const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
+  const [countdown, setCountdown] = useState(5);
 
   const subtotalGross = useMemo(() => lines.reduce((s, l) => s + l.listPrice * l.qty, 0), [lines]);
   const subtotalNet = useMemo(() => lines.reduce((s, l) => s + l.unitPrice * l.qty, 0), [lines]);
@@ -109,11 +111,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
       setRatesSource(json.data.source);
       setShippingOptions(json.data.options);
       setSelectedShipping(json.data.options[0] ?? null);
-      if (json.data.source === "mock") {
-        toast.message("Ongkir estimasi", {
-          description: "Tarif ongkir bersifat estimasi. Konfirmasi final akan diberikan setelah order diproses.",
-        });
-      }
     } catch {
       toast.error("Gagal memuat ongkir.");
       setShippingOptions([]);
@@ -126,6 +123,16 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   useEffect(() => {
     void loadRates();
   }, [loadRates]);
+
+  useEffect(() => {
+    if (!doneState) return;
+    if (countdown <= 0) {
+      router.push(`/dashboard/orders/${doneState.orderId}`);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [doneState, countdown, router]);
 
   const applyCoupon = async () => {
     const code = couponInput.trim();
@@ -218,7 +225,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
         return;
       }
 
-      const { orderId, snapToken, clientKey, isProduction } = json.data;
+      const { orderId, orderNumber, snapToken, clientKey, isProduction } = json.data;
 
       if (snapToken && clientKey) {
         await loadSnapScript(clientKey, isProduction);
@@ -229,7 +236,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
         }
         window.snap.pay(snapToken, {
           onSuccess: () => {
-            router.push(`/dashboard/orders/${orderId}`);
+            void fetch(`/api/orders/${orderId}/verify-payment`, { method: "POST" });
+            setCountdown(5);
+            setDoneState({ orderId, orderNumber });
           },
           onPending: () => {
             router.push(`/dashboard/orders/${orderId}`);
@@ -252,6 +261,36 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
       setSubmitting(false);
     }
   };
+
+  if (doneState) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4 py-20 text-[#1d1d1f]">
+        <div className="w-full max-w-md text-center">
+          <div className="flex justify-center">
+            <CheckCircle2 className="h-16 w-16 text-[#EA5329]" strokeWidth={1.5} />
+          </div>
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1d1d1f]">
+            Pembayaran Berhasil
+          </h1>
+          <p className="mt-3 text-[17px] leading-relaxed text-[#5c5c5c]">
+            Pesanan{" "}
+            <span className="font-semibold text-[#1d1d1f]">{doneState.orderNumber}</span>{" "}
+            sudah diterima dan sedang diproses.
+          </p>
+          <p className="mt-5 text-sm text-[#7a7a7a]">
+            Dialihkan ke halaman pesanan dalam{" "}
+            <span className="font-semibold tabular-nums text-[#1d1d1f]">{countdown}</span> detik…
+          </p>
+          <Link
+            href={`/dashboard/orders/${doneState.orderId}`}
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#EA5329] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#d94a24] active:scale-[0.97]"
+          >
+            Lihat Pesanan
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-b from-[#f4f1ea]/50 to-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-6 text-[#1d1d1f] sm:pt-8 md:pb-20 lg:pb-20">

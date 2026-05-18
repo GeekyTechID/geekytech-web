@@ -116,8 +116,12 @@ export default async function DashboardOverviewPage() {
       </div>
 
       <section className="mt-10 rounded-2xl border border-[#e0e0e0] bg-[#fafafa] p-5 sm:p-6">
-        <form action="/search" method="get" className="flex flex-col gap-4">
-          <div className="min-w-0 flex-1">
+        <form
+          action="/search"
+          method="get"
+          className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-4 md:gap-5"
+        >
+          <div className="min-w-0 w-full flex-1">
             <label htmlFor="dash-search" className="sr-only">
               Cari produk
             </label>

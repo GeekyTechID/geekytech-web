@@ -8,7 +8,7 @@ import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { findMockShippingOption } from "@/lib/shipping/checkout-shipping-options";
 
-const paymentMethods = ["bca_va", "bni_va", "bri_va", "gopay", "indomaret"] as const;
+const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -208,8 +208,8 @@ export async function POST(req: Request) {
         shipping_insurance: 0,
         discount_amount: discountAmount,
         total,
-        courier_company: ship.courierName,
-        courier_service: ship.serviceName,
+        courier_company: parsed.data.courierCode.toLowerCase(),
+        courier_service: parsed.data.serviceCode,
         courier_etd: ship.etd,
         coupon_id: couponId,
         coupon_code: couponCodeStored,

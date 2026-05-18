@@ -32,28 +32,50 @@ export function OrderToolbar({
   const canConfirm = status === "delivered";
 
   const onCancel = () => {
-    if (!window.confirm("Batalkan pesanan ini?")) return;
-    startTransition(async () => {
-      const res = await cancelOrderAction(orderId);
-      if (res.success) {
-        toast.success("Pesanan dibatalkan.");
-        router.refresh();
-      } else {
-        toast.error(res.error);
-      }
+    toast("Batalkan pesanan ini?", {
+      description: "Tindakan ini tidak dapat diurungkan.",
+      action: {
+        label: "Ya, batalkan",
+        onClick: () => {
+          startTransition(async () => {
+            const res = await cancelOrderAction(orderId);
+            if (res.success) {
+              toast.success("Pesanan dibatalkan.");
+              router.refresh();
+            } else {
+              toast.error(res.error);
+            }
+          });
+        },
+      },
+      cancel: {
+        label: "Tidak",
+        onClick: () => {},
+      },
     });
   };
 
   const onConfirm = () => {
-    if (!window.confirm("Konfirmasi barang sudah diterima?")) return;
-    startTransition(async () => {
-      const res = await confirmOrderReceivedAction(orderId);
-      if (res.success) {
-        toast.success("Terima kasih — pesanan diselesaikan.");
-        router.refresh();
-      } else {
-        toast.error(res.error);
-      }
+    toast("Konfirmasi barang sudah diterima?", {
+      description: "Setelah dikonfirmasi kamu akan diarahkan ke halaman ulasan.",
+      action: {
+        label: "Ya, sudah diterima",
+        onClick: () => {
+          startTransition(async () => {
+            const res = await confirmOrderReceivedAction(orderId);
+            if (res.success) {
+              toast.success("Pesanan selesai. Silakan berikan ulasan!");
+              router.push(`/dashboard/orders/${orderId}/review`);
+            } else {
+              toast.error(res.error);
+            }
+          });
+        },
+      },
+      cancel: {
+        label: "Batal",
+        onClick: () => {},
+      },
     });
   };
 
@@ -72,12 +94,12 @@ export function OrderToolbar({
     });
   };
 
-  if (!canCancel && !canConfirm) {
+  if (!canCancel && !canConfirm && !hasPendingPayment) {
     return null;
   }
 
   return (
-    <div className="mt-6 flex w-full min-w-0 flex-col gap-3 border-t border-[#e0e0e0] pt-6 sm:flex-row sm:flex-wrap">
+    <div className="flex min-w-0 flex-wrap gap-3">
       {canCancel ? (
         <Button
           type="button"
@@ -96,7 +118,7 @@ export function OrderToolbar({
           onClick={onConfirm}
           className="w-full bg-[#EA5329] text-white hover:bg-[#d94a24] sm:w-auto"
         >
-          Konfirmasi terima barang
+          Selesai &amp; Beri Ulasan
         </Button>
       ) : null}
       {hasPendingPayment && status === "pending_payment" ? (

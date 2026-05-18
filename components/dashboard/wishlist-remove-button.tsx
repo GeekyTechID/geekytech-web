@@ -6,8 +6,9 @@ import { toast } from "sonner";
 
 import { removeWishlistItemAction } from "@/app/(dashboard)/dashboard/wishlist/_actions";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function WishlistRemoveButton({ wishlistId }: { wishlistId: string }) {
+export function WishlistRemoveButton({ wishlistId, className }: { wishlistId: string; className?: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -17,7 +18,7 @@ export function WishlistRemoveButton({ wishlistId }: { wishlistId: string }) {
       variant="outline"
       size="sm"
       disabled={pending}
-      className="border-[#e0e0e0] text-xs"
+      className={cn("h-10 border-neutral-200 text-xs font-semibold", className)}
       onClick={() => {
         if (!window.confirm("Hapus dari wishlist?")) return;
         startTransition(async () => {

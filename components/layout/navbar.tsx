@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -22,6 +21,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SiteLogo } from "@/components/shared/site-logo";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -189,15 +189,7 @@ export function Navbar() {
               </button>
 
               {/* Notif bell (hanya saat login) */}
-              {isAuthenticated && (
-                <Link
-                  href="/dashboard/notifications"
-                  className="p-2 text-muted-foreground hover:text-foreground transition-swiss relative"
-                  aria-label="Notifikasi"
-                >
-                  <Bell size={18} />
-                </Link>
-              )}
+              {isAuthenticated && <NotificationBell />}
 
               {/* Cart */}
               <Link

@@ -1,0 +1,133 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { Star } from "lucide-react";
+import { toast } from "sonner";
+
+import { addVariantToCart } from "@/app/(public)/products/_actions/product-detail-actions";
+import type { WishlistItemRow } from "@/lib/data/dashboard-user";
+import { formatRupiah } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { useCartStore } from "@/store/cart-store";
+
+import { WishlistRemoveButton } from "@/components/dashboard/wishlist-remove-button";
+
+export function WishlistTileCard({ item }: { item: WishlistItemRow }) {
+  const router = useRouter();
+  const incrementCart = useCartStore((s) => s.incrementCart);
+  const [pending, startTransition] = useTransition();
+  const productHref = item.slug ? `/products/${item.slug}` : null;
+  const showCompare =
+    Boolean(productHref) &&
+    item.compareAtPrice != null &&
+    item.compareAtPrice > item.currentPrice;
+
+  const onAddCart = () => {
+    const variantId = item.variantId;
+    if (!variantId) {
+      toast.error("Tidak ada varian yang dapat ditambahkan ke keranjang.");
+      return;
+    }
+    startTransition(async () => {
+      const res = await addVariantToCart(variantId, 1);
+      if (!res.success) {
+        toast.error(res.error);
+        return;
+      }
+      incrementCart(1);
+      toast.success("Ditambahkan ke keranjang.");
+      router.refresh();
+    });
+  };
+
+  const media = (
+    <>
+      {item.imageUrl ? (
+        <Image
+          src={item.imageUrl}
+          alt={item.imageAlt ?? item.name}
+          fill
+          sizes="(max-width: 640px) 45vw, 208px"
+          className="object-contain p-2"
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground">
+          Tanpa gambar
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-border dark:bg-background">
+      {productHref ? (
+        <Link href={productHref} className="relative block aspect-square dark:bg-muted">
+          {media}
+        </Link>
+      ) : (
+        <div className="relative block aspect-square dark:bg-muted">{media}</div>
+      )}
+
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        {item.eyebrow ? (
+          <p className="line-clamp-1 text-[11px] text-neutral-500 dark:text-muted-foreground">{item.eyebrow}</p>
+        ) : null}
+        {productHref ? (
+          <Link
+            href={productHref}
+            className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black hover:text-brand dark:text-foreground"
+          >
+            {item.name}
+          </Link>
+        ) : (
+          <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black dark:text-foreground">{item.name}</p>
+        )}
+        {item.variantName ? (
+          <p className="line-clamp-1 text-[14px] text-neutral-500 dark:text-muted-foreground">{item.variantName}</p>
+        ) : null}
+        <div className="mt-auto space-y-0.5">
+          {productHref ? (
+            <p className="text-sm font-bold text-black dark:text-foreground">{formatRupiah(item.currentPrice)}</p>
+          ) : (
+            <p className="text-sm font-bold text-neutral-500 dark:text-muted-foreground">—</p>
+          )}
+          {showCompare ? (
+            <p className="text-xs text-neutral-400 line-through dark:text-muted-foreground">
+              {formatRupiah(item.compareAtPrice!)}
+            </p>
+          ) : null}
+        </div>
+        {productHref ? (
+          <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-muted-foreground">
+            <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+            <span className="font-medium text-neutral-800 dark:text-foreground">{item.rating.toFixed(1)}</span>
+            <span className="text-neutral-300 dark:text-border">·</span>
+            <span>{item.reviewCount} ulasan</span>
+            <span className="text-neutral-300 dark:text-border">·</span>
+            <span>{item.soldCount} terjual</span>
+          </div>
+        ) : (
+          <p className="text-[11px] text-neutral-500 dark:text-muted-foreground">
+            Detail produk tidak tersedia. Anda tetap bisa menghapus dari wishlist.
+          </p>
+        )}
+
+        <button
+          type="button"
+          disabled={pending || !item.variantId}
+          onClick={onAddCart}
+          className={cn(
+            "mt-1 inline-flex w-full items-center justify-center rounded-full border border-brand py-2 text-center text-xs font-bold text-brand transition hover:bg-brand hover:text-white disabled:cursor-not-allowed disabled:opacity-50",
+          )}
+        >
+          + Keranjang
+        </button>
+
+        <WishlistRemoveButton wishlistId={item.wishlistId} className="mt-1 w-full rounded-full border border-neutral-200 text-xs font-bold text-neutral-800 hover:bg-neutral-50 dark:border-border dark:text-foreground dark:hover:bg-muted" />
+      </div>
+    </article>
+  );
+}

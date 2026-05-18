@@ -1,0 +1,144 @@
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+
+type MidtransStatusResponse = {
+  transaction_status?: string;
+  fraud_status?: string;
+  payment_type?: string;
+  transaction_id?: string;
+  va_numbers?: { bank: string; va_number: string }[];
+  payment_code?: string;
+  pdf_url?: string;
+  expiry_time?: string;
+};
+
+async function getMidtransStatus(orderNumber: string): Promise<MidtransStatusResponse | null> {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY?.trim();
+  if (!serverKey) return null;
+
+  const isProd = process.env.MIDTRANS_IS_PRODUCTION === "true";
+  const base = isProd ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
+  const credentials = Buffer.from(`${serverKey}:`).toString("base64");
+
+  try {
+    const res = await fetch(`${base}/v2/${encodeURIComponent(orderNumber)}/status`, {
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as MidtransStatusResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id: orderId } = await params;
+
+    const auth = await createClient();
+    const {
+      data: { user },
+    } = await auth.auth.getUser();
+    if (!user) {
+      return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Fetch order — must belong to this user
+    const { data: order } = await auth
+      .from("orders")
+      .select("id, order_number, status, user_id")
+      .eq("id", orderId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!order) {
+      return Response.json({ success: false, error: "Pesanan tidak ditemukan." }, { status: 404 });
+    }
+
+    // Already updated — return early
+    if (order.status !== "pending_payment") {
+      return Response.json({ success: true, data: { status: order.status } });
+    }
+
+    const mtStatus = await getMidtransStatus(order.order_number);
+    if (!mtStatus) {
+      return Response.json({ success: false, error: "Tidak dapat memverifikasi pembayaran." }, { status: 502 });
+    }
+
+    const txStatus = mtStatus.transaction_status;
+    const fraudStatus = mtStatus.fraud_status;
+
+    if (
+      (txStatus !== "settlement" && txStatus !== "capture") ||
+      fraudStatus === "deny"
+    ) {
+      return Response.json({ success: false, error: "Pembayaran belum dikonfirmasi." }, { status: 400 });
+    }
+
+    const svc = createServiceClient();
+
+    await svc.from("orders").update({ status: "paid" }).eq("id", order.id);
+
+    await svc.from("order_status_history").insert({
+      order_id: order.id,
+      status: "paid",
+      note: `Pembayaran dikonfirmasi via Midtrans (${mtStatus.payment_type ?? ""})`,
+      changed_by: null,
+    });
+
+    const vaNumber = mtStatus.va_numbers?.[0]?.va_number ?? null;
+    await svc
+      .from("payments")
+      .update({
+        status: "paid",
+        paid_at: new Date().toISOString(),
+        midtrans_transaction_id: mtStatus.transaction_id ?? null,
+        va_number: vaNumber,
+        payment_code: mtStatus.payment_code ?? null,
+        pdf_url: mtStatus.pdf_url ?? null,
+        expiry_time: mtStatus.expiry_time ?? null,
+      })
+      .eq("midtrans_order_id", order.order_number)
+      .neq("status", "paid");
+
+    // Deduct stock and clear reservation
+    const { data: items } = await svc
+      .from("order_items")
+      .select("variant_id, quantity")
+      .eq("order_id", order.id);
+
+    if (items) {
+      for (const item of items) {
+        if (!item.variant_id) continue;
+        const { data: v } = await svc
+          .from("product_variants")
+          .select("stock, reserved")
+          .eq("id", item.variant_id)
+          .single();
+        if (!v) continue;
+        await svc
+          .from("product_variants")
+          .update({
+            stock: Math.max(0, v.stock - item.quantity),
+            reserved: Math.max(0, v.reserved - item.quantity),
+          })
+          .eq("id", item.variant_id);
+        await svc.from("stock_history").insert({
+          variant_id: item.variant_id,
+          order_id: order.id,
+          quantity: -item.quantity,
+          type: "sale",
+          note: `Pesanan ${order.order_number} settlement`,
+          changed_by: null,
+        });
+      }
+    }
+
+    return Response.json({ success: true, data: { status: "paid" } });
+  } catch {
+    return Response.json({ success: false, error: "Terjadi kesalahan server." }, { status: 500 });
+  }
+}

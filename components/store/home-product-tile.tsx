@@ -41,7 +41,7 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
             className="object-contain p-2"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="flex h-full items-center justify-center text-[10px] font-semibold uppercase text-muted-foreground">
             Tanpa gambar
           </div>
         )}

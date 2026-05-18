@@ -37,7 +37,7 @@ export async function fetchBiteshipCourierRates(params: {
   }
 
   const isProd = process.env.BITESHIP_IS_PRODUCTION === "true";
-  const base = isProd ? "https://api.biteship.com" : "https://api.biteship.com";
+  const base = isProd ? "https://api.biteship.com" : "https://api.sandbox.biteship.com";
 
   const body = {
     origin_postal_code: String(params.originPostal),

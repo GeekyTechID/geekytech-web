@@ -6,11 +6,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 
 import type { OrderStatus } from "@/lib/constants/order-status-labels";
+import type { ProductDetailVariant } from "@/lib/types/product-detail";
+import { computeVariantUnitPrice, pickDefaultVariantId } from "@/lib/utils/product-detail-pricing";
 
 export type DashboardOrderRow = Pick<
   Database["public"]["Tables"]["orders"]["Row"],
   "id" | "order_number" | "status" | "total" | "created_at"
->;
+> & {
+  items: { image_url: string | null; quantity: number; product_name: string }[];
+};
 
 type OrderItemQueryRow = Database["public"]["Tables"]["order_items"]["Row"] & {
   product_variants:
@@ -61,6 +65,15 @@ export type WishlistItemRow = {
   name: string;
   slug: string;
   imageUrl: string | null;
+  imageAlt: string | null;
+  eyebrow: string;
+  variantId: string | null;
+  variantName: string | null;
+  currentPrice: number;
+  compareAtPrice: number | null;
+  rating: number;
+  reviewCount: number;
+  soldCount: number;
 };
 
 export type ProblemPaymentRow = {
@@ -90,25 +103,49 @@ export async function fetchDashboardOverview(userId: string): Promise<DashboardO
   }
 }
 
+export const ORDERS_PER_PAGE = 10;
+
 export async function fetchUserOrders(
   userId: string,
   statusFilter: OrderStatus | "" | null,
-): Promise<DashboardOrderRow[]> {
+  search: string,
+  page: number,
+): Promise<{ orders: DashboardOrderRow[]; total: number }> {
   try {
     const supabase = await createClient();
+    const from = page * ORDERS_PER_PAGE;
+    const to = from + ORDERS_PER_PAGE - 1;
+
     let q = supabase
       .from("orders")
-      .select("id, order_number, status, total, created_at")
+      .select("id, order_number, status, total, created_at, order_items(image_url, quantity, product_name)", { count: "exact" })
       .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
     if (statusFilter && statusFilter.length > 0) {
       q = q.eq("status", statusFilter);
     }
-    const { data, error } = await q;
-    if (error || !data) return [];
-    return data;
+    if (search.trim().length > 0) {
+      q = q.ilike("order_number", `%${search.trim()}%`);
+    }
+
+    const { data, error, count } = await q;
+    if (error || !data) return { orders: [], total: 0 };
+
+    return {
+      orders: data.map((o) => ({
+        id: o.id,
+        order_number: o.order_number,
+        status: o.status,
+        total: o.total,
+        created_at: o.created_at,
+        items: Array.isArray(o.order_items) ? o.order_items : [],
+      })),
+      total: count ?? 0,
+    };
   } catch {
-    return [];
+    return { orders: [], total: 0 };
   }
 }
 
@@ -264,39 +301,157 @@ export const fetchOrderDetailForUser = cache(async (userId: string, orderId: str
   }
 });
 
-export async function fetchWishlistForUser(userId: string): Promise<WishlistItemRow[]> {
+export const WISHLIST_PER_PAGE = 20;
+
+export async function fetchWishlistForUser(
+  userId: string,
+  page = 0,
+): Promise<{ items: WishlistItemRow[]; total: number }> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    const from = page * WISHLIST_PER_PAGE;
+    const to = from + WISHLIST_PER_PAGE - 1;
+    const { data, error, count } = await supabase
       .from("wishlists")
-      .select("id, product_id, products(id, name, slug, product_images(url, is_primary, sort_order))")
+      .select(
+        `id, product_id, products(
+          id, name, slug, base_price, sale_price, average_rating, review_count, total_sold,
+          categories:category_id(name),
+          product_images(url, is_primary, sort_order, alt_text),
+          product_variants(id, name, sku, price, stock, reserved, is_active)
+        )`,
+        { count: "exact" },
+      )
       .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(from, to);
 
-    if (error || !data?.length) return [];
+    if (error || !data?.length) return { items: [], total: 0 };
 
-    type Img = { url: string; is_primary: boolean | null; sort_order: number | null };
-    type P = { id: string; name: string; slug: string; product_images: Img[] | null };
+    type Img = {
+      url: string;
+      is_primary: boolean | null;
+      sort_order: number | null;
+      alt_text: string | null;
+    };
+    type VarRow = {
+      id: string;
+      name: string;
+      sku: string;
+      price: number;
+      stock: number;
+      reserved: number | null;
+      is_active: boolean | null;
+      sort_order: number | null;
+    };
+    type Cat = { name: string } | { name: string }[] | null;
+    type P = {
+      id: string;
+      name: string;
+      slug: string;
+      base_price: number;
+      sale_price: number | null;
+      average_rating: number | null;
+      review_count: number | null;
+      total_sold: number | null;
+      categories: Cat;
+      product_images: Img[] | null;
+      product_variants: VarRow[] | VarRow | null;
+    };
     type Row = { id: string; product_id: string; products: P | P[] | null };
+
+    const firstCat = (c: Cat): string => {
+      if (c == null) return "";
+      const x = Array.isArray(c) ? c[0] : c;
+      return x?.name?.trim() ?? "";
+    };
 
     const out: WishlistItemRow[] = [];
     for (const row of data as unknown as Row[]) {
       const p = Array.isArray(row.products) ? row.products[0] : row.products;
-      if (!p?.slug) continue;
+      if (!p?.slug) {
+        out.push({
+          wishlistId: row.id,
+          productId: row.product_id,
+          name: "Produk tidak dapat ditampilkan",
+          slug: "",
+          imageUrl: null,
+          imageAlt: null,
+          eyebrow: "",
+          variantId: null,
+          variantName: null,
+          currentPrice: 0,
+          compareAtPrice: null,
+          rating: 0,
+          reviewCount: 0,
+          soldCount: 0,
+        });
+        continue;
+      }
+
       const imgs = p.product_images ?? [];
       const primary =
         imgs.find((i) => i.is_primary) ?? [...imgs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0];
+      const imageUrl = primary?.url ?? null;
+      const imageAlt = primary?.alt_text?.trim() || p.name;
+
+      const variantsRaw = p.product_variants;
+      const list = Array.isArray(variantsRaw) ? variantsRaw : variantsRaw ? [variantsRaw] : [];
+      const active = list.filter((v) => v.is_active !== false);
+      const withAvail = active.map((v) => ({
+        id: v.id,
+        name: v.name,
+        sku: v.sku,
+        price: Number(v.price),
+        stock: Math.max(0, (v.stock ?? 0) - (v.reserved ?? 0)),
+      })) as ProductDetailVariant[];
+
+      const basePrice = Number(p.base_price ?? 0);
+      const salePrice = p.sale_price != null ? Number(p.sale_price) : null;
+
+      let variantId: string | null = null;
+      let variantName: string | null = null;
+      let currentPrice = basePrice;
+      let compareAtPrice: number | null = null;
+
+      if (withAvail.length > 0) {
+        const inStock = withAvail.filter((v) => v.stock >= 1);
+        const pool = inStock.length > 0 ? inStock : withAvail;
+        const pickedId = pickDefaultVariantId(pool, basePrice, salePrice);
+        const picked = pool.find((v) => v.id === pickedId) ?? pool[0];
+        if (picked) {
+          variantId = picked.id;
+          variantName = picked.name;
+          const { listPrice, unitPrice } = computeVariantUnitPrice({
+            basePrice,
+            salePrice,
+            variantPrice: picked.price,
+          });
+          currentPrice = unitPrice;
+          compareAtPrice = listPrice > unitPrice ? listPrice : null;
+        }
+      }
+
       out.push({
         wishlistId: row.id,
         productId: p.id,
         name: p.name,
         slug: p.slug,
-        imageUrl: primary?.url ?? null,
+        imageUrl,
+        imageAlt,
+        eyebrow: firstCat(p.categories),
+        variantId,
+        variantName,
+        currentPrice,
+        compareAtPrice,
+        rating: Number(p.average_rating ?? 0),
+        reviewCount: p.review_count ?? 0,
+        soldCount: p.total_sold ?? 0,
       });
     }
-    return out;
+    return { items: out, total: count ?? 0 };
   } catch {
-    return [];
+    return { items: [], total: 0 };
   }
 }
 
