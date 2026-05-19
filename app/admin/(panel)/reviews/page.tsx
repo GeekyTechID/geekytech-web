@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
@@ -65,7 +65,7 @@ export default async function AdminReviewsPage({
         <div>
           <p className="text-swiss-eyebrow">Konten</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Ulasan</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {count ?? 0} ulasan
             {q ? ` untuk "${q}"` : ""}
             {status ? ` · filter: ${status}` : ""}

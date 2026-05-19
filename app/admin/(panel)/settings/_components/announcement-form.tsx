@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { saveSetting } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
-const saveClass =
-  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+import { settingsLabelClass } from "../_lib/label-class";
+
+const labelClass = settingsLabelClass;
 
 interface AnnouncementFormProps {
   initialText: string;
@@ -42,24 +43,18 @@ export function AnnouncementForm({ initialText, initialActive }: AnnouncementFor
           className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-border"
         />
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-3 space-x-3">
         <label className={labelClass}>Status</label>
-        <button
-          type="button"
-          onClick={() => setIsActive((v) => !v)}
-          className={cn(
-            "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase transition-colors",
-            isActive
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
-              : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",
-          )}
-        >
-          {isActive ? "Aktif" : "Nonaktif"}
-        </button>
+        <StatusPillToggle
+          active={isActive}
+          onToggle={() => setIsActive((v) => !v)}
+          activeLabel="Aktif"
+          inactiveLabel="Nonaktif"
+        />
       </div>
-      <button type="button" onClick={handleSave} disabled={isPending} className={saveClass}>
+      <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
         {isPending ? "Menyimpan..." : "Simpan"}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, X, Package, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/format";
 
@@ -148,31 +149,33 @@ export function ProductBrandSelector({
 
   return (
     <div className="space-y-4">
-      {/* Mode toggle */}
-      <div className="flex w-full overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
-        <button
-          type="button"
-          onClick={() => onModeChange("manual")}
-          className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 border-r border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
-            mode === "manual" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <Package size={12} />
-          Per Produk
-        </button>
-        <button
-          type="button"
-          onClick={() => onModeChange("brand")}
-          className={cn(
-            "flex flex-1 h-9 items-center justify-center gap-1.5 text-xs font-semibold uppercase transition-colors",
-            mode === "brand" ? "bg-brand/10 text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <Building2 size={12} />
-          Per Brand
-        </button>
-      </div>
+      <SegmentedControl
+        value={mode}
+        onChange={onModeChange}
+        fullWidth
+        size="compact"
+        aria-label="Mode pemilihan promosi"
+        options={[
+          {
+            value: "manual",
+            label: (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Package size={12} />
+                Per Produk
+              </span>
+            ),
+          },
+          {
+            value: "brand",
+            label: (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Building2 size={12} />
+                Per Brand
+              </span>
+            ),
+          },
+        ]}
+      />
 
       {mode === "manual" ? (
         <div className="space-y-3">

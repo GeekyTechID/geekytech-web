@@ -103,10 +103,10 @@ export function OrderToolbar({
       {canCancel ? (
         <Button
           type="button"
-          variant="outline"
+          variant="destructive-ghost"
           disabled={pending}
           onClick={onCancel}
-          className="w-full border-red-200 text-red-600 hover:bg-red-50 sm:w-auto"
+          className="w-full sm:w-auto"
         >
           Batalkan pesanan
         </Button>
@@ -114,9 +114,10 @@ export function OrderToolbar({
       {canConfirm ? (
         <Button
           type="button"
+          variant="primary"
           disabled={pending}
           onClick={onConfirm}
-          className="w-full bg-[#EA5329] text-white hover:bg-[#d94a24] sm:w-auto"
+          className="w-full sm:w-auto"
         >
           Selesai &amp; Beri Ulasan
         </Button>

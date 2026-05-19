@@ -1,14 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import {
   AdminTableDeleteButton,
   AdminTableEditLink,
 } from "@/components/admin/admin-table-row-actions";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { togglePromotionActive, deletePromotion, type PromotionType } from "../_actions";
 
 export type PromotionTableRow = {
@@ -52,23 +53,20 @@ function RowActions({ row, basePath }: { row: PromotionTableRow; basePath: strin
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <AdminTableEditLink href={`${basePath}/${row.id}`}>Edit</AdminTableEditLink>
+      <AdminTableEditLink href={`${basePath}/${row.id}`} appearance="filled">
+        Edit
+      </AdminTableEditLink>
       <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
         Hapus
       </AdminTableDeleteButton>
-      <button
-        type="button"
-        onClick={handleToggle}
+      <StatusPillToggle
+        active={row.is_active}
+        onToggle={handleToggle}
+        activeLabel="Aktif"
+        inactiveLabel="Nonaktif"
         disabled={isPending}
-        className={cn(
-          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
-          row.is_active
-            ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-            : "bg-muted text-muted-foreground",
-        )}
-      >
-        {row.is_active ? "Aktif" : "Nonaktif"}
-      </button>
+        size="compact"
+      />
     </div>
   );
 }
@@ -76,7 +74,7 @@ function RowActions({ row, basePath }: { row: PromotionTableRow; basePath: strin
 export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <p className="text-sm font-semibold uppercase">{emptyLabel}</p>
       </div>
     );
@@ -88,19 +86,19 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Judul
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                 Pilihan Produk
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                 Maks. Item
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Aksi
               </th>
             </tr>
@@ -116,11 +114,11 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
                     {row.title}
                   </Link>
                   {row.subtitle && (
-                    <p className="max-w-[220px] truncate text-xs text-muted-foreground">{row.subtitle}</p>
+                    <p className="max-w-[220px] truncate text-xs text-foreground">{row.subtitle}</p>
                   )}
                 </td>
                 <td className="hidden px-4 py-3 sm:table-cell">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-foreground">
                     {row.selection_mode === "brand"
                       ? `${row.brand_count} brand`
                       : `${row.product_count} produk`}
@@ -130,16 +128,7 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
                   <span className="text-xs font-medium">{row.max_items}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
-                      row.is_active
-                        ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {row.is_active ? "Aktif" : "Nonaktif"}
-                  </span>
+                  <AdminStatusBadge active={row.is_active} />
                 </td>
                 <td className="px-4 py-3">
                   <RowActions row={row} basePath={basePath} />

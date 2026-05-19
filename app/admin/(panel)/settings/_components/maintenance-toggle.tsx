@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { saveSetting } from "../_actions";
 
 interface MaintenanceToggleProps {
@@ -27,22 +27,16 @@ export function MaintenanceToggle({ initialValue }: MaintenanceToggleProps) {
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
+    <StatusPillToggle
+      active={isActive}
+      onToggle={handleToggle}
       disabled={isPending}
-      className={cn(
-        "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase transition-colors disabled:opacity-50",
-        isActive
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
-          : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",
-      )}
-    >
-      {isPending
-        ? "Menyimpan..."
-        : isActive
-          ? "Aktif — Klik untuk menonaktifkan"
-          : "Nonaktif — Klik untuk mengaktifkan"}
-    </button>
+      activeLabel={
+        isPending ? "Menyimpan..." : "Aktif — Klik untuk menonaktifkan"
+      }
+      inactiveLabel={
+        isPending ? "Menyimpan..." : "Nonaktif — Klik untuk mengaktifkan"
+      }
+    />
   );
 }

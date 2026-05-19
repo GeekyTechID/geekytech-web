@@ -21,7 +21,6 @@ import {
   Settings,
   ShoppingBag,
   Star,
-  Tag,
   Ticket,
   Users,
   Zap,
@@ -59,7 +58,6 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Produk", href: "/admin/products", icon: Package },
       { label: "Merek", href: "/admin/brands", icon: Building2 },
       { label: "Kategori", href: "/admin/categories", icon: Grid2X2 },
-      { label: "Tags", href: "/admin/tags", icon: Tag },
     ],
   },
   {
@@ -120,13 +118,13 @@ function CollapsibleGroup({
         onClick={() => setOpen((v) => !v)}
         className="mb-1.5 flex w-full items-center justify-between px-2 group"
       >
-        <span className="text-[10px] font-semibold uppercase text-muted-foreground group-hover:text-foreground transition-colors">
+        <span className="text-[10px] font-semibold uppercase text-foreground transition-colors">
           {group.label}
         </span>
         <ChevronDown
           size={12}
           className={cn(
-            "text-muted-foreground transition-transform duration-200 group-hover:text-foreground",
+            "text-foreground transition-transform duration-200",
             open && "rotate-180"
           )}
         />
@@ -149,7 +147,7 @@ function CollapsibleGroup({
                     "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
                     active
                       ? "bg-brand/10 font-semibold text-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-foreground hover:bg-muted"
                   )}
                   aria-current={active ? "page" : undefined}
                 >
@@ -220,7 +218,7 @@ export function AdminSidebar() {
             <CollapsibleGroup key={group.label} group={group} isActive={isActive} />
           ) : (
             <div key={group.label} className="mb-5">
-              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase text-muted-foreground">
+              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase text-foreground">
                 {group.label}
               </p>
               <ul className="space-y-0.5">
@@ -234,7 +232,7 @@ export function AdminSidebar() {
                           "flex h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors active:scale-[0.98]",
                           active
                             ? "bg-brand/10 font-semibold text-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            : "text-foreground hover:bg-muted",
                         )}
                         aria-current={active ? "page" : undefined}
                       >
@@ -259,35 +257,6 @@ export function AdminSidebar() {
           )
         )}
       </nav>
-
-      {/* User info + logout */}
-      <div className="shrink-0 space-y-1 border-t border-[#e0e0e0] p-3 dark:border-border">
-        <Link
-          href="/admin/settings/account"
-          className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
-            {initials}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold truncate">
-              {profile?.full_name ?? "Admin"}
-            </p>
-            <p className="text-[10px] text-muted-foreground truncate">
-              {user?.email}
-            </p>
-          </div>
-        </Link>
-
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/5 hover:text-destructive active:scale-[0.98]"
-        >
-          <LogOut size={13} />
-          Keluar
-        </button>
-      </div>
     </aside>
   );
 }

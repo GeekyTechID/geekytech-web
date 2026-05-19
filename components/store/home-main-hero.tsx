@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { CarouselDots } from "@/components/ui/carousel-dots";
+import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import type { StoreBanner } from "@/lib/data/home-storefront";
-import { cn } from "@/lib/utils";
 
 const AUTO_MS = 6500;
 
@@ -91,38 +91,28 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
 
       {n > 1 && !hideNav && (
         <>
-          <button
-            type="button"
+          <CarouselNavButton
+            direction="prev"
+            surface="on-photo"
             onClick={() => go(-1)}
-            className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 md:left-5"
+            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 md:left-5"
             aria-label="Banner sebelumnya"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
+          />
+          <CarouselNavButton
+            direction="next"
+            surface="on-photo"
             onClick={() => go(1)}
-            className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70 md:right-5"
+            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 md:right-5"
             aria-label="Banner berikutnya"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+          />
 
-          <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center gap-2">
-            {banners.map((b, i) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setIndex(i)}
-                className={cn(
-                  "h-2 rounded-full transition-all",
-                  i === index ? "w-8 bg-white" : "w-2 bg-white/40 hover:bg-white/70",
-                )}
-                aria-label={`Banner ${i + 1} dari ${n}`}
-                aria-current={i === index}
-              />
-            ))}
-          </div>
+          <CarouselDots
+            count={n}
+            activeIndex={index}
+            onSelect={setIndex}
+            className="absolute bottom-4 left-0 right-0 z-10"
+            tone="light"
+          />
         </>
       )}
     </section>

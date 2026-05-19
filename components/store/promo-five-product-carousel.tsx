@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import type { HomeShelfProduct } from "@/lib/data/home-storefront";
 import { HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS } from "@/lib/constants/home-product-row-slot";
@@ -54,34 +54,32 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
       role="region"
       aria-label={ariaLabel ?? "Deretan produk"}
     >
-      {showChevrons && (
-        <button
-          type="button"
+      {showChevrons ? (
+        <CarouselNavButton
+          direction="prev"
+          surface="surface"
           onClick={() => go(-1)}
           disabled={!canLeft}
           className={cn(
-            "absolute left-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:left-2 dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800",
+            "absolute left-0 top-1/2 z-10 -translate-y-1/2 sm:left-2",
             !canLeft && "pointer-events-none opacity-40",
           )}
           aria-label="Produk sebelumnya"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-      )}
-      {showChevrons && (
-        <button
-          type="button"
+        />
+      ) : null}
+      {showChevrons ? (
+        <CarouselNavButton
+          direction="next"
+          surface="surface"
           onClick={() => go(1)}
           disabled={!canRight}
           className={cn(
-            "absolute right-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:right-2 dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800",
+            "absolute right-0 top-1/2 z-10 -translate-y-1/2 sm:right-2",
             !canRight && "pointer-events-none opacity-40",
           )}
           aria-label="Produk berikutnya"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-      )}
+        />
+      ) : null}
 
       <div
         ref={scrollRef}

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -173,12 +175,9 @@ export default function PrivacyPage() {
               <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc] mb-6">
                 Hubungi tim customer service kami dan kami akan membantu menjawab pertanyaanmu.
               </p>
-              <a
-                href="/contact"
-                className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
-              >
-                Hubungi Customer Service
-              </a>
+              <Button asChild variant="primary">
+                <Link href="/contact">Hubungi Customer Service</Link>
+              </Button>
             </div>
           </div>
         </div>

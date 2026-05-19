@@ -4,8 +4,8 @@ import { useTheme } from "next-themes";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type ThemeToggleProps = {
   className?: string;
@@ -13,9 +13,9 @@ type ThemeToggleProps = {
 };
 
 const THEMES = [
-  { value: "light", label: "Terang", icon: Sun },
-  { value: "dark", label: "Gelap", icon: Moon },
-  { value: "system", label: "Sistem", icon: Monitor },
+  { value: "light" as const, label: "Terang", icon: Sun },
+  { value: "dark" as const, label: "Gelap", icon: Moon },
+  { value: "system" as const, label: "Sistem", icon: Monitor },
 ] as const;
 
 /**
@@ -31,12 +31,9 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
   if (!mounted) {
     return (
       <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "size-8 rounded-full transition-colors hover:bg-black/[0.04] dark:hover:bg-white/10",
-          className,
-        )}
+        variant="icon-chip"
+        size="icon-sm"
+        className={className}
         aria-label="Ganti tema"
       >
         <span className="size-4" />
@@ -45,7 +42,6 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
   }
 
   const currentTheme = THEMES.find((t) => t.value === theme) ?? THEMES[0];
-  const Icon = currentTheme.icon;
 
   const cycleTheme = () => {
     const currentIndex = THEMES.findIndex((t) => t.value === theme);
@@ -55,45 +51,30 @@ export function ThemeToggle({ className, variant = "icon" }: ThemeToggleProps) {
 
   if (variant === "full") {
     return (
-      <div
-        className={cn(
-          "inline-flex border border-border rounded overflow-hidden",
-          className,
-        )}
-        role="group"
+      <SegmentedControl
+        value={(theme ?? "light") as "light" | "dark" | "system"}
+        onChange={setTheme}
         aria-label="Pilih tema"
-      >
-        {THEMES.map(({ value, label, icon: ThemeIcon }) => (
-          <button
-            key={value}
-            onClick={() => setTheme(value)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase transition-swiss",
-              "border-r border-border last:border-r-0",
-              theme === value
-                ? "bg-swiss-black text-swiss-white"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted",
-            )}
-            aria-label={label}
-            aria-pressed={theme === value}
-          >
-            <ThemeIcon size={12} />
-            <span className="hidden sm:inline">{label}</span>
-          </button>
-        ))}
-      </div>
+        className={className}
+        options={THEMES.map(({ value, label, icon: ThemeIcon }) => ({
+          value,
+          label: (
+            <>
+              <ThemeIcon size={12} />
+              <span className="hidden sm:inline">{label}</span>
+            </>
+          ),
+        }))}
+      />
     );
   }
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant="icon-chip"
+      size="icon-sm"
       onClick={cycleTheme}
-      className={cn(
-        "size-8 rounded-full text-neutral-600 transition-colors hover:bg-black/[0.04] hover:text-[#1d1d1f] dark:text-muted-foreground dark:hover:bg-white/10 dark:hover:text-foreground",
-        className,
-      )}
+      className={className}
       aria-label={`Tema sekarang: ${currentTheme.label}. Klik untuk ganti.`}
       title={`Tema: ${currentTheme.label}`}
     >

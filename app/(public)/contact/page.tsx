@@ -94,9 +94,9 @@ export default function ContactPage() {
                   <p className="text-[14px] font-semibold text-[#FFAD88] mb-4">
                     {channel.value}
                   </p>
-                  <button className="text-[14px] font-normal text-[#EA5329] group-hover:text-[#d44820] transition-colors">
+                  <span className="text-[14px] font-normal text-brand transition-colors group-hover:text-brand-hover">
                     {channel.label} →
-                  </button>
+                  </span>
                 </a>
               );
             })}

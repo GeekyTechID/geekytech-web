@@ -50,7 +50,7 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
         </Label>
         <Textarea id="description" name="description" rows={5} className="mt-1 border-[#e0e0e0]" placeholder="Jelaskan kejadian beserta nomor SKU bila perlu." />
       </div>
-      <Button type="submit" disabled={pending} className="mt-6 bg-black text-white hover:bg-[#333]">
+      <Button type="submit" variant="primary" disabled={pending} className="mt-6">
         Ajukan komplain
       </Button>
     </form>

@@ -145,7 +145,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <Input id="phone" name="phone" defaultValue={profile.phone ?? ""} className="mt-1 border-[#e0e0e0]" />
       </div>
 
-      <Button type="submit" disabled={pending || uploading} className="bg-black text-white hover:bg-[#333]">
+      <Button type="submit" variant="primary" disabled={pending || uploading}>
         {pending ? <Loader2 size={14} className="animate-spin" /> : "Simpan"}
       </Button>
     </form>

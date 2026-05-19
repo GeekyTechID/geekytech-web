@@ -35,23 +35,29 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-none border-foreground sm:max-w-md" showCloseButton={false}>
+      <DialogContent className="rounded-lg border-[#e0e0e0] sm:max-w-md dark:border-border" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="font-black uppercase">{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogTitle className="text-[17px] font-semibold leading-[1.24] tracking-[-0.374px] text-[#1d1d1f]">
+            {title}
+          </DialogTitle>
+          {description && (
+            <DialogDescription className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px]">
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <DialogFooter className="rounded-none">
+        <DialogFooter className="gap-2 sm:gap-2">
           <Button
-            variant="outline"
-            className="rounded-none"
+            type="button"
+            variant="secondary"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
             {cancelLabel}
           </Button>
           <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            className="rounded-none"
+            type="button"
+            variant={variant === "destructive" ? "destructive" : "primary"}
             onClick={onConfirm}
             disabled={isLoading}
           >

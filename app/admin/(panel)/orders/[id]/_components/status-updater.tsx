@@ -67,12 +67,7 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
       </div>
 
       {canUpdate ? (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full rounded-full border-brand/40 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
-          onClick={() => setOpen(true)}
-        >
+        <Button type="button" variant="secondary" size="sm" className="w-full" onClick={() => setOpen(true)}>
           Ubah Status
         </Button>
       ) : (
@@ -120,8 +115,9 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
             <div className="flex gap-2">
               <Button
                 type="button"
-                variant="outline"
-                className="flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
+                variant="secondary"
+                size="sm"
+                className="flex-1"
                 onClick={() => setOpen(false)}
                 disabled={isPending}
               >
@@ -129,7 +125,9 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
               </Button>
               <Button
                 type="button"
-                className="flex-1 rounded-full bg-brand text-xs font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+                variant="primary"
+                size="sm"
+                className="flex-1"
                 onClick={handleSubmit}
                 disabled={!selectedStatus || isPending}
               >

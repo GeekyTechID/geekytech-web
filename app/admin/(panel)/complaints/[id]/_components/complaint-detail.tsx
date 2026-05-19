@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, Clock, ExternalLink, XCircle } from "lucide-re
 import { toast } from "sonner";
 
 import { formatDate } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { updateComplaintStatus, updateAdminNote, type ComplaintStatus } from "../../_actions";
 
@@ -175,14 +176,9 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                 rows={4}
                 className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-[17px] leading-[1.47] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
               />
-              <button
-                type="button"
-                onClick={handleSaveNote}
-                disabled={isPending}
-                className="h-10 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-              >
+              <Button type="button" variant="primary" size="sm" onClick={handleSaveNote} disabled={isPending}>
                 Simpan Catatan
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -216,49 +212,57 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
             </div>
             <div className="space-y-2 p-6">
               {complaint.status === "open" && (
-                <button
+                <Button
                   type="button"
+                  variant="pearl"
+                  size="sm"
+                  className="w-full"
                   onClick={() => handleStatusUpdate("in_review")}
                   disabled={isPending}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
                 >
                   <Clock size={14} />
                   Mulai Tinjau
-                </button>
+                </Button>
               )}
 
               {(complaint.status === "open" || complaint.status === "in_review") && (
                 <>
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
+                    className="w-full"
                     onClick={() => handleStatusUpdate("resolved")}
                     disabled={isPending}
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <CheckCircle2 size={14} />
                     Tandai Selesai
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="destructive-ghost"
+                    size="sm"
+                    className="w-full"
                     onClick={() => handleStatusUpdate("rejected")}
                     disabled={isPending}
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-destructive/40 text-xs font-semibold uppercase text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50 active:scale-[0.98]"
                   >
                     <XCircle size={14} />
                     Tolak Komplain
-                  </button>
+                  </Button>
                 </>
               )}
 
               {(complaint.status === "resolved" || complaint.status === "rejected") && (
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
                   onClick={() => handleStatusUpdate("open")}
                   disabled={isPending}
-                  className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-brand/40 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
                 >
                   Buka Kembali
-                </button>
+                </Button>
               )}
             </div>
           </div>

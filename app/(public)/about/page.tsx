@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Tentang GeekyTech",
@@ -161,18 +162,12 @@ export default function AboutPage() {
             107 produk tech & gadget original menunggumu.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/products"
-              className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
-            >
-              Lihat Semua Produk
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-block border border-[#EA5329] text-[#EA5329] text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95"
-            >
-              Hubungi Kami
-            </Link>
+            <Button asChild variant="primary">
+              <Link href="/products">Lihat Semua Produk</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/contact">Hubungi Kami</Link>
+            </Button>
           </div>
         </div>
       </section>

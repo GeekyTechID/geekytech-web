@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default async function FeaturedProductsNewPage() {
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Buat Rekomendasi Produk
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           Template: Rekomendasi Produk · pilih produk atau brand yang ingin ditonjolkan
         </p>
       </div>

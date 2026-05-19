@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 function buildUrl(searchParams: URLSearchParams, page: number) {
   const params = new URLSearchParams(searchParams.toString());
@@ -39,26 +39,27 @@ export function DashboardOrdersPagination({
     }
   }
 
-  const btnBase =
-    "flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg border px-2 text-sm font-medium transition";
-
   return (
     <div className="mt-6 flex items-center justify-between gap-2">
       <p className="text-xs text-[#7a7a7a]">
         Halaman {currentPage} dari {totalPages} · {total} pesanan
       </p>
       <div className="flex items-center gap-1">
-        <a
-          href={buildUrl(searchParams, currentPage - 1)}
+        <Button
+          asChild
+          variant="pearl"
+          size="icon-sm"
+          className="min-h-9 min-w-9"
           aria-disabled={currentPage <= 1}
-          className={cn(
-            btnBase,
-            "border-[#e0e0e0] bg-white text-[#1d1d1f]",
-            currentPage <= 1 && "pointer-events-none opacity-40",
-          )}
         >
-          <ChevronLeft className="h-4 w-4" />
-        </a>
+          <a
+            href={buildUrl(searchParams, currentPage - 1)}
+            aria-label="Halaman sebelumnya"
+            className={currentPage <= 1 ? "pointer-events-none opacity-40" : undefined}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </a>
+        </Button>
 
         {pages.map((p, i) =>
           p === "…" ? (
@@ -66,32 +67,34 @@ export function DashboardOrdersPagination({
               …
             </span>
           ) : (
-            <a
+            <Button
               key={p}
-              href={buildUrl(searchParams, p)}
-              className={cn(
-                btnBase,
-                p === currentPage
-                  ? "border-[#EA5329] bg-[#EA5329] text-white"
-                  : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#EA5329]/40",
-              )}
+              asChild
+              variant={p === currentPage ? "primary" : "pearl"}
+              size="icon-sm"
+              className="min-h-9 min-w-9 text-sm"
+              aria-current={p === currentPage ? "page" : undefined}
             >
-              {p}
-            </a>
+              <a href={buildUrl(searchParams, p)}>{p}</a>
+            </Button>
           ),
         )}
 
-        <a
-          href={buildUrl(searchParams, currentPage + 1)}
+        <Button
+          asChild
+          variant="pearl"
+          size="icon-sm"
+          className="min-h-9 min-w-9"
           aria-disabled={currentPage >= totalPages}
-          className={cn(
-            btnBase,
-            "border-[#e0e0e0] bg-white text-[#1d1d1f]",
-            currentPage >= totalPages && "pointer-events-none opacity-40",
-          )}
         >
-          <ChevronRight className="h-4 w-4" />
-        </a>
+          <a
+            href={buildUrl(searchParams, currentPage + 1)}
+            aria-label="Halaman berikutnya"
+            className={currentPage >= totalPages ? "pointer-events-none opacity-40" : undefined}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </a>
+        </Button>
       </div>
     </div>
   );

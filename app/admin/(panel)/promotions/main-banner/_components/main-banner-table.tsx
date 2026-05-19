@@ -1,11 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { ImageOff, ImagePlus, Images, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import {
   Dialog,
   DialogContent,
@@ -93,7 +95,7 @@ function BannerEditDialog({
     });
   };
 
-  const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+  const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -101,7 +103,7 @@ function BannerEditDialog({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className={labelClass}>
-            Judul <span className="text-muted-foreground/60">(Opsional)</span>
+            Judul <span className="text-foreground/60">(Opsional)</span>
           </label>
           <Input
             value={title}
@@ -128,14 +130,16 @@ function BannerEditDialog({
         {imageUrl ? (
           <div className="relative aspect-[3/1] w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
             <Image src={imageUrl} alt="Preview" fill className="object-cover" />
-            <button
+            <Button
               type="button"
+              variant="destructive"
+              size="icon-sm"
               onClick={() => setImageUrl("")}
-              className="absolute right-2 top-2 rounded-lg bg-destructive p-2 text-white hover:opacity-90 active:scale-[0.98]"
+              className="absolute right-2 top-2"
               aria-label="Hapus gambar"
             >
               <Trash2 size={12} />
-            </button>
+            </Button>
           </div>
         ) : (
           <button
@@ -143,7 +147,7 @@ function BannerEditDialog({
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
             className={cn(
-              "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors dark:border-border",
+              "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-foreground transition-colors dark:border-border",
               "hover:border-brand/50 hover:text-brand",
               uploading && "cursor-not-allowed opacity-50",
             )}
@@ -181,41 +185,33 @@ function BannerEditDialog({
       {/* Status */}
       <div className="space-y-1.5">
         <p className={labelClass}>Status</p>
-        <button
-          type="button"
-          onClick={() => setIsActive((v) => !v)}
-          className={cn(
-            "flex h-10 w-48 items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-[11px] font-semibold uppercase transition-colors dark:border-border",
-            isActive
-              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          <span
-            className={cn(
-              "h-2 w-2 rounded-full",
-              isActive ? "bg-emerald-500" : "bg-muted-foreground",
-            )}
-          />
-          {isActive ? "Aktif" : "Nonaktif"}
-        </button>
+        <StatusPillToggle
+          active={isActive}
+          onToggle={() => setIsActive((v) => !v)}
+          activeLabel="Aktif"
+          inactiveLabel="Nonaktif"
+          className="w-48 justify-center"
+        />
       </div>
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
+          size="sm"
+          className="flex-1"
           onClick={onClose}
           disabled={isPending || uploading}
-          className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase dark:border-border"
         >
           Batal
         </Button>
         <Button
           type="submit"
+          variant="primary"
+          size="sm"
+          className="flex-1"
           disabled={isPending || uploading}
-          className="flex-1 rounded-full border-0 bg-brand text-[11px] font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98]"
         >
           {isPending ? "Menyimpan..." : "Simpan Perubahan"}
         </Button>
@@ -256,7 +252,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
 
   if (banners.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <Images size={36} strokeWidth={1} />
         <p className="text-[11px] font-semibold uppercase">Belum ada banner</p>
       </div>
@@ -270,16 +266,16 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Banner
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Link
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -301,7 +297,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center">
-                            <ImageOff size={16} className="text-muted-foreground/40" />
+                            <ImageOff size={16} className="text-foreground/40" />
                           </div>
                         )}
                       </div>
@@ -309,7 +305,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                         <p className="truncate text-[13px] font-semibold leading-tight text-foreground">
                           {banner.title ?? "—"}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        <p className="mt-0.5 text-[11px] text-foreground">
                           Urutan {banner.sort_order}
                         </p>
                       </div>
@@ -319,39 +315,24 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                   {/* Link URL */}
                   <td className="hidden px-4 py-3 sm:table-cell">
                     {banner.link_url ? (
-                      <span className="truncate font-mono text-[11px] text-muted-foreground">
+                      <span className="truncate font-mono text-[11px] text-foreground">
                         {banner.link_url}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-muted-foreground/50">—</span>
+                      <span className="text-[11px] text-foreground/50">—</span>
                     )}
                   </td>
 
                   {/* Status badge */}
                   <td className="px-4 py-3 text-center">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase",
-                        banner.is_active
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full",
-                          banner.is_active ? "bg-emerald-500" : "bg-muted-foreground/50",
-                        )}
-                      />
-                      {banner.is_active ? "Aktif" : "Nonaktif"}
-                    </span>
+                    <AdminStatusBadge active={banner.is_active} showDot />
                   </td>
 
                   {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
                       <AdminTableRowTextButton
-                        tone="brand"
+                        appearance="filled"
                         onClick={() => setEditTarget(banner)}
                         disabled={isPending}
                       >
@@ -363,19 +344,15 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                       </AdminTableDeleteButton>
 
                       {/* Toggle */}
-                      <button
-                        type="button"
+                      <StatusPillToggle
+                        active={banner.is_active}
+                        onToggle={() => handleToggle(banner.id, banner.is_active)}
+                        activeLabel="Nonaktifkan"
+                        inactiveLabel="Aktifkan"
                         disabled={isPending}
-                        onClick={() => handleToggle(banner.id, banner.is_active)}
-                        className={cn(
-                          "ml-1 h-8 rounded-full px-4 text-[11px] font-semibold uppercase transition-colors disabled:opacity-50 active:scale-[0.98]",
-                          banner.is_active
-                            ? "border border-[#e0e0e0] text-muted-foreground hover:bg-muted dark:border-border"
-                            : "bg-emerald-600 text-white hover:bg-emerald-700",
-                        )}
-                      >
-                        {banner.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
+                        size="compact"
+                        className="ml-1"
+                      />
                     </div>
                   </td>
                 </tr>
@@ -423,15 +400,18 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
-              variant="outline"
-              className="flex-1 rounded-full border-[#e0e0e0] text-[11px] font-semibold uppercase dark:border-border"
+              variant="secondary"
+              size="sm"
+              className="flex-1"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-full border-0 bg-destructive text-[11px] font-semibold uppercase text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
+              variant="destructive"
+              size="sm"
+              className="flex-1"
               onClick={handleDelete}
               disabled={isPending}
             >

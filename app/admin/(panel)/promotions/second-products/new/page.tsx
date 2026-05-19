@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default async function SecondProductsNewPage() {
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Buat Promosi Produk Second
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           Template: Produk Second Terbaik · hanya produk kondisi second yang dapat dipilih
         </p>
       </div>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { CategoryFilters } from "./_components/category-filters";
 import { CategoryTable } from "./_components/category-table";
@@ -57,17 +58,16 @@ export default async function AdminCategoriesPage({
           <h1 className="text-[34px] font-semibold uppercase text-foreground">
             Kategori
           </h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {totalCount} kategori{q ? ` untuk "${q}"` : ""}
           </p>
         </div>
-        <Link
-          href="/admin/categories/new"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-        >
-          <Plus size={14} strokeWidth={2} />
-          Tambah Kategori
-        </Link>
+        <Button asChild variant="primary" size="sm" className="shrink-0 gap-2">
+          <Link href="/admin/categories/new">
+            <Plus size={14} strokeWidth={2} />
+            Tambah Kategori
+          </Link>
+        </Button>
       </div>
 
       <Suspense>

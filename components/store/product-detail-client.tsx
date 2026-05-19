@@ -16,6 +16,9 @@ import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } fro
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { Button } from "@/components/ui/button";
+import { ChoiceChip } from "@/components/ui/choice-chip";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
 const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
@@ -267,24 +270,17 @@ export function ProductDetailClient({
                       <p className="mb-2 text-xs font-semibold uppercase text-[#7a7a7a]">Varian</p>
                       <div className="flex flex-wrap gap-2">
                         {product.variants.map((v) => (
-                          <button
+                          <ChoiceChip
                             key={v.id}
-                            type="button"
+                            selected={v.id === variant?.id}
+                            disabled={v.stock < 1}
                             onClick={() => {
                               setVariantId(v.id);
                               setQty((q) => clampQty(q));
                             }}
-                            disabled={v.stock < 1}
-                            className={cn(
-                              "rounded-full border px-4 py-2 text-sm font-medium transition",
-                              v.id === variant?.id
-                                ? "border-[#EA5329] bg-[#EA5329] text-white"
-                                : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#EA5329]/50",
-                              v.stock < 1 && "cursor-not-allowed opacity-40",
-                            )}
                           >
                             {v.name}
-                          </button>
+                          </ChoiceChip>
                         ))}
                       </div>
                     </div>
@@ -320,27 +316,14 @@ export function ProductDetailClient({
             <aside className="w-full shrink-0 lg:min-w-[23rem] lg:max-w-[26rem] xl:min-w-[24rem] xl:max-w-[28rem]">
               <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-8 lg:px-10">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-0 rounded-full border border-[#e0e0e0] bg-white">
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center text-lg font-medium transition hover:bg-[#f5f5f7]"
-                      aria-label="Kurangi jumlah"
-                      disabled={maxQty < 1 || qty <= minQty || isPending}
-                      onClick={() => setQty((q) => clampQty(q - 1))}
-                    >
-                      −
-                    </button>
-                    <span className="min-w-[2.5rem] text-center text-sm font-semibold">{qty}</span>
-                    <button
-                      type="button"
-                      className="flex h-11 w-11 items-center justify-center text-lg font-medium transition hover:bg-[#f5f5f7]"
-                      aria-label="Tambah jumlah"
-                      disabled={maxQty < 1 || qty >= maxQty || isPending}
-                      onClick={() => setQty((q) => clampQty(q + 1))}
-                    >
-                      +
-                    </button>
-                  </div>
+                  <QuantityStepper
+                    value={qty}
+                    min={minQty}
+                    max={maxQty}
+                    disabled={isPending}
+                    onDecrease={() => setQty((q) => clampQty(q - 1))}
+                    onIncrease={() => setQty((q) => clampQty(q + 1))}
+                  />
                   <p className="max-w-[14rem] text-right text-xs leading-snug text-[#7a7a7a]">
                     {maxQty < 1
                       ? "Stok habis untuk varian ini."
@@ -366,22 +349,24 @@ export function ProductDetailClient({
                 </div>
 
                 <div className="mt-6 flex flex-col gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
                     disabled={!variant || variant.stock < 1 || isPending}
                     onClick={handleBuyNow}
-                    className="h-12 w-full rounded-full bg-[#EA5329] text-[15px] font-semibold text-white transition hover:bg-[#d44820] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full"
                   >
                     Beli sekarang
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
                     disabled={!variant || variant.stock < 1 || isPending}
                     onClick={handleAddCart}
-                    className="h-12 w-full rounded-full border-2 border-[#EA5329] bg-white text-[15px] font-semibold text-[#EA5329] transition hover:bg-[#EA5329]/5 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full"
                   >
                     + Keranjang
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 border-t border-[#eadfd8] pt-6 text-[14px] font-medium">

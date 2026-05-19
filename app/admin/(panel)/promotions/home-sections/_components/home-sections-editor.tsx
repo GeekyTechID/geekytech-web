@@ -8,6 +8,9 @@ import {
   ExternalLink, CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { Button } from "@/components/ui/button";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { saveHomeSections, type HomeSection, type HomeSectionKey } from "../_actions";
@@ -65,16 +68,7 @@ const SECTION_META: Record<HomeSectionKey, {
 const labelClass = "text-[10px] font-semibold uppercase text-muted-foreground";
 
 function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span className={cn(
-      "inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
-      active
-        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-        : "bg-muted text-muted-foreground",
-    )}>
-      {active ? "Aktif" : "Nonaktif"}
-    </span>
-  );
+  return <AdminStatusBadge active={active} />;
 }
 
 function ThCell({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -549,18 +543,13 @@ export function HomeSectionsEditor({
 
                     {/* Active toggle */}
                     <TdCell className="text-right">
-                      <button
-                        type="button"
-                        onClick={() => toggleActive(section.key)}
-                        className={cn(
-                          "h-8 rounded-full px-3 text-[11px] font-semibold uppercase transition-colors",
-                          section.is_active
-                            ? "bg-emerald-500/15 text-emerald-800 hover:bg-emerald-500/25 dark:text-emerald-400"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80",
-                        )}
-                      >
-                        {section.is_active ? "Aktif" : "Nonaktif"}
-                      </button>
+                      <StatusPillToggle
+                        active={section.is_active}
+                        onToggle={() => toggleActive(section.key)}
+                        activeLabel="Aktif"
+                        inactiveLabel="Nonaktif"
+                        size="compact"
+                      />
                     </TdCell>
                   </tr>
                 );
@@ -571,14 +560,9 @@ export function HomeSectionsEditor({
       </div>
 
       {/* Save */}
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className="h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-      >
+      <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
         {isPending ? "Menyimpan..." : "Simpan Perubahan"}
-      </button>
+      </Button>
     </div>
   );
 }

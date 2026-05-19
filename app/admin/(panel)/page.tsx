@@ -228,7 +228,7 @@ export default async function AdminDashboardPage() {
     <div className="w-full space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
       {/* Header */}
       <div>
-        <p className="text-swiss-eyebrow">Overview</p>
+        <p className="text-swiss-eyebrow !tracking-normal">Overview</p>
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Dashboard
         </h1>
@@ -314,7 +314,7 @@ export default async function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-2xl font-semibold tabular-nums">{stats.newCustomersWeek}</p>
-              <p className="text-[13px] text-muted-foreground">Pelanggan baru minggu ini</p>
+              <p className="text-[13px] text-foreground">Pelanggan baru minggu ini</p>
             </div>
           </div>
         </div>
@@ -330,7 +330,7 @@ export default async function AdminDashboardPage() {
             </h2>
             <Link
               href="/admin/products?filter=low_stock"
-              className="admin-text-link inline-flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1 text-[13px]"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
@@ -351,7 +351,7 @@ export default async function AdminDashboardPage() {
                 <div key={v.id} className="flex items-center justify-between px-5 py-2.5">
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{productName}</p>
-                    <p className="text-xs text-muted-foreground">{v.sku} · {v.name}</p>
+                    <p className="text-xs text-foreground">{v.sku} · {v.name}</p>
                   </div>
                   <span
                     className={cn(
@@ -376,7 +376,7 @@ export default async function AdminDashboardPage() {
           <h2 className="admin-section-title">Pesanan Terbaru</h2>
           <Link
             href="/admin/orders"
-            className="admin-text-link inline-flex items-center gap-1"
+            className="admin-text-link inline-flex items-center gap-1 text-[13px]"
           >
             Lihat semua <ArrowRight size={12} />
           </Link>
@@ -388,7 +388,7 @@ export default async function AdminDashboardPage() {
                 {["No. Order", "Pembeli", "Status", "Total", "Tanggal"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase text-foreground"
                   >
                     {h}
                   </th>
@@ -398,7 +398,7 @@ export default async function AdminDashboardPage() {
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {recentOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-foreground">
                     Belum ada pesanan
                   </td>
                 </tr>
@@ -442,7 +442,7 @@ export default async function AdminDashboardPage() {
                       <td className="px-5 py-3 font-semibold whitespace-nowrap">
                         {formatRupiah(order.total)}
                       </td>
-                      <td className="px-5 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                      <td className="px-5 py-3 text-xs text-foreground whitespace-nowrap">
                         {formatRelativeDate(order.created_at)}
                       </td>
                     </tr>
@@ -462,14 +462,14 @@ export default async function AdminDashboardPage() {
             <h2 className="admin-section-title">Pelanggan Baru</h2>
             <Link
               href="/admin/customers"
-              className="admin-text-link inline-flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1 text-[13px]"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
           <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
             {recentCustomers.length === 0 ? (
-              <li className="px-5 py-6 text-center text-sm text-muted-foreground">
+              <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada pelanggan
               </li>
             ) : (
@@ -487,7 +487,7 @@ export default async function AdminDashboardPage() {
                         {c.full_name ?? "Tanpa nama"}
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                    <p className="text-xs text-foreground whitespace-nowrap shrink-0">
                       {formatRelativeDate(c.created_at)}
                     </p>
                   </li>
@@ -503,14 +503,14 @@ export default async function AdminDashboardPage() {
             <h2 className="admin-section-title">Ulasan Terbaru</h2>
             <Link
               href="/admin/reviews"
-              className="admin-text-link inline-flex items-center gap-1"
+              className="admin-text-link inline-flex items-center gap-1 text-[13px]"
             >
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
           <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
             {recentReviews.length === 0 ? (
-              <li className="px-5 py-6 text-center text-sm text-muted-foreground">
+              <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada ulasan
               </li>
             ) : (
@@ -538,16 +538,16 @@ export default async function AdminDashboardPage() {
                           <Star
                             key={i}
                             size={10}
-                            className={i < r.rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"}
+                            className={i < r.rating ? "text-yellow-500 fill-yellow-500" : "text-foreground"}
                           />
                         ))}
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
+                    <p className="text-xs text-foreground line-clamp-1">
                       {r.comment ?? "—"}
                     </p>
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">{reviewerName}</p>
+                      <p className="text-xs text-foreground">{reviewerName}</p>
                       <span
                         className={cn(
                           "text-[10px] font-bold px-1.5 py-0.5",
@@ -597,7 +597,7 @@ function StatCard({
         <p
           className={cn(
             "text-[11px] font-semibold uppercase",
-            accent ? "text-white/85" : "text-muted-foreground",
+            accent ? "text-white/85" : "text-foreground",
           )}
         >
           {label}
@@ -609,7 +609,7 @@ function StatCard({
         />
       </div>
       <p className="text-3xl font-semibold leading-none">{value}</p>
-      <p className={cn("truncate text-xs leading-relaxed", accent ? "text-white/75" : "text-muted-foreground")}>
+      <p className={cn("truncate text-xs leading-relaxed", accent ? "text-white/75" : "text-foreground")}>
         {sub}
       </p>
     </div>

@@ -9,6 +9,7 @@ import {
   AdminTableDeleteButton,
   AdminTableRowTextButton,
 } from "@/components/admin/admin-table-row-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   addFlashSaleProduct,
@@ -98,22 +99,12 @@ function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: ()
           min={1}
         />
       </div>
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className="rounded-lg bg-brand p-1.5 text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-      >
+      <Button type="button" variant="primary" size="icon-sm" onClick={handleSave} disabled={isPending} aria-label="Simpan">
         <Save size={13} />
-      </button>
-      <button
-        type="button"
-        onClick={onDone}
-        disabled={isPending}
-        className="rounded-lg border border-[#e0e0e0] p-1.5 transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
-      >
+      </Button>
+      <Button type="button" variant="pearl" size="icon-sm" onClick={onDone} disabled={isPending} aria-label="Batal">
         <X size={13} />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -258,22 +249,18 @@ function AddProductForm({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={isPending}
-          className="h-9 rounded-full bg-brand px-4 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-        >
+        <Button type="button" variant="primary" size="sm" onClick={handleAdd} disabled={isPending}>
           {isPending ? "Menambahkan..." : "Tambahkan"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => setOpen(false)}
           disabled={isPending}
-          className="h-9 rounded-full border border-brand/40 px-4 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50"
         >
           Batal
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -384,22 +371,24 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                               <span className="text-[10px] font-semibold uppercase text-destructive">
                                 Yakin?
                               </span>
-                              <button
+                              <Button
                                 type="button"
+                                variant="destructive"
+                                size="xs"
                                 onClick={() => handleRemove(product.id)}
                                 disabled={isPending}
-                                className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
                               >
                                 {isPending ? "..." : "Ya"}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type="button"
+                                variant="table-action"
+                                size="xs"
                                 onClick={() => setConfirmDeleteId(null)}
                                 disabled={isPending}
-                                className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
                               >
                                 Batal
-                              </button>
+                              </Button>
                             </>
                           ) : (
                             <>

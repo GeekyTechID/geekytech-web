@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
@@ -78,7 +78,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
 
   if (brands.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <Building2 size={36} strokeWidth={1} />
         <p className="text-sm font-semibold uppercase">Belum ada merek</p>
       </div>
@@ -92,19 +92,19 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Nama
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Slug
                 </th>
-                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground md:table-cell">
                   Urutan
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -126,7 +126,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                         </div>
                       ) : (
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
-                          <Building2 size={12} className="text-muted-foreground" />
+                          <Building2 size={12} className="text-foreground" />
                         </div>
                       )}
                       <p className="text-[17px] font-semibold leading-tight">{brand.name}</p>
@@ -134,11 +134,11 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="font-mono text-[11px] text-muted-foreground">/{brand.slug}</span>
+                    <span className="font-mono text-[11px] text-foreground">/{brand.slug}</span>
                   </td>
 
                   <td className="hidden px-4 py-3 text-center md:table-cell">
-                    <span className="text-xs text-muted-foreground">{brand.sort_order}</span>
+                    <span className="text-xs text-foreground">{brand.sort_order}</span>
                   </td>
 
                   <td className="px-4 py-3 text-center">
@@ -151,7 +151,12 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
 
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <AdminTableEditLink href={`/admin/brands/${brand.id}/edit`}>Edit</AdminTableEditLink>
+                      <AdminTableEditLink
+                        href={`/admin/brands/${brand.id}/edit`}
+                        appearance="filled"
+                      >
+                        Edit
+                      </AdminTableEditLink>
                       <AdminTableDeleteButton onClick={() => setDeleteTarget(brand)} disabled={isPending}>
                         Hapus
                       </AdminTableDeleteButton>
@@ -166,31 +171,33 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
 
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground">
             Menampilkan {firstItem}–{lastItem} dari {totalCount} merek
           </p>
           <div className="flex items-center gap-1">
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
-            </button>
+            </Button>
             <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
               {page} / {totalPages}
             </span>
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -207,15 +214,18 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
-              variant="outline"
-              className="flex-1 rounded-full border-[#e0e0e0] text-xs font-semibold uppercase dark:border-border"
+              variant="secondary"
+              size="sm"
+              className="flex-1"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]"
+              variant="destructive"
+              size="sm"
+              className="flex-1"
               onClick={handleDelete}
               disabled={isPending}
             >

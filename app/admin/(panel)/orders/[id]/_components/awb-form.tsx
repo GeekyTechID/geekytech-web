@@ -48,7 +48,9 @@ export function AWBForm({ orderId, currentAWB }: AWBFormProps) {
           />
           <Button
             type="submit"
-            className="h-10 shrink-0 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+            variant="primary"
+            size="sm"
+            className="shrink-0"
             disabled={isPending || !awb.trim()}
           >
             {isPending ? "..." : "Simpan"}

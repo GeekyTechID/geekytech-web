@@ -29,11 +29,11 @@ export function EmptyState({ icon: Icon, title, description, action, className }
       </div>
       {action &&
         (action.href ? (
-          <Button asChild className="rounded-none">
+          <Button asChild>
             <Link href={action.href}>{action.label}</Link>
           </Button>
         ) : (
-          <Button className="rounded-none" onClick={action.onClick}>
+          <Button onClick={action.onClick}>
             {action.label}
           </Button>
         ))}

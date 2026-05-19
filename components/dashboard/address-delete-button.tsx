@@ -14,10 +14,9 @@ export function AddressDeleteButton({ addressId }: { addressId: string }) {
   return (
     <Button
       type="button"
-      variant="ghost"
+      variant="destructive-ghost"
       size="sm"
       disabled={pending}
-      className="text-xs text-red-600 hover:bg-red-50"
       onClick={() => {
         if (!window.confirm("Hapus alamat ini?")) return;
         startTransition(async () => {

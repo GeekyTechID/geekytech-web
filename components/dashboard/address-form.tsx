@@ -188,13 +188,13 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
       </div>
 
       <div className="mt-4 flex gap-3">
-        <Button type="submit" disabled={pending} className="bg-black text-white hover:bg-[#333]">
+        <Button type="submit" variant="primary" disabled={pending}>
           {mode === "create" ? "Simpan alamat" : "Perbarui alamat"}
         </Button>
         {mode === "edit" && (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={pending}
             onClick={() => router.push("/dashboard/addresses")}
           >

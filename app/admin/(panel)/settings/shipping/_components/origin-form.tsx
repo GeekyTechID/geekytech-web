@@ -2,22 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { settingsLabelClass } from "../../_lib/label-class";
 import { saveSetting } from "../../_actions";
-
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
-const saveClass =
-  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
-
-type StoreOrigin = {
-  name: string;
-  phone: string;
-  province: string;
-  city: string;
-  district: string;
-  postal_code: string;
-  address: string;
-};
+import type { StoreOrigin } from "../_lib/store-origin";
 
 interface OriginFormProps {
   initialValue: StoreOrigin;
@@ -47,37 +36,46 @@ export function OriginForm({ initialValue }: OriginFormProps) {
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label className={labelClass}>Nama Toko / Pengirim</label>
+          <label className={settingsLabelClass}>Nama Toko / Pengirim</label>
           <Input value={form.name} onChange={set("name")} placeholder="GeekyTech Store" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Nomor Telepon</label>
+          <label className={settingsLabelClass}>Nomor Telepon</label>
           <Input value={form.phone} onChange={set("phone")} placeholder="6281234567890" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Provinsi</label>
+          <label className={settingsLabelClass}>Provinsi</label>
           <Input value={form.province} onChange={set("province")} placeholder="DKI Jakarta" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Kota / Kabupaten</label>
+          <label className={settingsLabelClass}>Kota / Kabupaten</label>
           <Input value={form.city} onChange={set("city")} placeholder="Jakarta Selatan" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Kecamatan</label>
+          <label className={settingsLabelClass}>Kecamatan</label>
           <Input value={form.district} onChange={set("district")} placeholder="Kebayoran Baru" className={inputClass} />
         </div>
         <div className="space-y-1.5">
-          <label className={labelClass}>Kode Pos</label>
+          <label className={settingsLabelClass}>Kelurahan</label>
+          <Input
+            value={form.subdistrict}
+            onChange={set("subdistrict")}
+            placeholder="Senayan"
+            className={inputClass}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className={settingsLabelClass}>Kode Pos</label>
           <Input value={form.postal_code} onChange={set("postal_code")} placeholder="12180" className={inputClass} />
         </div>
         <div className="space-y-1.5 sm:col-span-2">
-          <label className={labelClass}>Alamat Lengkap</label>
+          <label className={settingsLabelClass}>Alamat Lengkap</label>
           <Input value={form.address} onChange={set("address")} placeholder="Jl. Raya No. 1" className={inputClass} />
         </div>
       </div>
-      <button type="button" onClick={handleSave} disabled={isPending} className={saveClass}>
+      <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
         {isPending ? "Menyimpan..." : "Simpan"}
-      </button>
+      </Button>
     </div>
   );
 }

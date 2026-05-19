@@ -3,15 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { createFaq, updateFaq, type FaqFormData } from "../_actions";
 
 const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
-const primaryBtn =
-  "h-10 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
-const secondaryBtn =
-  "h-10 rounded-full border border-brand/40 px-5 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 active:scale-[0.98] disabled:opacity-50";
 
 type FaqFormProps = {
   initialData?: {
@@ -128,34 +125,29 @@ export function FaqForm({ initialData }: FaqFormProps) {
           </div>
           <div className="space-y-1.5">
             <label className={labelClass}>Status</label>
-            <button
-              type="button"
-              onClick={() => setIsActive((v) => !v)}
-              className={cn(
-                "flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold uppercase transition-colors",
-                isActive
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
-                  : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",
-              )}
-            >
-              {isActive ? "Aktif" : "Nonaktif"}
-            </button>
+            <StatusPillToggle
+              active={isActive}
+              onToggle={() => setIsActive((v) => !v)}
+              activeLabel="Aktif"
+              inactiveLabel="Nonaktif"
+            />
           </div>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={isPending} className={primaryBtn}>
+        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
           {isPending ? "Menyimpan..." : initialData ? "Perbarui FAQ" : "Buat FAQ"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => router.push("/admin/settings/faq")}
           disabled={isPending}
-          className={secondaryBtn}
         >
           Batal
-        </button>
+        </Button>
       </div>
     </form>
   );

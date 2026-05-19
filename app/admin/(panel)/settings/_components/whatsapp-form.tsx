@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { saveSetting } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
-const saveClass =
-  "h-10 shrink-0 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98] disabled:opacity-50";
+import { settingsLabelClass } from "../_lib/label-class";
+
+const labelClass = settingsLabelClass;
 
 interface WhatsappFormProps {
   initialValue: string;
@@ -39,9 +40,9 @@ export function WhatsappForm({ initialValue }: WhatsappFormProps) {
           className="h-10 rounded-lg border-[#e0e0e0] text-sm dark:border-border"
         />
       </div>
-      <button type="button" onClick={handleSave} disabled={isPending} className={saveClass}>
+      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave} disabled={isPending}>
         {isPending ? "Menyimpan..." : "Simpan"}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default async function NewProductPage() {
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
-      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-foreground">
         <Link href="/admin/products" className="admin-text-link font-medium">
           Produk
         </Link>
@@ -29,7 +29,7 @@ export default async function NewProductPage() {
       <div>
         <p className="text-swiss-eyebrow">Katalog</p>
         <h1 className="text-[34px] font-semibold uppercase text-foreground">Tambah Produk</h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           Isi data produk lengkap termasuk gambar, varian, dan SEO.
         </p>
       </div>

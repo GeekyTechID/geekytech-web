@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsNav } from "./_components/settings-nav";
 import { MaintenanceToggle } from "./_components/maintenance-toggle";
@@ -35,7 +35,7 @@ export default async function AdminSettingsPage() {
       <div>
         <p className="text-swiss-eyebrow">Toko</p>
         <h1 className="text-[34px] font-semibold uppercase text-foreground">Pengaturan</h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Konfigurasi toko GeekyTech</p>
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">Konfigurasi toko GeekyTech</p>
       </div>
 
       <SettingsNav />
@@ -44,7 +44,7 @@ export default async function AdminSettingsPage() {
         <div className="admin-utility-card overflow-hidden p-0">
           <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
             <h2 className="admin-section-title">Maintenance Mode</h2>
-            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Aktifkan untuk menonaktifkan akses publik sementara.
             </p>
           </div>
@@ -56,11 +56,11 @@ export default async function AdminSettingsPage() {
         <div className="admin-utility-card overflow-hidden p-0">
           <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
             <h2 className="admin-section-title">Announcement Bar</h2>
-            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Banner informasi di bagian atas halaman.
             </p>
           </div>
-          <div className="p-6">
+          <div className="p-6 flex flex-row gap-2">
             <AnnouncementForm initialText={announcementBar.text} initialActive={announcementBar.is_active} />
           </div>
         </div>
@@ -68,7 +68,7 @@ export default async function AdminSettingsPage() {
         <div className="admin-utility-card overflow-hidden p-0">
           <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
             <h2 className="admin-section-title">WhatsApp CS</h2>
-            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Nomor WhatsApp customer service yang ditampilkan di tombol floating.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default async function AdminSettingsPage() {
         <div className="admin-utility-card overflow-hidden p-0">
           <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
             <h2 className="admin-section-title">Auto Complete Order</h2>
-            <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+            <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Order otomatis selesai setelah X hari konfirmasi pengiriman.
             </p>
           </div>

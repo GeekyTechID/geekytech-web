@@ -291,19 +291,12 @@ export function Navbar() {
               ) : (
                 <div className="hidden sm:flex items-center gap-1 ml-1">
                   <Link href="/login">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 rounded-none text-xs font-bold uppercase"
-                    >
+                    <Button variant="pearl" size="sm" className="text-xs font-bold uppercase">
                       Masuk
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button
-                      size="sm"
-                      className="h-8 rounded-none text-xs font-bold uppercase bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black"
-                    >
+                    <Button variant="dark" size="sm" className="text-xs font-bold uppercase">
                       Daftar
                     </Button>
                   </Link>
@@ -425,15 +418,12 @@ export function Navbar() {
               ) : (
                 <div className="px-3 space-y-2">
                   <Link href="/login" className="block">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-none font-bold uppercase text-xs"
-                    >
+                    <Button variant="pearl" className="w-full font-bold uppercase text-xs">
                       Masuk
                     </Button>
                   </Link>
                   <Link href="/register" className="block">
-                    <Button className="w-full rounded-none font-bold uppercase text-xs">
+                    <Button variant="primary" className="w-full font-bold uppercase text-xs">
                       Daftar
                     </Button>
                   </Link>

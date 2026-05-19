@@ -28,7 +28,7 @@ export default async function EditBrandPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 p-6 lg:p-8">
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <nav className="flex items-center gap-1.5 text-xs text-foreground">
         <Link href="/admin/brands" className="admin-text-link font-medium">
           Merek
         </Link>
@@ -41,7 +41,7 @@ export default async function EditBrandPage({
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Edit Merek
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">{brand.name}</p>
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">{brand.name}</p>
       </div>
 
       <BrandForm

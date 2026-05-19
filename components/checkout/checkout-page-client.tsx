@@ -11,6 +11,7 @@ import { CartCheckoutStepper } from "@/components/store/cart-checkout-stepper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   MIDTRANS_CHECKOUT_PAYMENT_OPTIONS,
   type MidtransCheckoutPaymentId,
@@ -288,12 +289,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
             Dialihkan ke halaman pesanan dalam{" "}
             <span className="font-semibold tabular-nums text-[#1d1d1f]">{countdown}</span> detik…
           </p>
-          <Link
-            href={`/dashboard/orders/${doneState.orderId}`}
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#EA5329] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#d94a24] active:scale-[0.97]"
-          >
-            Lihat Pesanan
-          </Link>
+          <Button asChild variant="primary" className="mt-8">
+            <Link href={`/dashboard/orders/${doneState.orderId}`}>Lihat Pesanan</Link>
+          </Button>
         </div>
         </div>
       </div>
@@ -527,11 +525,12 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                 ))}
               </ul>
 
-              <button
+              <Button
                 type="button"
+                variant="primary"
                 disabled={submitting || !addressId || !selectedShipping || addresses.length === 0}
                 onClick={() => void handleCheckout()}
-                className="mt-6 flex w-full items-center justify-center rounded-full bg-[#EA5329] py-3.5 text-center text-sm font-bold uppercase text-white transition hover:bg-[#d94a24] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+                className="mt-6 w-full uppercase"
               >
                 {submitting ? (
                   <>
@@ -541,7 +540,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                 ) : (
                   "Beli sekarang"
                 )}
-              </button>
+              </Button>
               <p className="mt-3 text-center text-[10px] leading-relaxed text-[#9a9590]">
                 Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko. Asuransi pengiriman
                 mengikuti ketentuan kurir (Biteship).

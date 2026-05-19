@@ -41,7 +41,7 @@ export default async function AdminBannerEditPage({ params }: { params: Params }
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Edit Banner
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           {banner.title ?? "Banner tanpa judul"}
         </p>
       </div>

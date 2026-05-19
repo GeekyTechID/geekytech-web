@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { cn } from "@/lib/utils";
 import { createBanner, updateBanner, type BannerFormData } from "../_actions";
 import { templateToPromotionAdminPath } from "@/lib/banner-template-utils";
@@ -140,14 +142,16 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
           {imageUrl ? (
             <div className="relative aspect-[3/1] max-h-48 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
               <Image src={imageUrl} alt="Preview banner" fill className="object-cover" />
-              <button
+              <Button
                 type="button"
+                variant="destructive"
+                size="icon-sm"
                 onClick={() => setImageUrl("")}
-                className="absolute right-2 top-2 rounded-lg bg-destructive p-2 text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                className="absolute right-2 top-2"
                 aria-label="Hapus gambar"
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             </div>
           ) : (
             <button
@@ -270,39 +274,30 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
             </div>
             <div className="space-y-1.5">
               <span className={labelClass}>Status</span>
-              <button
-                type="button"
-                onClick={() => setIsActive((v) => !v)}
-                className={cn(
-                  "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
-                  isActive
-                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                {isActive ? "Aktif" : "Nonaktif"}
-              </button>
+              <StatusPillToggle
+                active={isActive}
+                onToggle={() => setIsActive((v) => !v)}
+                activeLabel="Aktif"
+                inactiveLabel="Nonaktif"
+                className="w-full justify-center"
+              />
             </div>
           </div>
         </FormSection>
       )}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={isPending || uploading}
-          className="h-11 rounded-full bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-        >
+        <Button type="submit" variant="primary" disabled={isPending || uploading}>
           {isPending ? "Menyimpan..." : initialData ? "Perbarui Banner" : "Buat Banner"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => router.push(backHref)}
           disabled={isPending}
-          className="h-11 rounded-full border border-brand bg-transparent px-5 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/10 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
-        </button>
+        </Button>
       </div>
     </form>
   );

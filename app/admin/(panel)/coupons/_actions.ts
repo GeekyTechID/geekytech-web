@@ -5,6 +5,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 export type CouponFormData = {
   code: string;
+  title: string | null;
+  description: string | null;
   type: "percentage" | "fixed";
   value: number;
   min_purchase: number;
@@ -13,6 +15,9 @@ export type CouponFormData = {
   is_active: boolean;
   valid_from: string | null;
   valid_until: string | null;
+  image_url: string | null;
+  applies_to: "all" | "product" | "category" | "brand";
+  applies_to_ids: string[];
 };
 
 export async function createCoupon(
@@ -41,6 +46,8 @@ export async function createCoupon(
     .from("coupons")
     .insert({
       code: data.code.trim().toUpperCase(),
+      title: data.title || null,
+      description: data.description || null,
       type: data.type,
       value: data.value,
       min_purchase: data.min_purchase,
@@ -49,6 +56,9 @@ export async function createCoupon(
       is_active: data.is_active,
       valid_from: data.valid_from || null,
       valid_until: data.valid_until || null,
+      image_url: data.image_url || null,
+      applies_to: data.applies_to,
+      applies_to_ids: data.applies_to === "all" ? [] : data.applies_to_ids,
     })
     .select("id")
     .single();
@@ -86,6 +96,8 @@ export async function updateCoupon(
     .from("coupons")
     .update({
       code: data.code.trim().toUpperCase(),
+      title: data.title || null,
+      description: data.description || null,
       type: data.type,
       value: data.value,
       min_purchase: data.min_purchase,
@@ -94,6 +106,9 @@ export async function updateCoupon(
       is_active: data.is_active,
       valid_from: data.valid_from || null,
       valid_until: data.valid_until || null,
+      image_url: data.image_url || null,
+      applies_to: data.applies_to,
+      applies_to_ids: data.applies_to === "all" ? [] : data.applies_to_ids,
     })
     .eq("id", id);
 

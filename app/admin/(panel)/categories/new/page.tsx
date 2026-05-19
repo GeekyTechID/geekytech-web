@@ -20,7 +20,7 @@ export default async function NewCategoryPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 p-6 lg:p-8">
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <nav className="flex items-center gap-1.5 text-xs text-foreground">
         <Link href="/admin/categories" className="admin-text-link font-medium">
           Kategori
         </Link>
@@ -33,7 +33,7 @@ export default async function NewCategoryPage() {
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Tambah Kategori
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           Buat kategori baru. Kategori induk bisa memiliki subkategori.
         </p>
       </div>

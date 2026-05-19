@@ -1,7 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { BannerTable, type BannerRow } from "./_components/banner-table";
 
@@ -25,17 +26,16 @@ export default async function AdminBannersPage() {
           <h1 className="text-[34px] font-semibold uppercase text-foreground">
             Banner
           </h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {banners?.length ?? 0} banner · diurutkan berdasarkan urutan tampil
           </p>
         </div>
-        <Link
-          href="/admin/banners/new"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-        >
-          <Plus size={14} strokeWidth={2} />
-          Tambah Banner
-        </Link>
+        <Button asChild variant="primary" size="sm" className="shrink-0 gap-2">
+          <Link href="/admin/banners/new">
+            <Plus size={14} strokeWidth={2} />
+            Tambah Banner
+          </Link>
+        </Button>
       </div>
 
       <BannerTable banners={(banners ?? []) as BannerRow[]} />

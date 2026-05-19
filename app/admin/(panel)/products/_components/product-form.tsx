@@ -9,6 +9,7 @@ import { Plus, Trash2, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -490,26 +491,17 @@ export function ProductForm({
             </div>
 
             <Field label="Kondisi Produk" required>
-              <div className="flex gap-3">
-                {(["new", "second"] as const).map((val) => {
-                  const isSelected = watch("condition") === val;
-                  return (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setValue("condition", val)}
-                      className={cn(
-                        "h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors",
-                        isSelected
-                          ? "border-brand bg-brand/10 text-brand"
-                          : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border",
-                      )}
-                    >
-                      {val === "new" ? "Baru" : "Second"}
-                    </button>
-                  );
-                })}
-              </div>
+              <SegmentedControl
+                value={watch("condition")}
+                onChange={(val) => setValue("condition", val)}
+                fullWidth
+                size="compact"
+                aria-label="Kondisi produk"
+                options={[
+                  { value: "new", label: "Baru" },
+                  { value: "second", label: "Second" },
+                ]}
+              />
             </Field>
 
             <div className="flex flex-col gap-3 pt-1">
@@ -671,9 +663,9 @@ export function ProductForm({
 
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
-              className="h-9 rounded-full border border-dashed border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+              className="border-dashed"
               onClick={() => {
                 const nextIndex = fields.length;
                 append({
@@ -752,19 +744,14 @@ export function ProductForm({
 
         {/* ── Submit ─────────────────────────────────────────────────── */}
         <div className="flex gap-3 pt-8">
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="h-10 rounded-full border-0 bg-brand px-6 text-sm font-semibold uppercase text-white hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" disabled={isPending}>
             {isPending && <Loader2 size={14} className="mr-2 animate-spin" />}
             {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
           </Button>
 
           <Button
             type="button"
-            variant="outline"
-            className="h-10 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+            variant="secondary"
             onClick={() => router.back()}
             disabled={isPending}
           >
@@ -797,7 +784,7 @@ function Section({
   );
 }
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold text-foreground";
 
 function Field({
   label,

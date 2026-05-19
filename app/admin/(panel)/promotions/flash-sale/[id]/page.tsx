@@ -34,7 +34,7 @@ function getStatusInfo(sale: { is_active: boolean; starts_at: string; ends_at: s
   const ends = new Date(sale.ends_at);
 
   if (!sale.is_active) {
-    return { label: "Nonaktif", className: "bg-muted text-muted-foreground" };
+    return { label: "Nonaktif", className: "bg-muted text-foreground" };
   }
   if (now < starts) {
     return { label: "Terjadwal", className: "bg-brand/10 text-brand" };
@@ -45,7 +45,7 @@ function getStatusInfo(sale: { is_active: boolean; starts_at: string; ends_at: s
       className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
     };
   }
-  return { label: "Berakhir", className: "bg-muted text-muted-foreground" };
+  return { label: "Berakhir", className: "bg-muted text-foreground" };
 }
 
 export default async function AdminFlashSaleDetailPage({ params }: { params: Params }) {
@@ -108,7 +108,7 @@ export default async function AdminFlashSaleDetailPage({ params }: { params: Par
         <div>
           <p className="text-swiss-eyebrow">Promosi</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">{sale.name}</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {formatDate(sale.starts_at)} — {formatDate(sale.ends_at)}
           </p>
         </div>

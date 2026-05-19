@@ -45,7 +45,7 @@ interface CategoryFormProps {
   defaultValues?: Partial<FormValues>;
 }
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold text-foreground";
 
 export function CategoryForm({ parentCategories, categoryId, defaultValues }: CategoryFormProps) {
   const router = useRouter();
@@ -96,9 +96,11 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="admin-utility-card space-y-5">
-        <h2 className="admin-section-title">Info Dasar</h2>
-
+      <div className="admin-utility-card overflow-hidden p-0">
+        <div className="admin-utility-card-header">
+          <h2 className="admin-section-title">Info Dasar</h2>
+        </div>
+        <div className="space-y-5 p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="name" className={labelClass}>
@@ -169,9 +171,10 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
             <p className="text-xs text-destructive">{errors.sort_order.message}</p>
           )}
         </div>
+        </div>
       </div>
 
-      <div className="admin-utility-card">
+      <div className="admin-utility-card p-5">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="admin-section-title">Status Aktif</p>
@@ -184,18 +187,13 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
       <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
-          variant="outline"
-          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
+          variant="secondary"
           onClick={() => router.push("/admin/categories")}
           disabled={isLoading}
         >
           Batal
         </Button>
-        <Button
-          type="submit"
-          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white hover:bg-brand-hover active:scale-[0.98]"
-          disabled={isLoading}
-        >
+        <Button type="submit" variant="primary" disabled={isLoading}>
           {isLoading
             ? categoryId
               ? "Menyimpan..."

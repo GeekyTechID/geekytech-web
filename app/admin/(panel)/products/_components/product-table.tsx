@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
@@ -237,7 +237,7 @@ export function ProductTable({
 
   if (products.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <Package size={36} strokeWidth={1} />
         <p className="text-sm font-semibold uppercase">Belum ada produk</p>
       </div>
@@ -254,18 +254,16 @@ export function ProductTable({
           </span>
           <div className="mx-1 h-4 w-px bg-border" />
           <Button
-            size="sm"
-            variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
+            variant="table-action"
+            size="xs"
             onClick={() => handleBulkStatus(true)}
             disabled={isPending}
           >
             Aktifkan
           </Button>
           <Button
-            size="sm"
-            variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
+            variant="table-action"
+            size="xs"
             onClick={() => handleBulkStatus(false)}
             disabled={isPending}
           >
@@ -273,9 +271,8 @@ export function ProductTable({
           </Button>
           {brands.length > 0 && (
             <Button
-              size="sm"
-              variant="outline"
-              className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
+              variant="table-action"
+              size="xs"
               onClick={() => setBrandDialogOpen(true)}
               disabled={isPending}
             >
@@ -283,17 +280,17 @@ export function ProductTable({
             </Button>
           )}
           <Button
-            size="sm"
-            variant="outline"
-            className="h-7 rounded-md border-[#e0e0e0] text-[10px] font-semibold uppercase dark:border-border"
+            variant="table-action"
+            size="xs"
             onClick={() => setConditionDialogOpen(true)}
             disabled={isPending}
           >
             Ganti Kondisi
           </Button>
           <Button
-            size="sm"
-            className="ml-auto h-7 rounded-md border-0 bg-destructive text-[10px] font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
+            size="xs"
+            className="ml-auto"
             onClick={() => setBulkDeleteOpen(true)}
             disabled={isPending}
           >
@@ -302,7 +299,7 @@ export function ProductTable({
           <button
             type="button"
             onClick={clearSelection}
-            className="text-[10px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            className="text-[10px] font-medium text-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
             Batal pilih
           </button>
@@ -323,25 +320,25 @@ export function ProductTable({
                     aria-label="Pilih semua"
                   />
                 </th>
-                <th className="w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Foto
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Produk
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                   Kategori
                 </th>
-                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Harga
                 </th>
-                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
+                <th className="hidden px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground lg:table-cell">
                   Stok
                 </th>
-                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -378,7 +375,7 @@ export function ProductTable({
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package size={16} className="text-muted-foreground" />
+                          <Package size={16} className="text-foreground" />
                         </div>
                       )}
                     </div>
@@ -390,7 +387,7 @@ export function ProductTable({
                       <p className="font-semibold text-sm leading-tight line-clamp-2">
                         {product.name}
                       </p>
-                      <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                      <p className="text-[11px] text-foreground font-mono mt-0.5">
                         /{product.slug}
                       </p>
                       <div className="mt-1 flex flex-wrap gap-1">
@@ -398,7 +395,7 @@ export function ProductTable({
                           variant="outline"
                           className={`rounded-md px-1.5 py-0 text-[9px] font-semibold uppercase ${
                             product.condition === "second"
-                              ? "border-border text-muted-foreground"
+                              ? "border-border text-foreground"
                               : "border-brand/40 text-brand"
                           }`}
                         >
@@ -418,7 +415,7 @@ export function ProductTable({
 
                   {/* Category */}
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {product.categories?.name ?? "—"}
                     </span>
                   </td>
@@ -428,7 +425,7 @@ export function ProductTable({
                     {product.sale_price != null ? (
                       <div>
                         <p className="text-xs font-semibold text-brand">{formatRupiah(product.sale_price)}</p>
-                        <p className="text-[11px] text-muted-foreground line-through">
+                        <p className="text-[11px] text-foreground line-through">
                           {formatRupiah(product.base_price)}
                         </p>
                       </div>
@@ -441,7 +438,7 @@ export function ProductTable({
                   <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <span
                       className={
-                        totalStock <= 5 ? "text-xs font-semibold text-brand" : "text-xs font-medium text-muted-foreground"
+                        totalStock <= 5 ? "text-xs font-semibold text-brand" : "text-xs font-medium text-foreground"
                       }
                     >
                       {totalStock} pcs
@@ -460,7 +457,10 @@ export function ProductTable({
                   {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <AdminTableEditLink href={`/admin/products/${product.id}/edit`}>
+                      <AdminTableEditLink
+                        href={`/admin/products/${product.id}/edit`}
+                        appearance="filled"
+                      >
                         Edit
                       </AdminTableEditLink>
                       <AdminTableDeleteButton onClick={() => setDeleteTarget(product)} disabled={isPending}>
@@ -479,31 +479,33 @@ export function ProductTable({
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground">
             Menampilkan {firstItem}-{lastItem} dari {totalCount} produk
           </p>
           <div className="flex items-center gap-1">
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
-            </button>
+            </Button>
             <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
               {page} / {totalPages}
             </span>
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
               aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -521,15 +523,18 @@ export function ProductTable({
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
-              variant="outline"
-              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+              variant="secondary"
+              size="sm"
+              className="flex-1"
               onClick={() => setDeleteTarget(null)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
+              size="sm"
+              className="flex-1"
               onClick={handleDelete}
               disabled={isPending}
             >
@@ -552,15 +557,18 @@ export function ProductTable({
           </DialogHeader>
           <div className="mt-2 flex gap-2">
             <Button
-              variant="outline"
-              className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+              variant="secondary"
+              size="sm"
+              className="flex-1"
               onClick={() => setBulkDeleteOpen(false)}
               disabled={isPending}
             >
               Batal
             </Button>
             <Button
-              className="h-10 flex-1 rounded-full border-0 bg-destructive text-xs font-semibold uppercase text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
+              size="sm"
+              className="flex-1"
               onClick={handleBulkDelete}
               disabled={isPending}
             >
@@ -589,7 +597,7 @@ export function ProductTable({
                   className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors ${
                     selectedCondition === val
                       ? "border-brand bg-brand/10 text-brand"
-                      : "border-[#e0e0e0] bg-transparent text-muted-foreground hover:border-foreground hover:text-foreground dark:border-border"
+                      : "border-[#e0e0e0] bg-transparent text-foreground hover:border-foreground hover:text-foreground dark:border-border"
                   }`}
                 >
                   {val === "new" ? "Baru" : "Second"}
@@ -598,15 +606,18 @@ export function ProductTable({
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+                variant="secondary"
+                size="sm"
+                className="flex-1"
                 onClick={() => setConditionDialogOpen(false)}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase text-white hover:opacity-90"
+                variant="primary"
+                size="sm"
+                className="flex-1"
                 onClick={handleBulkSetCondition}
                 disabled={isPending}
               >
@@ -647,15 +658,18 @@ export function ProductTable({
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
-                className="h-10 flex-1 rounded-full border-brand/40 text-xs font-semibold uppercase text-brand hover:bg-brand/5"
+                variant="secondary"
+                size="sm"
+                className="flex-1"
                 onClick={() => { setBrandDialogOpen(false); setSelectedBrandId(""); }}
                 disabled={isPending}
               >
                 Batal
               </Button>
               <Button
-                className="h-10 flex-1 rounded-full border-0 bg-brand text-xs font-semibold uppercase text-white hover:opacity-90"
+                variant="primary"
+                size="sm"
+                className="flex-1"
                 onClick={handleBulkSetBrand}
                 disabled={isPending || !selectedBrandId}
               >

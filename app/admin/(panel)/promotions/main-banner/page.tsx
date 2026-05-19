@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 
 import { listBanners } from "./_actions";
 import { MainBannerForm } from "./_components/main-banner-form";
@@ -19,7 +19,7 @@ export default async function MainBannerPage() {
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Main Banner
         </h1>
-        <p className="text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="text-[17px] leading-[1.47] text-foreground">
           Hero banner utama yang ditampilkan di bagian atas halaman beranda.
         </p>
       </div>

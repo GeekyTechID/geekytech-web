@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
@@ -9,8 +9,9 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   AdminTableDeleteButton,
-  AdminTableDetailLink,
+  AdminTableEditLink,
 } from "@/components/admin/admin-table-row-actions";
+import { Button } from "@/components/ui/button";
 import { toggleFlashSaleActive, deleteFlashSale } from "../_actions";
 
 export type FlashSaleRow = {
@@ -33,7 +34,7 @@ function getStatus(sale: FlashSaleRow): { label: string; className: string } {
   const ends = new Date(sale.ends_at);
 
   if (!sale.is_active) {
-    return { label: "Nonaktif", className: "bg-muted text-muted-foreground" };
+    return { label: "Nonaktif", className: "bg-muted text-foreground" };
   }
   if (now < starts) {
     return { label: "Terjadwal", className: "bg-brand/10 text-brand" };
@@ -44,7 +45,7 @@ function getStatus(sale: FlashSaleRow): { label: string; className: string } {
       className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
     };
   }
-  return { label: "Berakhir", className: "bg-muted text-muted-foreground" };
+  return { label: "Berakhir", className: "bg-muted text-foreground" };
 }
 
 function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
@@ -70,29 +71,36 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <AdminTableDetailLink href={`/admin/promotions/flash-sale/${sale.id}`}>Detail</AdminTableDetailLink>
+      <AdminTableEditLink
+        href={`/admin/promotions/flash-sale/${sale.id}`}
+        appearance="filled"
+      >
+        Edit
+      </AdminTableEditLink>
 
       {confirmDelete ? (
         <>
           <span className="text-[10px] font-semibold uppercase text-destructive">
             Yakin hapus?
           </span>
-          <button
+          <Button
             type="button"
+            variant="destructive"
+            size="xs"
             onClick={handleDelete}
             disabled={isPending}
-            className="h-6 rounded-md bg-destructive/10 px-2 text-[10px] font-semibold uppercase text-destructive transition-colors hover:bg-destructive hover:text-white disabled:opacity-50"
           >
             {isPending ? "..." : "Ya, Hapus"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="table-action"
+            size="xs"
             onClick={() => setConfirmDelete(false)}
             disabled={isPending}
-            className="h-6 rounded-md border border-[#e0e0e0] px-2 text-[10px] font-semibold uppercase text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:border-border"
           >
             Batal
-          </button>
+          </Button>
         </>
       ) : (
         <AdminTableDeleteButton onClick={() => setConfirmDelete(true)} disabled={isPending}>
@@ -100,17 +108,16 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
         </AdminTableDeleteButton>
       )}
 
-      <button
+      <Button
         type="button"
+        variant="table-action"
+        size="xs"
         onClick={handleToggle}
         disabled={isPending}
-        className={cn(
-          "h-6 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
-          status.className,
-        )}
+        className={status.className}
       >
         {status.label}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -118,7 +125,7 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
 export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
   if (flashSales.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <Zap size={36} strokeWidth={1} />
         <p className="text-sm font-semibold uppercase">Belum ada flash sale</p>
       </div>
@@ -131,22 +138,22 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Nama
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                 Mulai
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                 Berakhir
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                 Produk
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Aksi
               </th>
             </tr>
@@ -166,11 +173,11 @@ export function FlashSaleTable({ flashSales }: FlashSaleTableProps) {
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-xs text-muted-foreground">{formatDate(sale.starts_at)}</span>
+                    <span className="text-xs text-foreground">{formatDate(sale.starts_at)}</span>
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-xs text-muted-foreground">{formatDate(sale.ends_at)}</span>
+                    <span className="text-xs text-foreground">{formatDate(sale.ends_at)}</span>
                   </td>
 
                   <td className="hidden px-4 py-3 md:table-cell">

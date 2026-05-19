@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { Download } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah } from "@/lib/format";
 import { RevenueChart, OrdersChart } from "@/components/admin/revenue-chart";
@@ -155,15 +156,14 @@ export default async function AdminReportsPage() {
         <div>
           <p className="text-swiss-eyebrow">Analitik</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Laporan</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Ringkasan performa penjualan</p>
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">Ringkasan performa penjualan</p>
         </div>
-        <Link
-          href="/admin/reports/export"
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-        >
-          <Download size={14} strokeWidth={2} />
-          Export Data
-        </Link>
+        <Button asChild variant="primary" size="sm" className="shrink-0 gap-2">
+          <Link href="/admin/reports/export">
+            <Download size={14} strokeWidth={2} />
+            Export Data
+          </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -214,7 +214,7 @@ export default async function AdminReportsPage() {
                 {["#", "Produk", "Qty Terjual", "Share"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-foreground"
                   >
                     {h}
                   </th>
@@ -224,14 +224,14 @@ export default async function AdminReportsPage() {
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {bestSellerList.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-[17px] text-muted-foreground">
+                  <td colSpan={4} className="px-5 py-8 text-center text-[17px] text-foreground">
                     Belum ada data penjualan
                   </td>
                 </tr>
               ) : (
                 bestSellerList.map((item, idx) => (
                   <tr key={item.product_name} className="transition-colors hover:bg-muted/30">
-                    <td className="w-8 px-5 py-3 text-xs font-semibold text-muted-foreground">{idx + 1}</td>
+                    <td className="w-8 px-5 py-3 text-xs font-semibold text-foreground">{idx + 1}</td>
                     <td className="px-5 py-3 font-medium">{item.product_name}</td>
                     <td className="px-5 py-3 font-semibold">{item.qty.toLocaleString("id-ID")}</td>
                     <td className="px-5 py-3">
@@ -239,7 +239,7 @@ export default async function AdminReportsPage() {
                         <div className="h-1.5 flex-1 overflow-hidden bg-muted">
                           <div className="h-full bg-brand" style={{ width: `${item.share}%` }} />
                         </div>
-                        <span className="w-8 shrink-0 text-xs font-semibold text-muted-foreground">{item.share}%</span>
+                        <span className="w-8 shrink-0 text-xs font-semibold text-foreground">{item.share}%</span>
                       </div>
                     </td>
                   </tr>
@@ -285,7 +285,7 @@ function StatCard({
         {label}
       </p>
       <p className={`mt-2 text-3xl font-semibold leading-none ${accent ? "text-white" : ""}`}>{value}</p>
-      <p className={`mt-2 text-xs ${accent ? "text-white/75" : "text-muted-foreground"}`}>{sub}</p>
+      <p className={`mt-2 text-xs ${accent ? "text-white/75" : "text-foreground"}`}>{sub}</p>
     </div>
   );
 }
@@ -307,7 +307,7 @@ function FunnelBar({
         <span className="text-sm font-medium">{label}</span>
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold">{count.toLocaleString("id-ID")}</span>
-          <span className="w-10 text-right text-xs font-semibold text-muted-foreground">{pct}%</span>
+          <span className="w-10 text-right text-xs font-semibold text-foreground">{pct}%</span>
         </div>
       </div>
       <div className="h-2 w-full overflow-hidden bg-muted">

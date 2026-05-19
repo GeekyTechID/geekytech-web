@@ -97,9 +97,9 @@ export function ProductCard({ product, onWishlist, isWishlisted = false, classNa
 
           {onWishlist && (
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
+              variant="icon-chip"
+              size="icon-sm"
+              className="shrink-0"
               onClick={(e) => {
                 e.preventDefault()
                 onWishlist(product.id)

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/format";
 import {
@@ -22,7 +24,7 @@ import {
   type BrandOption,
 } from "./product-brand-selector";
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
 export type PromotionInitialData = {
   id: string;
@@ -176,18 +178,13 @@ export function PromotionForm({
           </div>
           <div className="space-y-1.5">
             <label className={labelClass}>Status</label>
-            <button
-              type="button"
-              onClick={() => setIsActive((v) => !v)}
-              className={cn(
-                "flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
-                isActive
-                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                  : "bg-muted text-muted-foreground",
-              )}
-            >
-              {isActive ? "Aktif" : "Nonaktif"}
-            </button>
+            <StatusPillToggle
+              active={isActive}
+              onToggle={() => setIsActive((v) => !v)}
+              activeLabel="Aktif"
+              inactiveLabel="Nonaktif"
+              className="w-full justify-center"
+            />
           </div>
         </div>
       </div>
@@ -332,21 +329,18 @@ export function PromotionForm({
       {bannerSection}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:bg-brand-hover disabled:opacity-50 active:scale-[0.98]"
-        >
+        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
           {isPending ? "Menyimpan..." : initialData ? "Perbarui" : "Buat Promosi"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => router.push(backPath)}
           disabled={isPending}
-          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
-        </button>
+        </Button>
       </div>
     </form>
   );

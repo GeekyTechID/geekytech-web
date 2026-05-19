@@ -23,9 +23,10 @@ export function BackToTop({ threshold = 400, className }: BackToTopProps) {
 
   return (
     <Button
-      size="icon"
+      variant="pearl"
+      size="icon-sm"
       className={cn(
-        "fixed bottom-20 right-4 z-40 h-10 w-10 rounded-none shadow-none md:bottom-8",
+        "fixed bottom-20 right-4 z-40 shadow-none md:bottom-8",
         className
       )}
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

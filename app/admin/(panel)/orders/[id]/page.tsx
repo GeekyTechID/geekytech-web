@@ -61,7 +61,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
-      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-foreground">
         <Link href="/admin/orders" className="admin-text-link font-medium">
           Pesanan
         </Link>
@@ -75,7 +75,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           <h1 className="font-mono text-[34px] font-semibold uppercase text-foreground">
             {order.order_number}
           </h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {formatDate(order.created_at, {
               day: "numeric",
               month: "long",
@@ -121,7 +121,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <Package size={16} className="text-muted-foreground" />
+                        <Package size={16} className="text-foreground" />
                       </div>
                     )}
                   </div>
@@ -130,14 +130,14 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <div className="flex flex-1 items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-semibold leading-tight">{item.product_name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{item.variant_name}</p>
-                      <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-foreground">{item.variant_name}</p>
+                      <p className="mt-0.5 font-mono text-[11px] text-foreground">
                         SKU: {item.sku}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-semibold">{formatRupiah(item.subtotal)}</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-[11px] text-foreground">
                         {item.quantity} × {formatRupiah(item.price)}
                       </p>
                     </div>
@@ -235,7 +235,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                           )}>
                             {ADMIN_ORDER_STATUS_LABEL[h.status] ?? h.status}
                           </span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-[11px] text-foreground">
                             {formatDate(h.created_at, {
                               day: "numeric", month: "short", year: "numeric",
                               hour: "2-digit", minute: "2-digit",
@@ -243,7 +243,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                           </span>
                         </div>
                         {h.note && (
-                          <p className="mt-1 text-xs text-muted-foreground">{h.note}</p>
+                          <p className="mt-1 text-xs text-foreground">{h.note}</p>
                         )}
                       </div>
                     </li>
@@ -263,16 +263,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </div>
             <div className="space-y-2.5 px-4 py-4 text-sm">
               <div className="flex items-start gap-2">
-                <User size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
+                <User size={13} className="mt-0.5 shrink-0 text-foreground" />
                 <span className="font-semibold">{order.recipient_name}</span>
               </div>
               <div className="flex items-start gap-2">
-                <Phone size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
+                <Phone size={13} className="mt-0.5 shrink-0 text-foreground" />
                 <span className="text-sm">{order.recipient_phone}</span>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
-                <div className="text-sm text-muted-foreground">
+                <MapPin size={13} className="mt-0.5 shrink-0 text-foreground" />
+                <div className="text-sm text-foreground">
                   <p>{order.shipping_address}</p>
                   <p>{order.shipping_district}, {order.shipping_city}</p>
                   <p>{order.shipping_province} {order.shipping_postal}</p>
@@ -313,7 +313,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               <div className="admin-utility-card-header">
                 <h2 className="admin-section-title">Catatan</h2>
               </div>
-              <p className="px-4 py-3 text-sm text-muted-foreground">{order.notes}</p>
+              <p className="px-4 py-3 text-sm text-foreground">{order.notes}</p>
             </section>
           )}
 
@@ -360,7 +360,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground">{label}</span>
       <span className={cn(bold && "text-sm font-semibold", className)}>{value}</span>
     </div>
   );
@@ -375,7 +375,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-0.5 text-xs">
-      <span className="shrink-0 text-muted-foreground">{label}</span>
+      <span className="shrink-0 text-foreground">{label}</span>
       <span className="text-right font-medium">{value}</span>
     </div>
   );

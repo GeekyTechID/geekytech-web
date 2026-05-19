@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
+import { PasswordVisibilityToggle } from "@/components/ui/password-visibility-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteLogo } from "@/components/shared/site-logo";
@@ -136,25 +137,21 @@ function AdminLoginContent() {
                 className="h-11 rounded-none border-foreground/30 focus-visible:border-foreground pr-10"
                 {...register("password")}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-swiss"
-                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              <PasswordVisibilityToggle
+                visible={showPassword}
+                onToggle={() => setShowPassword((v) => !v)}
+                className="right-3"
+                labelVisible="Tampilkan password"
+                labelHidden="Sembunyikan password"
+                iconSize={16}
+              />
             </div>
             {errors.password && (
               <p className="text-xs text-destructive">{errors.password.message}</p>
             )}
           </div>
 
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-11 rounded-none font-bold uppercase text-sm bg-[#EA5329] hover:bg-[#D44820] text-white border-0"
-          >
+          <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
             {isLoading ? (
               <>
                 <Loader2 size={16} className="animate-spin mr-2" />

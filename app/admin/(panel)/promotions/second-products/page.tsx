@@ -1,7 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createServiceClient } from "@/lib/supabase/server";
 import { PromotionTable, type PromotionTableRow } from "../_components/promotion-table";
 
@@ -55,17 +56,16 @@ export default async function SecondProductsPage() {
           <h1 className="text-[34px] font-semibold uppercase text-foreground">
             Produk Second Terbaik
           </h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {rows.length} promosi · Tampilkan produk second pilihan di halaman publik
           </p>
         </div>
-        <Link
-          href={`${BASE_PATH}/new`}
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-        >
-          <Plus size={14} strokeWidth={2} />
-          Buat Promosi
-        </Link>
+        <Button asChild variant="primary" size="sm" className="shrink-0 gap-2">
+          <Link href={`${BASE_PATH}/new`}>
+            <Plus size={14} strokeWidth={2} />
+            Buat Promosi
+          </Link>
+        </Button>
       </div>
       <PromotionTable rows={rows} basePath={BASE_PATH} emptyLabel="Belum ada promosi produk second" />
     </div>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FaqAccordion } from "@/components/faq/faq-accordion";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "FAQ - Pertanyaan Umum",
@@ -287,12 +289,9 @@ export default function FAQPage() {
           <p className="text-[17px] font-normal leading-[1.47] text-[#cccccc] max-w-[600px] mx-auto mb-8">
             Hubungi customer service kami melalui WhatsApp, email, atau form kontak. Kami akan merespon dalam waktu singkat.
           </p>
-          <a
-            href="/contact"
-            className="inline-block bg-[#EA5329] text-white text-[17px] font-normal leading-[1.47] rounded-full px-[22px] py-[11px] transition-transform active:scale-95 hover:bg-[#d44820]"
-          >
-            Hubungi Support
-          </a>
+          <Button asChild variant="primary">
+            <Link href="/contact">Hubungi Support</Link>
+          </Button>
         </div>
       </section>
     </div>

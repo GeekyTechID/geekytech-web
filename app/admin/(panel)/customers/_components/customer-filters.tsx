@@ -4,15 +4,28 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Terbaru" },
+  { value: "oldest", label: "Terlama" },
+  { value: "name_asc", label: "Nama A–Z" },
+  { value: "name_desc", label: "Nama Z–A" },
+  { value: "spent_desc", label: "Belanja Terbanyak" },
+  { value: "orders_desc", label: "Order Terbanyak" },
+];
 
 export function CustomerFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const q = searchParams.get("q") ?? "";
+  const sort = searchParams.get("sort") ?? "newest";
 
   useEffect(() => {
     return () => {
@@ -31,35 +44,72 @@ export function CustomerFilters() {
     [router, pathname, searchParams],
   );
 
+  const hasFilters = Boolean(q) || sort !== "newest";
+
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      <div className="relative max-w-md flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Search */}
+      <div className="relative min-w-0 flex-1">
         <Search
           size={14}
           className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          placeholder="Cari nama atau nomor HP..."
+          ref={inputRef}
+          placeholder="Cari nama, email, atau nomor HP..."
           defaultValue={q}
           onChange={(e) => {
             const val = e.target.value;
             if (debounceRef.current) clearTimeout(debounceRef.current);
             debounceRef.current = setTimeout(() => updateParam("q", val), 400);
           }}
-          className="h-11 rounded-full border-[#e0e0e0] pl-10 text-[17px] leading-[1.47] dark:border-border"
+          className="h-11 rounded-full border-[#e0e0e0] pl-10 pr-10 text-[17px] leading-[1.47] dark:border-border"
         />
+        {q && (
+          <button
+            type="button"
+            aria-label="Hapus pencarian"
+            onClick={() => {
+              if (inputRef.current) inputRef.current.value = "";
+              updateParam("q", "");
+            }}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
-      {q ? (
-        <button
+      {/* Sort */}
+      <Select
+        value={sort}
+        onValueChange={(v) => updateParam("sort", v === "newest" ? "" : v)}
+      >
+        <SelectTrigger className="w-[13rem] shrink-0">
+          <SelectValue placeholder="Urutkan" />
+        </SelectTrigger>
+        <SelectContent>
+          {SORT_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {hasFilters && (
+        <Button
           type="button"
-          onClick={() => router.push(pathname)}
-          className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
+          variant="secondary"
+          size="sm"
+          className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
+          onClick={() => {
+            if (inputRef.current) inputRef.current.value = "";
+            router.push(pathname);
+          }}
         >
           <X size={12} />
           Reset
-        </button>
-      ) : null}
+        </Button>
+      )}
     </div>
   );
 }

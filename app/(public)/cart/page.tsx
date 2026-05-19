@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { CartCheckoutStepper } from "@/components/store/cart-checkout-stepper";
 import { CartLineCard } from "@/components/store/cart-line-card";
 import { HomeProductTile } from "@/components/store/home-product-tile";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -109,12 +110,9 @@ export default async function CartPage() {
                 <span>Total</span>
                 <span>{formatRupiah(total + tax)}</span>
               </div>
-              <Link
-                href="/checkout"
-                className="mt-6 flex w-full items-center justify-center rounded-full bg-[#EA5329] py-3.5 text-center text-sm font-bold text-white transition hover:bg-[#d94a24]"
-              >
-                Beli sekarang
-              </Link>
+              <Button asChild variant="primary" className="mt-6 w-full">
+                <Link href="/checkout">Beli sekarang</Link>
+              </Button>
             </div>
           </aside>
         </div>

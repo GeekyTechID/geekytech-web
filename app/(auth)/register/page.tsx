@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -13,6 +13,7 @@ import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth"
 import { AUTH_INPUT_CLASS } from "@/lib/auth/auth-field-classes";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 import { Button } from "@/components/ui/button";
+import { PasswordVisibilityToggle } from "@/components/ui/password-visibility-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -220,14 +221,12 @@ export default function RegisterPage() {
                 className={`${AUTH_INPUT_CLASS} pr-12`}
                 {...register("password")}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
-                aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+              <PasswordVisibilityToggle
+                visible={showPassword}
+                onToggle={() => setShowPassword((v) => !v)}
+                className="right-3"
+                iconSize={18}
+              />
             </div>
             {errors.password && (
               <p className="text-[14px] text-destructive">{errors.password.message}</p>
@@ -250,14 +249,12 @@ export default function RegisterPage() {
                 className={`${AUTH_INPUT_CLASS} pr-12`}
                 {...register("confirm_password")}
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a7a7a] transition-colors hover:text-[#1d1d1f]"
-                aria-label={showConfirm ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-              >
-                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+              <PasswordVisibilityToggle
+                visible={showConfirm}
+                onToggle={() => setShowConfirm((v) => !v)}
+                className="right-3"
+                iconSize={18}
+              />
             </div>
             {errors.confirm_password && (
               <p className="text-[14px] text-destructive">{errors.confirm_password.message}</p>
@@ -279,11 +276,7 @@ export default function RegisterPage() {
           GeekyTech.
         </p>
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
           {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
           Daftar
         </Button>
@@ -291,10 +284,10 @@ export default function RegisterPage() {
 
       <Button
         type="button"
-        variant="outline"
+        variant="dark"
         onClick={handleGoogleRegister}
         disabled={isGoogleLoading}
-        className="!-mt-4 h-12 w-full rounded-lg border-0 bg-[#1d1d1f] text-[17px] font-normal text-white shadow-none transition-transform hover:bg-[#272729] active:scale-[0.95]"
+        className="-mt-4 w-full"
       >
         {isGoogleLoading ? (
           <Loader2 size={16} className="mr-2 animate-spin" />

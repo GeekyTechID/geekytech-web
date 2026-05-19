@@ -27,7 +27,7 @@ export default async function AddressesPage() {
           <p className="text-[10px] font-bold uppercase text-[#7a7a7a]">Pengiriman</p>
           <h1 className="mt-2 text-2xl font-bold text-[#1d1d1f] sm:text-3xl">Alamat tersimpan</h1>
         </div>
-        <Button asChild className="w-fit bg-black text-white hover:bg-[#333]">
+        <Button asChild variant="primary" className="w-fit">
           <Link href="/dashboard/addresses/new">Tambah alamat</Link>
         </Button>
       </div>

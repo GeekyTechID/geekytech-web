@@ -4,12 +4,14 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Minus, Plus, Star, Trash2 } from "lucide-react";
+import { Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { removeCartItemAction, updateCartItemQuantityAction } from "@/app/(public)/cart/_actions";
+import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
+import { Button } from "@/components/ui/button";
+import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { formatRupiah } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 export type CartLineView = {
   lineId: string;
@@ -86,24 +88,22 @@ export function CartLineCard({ line }: { line: CartLineView }) {
           )}
           {hasCarousel ? (
             <>
-              <button
-                type="button"
+              <CarouselNavButton
+                direction="prev"
+                surface="surface"
                 aria-label="Gambar sebelumnya"
                 disabled={pending}
                 onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                className="absolute left-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#e8e4dc] bg-white/95 text-[#1d1d1f] shadow-sm transition hover:bg-white disabled:opacity-40"
-              >
-                <ChevronLeft className="h-4 w-4" strokeWidth={2} />
-              </button>
-              <button
-                type="button"
+                className="absolute left-1 top-1/2 -translate-y-1/2"
+              />
+              <CarouselNavButton
+                direction="next"
+                surface="surface"
                 aria-label="Gambar berikutnya"
                 disabled={pending}
                 onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#e8e4dc] bg-white/95 text-[#1d1d1f] shadow-sm transition hover:bg-white disabled:opacity-40"
-              >
-                <ChevronRight className="h-4 w-4" strokeWidth={2} />
-              </button>
+                className="absolute right-1 top-1/2 -translate-y-1/2"
+              />
             </>
           ) : null}
         </div>
@@ -143,42 +143,25 @@ export function CartLineCard({ line }: { line: CartLineView }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-full border border-[#e8e4dc] bg-[#faf9f7] p-0.5">
-              <button
-                type="button"
-                aria-label="Kurangi jumlah"
-                disabled={pending || line.qty <= 1}
-                onClick={() => bumpQty(-1)}
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full transition",
-                  line.qty <= 1 ? "text-[#d4d0c8]" : "text-[#1d1d1f] hover:bg-white",
-                )}
-              >
-                <Minus className="h-4 w-4" strokeWidth={2} />
-              </button>
-              <span className="min-w-[2rem] text-center text-sm font-bold tabular-nums">{line.qty}</span>
-              <button
-                type="button"
-                aria-label="Tambah jumlah"
-                disabled={pending || line.qty >= line.maxQty}
-                onClick={() => bumpQty(1)}
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full transition",
-                  line.qty >= line.maxQty ? "text-[#d4d0c8]" : "text-[#1d1d1f] hover:bg-white",
-                )}
-              >
-                <Plus className="h-4 w-4" strokeWidth={2} />
-              </button>
-            </div>
-            <button
+            <QuantityStepper
+              value={line.qty}
+              min={1}
+              max={line.maxQty}
+              size="compact"
+              disabled={pending}
+              onDecrease={() => bumpQty(-1)}
+              onIncrease={() => bumpQty(1)}
+            />
+            <Button
               type="button"
+              variant="destructive-ghost"
+              size="icon-sm"
               aria-label="Hapus dari keranjang"
               disabled={pending}
               onClick={onRemove}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-red-200 text-red-600 transition hover:bg-red-50 disabled:opacity-40"
             >
               <Trash2 className="h-4 w-4" strokeWidth={2} />
-            </button>
+            </Button>
           </div>
         </div>
 

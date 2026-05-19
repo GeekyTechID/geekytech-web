@@ -52,7 +52,7 @@ interface BrandFormProps {
   };
 }
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold text-foreground";
 
 export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
   const router = useRouter();
@@ -423,18 +423,13 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
       <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
-          variant="outline"
-          className="rounded-full border-brand/40 px-6 text-xs font-semibold uppercase text-brand hover:bg-brand/5 active:scale-[0.98]"
+          variant="secondary"
           onClick={() => router.push("/admin/brands")}
           disabled={isLoading}
         >
           Batal
         </Button>
-        <Button
-          type="submit"
-          className="rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white hover:bg-brand-hover active:scale-[0.98]"
-          disabled={isLoading}
-        >
+        <Button type="submit" variant="primary" disabled={isLoading}>
           {isLoading
             ? brandId
               ? "Menyimpan..."

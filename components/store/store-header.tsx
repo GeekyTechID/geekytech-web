@@ -358,10 +358,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                     <User size={16} strokeWidth={1.75} />
                     Masuk
                   </Link>
-                  <Button
-                    asChild
-                    className="h-9 rounded-none border-0 bg-brand px-4 text-xs font-bold uppercase text-white hover:bg-brand/90"
-                  >
+                  <Button asChild variant="primary" size="sm" className="text-xs font-bold uppercase">
                     <Link href="/register">Daftar</Link>
                   </Button>
                 </div>
@@ -442,10 +439,10 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
               <div className="my-4 border-t border-neutral-100 dark:border-border" />
               {!isAuthenticated ? (
                 <div className="space-y-2 px-2">
-                  <Button asChild variant="outline" className="w-full rounded-none font-bold uppercase">
+                  <Button asChild variant="pearl" className="w-full font-bold uppercase">
                     <Link href="/login">Masuk</Link>
                   </Button>
-                  <Button asChild className="w-full rounded-none bg-brand font-bold uppercase text-white hover:bg-brand/90">
+                  <Button asChild variant="primary" className="w-full font-bold uppercase">
                     <Link href="/register">Daftar</Link>
                   </Button>
                 </div>

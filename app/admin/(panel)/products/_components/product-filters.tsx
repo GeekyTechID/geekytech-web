@@ -4,8 +4,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Category = { id: string; name: string };
 type Brand = { id: string; name: string };
@@ -15,8 +16,6 @@ interface ProductFiltersProps {
   brands?: Brand[];
 }
 
-const selectClass =
-  "h-10 cursor-pointer rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-border";
 
 export function ProductFilters({ categories, brands = [] }: ProductFiltersProps) {
   const router = useRouter();
@@ -82,8 +81,9 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative max-w-md flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Search */}
+      <div className="relative min-w-0 flex-1">
         <Search
           size={14}
           className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -100,98 +100,96 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
         />
       </div>
 
-      <div className="flex flex-col flex-wrap gap-3 xl:flex-row xl:items-center">
-        <div className="inline-flex max-w-full flex-wrap overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
-          {statusOptions.map(({ value, label }, i) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => updateParam("status", value === "all" ? "" : value)}
-              className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
-                i > 0 ? "border-l" : "",
-                (value === "all" ? status === "all" : status === value)
-                  ? "bg-brand/10 text-brand"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {label}
-            </button>
+      {/* Status */}
+      <Select
+        value={status || "all"}
+        onValueChange={(v) => updateParam("status", v === "all" ? "" : v)}
+      >
+        <SelectTrigger className="w-[13rem] shrink-0">
+          <SelectValue placeholder="Semua Status" />
+        </SelectTrigger>
+        <SelectContent>
+          {statusOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
           ))}
-        </div>
+        </SelectContent>
+      </Select>
 
-        <div className="inline-flex max-w-full flex-wrap overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
-          {conditionOptions.map(({ value, label }, i) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => updateParam("condition", value === "all" ? "" : value)}
-              className={cn(
-                "h-10 border-[#e0e0e0] px-3 text-xs font-semibold uppercase transition-colors dark:border-border",
-                i > 0 ? "border-l" : "",
-                (value === "all" ? condition === "all" : condition === value)
-                  ? "bg-brand/10 text-brand"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {label}
-            </button>
+      {/* Kondisi */}
+      <Select
+        value={condition || "all"}
+        onValueChange={(v) => updateParam("condition", v === "all" ? "" : v)}
+      >
+        <SelectTrigger className="w-[13rem] shrink-0">
+          <SelectValue placeholder="Semua Kondisi" />
+        </SelectTrigger>
+        <SelectContent>
+          {conditionOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
           ))}
-        </div>
+        </SelectContent>
+      </Select>
 
-        {brands.length > 0 ? (
-          <select
-            value={brandId}
-            onChange={(e) => updateParam("brand", e.target.value)}
-            className={cn(selectClass, "min-w-[10rem]")}
-          >
-            <option value="">Semua Merek</option>
-            {brands.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        ) : null}
-
-        {categories.length > 0 ? (
-          <select
-            value={categoryId}
-            onChange={(e) => updateParam("category", e.target.value)}
-            className={cn(selectClass, "min-w-[10rem]")}
-          >
-            <option value="">Semua Kategori</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        ) : null}
-
-        <select
-          value={sort}
-          onChange={(e) => updateParam("sort", e.target.value === "latest" ? "" : e.target.value)}
-          className={cn(selectClass, "min-w-[11rem]")}
+      {brands.length > 0 && (
+        <Select
+          value={brandId || "__all__"}
+          onValueChange={(v) => updateParam("brand", v === "__all__" ? "" : v)}
         >
-          {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-[13rem] shrink-0">
+            <SelectValue placeholder="Semua Merek" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Semua Merek</SelectItem>
+            {brands.map((b) => (
+              <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
-        {hasFilters ? (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground dark:border-border"
-          >
-            <X size={12} />
-            Reset
-          </button>
-        ) : null}
-      </div>
+      {categories.length > 0 && (
+        <Select
+          value={categoryId || "__all__"}
+          onValueChange={(v) => updateParam("category", v === "__all__" ? "" : v)}
+        >
+          <SelectTrigger className="w-[13rem] shrink-0">
+            <SelectValue placeholder="Semua Kategori" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Semua Kategori</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      <Select
+        value={sort}
+        onValueChange={(v) => updateParam("sort", v === "latest" ? "" : v)}
+      >
+        <SelectTrigger className="w-[13rem] shrink-0">
+          <SelectValue placeholder="Urutkan" />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {hasFilters && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
+          onClick={clearAll}
+        >
+          <X size={12} />
+          Reset
+        </Button>
+      )}
     </div>
   );
 }

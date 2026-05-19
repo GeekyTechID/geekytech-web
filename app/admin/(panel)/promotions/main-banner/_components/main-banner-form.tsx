@@ -5,12 +5,13 @@ import Image from "next/image";
 import { ChevronDown, ClipboardCopy, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { cn } from "@/lib/utils";
 import { addBanner } from "../_actions";
 
-const labelClass =
-  "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
 function FormSection({
   title,
@@ -231,14 +232,16 @@ export function MainBannerForm() {
                 fill
                 className="object-cover"
               />
-              <button
+              <Button
                 type="button"
+                variant="destructive"
+                size="icon-sm"
                 onClick={() => setImageUrl("")}
-                className="absolute right-2 top-2 rounded-lg bg-destructive p-2 text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                className="absolute right-2 top-2"
                 aria-label="Hapus gambar"
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             </div>
           ) : (
             <button
@@ -384,35 +387,20 @@ export function MainBannerForm() {
       {/* Status */}
       <FormSection title="Status">
         <div className="p-5">
-          <button
-            type="button"
-            onClick={() => setIsActive((v) => !v)}
-            className={cn(
-              "flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border sm:w-48",
-              isActive
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                : "bg-muted text-muted-foreground",
-            )}
-          >
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full",
-                isActive ? "bg-emerald-500" : "bg-muted-foreground",
-              )}
-            />
-            {isActive ? "Aktif" : "Nonaktif"}
-          </button>
+          <StatusPillToggle
+            active={isActive}
+            onToggle={() => setIsActive((v) => !v)}
+            activeLabel="Aktif"
+            inactiveLabel="Nonaktif"
+            className="w-full justify-center sm:w-48"
+          />
         </div>
       </FormSection>
 
       {/* Submit */}
-      <button
-        type="submit"
-        disabled={isPending || uploading}
-        className="h-11 rounded-full bg-brand px-8 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-      >
+      <Button type="submit" variant="primary" disabled={isPending || uploading}>
         {isPending ? "Menyimpan..." : "Tambah Banner"}
-      </button>
+      </Button>
     </form>
   );
 }

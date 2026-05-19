@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "Semua" },
+  { value: "all", label: "Semua Status" },
   { value: "active", label: "Aktif" },
   { value: "inactive", label: "Nonaktif" },
 ];
@@ -17,10 +18,17 @@ export function CategoryFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const q = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -33,57 +41,69 @@ export function CategoryFilters() {
     [router, pathname, searchParams],
   );
 
-  const hasFilters = q || status !== "all";
+  const hasFilters = Boolean(q) || status !== "all";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative max-w-md flex-1">
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="relative min-w-0 flex-1">
         <Search
           size={14}
           className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
+          ref={inputRef}
           placeholder="Cari nama kategori..."
           defaultValue={q}
           onChange={(e) => {
             const val = e.target.value;
-            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-            searchDebounceRef.current = setTimeout(() => {
-              searchDebounceRef.current = null;
-              updateParam("q", val);
-            }, 400);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => updateParam("q", val), 400);
           }}
-          className="h-11 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
+          className="h-11 rounded-full border-[#e0e0e0] pl-10 pr-10 text-[17px] leading-[1.47] dark:border-border"
         />
+        {q && (
+          <button
+            type="button"
+            aria-label="Hapus pencarian"
+            onClick={() => {
+              if (inputRef.current) inputRef.current.value = "";
+              updateParam("q", "");
+            }}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
-      <div className="flex overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
-        {STATUS_OPTIONS.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => updateParam("status", value === "all" ? "" : value)}
-            className={cn(
-              "h-11 border-r border-[#e0e0e0] px-4 text-xs font-semibold uppercase transition-colors last:border-r-0 dark:border-border",
-              (value === "all" ? status === "all" : status === value)
-                ? "bg-brand/10 text-brand"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Select
+        value={status}
+        onValueChange={(v) => updateParam("status", v === "all" ? "" : v)}
+      >
+        <SelectTrigger className="w-[13rem] shrink-0">
+          <SelectValue placeholder="Semua Status" />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUS_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {hasFilters && (
-        <button
+        <Button
           type="button"
-          onClick={() => router.push(pathname)}
-          className="inline-flex h-11 items-center gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+          variant="secondary"
+          size="sm"
+          className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
+          onClick={() => {
+            if (inputRef.current) inputRef.current.value = "";
+            router.push(pathname);
+          }}
         >
           <X size={12} />
           Reset
-        </button>
+        </Button>
       )}
     </div>
   );

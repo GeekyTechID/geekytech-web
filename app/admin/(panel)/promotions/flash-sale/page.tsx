@@ -1,7 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { FlashSaleTable, type FlashSaleRow } from "./_components/flash-sale-table";
 
@@ -38,17 +39,16 @@ export default async function AdminFlashSalePage() {
         <div>
           <p className="text-swiss-eyebrow">Promosi</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Flash Sale</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {flashSales?.length ?? 0} flash sale
           </p>
         </div>
-        <Link
-          href="/admin/promotions/flash-sale/new"
-          className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-5 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-        >
-          <Plus size={14} strokeWidth={2} />
-          Buat Flash Sale
-        </Link>
+        <Button asChild variant="primary" size="sm" className="shrink-0 gap-2">
+          <Link href="/admin/promotions/flash-sale/new">
+            <Plus size={14} strokeWidth={2} />
+            Buat Flash Sale
+          </Link>
+        </Button>
       </div>
 
       <FlashSaleTable flashSales={rows} />

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useTransition } from "react";
 import Image from "next/image";
@@ -7,11 +7,11 @@ import { ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import {
   AdminTableDeleteButton,
   AdminTableEditLink,
 } from "@/components/admin/admin-table-row-actions";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { toggleBannerActive, deleteBanner } from "../_actions";
 
 export type BannerRow = {
@@ -58,31 +58,26 @@ function BannerActions({ banner }: { banner: BannerRow }) {
       <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
         Hapus
       </AdminTableDeleteButton>
-      <button
-        type="button"
-        onClick={handleToggle}
+      <StatusPillToggle
+        active={banner.is_active}
+        onToggle={handleToggle}
+        activeLabel="Aktif"
+        inactiveLabel="Nonaktif"
         disabled={isPending}
-        className={cn(
-          "h-8 rounded-md px-3 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50 active:scale-[0.98]",
-          banner.is_active
-            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-            : "bg-muted text-muted-foreground hover:bg-muted/80",
-        )}
-      >
-        {banner.is_active ? "Aktif" : "Nonaktif"}
-      </button>
+        size="compact"
+      />
     </div>
   );
 }
 
 const thClass =
-  "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase text-muted-foreground";
+  "whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase text-foreground";
 
 export function BannerTable({ banners, newHref = "/admin/banners/new" }: BannerTableProps) {
   if (banners.length === 0) {
     return (
       <div className="admin-utility-card flex flex-col items-center gap-3 rounded-lg border border-dashed border-[#e0e0e0] py-20 dark:border-border">
-        <ImageIcon size={36} strokeWidth={1} className="text-muted-foreground" />
+        <ImageIcon size={36} strokeWidth={1} className="text-foreground" />
         <p className="admin-section-title text-foreground">Belum ada banner</p>
         <Link href={newHref} className="admin-text-link">
           Tambah banner pertama
@@ -126,11 +121,11 @@ export function BannerTable({ banners, newHref = "/admin/banners/new" }: BannerT
                 <td className="px-4 py-3">
                   <p className="line-clamp-1 text-sm font-medium text-foreground">
                     {banner.title ?? (
-                      <span className="italic text-muted-foreground">Tanpa judul</span>
+                      <span className="italic text-foreground">Tanpa judul</span>
                     )}
                   </p>
                   {banner.subtitle && (
-                    <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                    <p className="mt-0.5 line-clamp-1 text-sm text-foreground">
                       {banner.subtitle}
                     </p>
                   )}
@@ -147,24 +142,24 @@ export function BannerTable({ banners, newHref = "/admin/banners/new" }: BannerT
                       {banner.link_url}
                     </a>
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <span className="text-sm text-foreground">—</span>
                   )}
                 </td>
 
                 <td className="hidden px-4 py-3 sm:table-cell">
-                  <span className="font-mono text-sm text-muted-foreground tabular-nums">
+                  <span className="font-mono text-sm text-foreground tabular-nums">
                     {banner.sort_order}
                   </span>
                 </td>
 
                 <td className="hidden px-4 py-3 lg:table-cell">
                   {banner.starts_at || banner.ends_at ? (
-                    <div className="space-y-0.5 text-sm text-muted-foreground">
+                    <div className="space-y-0.5 text-sm text-foreground">
                       {banner.starts_at && <p>Mulai: {formatDate(banner.starts_at)}</p>}
                       {banner.ends_at && <p>Berakhir: {formatDate(banner.ends_at)}</p>}
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Tidak terbatas</span>
+                    <span className="text-sm text-foreground">Tidak terbatas</span>
                   )}
                 </td>
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { cn } from "@/lib/utils";
 
 type HorizontalScrollRowProps = {
@@ -33,22 +33,20 @@ export function HorizontalScrollRow({
 
   return (
     <div className={cn("relative group/scroll", className)}>
-      <button
-        type="button"
+      <CarouselNavButton
+        direction="prev"
+        surface="surface"
         aria-label="Geser kiri"
         onClick={() => scrollByDir(-1)}
-        className="absolute left-0 top-1/2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:size-8 md:hidden dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
+        className="absolute left-0 top-1/2 z-10 -translate-y-1/2 md:hidden"
+      />
+      <CarouselNavButton
+        direction="next"
+        surface="surface"
         aria-label="Geser kanan"
         onClick={() => scrollByDir(1)}
-        className="absolute right-0 top-1/2 z-10 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-900 shadow-sm transition hover:bg-neutral-50 sm:size-8 md:hidden dark:border-border dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
+        className="absolute right-0 top-1/2 z-10 -translate-y-1/2 md:hidden"
+      />
       <div
         ref={ref}
         className={cn(

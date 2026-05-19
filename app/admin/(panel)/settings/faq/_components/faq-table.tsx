@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useTransition } from "react";
 import { HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import {
   AdminTableDeleteButton,
   AdminTableEditLink,
 } from "@/components/admin/admin-table-row-actions";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { toggleFaqActive, deleteFaq } from "../_actions";
 
 export type FaqRow = {
@@ -50,19 +51,14 @@ function FaqActions({ faq }: { faq: FaqRow }) {
       <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
         Hapus
       </AdminTableDeleteButton>
-      <button
-        type="button"
-        onClick={handleToggle}
+      <StatusPillToggle
+        active={faq.is_active}
+        onToggle={handleToggle}
+        activeLabel="Aktif"
+        inactiveLabel="Nonaktif"
         disabled={isPending}
-        className={cn(
-          "h-7 rounded-md px-2 text-[10px] font-semibold uppercase transition-colors disabled:opacity-50",
-          faq.is_active
-            ? "bg-emerald-500/15 text-emerald-800 hover:bg-emerald-500/25 dark:text-emerald-400"
-            : "bg-muted text-muted-foreground hover:bg-muted/80",
-        )}
-      >
-        {faq.is_active ? "Aktif" : "Nonaktif"}
-      </button>
+        size="compact"
+      />
     </div>
   );
 }
@@ -70,7 +66,7 @@ function FaqActions({ faq }: { faq: FaqRow }) {
 export function FaqTable({ faqs }: FaqTableProps) {
   if (faqs.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <HelpCircle size={36} strokeWidth={1} />
         <p className="text-sm font-semibold uppercase">Belum ada FAQ</p>
       </div>
@@ -83,19 +79,19 @@ export function FaqTable({ faqs }: FaqTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Pertanyaan
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                 Kategori
               </th>
-              <th className="hidden w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+              <th className="hidden w-16 px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                 Sort
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Aksi
               </th>
             </tr>
@@ -108,25 +104,16 @@ export function FaqTable({ faqs }: FaqTableProps) {
                 </td>
                 <td className="hidden px-4 py-3 sm:table-cell">
                   {faq.category ? (
-                    <span className="text-xs capitalize text-muted-foreground">{faq.category}</span>
+                    <span className="text-xs capitalize text-foreground">{faq.category}</span>
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <span className="text-xs text-foreground">—</span>
                   )}
                 </td>
                 <td className="hidden px-4 py-3 md:table-cell">
-                  <span className="font-mono text-xs text-muted-foreground">{faq.sort_order}</span>
+                  <span className="font-mono text-xs text-foreground">{faq.sort_order}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
-                      faq.is_active
-                        ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {faq.is_active ? "Aktif" : "Nonaktif"}
-                  </span>
+                  <AdminStatusBadge active={faq.is_active} />
                 </td>
                 <td className="px-4 py-3">
                   <FaqActions faq={faq} />

@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { addVariantToCart } from "@/app/(public)/products/_actions/product-detail-actions";
 import { useCartStore } from "@/store/cart-store";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -28,16 +29,15 @@ export function AddToCartButton({ variantId, className }: Props) {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
+      size="sm"
       disabled={isPending}
       onClick={handleClick}
-      className={cn(
-        "mt-1 inline-flex w-full items-center justify-center rounded-full border border-brand py-2 text-center text-xs font-bold text-brand transition hover:bg-brand hover:text-white disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      )}
+      className={cn("mt-1 w-full", className)}
     >
       {isPending ? "Menambahkan..." : "+ Keranjang"}
-    </button>
+    </Button>
   );
 }

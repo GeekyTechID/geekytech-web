@@ -26,9 +26,8 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
   return (
     <nav aria-label="Pagination" className={cn("flex items-center justify-center gap-1", className)}>
       <Button
-        variant="outline"
-        size="icon"
-        className="h-9 w-9 rounded-none"
+        variant="pearl"
+        size="icon-sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         aria-label="Halaman sebelumnya"
@@ -44,9 +43,9 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
         ) : (
           <Button
             key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            size="icon"
-            className="h-9 w-9 rounded-none"
+            variant={currentPage === page ? "primary" : "pearl"}
+            size="icon-sm"
+            className="min-h-9 min-w-9 text-sm"
             onClick={() => onPageChange(page as number)}
             aria-label={`Halaman ${page}`}
             aria-current={currentPage === page ? "page" : undefined}
@@ -57,9 +56,8 @@ export function Pagination({ currentPage, totalPages, onPageChange, className }:
       )}
 
       <Button
-        variant="outline"
-        size="icon"
-        className="h-9 w-9 rounded-none"
+        variant="pearl"
+        size="icon-sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         aria-label="Halaman berikutnya"

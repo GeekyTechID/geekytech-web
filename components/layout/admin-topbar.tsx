@@ -31,7 +31,6 @@ const PAGE_TITLES: { pattern: RegExp; title: string }[] = [
   { pattern: /^\/admin\/brands\/[^/]+\/edit$/, title: "Edit Merek" },
   { pattern: /^\/admin\/brands/, title: "Kelola Merek" },
   { pattern: /^\/admin\/categories/, title: "Kelola Kategori" },
-  { pattern: /^\/admin\/tags/, title: "Tags" },
   { pattern: /^\/admin\/orders\/[^/]+$/, title: "Detail Pesanan" },
   { pattern: /^\/admin\/orders/, title: "Kelola Pesanan" },
   { pattern: /^\/admin\/customers\/[^/]+$/, title: "Detail Pelanggan" },
@@ -126,11 +125,11 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="admin-text-link hidden h-11 items-center gap-1 rounded-full border border-transparent px-4 sm:flex dark:hover:border-border"
+          className="admin-text-link hidden h-11 items-center gap-2 rounded-full border border-transparent px-4 sm:flex dark:hover:border-border"
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
-          <span className="hidden lg:inline font-medium">Website</span>
+          <span className="hidden lg:inline font-medium text-sm">Website</span>
         </Link>
 
         {/* Theme toggle */}

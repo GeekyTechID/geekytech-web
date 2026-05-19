@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 
 import { formatRupiah, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
+import { Button } from "@/components/ui/button";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 
 export type OrderRow = {
@@ -39,7 +39,7 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
 
   if (orders.length === 0) {
     return (
-      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-muted-foreground">
+      <div className="admin-utility-card flex flex-col items-center gap-3 border-dashed py-20 text-foreground">
         <ShoppingBag size={36} strokeWidth={1} />
         <p className="text-sm font-semibold uppercase">Belum ada pesanan</p>
       </div>
@@ -53,25 +53,25 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   No. Order
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Penerima
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                   Kurir
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground">
                   Total
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -94,17 +94,17 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
 
                   <td className="hidden px-4 py-3 md:table-cell">
                     {order.courier_company ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-foreground">
                         {order.courier_company.toUpperCase()}{" "}
                         {order.courier_service && `— ${order.courier_service}`}
                       </span>
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className="text-xs text-foreground">—</span>
                     )}
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {formatRelativeDate(order.created_at)}
                     </span>
                   </td>
@@ -125,9 +125,9 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
                   </td>
 
                   <td className="px-4 py-3 text-right">
-                    <AdminTableDetailLink href={`/admin/orders/${order.id}`} className="min-w-0">
-                      Detail
-                    </AdminTableDetailLink>
+                    <Button asChild variant="dark" size="sm" className="min-w-0">
+                      <Link href={`/admin/orders/${order.id}`}>Detail</Link>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -138,26 +138,30 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
 
       {totalPages > 1 ? (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

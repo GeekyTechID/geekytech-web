@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
 import { cn } from "@/lib/utils";
 import { createFlashSale, updateFlashSale, bulkAddFlashSaleProducts, createFlashSaleBannerInline, type FlashSaleFormData } from "../_actions";
 
-const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
+const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
 const selectClass =
   "h-9 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand dark:border-border";
@@ -256,18 +258,13 @@ export function FlashSaleForm({
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <label className={labelClass}>Status</label>
-            <button
-              type="button"
-              onClick={() => setIsActive((v) => !v)}
-              className={cn(
-                "flex h-10 w-full max-w-xs items-center justify-center gap-2 rounded-lg border border-[#e0e0e0] text-xs font-semibold uppercase transition-colors dark:border-border",
-                isActive
-                  ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                  : "bg-muted text-muted-foreground",
-              )}
-            >
-              {isActive ? "Aktif" : "Nonaktif"}
-            </button>
+            <StatusPillToggle
+              active={isActive}
+              onToggle={() => setIsActive((v) => !v)}
+              activeLabel="Aktif"
+              inactiveLabel="Nonaktif"
+              className="max-w-xs justify-center"
+            />
           </div>
         </div>
       </div>
@@ -414,13 +411,9 @@ export function FlashSaleForm({
                     />
                     <span className="border-l border-[#e0e0e0] px-2 py-1.5 text-xs text-muted-foreground dark:border-border">%</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={applyGlobalDiscount}
-                    className="h-8 rounded-full bg-brand px-3 text-[11px] font-semibold uppercase text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
-                  >
+                  <Button type="button" variant="primary" size="xs" onClick={applyGlobalDiscount}>
                     Terapkan
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -557,21 +550,18 @@ export function FlashSaleForm({
 
       {/* ── Actions ── */}
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-full border-0 bg-brand px-6 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50 active:scale-[0.98]"
-        >
+        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
           {isPending ? "Menyimpan..." : initialData ? "Perbarui" : "Buat Flash Sale"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => router.push("/admin/promotions/flash-sale")}
           disabled={isPending}
-          className="h-10 rounded-full border border-brand/40 px-6 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 disabled:opacity-50 active:scale-[0.98]"
         >
           Batal
-        </button>
+        </Button>
       </div>
     </form>
   );

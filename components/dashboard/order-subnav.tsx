@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import type { Database } from "@/types/supabase";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -47,18 +47,15 @@ export function OrderSubNav({
             ? pathname === tab.href
             : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           return (
-            <Link
+            <Button
               key={tab.href}
-              href={tab.href}
-              className={cn(
-                "inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border px-4 py-2 text-xs font-semibold uppercase transition sm:min-h-0",
-                active
-                  ? "border-black bg-black text-white"
-                  : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#1d1d1f]",
-              )}
+              asChild
+              variant={active ? "primary" : "pearl"}
+              size="sm"
+              className="shrink-0 text-xs font-semibold uppercase"
             >
-              {tab.label}
-            </Link>
+              <Link href={tab.href}>{tab.label}</Link>
+            </Button>
           );
         })}
       </nav>

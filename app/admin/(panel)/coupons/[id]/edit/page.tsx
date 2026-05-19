@@ -17,37 +17,45 @@ export default async function AdminEditCouponPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: coupon } = await supabase
-    .from("coupons")
-    .select("id, code, type, value, min_purchase, max_discount, max_usage, is_active, valid_from, valid_until")
-    .eq("id", id)
-    .single();
+  const [couponRes, productsRes, categoriesRes, brandsRes] = await Promise.all([
+    supabase
+      .from("coupons")
+      .select("id, code, title, description, type, value, min_purchase, max_discount, max_usage, is_active, valid_from, valid_until, image_url, applies_to, applies_to_ids")
+      .eq("id", id)
+      .single(),
+    supabase.from("products").select("id, name, category_id, brand_id").eq("is_active", true).order("name"),
+    supabase.from("categories").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("brands").select("id, name").eq("is_active", true).order("name"),
+  ]);
 
+  const coupon = couponRes.data;
   if (!coupon) notFound();
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 p-6 lg:p-8">
-      <nav className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <nav className="flex flex-wrap items-center gap-2 text-xs text-foreground">
         <Link href="/admin/coupons" className="admin-text-link font-medium">
           <span className="inline-flex items-center gap-1">
             <ChevronLeft size={14} />
             Kupon
           </span>
         </Link>
-        <span className="text-muted-foreground/60">/</span>
+        <span className="text-foreground/60">/</span>
         <span className="font-semibold text-foreground">Edit {coupon.code}</span>
       </nav>
 
       <div>
         <p className="text-swiss-eyebrow">Pemasaran</p>
         <h1 className="text-[34px] font-semibold uppercase text-foreground">Edit Kupon</h1>
-        <p className="mt-1 font-mono text-[17px] leading-[1.47] text-muted-foreground">{coupon.code}</p>
+        <p className="mt-1 font-mono text-[17px] leading-[1.47] text-foreground">{coupon.code}</p>
       </div>
 
       <CouponForm
         initialData={{
           id: coupon.id,
           code: coupon.code,
+          title: coupon.title ?? null,
+          description: coupon.description ?? null,
           type: coupon.type as "percentage" | "fixed",
           value: coupon.value,
           min_purchase: coupon.min_purchase ?? 0,
@@ -56,7 +64,13 @@ export default async function AdminEditCouponPage({
           is_active: coupon.is_active,
           valid_from: coupon.valid_from ?? null,
           valid_until: coupon.valid_until ?? null,
+          image_url: coupon.image_url ?? null,
+          applies_to: (coupon.applies_to ?? "all") as "all" | "product" | "category" | "brand",
+          applies_to_ids: (coupon.applies_to_ids ?? []) as string[],
         }}
+        products={productsRes.data ?? []}
+        categories={categoriesRes.data ?? []}
+        brands={brandsRes.data ?? []}
       />
     </div>
   );

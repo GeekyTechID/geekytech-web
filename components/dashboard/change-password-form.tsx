@@ -42,7 +42,7 @@ export function ChangePasswordForm() {
         <Label htmlFor="password2">Ulangi password baru</Label>
         <Input id="password2" name="password2" type="password" autoComplete="new-password" required minLength={8} className="mt-1 border-[#e0e0e0]" />
       </div>
-      <Button type="submit" disabled={pending} className="bg-black text-white hover:bg-[#333]">
+      <Button type="submit" variant="primary" disabled={pending}>
         Perbarui password
       </Button>
     </form>

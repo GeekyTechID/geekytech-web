@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useTransition } from "react";
 import { Ticket } from "lucide-react";
@@ -29,14 +29,14 @@ export type CouponRow = {
 
 function getCouponStatus(coupon: CouponRow): { label: string; className: string } {
   if (!coupon.is_active) {
-    return { label: "Nonaktif", className: "bg-muted text-muted-foreground" };
+    return { label: "Nonaktif", className: "bg-muted text-foreground" };
   }
   const now = new Date();
   if (coupon.valid_from && new Date(coupon.valid_from) > now) {
     return { label: "Terjadwal", className: "bg-brand/10 text-brand" };
   }
   if (coupon.valid_until && new Date(coupon.valid_until) < now) {
-    return { label: "Kadaluarsa", className: "bg-muted text-muted-foreground" };
+    return { label: "Kadaluarsa", className: "bg-muted text-foreground" };
   }
   if (coupon.max_usage !== null && coupon.used_count >= coupon.max_usage) {
     return { label: "Habis", className: "bg-muted text-foreground" };
@@ -71,7 +71,9 @@ function CouponActions({ coupon }: { coupon: CouponRow }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <AdminTableEditLink href={`/admin/coupons/${coupon.id}/edit`}>Edit</AdminTableEditLink>
+      <AdminTableEditLink href={`/admin/coupons/${coupon.id}/edit`} appearance="filled">
+        Edit
+      </AdminTableEditLink>
       <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
         Hapus
       </AdminTableDeleteButton>
@@ -110,25 +112,25 @@ export function CouponTable({ coupons }: CouponTableProps) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Kode
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                 Diskon
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                 Min. Belanja
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground lg:table-cell">
                 Pemakaian
               </th>
-              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground lg:table-cell">
                 Berlaku
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Aksi
               </th>
             </tr>
@@ -150,18 +152,18 @@ export function CouponTable({ coupons }: CouponTableProps) {
                     <span className="text-xs font-medium">{discountLabel}</span>
                   </td>
                   <td className="hidden px-4 py-3 md:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {coupon.min_purchase > 0 ? formatRupiah(coupon.min_purchase) : "—"}
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 lg:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {coupon.used_count}
                       {coupon.max_usage !== null ? ` / ${coupon.max_usage}` : " / ∞"}
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 lg:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {coupon.valid_from || coupon.valid_until
                         ? `${coupon.valid_from ? formatDate(coupon.valid_from) : "—"} → ${coupon.valid_until ? formatDate(coupon.valid_until) : "—"}`
                         : "Tidak terbatas"}

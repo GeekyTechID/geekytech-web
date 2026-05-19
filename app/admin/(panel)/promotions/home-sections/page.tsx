@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { createServiceClient } from "@/lib/supabase/server";
 import { HomeSectionsEditor } from "./_components/home-sections-editor";
 import type { HomeSection } from "./_actions";
@@ -137,7 +137,7 @@ export default async function HomeSectionsPage() {
         <h1 className="text-[34px] font-semibold uppercase text-foreground">
           Tampilan Beranda
         </h1>
-        <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
+        <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
           Pilih konten tiap seksi lalu atur urutan dan visibilitasnya di halaman beranda
         </p>
       </div>

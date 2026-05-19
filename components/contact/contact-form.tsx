@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const contactFormSchema = z.object({
   name: z
@@ -163,11 +164,7 @@ export function ContactForm() {
       </div>
 
       {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-[#EA5329] hover:bg-[#d44820] text-white text-[17px] font-normal rounded-full px-6 py-3 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-      >
+      <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -176,7 +173,7 @@ export function ContactForm() {
         ) : (
           "Kirim Pesan"
         )}
-      </button>
+      </Button>
 
       <p className="text-[12px] text-[#7a7a7a] dark:text-[#cccccc] text-center">
         Kami akan merespon dalam waktu 1-24 jam kerja.

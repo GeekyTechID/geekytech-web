@@ -82,7 +82,7 @@ export function OrderReviewForms({
             </Label>
             <Textarea id={`comment-${it.id}`} name="comment" rows={4} className="mt-1 border-[#e0e0e0]" placeholder="Ceritakan pengalamanmu dengan produk ini." />
           </div>
-          <Button type="submit" disabled={pending} className="mt-4 bg-black text-white hover:bg-[#333]">
+          <Button type="submit" variant="primary" disabled={pending} className="mt-4">
             Kirim ulasan
           </Button>
         </form>

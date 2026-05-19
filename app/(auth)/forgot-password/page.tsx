@@ -91,21 +91,12 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="space-y-3">
-          <Button
-            type="button"
-            onClick={handleResend}
-            disabled={isLoading}
-            className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
-          >
+          <Button type="button" variant="primary" onClick={handleResend} disabled={isLoading} className="w-full">
             {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
             Kirim ulang email
           </Button>
           <Link href="/login">
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-12 w-full rounded-lg text-[17px] font-normal text-[#1d1d1f] shadow-none hover:bg-[#f5f5f7] active:scale-[0.95]"
-            >
+            <Button type="button" variant="ghost" className="w-full">
               <ArrowLeft size={16} className="mr-2" />
               Kembali ke halaman masuk
             </Button>
@@ -148,11 +139,7 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="h-12 w-full rounded-lg border-0 bg-[#EA5329] text-[17px] font-normal leading-none text-white shadow-none transition-transform hover:bg-[#d44820] active:scale-[0.95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
           {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
           Kirim Link Reset
         </Button>

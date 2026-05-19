@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, Download, FileSpreadsheet, Users, TrendingUp } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 type ExportType = "orders" | "customers" | "revenue";
 
@@ -65,32 +67,33 @@ export default function ExportPage() {
         <div>
           <p className="text-swiss-eyebrow">Analitik</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Export Data</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">Unduh data dalam format CSV</p>
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">Unduh data dalam format CSV</p>
         </div>
-        <Link
-          href="/admin/reports"
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full border border-brand/40 px-5 text-xs font-semibold uppercase text-brand transition-colors hover:bg-brand/5 active:scale-[0.98]"
-        >
-          <ArrowLeft size={13} />
-          Kembali
-        </Link>
+        <Button asChild variant="secondary" size="sm" className="shrink-0 gap-2">
+          <Link href="/admin/reports">
+            <ArrowLeft size={13} />
+            Kembali
+          </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {EXPORTS.map(({ type, label, description, icon: Icon }) => (
           <div key={type} className="admin-utility-card flex flex-col gap-4 p-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-              <Icon size={18} className="text-muted-foreground" />
+              <Icon size={18} className="text-foreground" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="text-sm font-semibold uppercase">{label}</p>
-              <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+              <p className="text-xs leading-relaxed text-foreground">{description}</p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
+              className="w-full gap-2"
               onClick={() => void handleDownload(type)}
               disabled={loading !== null}
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-xs font-semibold uppercase text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
             >
               {loading === type ? (
                 <span className="inline-block h-3 w-3 animate-spin rounded-full border border-white/40 border-t-white" />
@@ -98,7 +101,7 @@ export default function ExportPage() {
                 <Download size={13} />
               )}
               {loading === type ? "Mengunduh..." : "Unduh CSV"}
-            </button>
+            </Button>
           </div>
         ))}
       </div>

@@ -3,22 +3,30 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/** Dasar tombol/link aksi baris tabel admin — tipografi caption, radius utilitas 8px (design: rounded-sm). */
-export const adminTableRowActionBaseClass =
-  "inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-sm border px-3 text-sm font-normal leading-snug transition-colors active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+const tableActionClass = buttonVariants({ variant: "table-action", size: "sm" });
+
+type AdminTableEditAppearance = "brand" | "filled";
 
 export function AdminTableEditLink({
   className,
   children = "Edit",
+  appearance = "brand",
   ...props
-}: ComponentProps<typeof Link> & { children?: ReactNode }) {
+}: ComponentProps<typeof Link> & {
+  children?: ReactNode;
+  /** `filled` = bg foreground seperti tombol Detail (pesanan/pelanggan) */
+  appearance?: AdminTableEditAppearance;
+}) {
   return (
     <Link
       className={cn(
-        adminTableRowActionBaseClass,
-        "border-brand/40 text-brand hover:bg-brand/5",
+        buttonVariants({
+          variant: appearance === "filled" ? "dark" : "table-action-brand",
+          size: "sm",
+        }),
         className,
       )}
       {...props}
@@ -35,11 +43,7 @@ export function AdminTableDetailLink({
 }: ComponentProps<typeof Link> & { children?: ReactNode }) {
   return (
     <Link
-      className={cn(
-        adminTableRowActionBaseClass,
-        "border-[#e0e0e0] text-foreground hover:bg-muted dark:border-border",
-        className,
-      )}
+      className={cn(tableActionClass, className)}
       {...props}
     >
       {children}
@@ -56,8 +60,7 @@ export function AdminTableDeleteButton({
     <button
       type="button"
       className={cn(
-        adminTableRowActionBaseClass,
-        "border-destructive/40 text-destructive hover:bg-destructive/10",
+        buttonVariants({ variant: "table-action-destructive", size: "sm" }),
         className,
       )}
       {...props}
@@ -67,25 +70,34 @@ export function AdminTableDeleteButton({
   );
 }
 
-type RowTone = "brand" | "danger" | "neutral" | "positive";
+type RowTone = "brand" | "danger" | "neutral";
 
-const rowToneClass: Record<RowTone, string> = {
-  brand: "border-brand/40 text-brand hover:bg-brand/5",
-  danger: "border-destructive/40 text-destructive hover:bg-destructive/10",
-  neutral: "border-[#e0e0e0] text-foreground hover:bg-muted dark:border-border",
-  positive:
-    "border-emerald-600/35 text-emerald-800 hover:bg-emerald-500/10 dark:border-emerald-700/40 dark:text-emerald-400",
+const rowToneVariant: Record<
+  RowTone,
+  "table-action-brand" | "table-action-destructive" | "table-action"
+> = {
+  brand: "table-action-brand",
+  danger: "table-action-destructive",
+  neutral: "table-action",
 };
 
 export function AdminTableRowTextButton({
-  tone,
+  tone = "brand",
+  appearance,
   className,
   ...props
-}: ComponentProps<"button"> & { tone: RowTone }) {
+}: ComponentProps<"button"> & {
+  tone?: RowTone;
+  /** `filled` = bg foreground seperti tombol Detail pesanan/pelanggan */
+  appearance?: AdminTableEditAppearance;
+}) {
+  const variant =
+    appearance === "filled" ? "dark" : rowToneVariant[tone];
+
   return (
     <button
       type="button"
-      className={cn(adminTableRowActionBaseClass, rowToneClass[tone], className)}
+      className={cn(buttonVariants({ variant, size: "sm" }), className)}
       {...props}
     />
   );

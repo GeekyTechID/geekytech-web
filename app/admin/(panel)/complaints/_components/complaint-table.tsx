@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
+import { Button } from "@/components/ui/button";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
@@ -22,7 +23,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
   rejected: {
     label: "Ditolak",
-    className: "bg-muted text-muted-foreground",
+    className: "bg-muted text-foreground",
   },
 };
 
@@ -70,25 +71,25 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Pelanggan
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   No. Order
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                   Tipe
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground lg:table-cell">
                   Alasan
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -97,7 +98,7 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
               {complaints.map((complaint) => {
                 const statusCfg = STATUS_CONFIG[complaint.status] ?? {
                   label: complaint.status,
-                  className: "bg-muted text-muted-foreground",
+                  className: "bg-muted text-foreground",
                 };
 
                 return (
@@ -111,17 +112,17 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                     </td>
 
                     <td className="hidden px-4 py-3 md:table-cell">
-                      <span className="text-xs capitalize text-muted-foreground">
+                      <span className="text-xs capitalize text-foreground">
                         {complaint.type.replace(/_/g, " ")}
                       </span>
                     </td>
 
                     <td className="hidden px-4 py-3 lg:table-cell">
-                      <p className="max-w-xs line-clamp-1 text-xs text-muted-foreground">{complaint.reason}</p>
+                      <p className="max-w-xs line-clamp-1 text-xs text-foreground">{complaint.reason}</p>
                     </td>
 
                     <td className="hidden px-4 py-3 sm:table-cell">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-foreground">
                         {formatRelativeDate(complaint.created_at)}
                       </span>
                     </td>
@@ -150,26 +151,30 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
 
       {totalPages > 1 && (
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       )}

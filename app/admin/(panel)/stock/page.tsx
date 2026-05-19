@@ -1,15 +1,34 @@
+﻿import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { StockFilters } from "./_components/stock-filters";
+import { StockVariantsTable, type StockVariantRow } from "./_components/stock-variants-table";
+import {
+  STOCK_DEFAULT_SORT,
+  buildStockVariantCountQuery,
+  buildStockVariantListQuery,
+  type StockListFilters,
+} from "./_lib/stock-query";
 
 export const metadata: Metadata = { title: "Stok — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ alert?: string }>;
+const PER_PAGE = 20;
+
+type SearchParams = Promise<{
+  alert?: string;
+  page?: string;
+  q?: string;
+  brand?: string;
+  category?: string;
+  sort?: string;
+}>;
 
 type StockHistoryType = "in" | "out" | "reserved" | "released" | "adjustment";
 
@@ -17,7 +36,7 @@ const HISTORY_TYPE_BADGE: Record<StockHistoryType, string> = {
   in: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
   out: "bg-destructive/10 text-destructive dark:text-destructive",
   reserved: "bg-brand/10 text-brand",
-  released: "bg-muted text-muted-foreground",
+  released: "bg-muted text-foreground",
   adjustment: "bg-muted text-foreground",
 };
 
@@ -50,21 +69,45 @@ type HistoryRow = {
     | { name: string; sku: string; products: { name: string } | { name: string }[] }[];
 };
 
-async function fetchStockData(alertOnly: boolean) {
+function parseFilters(params: {
+  alert?: string;
+  q?: string;
+  brand?: string;
+  category?: string;
+  sort?: string;
+}): StockListFilters {
+  return {
+    q: params.q?.trim() ?? "",
+    brandId: params.brand ?? "",
+    categoryId: params.category ?? "",
+    sort: params.sort ?? STOCK_DEFAULT_SORT,
+    alertOnly: params.alert === "1",
+  };
+}
+
+function buildAlertHref(filters: StockListFilters, enableAlert: boolean): string {
+  const params = new URLSearchParams();
+  if (enableAlert) params.set("alert", "1");
+  if (filters.q) params.set("q", filters.q);
+  if (filters.brandId) params.set("brand", filters.brandId);
+  if (filters.categoryId) params.set("category", filters.categoryId);
+  if (filters.sort !== STOCK_DEFAULT_SORT) params.set("sort", filters.sort);
+  const qs = params.toString();
+  return qs ? `/admin/stock?${qs}` : "/admin/stock";
+}
+
+async function fetchStockData(filters: StockListFilters, requestedPage: number) {
   const supabase = await createClient();
 
-  let variantQuery = supabase
-    .from("product_variants")
-    .select("id, name, sku, stock, reserved, is_active, products!inner(name, slug)")
-    .eq("is_active", true)
-    .order("stock", { ascending: true });
-
-  if (alertOnly) {
-    variantQuery = variantQuery.lte("stock", 5);
-  }
+  const { count: totalCountRaw } = await buildStockVariantCountQuery(supabase, filters);
+  const totalCount = totalCountRaw ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
+  const page = Math.min(Math.max(1, requestedPage), totalPages);
+  const from = (page - 1) * PER_PAGE;
+  const to = from + PER_PAGE - 1;
 
   const [variants, history] = await Promise.all([
-    variantQuery,
+    buildStockVariantListQuery(supabase, filters).range(from, to),
     supabase
       .from("stock_history")
       .select(
@@ -77,7 +120,24 @@ async function fetchStockData(alertOnly: boolean) {
   return {
     variants: (variants.data ?? []) as VariantRow[],
     history: (history.data ?? []) as HistoryRow[],
+    totalCount,
+    totalPages,
+    page,
   };
+}
+
+function mapVariantRows(rows: VariantRow[]): StockVariantRow[] {
+  return rows.map((v) => {
+    const productName = Array.isArray(v.products) ? v.products[0]?.name : v.products?.name;
+    return {
+      id: v.id,
+      name: v.name,
+      sku: v.sku,
+      stock: v.stock,
+      reserved: v.reserved,
+      productName: productName ?? "",
+    };
+  });
 }
 
 export default async function AdminStockPage({
@@ -86,12 +146,32 @@ export default async function AdminStockPage({
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
-  const alertOnly = params.alert === "1";
+  const filters = parseFilters(params);
+  const requestedPage = Math.max(1, parseInt(params.page ?? "1", 10));
 
-  const { variants, history } = await fetchStockData(alertOnly);
+  const supabase = await createClient();
 
-  const outOfStockCount = variants.filter((v) => v.stock === 0).length;
-  const totalVariants = variants.length;
+  const [{ data: categories }, { data: brands }, stockResult] = await Promise.all([
+    supabase.from("categories").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("brands").select("id, name").eq("is_active", true).order("sort_order").order("name"),
+    fetchStockData(filters, requestedPage),
+  ]);
+
+  const { variants, history, totalCount, totalPages, page } = stockResult;
+  const stockRows = mapVariantRows(variants);
+  const outOfStockCount = stockRows.filter((v) => v.stock === 0).length;
+
+  const filterHint = [
+    filters.q ? `untuk "${filters.q}"` : null,
+    filters.brandId
+      ? `merek ${brands?.find((b) => b.id === filters.brandId)?.name ?? ""}`.trim()
+      : null,
+    filters.categoryId
+      ? `kategori ${categories?.find((c) => c.id === filters.categoryId)?.name ?? ""}`.trim()
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -99,98 +179,50 @@ export default async function AdminStockPage({
         <div>
           <p className="text-swiss-eyebrow">Inventaris</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Stok</h1>
-          <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
-            {totalVariants} varian{alertOnly ? " stok kritis" : ""}
+          <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
+            {totalCount} varian
+            {filters.alertOnly ? " stok kritis" : ""}
+            {filterHint ? ` ${filterHint}` : ""}
           </p>
         </div>
-        <Link
-          href={alertOnly ? "/admin/stock" : "/admin/stock?alert=1"}
-          className={cn(
-            "inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-xs font-semibold uppercase transition-opacity active:scale-[0.98]",
-            alertOnly
-              ? "border-transparent bg-brand text-white hover:opacity-90"
-              : "border-[#e0e0e0] text-muted-foreground hover:border-brand/40 hover:text-foreground dark:border-border",
-          )}
+        <Button
+          asChild
+          variant={filters.alertOnly ? "primary" : "secondary"}
+          size="sm"
+          className="shrink-0 gap-2"
         >
-          <AlertTriangle size={13} />
-          Stok Kritis
-        </Link>
+          <Link href={buildAlertHref(filters, !filters.alertOnly)}>
+            <AlertTriangle size={13} />
+            Stok Kritis
+          </Link>
+        </Button>
       </div>
+
+      <Suspense>
+        <StockFilters
+          categories={categories ?? []}
+          brands={brands ?? []}
+        />
+      </Suspense>
 
       {outOfStockCount > 0 ? (
         <div className="admin-utility-card flex items-center gap-3 border-destructive/20 bg-destructive/5 px-4 py-3 dark:border-destructive/30">
           <AlertTriangle size={16} className="shrink-0 text-destructive" />
-          <p className="text-sm font-semibold text-destructive dark:text-destructive">{outOfStockCount} varian habis stok</p>
+          <p className="text-sm font-semibold text-destructive dark:text-destructive">
+            {outOfStockCount} varian habis stok di halaman ini
+          </p>
         </div>
       ) : null}
 
-      <div className="admin-utility-card overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
-                {["Produk", "Varian", "SKU", "Stok", "Reserved", "Tersedia", "Status"].map((h) => (
-                  <th
-                    key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-              {variants.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-sm text-muted-foreground">
-                    Tidak ada varian ditemukan
-                  </td>
-                </tr>
-              ) : (
-                variants.map((v) => {
-                  const productName = Array.isArray(v.products) ? v.products[0]?.name : v.products?.name;
-                  const available = v.stock - v.reserved;
-                  const badgeCls =
-                    v.stock === 0
-                      ? "bg-destructive/10 text-destructive dark:text-destructive"
-                      : v.stock <= 5
-                        ? "bg-brand/10 text-brand"
-                        : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400";
-                  const badgeLabel = v.stock === 0 ? "Habis" : v.stock <= 5 ? "Kritis" : "Aman";
-
-                  return (
-                    <tr key={v.id} className="transition-colors hover:bg-muted/30">
-                      <td className="px-5 py-3 font-medium">
-                        <Link
-                          href={`/admin/products?q=${encodeURIComponent(productName ?? "")}`}
-                          className="admin-text-link"
-                        >
-                          {productName ?? "—"}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3 text-muted-foreground">{v.name}</td>
-                      <td className="px-5 py-3 font-mono text-xs">{v.sku}</td>
-                      <td className="px-5 py-3 font-semibold">{v.stock}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{v.reserved}</td>
-                      <td className="px-5 py-3 font-semibold">{Math.max(0, available)}</td>
-                      <td className="px-5 py-3">
-                        <span
-                          className={cn(
-                            "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
-                            badgeCls,
-                          )}
-                        >
-                          {badgeLabel}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <Suspense>
+        <StockVariantsTable
+          variants={stockRows}
+          page={page}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          perPage={PER_PAGE}
+        />
+      </Suspense>
 
       <div className="admin-utility-card overflow-hidden p-0">
         <div className="admin-utility-card-header">
@@ -203,7 +235,7 @@ export default async function AdminStockPage({
                 {["Tanggal", "Produk / Varian", "Tipe", "Jumlah", "Catatan"].map((h) => (
                   <th
                     key={h}
-                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-muted-foreground"
+                    className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-foreground"
                   >
                     {h}
                   </th>
@@ -213,13 +245,15 @@ export default async function AdminStockPage({
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {history.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={5} className="px-5 py-8 text-center text-sm text-foreground">
                     Belum ada riwayat stok
                   </td>
                 </tr>
               ) : (
                 history.map((h) => {
-                  const variant = Array.isArray(h.product_variants) ? h.product_variants[0] : h.product_variants;
+                  const variant = Array.isArray(h.product_variants)
+                    ? h.product_variants[0]
+                    : h.product_variants;
                   const productName = variant
                     ? Array.isArray(variant.products)
                       ? variant.products[0]?.name
@@ -231,7 +265,7 @@ export default async function AdminStockPage({
 
                   return (
                     <tr key={h.id} className="transition-colors hover:bg-muted/30">
-                      <td className="whitespace-nowrap px-5 py-3 text-xs text-muted-foreground">
+                      <td className="whitespace-nowrap px-5 py-3 text-xs text-foreground">
                         {formatDate(h.created_at, {
                           day: "numeric",
                           month: "short",
@@ -241,9 +275,9 @@ export default async function AdminStockPage({
                         })}
                       </td>
                       <td className="px-5 py-3">
-                        <p className="font-medium">{productName ?? "—"}</p>
+                        <p className="font-medium text-foreground">{productName ?? "—"}</p>
                         {variant ? (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-foreground">
                             {variant.name} · {variant.sku}
                           </p>
                         ) : null}
@@ -258,10 +292,10 @@ export default async function AdminStockPage({
                           {typeLabel}
                         </span>
                       </td>
-                      <td className="px-5 py-3 font-semibold">
+                      <td className="px-5 py-3 font-semibold text-foreground">
                         {h.quantity > 0 ? `+${h.quantity}` : h.quantity}
                       </td>
-                      <td className="px-5 py-3 text-sm text-muted-foreground">{h.note ?? "—"}</td>
+                      <td className="px-5 py-3 text-sm text-foreground">{h.note ?? "—"}</td>
                     </tr>
                   );
                 })

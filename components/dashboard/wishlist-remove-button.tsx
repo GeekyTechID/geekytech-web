@@ -15,10 +15,10 @@ export function WishlistRemoveButton({ wishlistId, className }: { wishlistId: st
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="destructive-ghost"
       size="sm"
       disabled={pending}
-      className={cn("h-10 border-neutral-200 text-xs font-semibold", className)}
+      className={className}
       onClick={() => {
         if (!window.confirm("Hapus dari wishlist?")) return;
         startTransition(async () => {

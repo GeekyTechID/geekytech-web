@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -11,6 +11,7 @@ import {
   AdminTableDeleteButton,
   AdminTableRowTextButton,
 } from "@/components/admin/admin-table-row-actions";
+import { Button } from "@/components/ui/button";
 import { approveReview, rejectReview, deleteReview } from "../_actions";
 
 export type ReviewRow = {
@@ -39,7 +40,7 @@ function StarRating({ rating }: { rating: number }) {
           key={i}
           size={11}
           className={cn(
-            i < rating ? "fill-brand/80 text-brand" : "text-muted-foreground/30",
+            i < rating ? "fill-brand/80 text-brand" : "text-foreground/30",
           )}
         />
       ))}
@@ -78,7 +79,7 @@ function ReviewActions({ review }: { review: ReviewRow }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {!review.is_approved ? (
-        <AdminTableRowTextButton tone="positive" onClick={handleApprove} disabled={isPending}>
+        <AdminTableRowTextButton tone="brand" onClick={handleApprove} disabled={isPending}>
           Setujui
         </AdminTableRowTextButton>
       ) : (
@@ -120,25 +121,25 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Pelanggan
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Produk
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Rating
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground md:table-cell">
                   Komentar
                 </th>
-                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Tanggal
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
+                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -151,7 +152,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   </td>
 
                   <td className="px-4 py-3">
-                    <span className="line-clamp-1 text-xs text-muted-foreground">
+                    <span className="line-clamp-1 text-xs text-foreground">
                       {review.products?.name ?? "—"}
                     </span>
                   </td>
@@ -161,13 +162,13 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   </td>
 
                   <td className="hidden px-4 py-3 md:table-cell">
-                    <p className="line-clamp-2 max-w-xs text-xs text-muted-foreground">
+                    <p className="line-clamp-2 max-w-xs text-xs text-foreground">
                       {review.comment ?? <span className="italic">Tidak ada komentar</span>}
                     </p>
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground">
                       {formatRelativeDate(review.created_at)}
                     </span>
                   </td>
@@ -197,26 +198,30 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
 
       {totalPages > 1 ? (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground">
             Halaman {page} dari {totalPages}
           </p>
           <div className="flex gap-1">
-            <button
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={14} />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="pearl"
+              size="icon-sm"
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-lg border border-[#e0e0e0] p-2 transition-colors hover:bg-muted disabled:opacity-40 dark:border-border"
+              aria-label="Halaman berikutnya"
             >
               <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

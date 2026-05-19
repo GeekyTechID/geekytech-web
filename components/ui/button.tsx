@@ -4,47 +4,102 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * GeekyTech buttons — aligned with .cursor/rules/design.mdc
+ * - primary / secondary: pill CTAs (#EA5329)
+ * - dark: compact utility (nav Sign In / Bag)
+ * - pearl: secondary neutral capsule
+ * - hero: store landing CTA (18px / 300)
+ * - destructive*: delete flows (outside Apple spec; kept for ecommerce)
+ */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  [
+    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border bg-clip-padding whitespace-nowrap transition-transform outline-none select-none",
+    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52]",
+    "active:scale-95",
+    "disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  ],
   {
     variants: {
       variant: {
-        default:
-          "bg-swiss-black text-swiss-white shadow-none",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        primary:
+          "rounded-full border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "rounded-full border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
+        dark:
+          "rounded-sm border-transparent bg-[#1d1d1f] text-white shadow-none hover:bg-[#333333]",
+        pearl:
+          "rounded-[11px] border-[3px] border-[#f0f0f0] bg-[#fafafc] text-[#333333] shadow-none hover:bg-[#f5f5f7]",
+        hero:
+          "rounded-full border-transparent bg-brand font-light text-brand-foreground shadow-none hover:bg-brand-hover",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "rounded-sm border-transparent bg-transparent text-foreground shadow-none hover:bg-muted",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "rounded-full border-transparent bg-destructive text-destructive-foreground shadow-none hover:bg-destructive/90",
+        "destructive-ghost":
+          "rounded-sm border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
+        link:
+          "h-auto min-h-0 rounded-none border-transparent bg-transparent p-0 text-brand shadow-none hover:underline active:scale-100",
+        /** Floating control over photography — design: button-icon-circular */
+        "icon-chip":
+          "rounded-full border-transparent bg-[rgba(210,210,215,0.64)] text-[#1d1d1f] shadow-none hover:bg-[rgba(210,210,215,0.8)]",
+        /** Compact row actions (admin tables) — 14px utility, radius 8px */
+        "table-action":
+          "rounded-sm border-[#e0e0e0] bg-transparent text-foreground shadow-none hover:bg-muted dark:border-border",
+        "table-action-brand":
+          "rounded-sm border-brand/40 bg-transparent text-brand shadow-none hover:bg-brand/5",
+        "table-action-destructive":
+          "rounded-sm border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
+        /** @deprecated Use `primary` */
+        default:
+          "rounded-full border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
+        /** @deprecated Use `secondary` */
+        outline:
+          "rounded-full border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
       },
       size: {
         default:
-          "h-11 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 gap-1.5 rounded-[min(var(--radius-md),12px)] px-3 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-12 gap-2 px-5 has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5",
-        icon: "size-11",
-        "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-9 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-12",
+          "min-h-11 px-[22px] py-[11px] text-[17px] font-normal leading-[1.47] tracking-[-0.374px]",
+        sm: "min-h-9 px-4 py-2 text-sm font-normal leading-[1.29] tracking-[-0.224px]",
+        xs: "min-h-8 gap-1 px-3 py-1.5 text-xs font-normal leading-[1.29] tracking-[-0.224px]",
+        lg: "min-h-12 px-7 py-3.5 text-lg font-light leading-none tracking-normal",
+        icon: "size-11 min-h-0 rounded-full p-0",
+        "icon-sm": "size-9 min-h-0 rounded-full p-0",
       },
     },
+    compoundVariants: [
+      { variant: "link", size: "default", class: "text-[17px] leading-[1.47] tracking-[-0.374px]" },
+      { variant: "link", size: "sm", class: "text-sm leading-[1.29] tracking-[-0.224px]" },
+      { variant: ["primary", "secondary", "destructive", "default", "outline"], size: "icon", class: "min-h-0 px-0" },
+      { variant: ["primary", "secondary", "destructive", "default", "outline"], size: "icon-sm", class: "min-h-0 px-0" },
+      { variant: "dark", size: "default", class: "px-[15px] py-2 text-sm leading-[1.29] tracking-[-0.224px]" },
+      { variant: "dark", size: "sm", class: "min-h-8 px-[15px] py-2" },
+      { variant: "pearl", size: "default", class: "px-[14px] py-2 text-sm leading-[1.43] tracking-[-0.224px]" },
+      { variant: "pearl", size: "sm", class: "min-h-8 px-3 py-1.5" },
+      { variant: "destructive-ghost", size: "default", class: "min-h-8 px-3 py-2" },
+      { variant: "destructive-ghost", size: "sm", class: "min-h-8 px-3 py-1.5" },
+      { variant: "icon-chip", size: "icon", class: "min-h-0 px-0" },
+      { variant: "icon-chip", size: "icon-sm", class: "min-h-0 px-0" },
+    ],
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }
 )
 
+function resolveVariant(
+  variant: VariantProps<typeof buttonVariants>["variant"]
+): NonNullable<VariantProps<typeof buttonVariants>["variant"]> {
+  if (!variant || variant === "default") return "primary"
+  if (variant === "outline") return "secondary"
+  return variant
+}
+
 function Button({
   className,
-  variant = "default",
+  variant = "primary",
   size = "default",
   asChild = false,
   ...props
@@ -53,16 +108,17 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
+  const resolved = resolveVariant(variant)
 
   return (
     <Comp
       data-slot="button"
-      data-variant={variant}
+      data-variant={resolved}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant: resolved, size, className }))}
       {...props}
     />
   )
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, resolveVariant }
