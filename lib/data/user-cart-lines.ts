@@ -36,6 +36,7 @@ type CartQueryRow = {
       review_count: number | null;
       total_sold: number | null;
       category_id: string | null;
+      brand_id: string | null;
       categories: { name: string } | { name: string }[] | null;
       product_images: ImgRow[] | null;
     } | null;
@@ -82,7 +83,7 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
       product_variants(
         id, name, sku, price, stock, reserved, weight, length, height, width,
         products(
-          id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, category_id,
+          id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, category_id, brand_id,
           categories:category_id(name),
           product_images(url, is_primary, sort_order, alt_text)
         )
@@ -91,6 +92,32 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
     .eq("cart_id", cart.id);
 
   const items = (rows ?? []) as unknown as CartQueryRow[];
+  if (!items.length) return { cartId: cart.id, lines: [], excludedProductIds: [], excludedCategoryIds: [] };
+
+  // Fetch active flash sale prices for all variants in cart
+  const variantIds = items.map((r) => r.product_variants?.id).filter(Boolean) as string[];
+  const now = new Date();
+  const { data: flashRows } = await supabase
+    .from("flash_sale_products")
+    .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
+    .in("variant_id", variantIds);
+
+  // Build map: variant_id → lowest valid flash sale price
+  const flashPriceMap = new Map<string, number>();
+  for (const row of flashRows ?? []) {
+    const fs = Array.isArray(row.flash_sales) ? row.flash_sales[0] : row.flash_sales;
+    if (!fs || !fs.is_active) continue;
+    if (new Date(fs.starts_at) > now || new Date(fs.ends_at) < now) continue;
+    const quota = row.quota as number | null;
+    const sold = (row.sold as number) ?? 0;
+    if (quota != null && quota > 0 && sold >= quota) continue;
+    const existing = flashPriceMap.get(row.variant_id as string);
+    const price = Number(row.sale_price);
+    if (existing == null || price < existing) {
+      flashPriceMap.set(row.variant_id as string, price);
+    }
+  }
+
   const lines: CartLineView[] = [];
   const excludedProductIds: string[] = [];
   const excludedCategoryIds: string[] = [];
@@ -104,10 +131,18 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
     excludedProductIds.push(p.id);
 
     const basePrice = Number(p.base_price);
-    const salePrice = p.sale_price != null ? Number(p.sale_price) : null;
+    const productSalePrice = p.sale_price != null ? Number(p.sale_price) : null;
+    const flashSalePrice = flashPriceMap.get(v.id) ?? null;
+
+    // Flash sale price wins if it's lower than the product's sale price
+    const effectiveSalePrice =
+      flashSalePrice != null && (productSalePrice == null || flashSalePrice < productSalePrice)
+        ? flashSalePrice
+        : productSalePrice;
+
     const { listPrice, unitPrice, discountPercent } = computeVariantUnitPrice({
       basePrice,
-      salePrice,
+      salePrice: effectiveSalePrice,
       variantPrice: Number(v.price),
     });
 
@@ -119,9 +154,12 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
       maxQty,
       variantId: v.id,
       variantName: v.name,
+      productId: p.id,
       productName: p.name,
       slug: p.slug,
+      categoryId: p.category_id ?? null,
       categoryLabel: cat?.name ?? "Produk",
+      brandId: p.brand_id ?? null,
       descriptionExcerpt: excerpt(p.description),
       rating: Number(p.average_rating ?? 0),
       reviewCount: p.review_count ?? 0,

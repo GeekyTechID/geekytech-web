@@ -3,9 +3,18 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 
+const lineSchema = z.object({
+  productId: z.string(),
+  categoryId: z.string().nullable(),
+  brandId: z.string().nullable(),
+  unitPrice: z.number().nonnegative(),
+  qty: z.number().int().positive(),
+});
+
 const bodySchema = z.object({
   code: z.string().min(1).max(64),
   subtotal: z.number().nonnegative(),
+  lines: z.array(lineSchema).optional(),
 });
 
 export async function POST(req: Request) {
@@ -27,7 +36,7 @@ export async function POST(req: Request) {
     const code = parsed.data.code.trim().toUpperCase();
     const { data: coupon, error } = await supabase
       .from("coupons")
-      .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage, is_active")
+      .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage, is_active, applies_to, applies_to_ids")
       .ilike("code", code)
       .maybeSingle();
 
@@ -46,7 +55,7 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Anda sudah pernah menggunakan kupon ini." }, { status: 400 });
     }
 
-    const result = computeCouponDiscount(parsed.data.subtotal, coupon);
+    const result = computeCouponDiscount(parsed.data.subtotal, coupon, parsed.data.lines);
     if (!result.ok) {
       return Response.json({ success: false, error: result.error }, { status: 400 });
     }

@@ -124,7 +124,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const originPostal = postalToNumber(process.env.BITESHIP_ORIGIN_POSTAL_CODE?.trim() ?? "10110") ?? 10110;
+    const originPostal = postalToNumber((process.env.BITESHIP_ORIGIN_POSTAL ?? process.env.BITESHIP_ORIGIN_POSTAL_CODE)?.trim() ?? "10110") ?? 10110;
 
     const itemsForShip = cart.lines.map((line) => ({
       name: `${line.productName} (${line.variantName})`.slice(0, 80),
@@ -156,7 +156,7 @@ export async function POST(req: Request) {
     if (rawCoupon) {
       const { data: coupon } = await auth
         .from("coupons")
-        .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage, is_active")
+        .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage, is_active, applies_to, applies_to_ids")
         .ilike("code", rawCoupon.toUpperCase())
         .maybeSingle();
 
@@ -175,7 +175,14 @@ export async function POST(req: Request) {
         return Response.json({ success: false, error: "Anda sudah pernah menggunakan kupon ini." }, { status: 400 });
       }
 
-      const disc = computeCouponDiscount(subtotalRounded, coupon);
+      const cartLinesForCoupon = cart.lines.map((l) => ({
+        productId: l.productId,
+        categoryId: l.categoryId,
+        brandId: l.brandId,
+        unitPrice: l.unitPrice,
+        qty: l.qty,
+      }));
+      const disc = computeCouponDiscount(subtotalRounded, coupon, cartLinesForCoupon);
       if (!disc.ok) {
         return Response.json({ success: false, error: disc.error }, { status: 400 });
       }

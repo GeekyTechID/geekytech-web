@@ -5,12 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchCartCrossSellProducts } from "@/lib/data/product-detail-page";
 import { fetchUserCartWithLines } from "@/lib/data/user-cart-lines";
-import { formatRupiah } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { CartCheckoutStepper } from "@/components/store/cart-checkout-stepper";
-import { CartLineCard } from "@/components/store/cart-line-card";
+import { CartClientShell } from "@/components/store/cart-client-shell";
 import { HomeProductTile } from "@/components/store/home-product-tile";
-import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -54,12 +51,6 @@ export default async function CartPage() {
     );
   }
 
-  const itemCount = lines.reduce((s, l) => s + l.qty, 0);
-  const subtotalGross = lines.reduce((s, l) => s + l.listPrice * l.qty, 0);
-  const total = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
-  const discountTotal = Math.max(0, subtotalGross - total);
-  const tax = 0;
-
   const crossSell = await fetchCartCrossSellProducts({
     excludedCategoryIds: [...new Set(cart.excludedCategoryIds)],
     excludedProductIds: [...new Set(cart.excludedProductIds)],
@@ -73,49 +64,8 @@ export default async function CartPage() {
           <CartCheckoutStepper current={1} />
         </div>
 
-        <div className="mt-6 md:mt-8 md:grid md:grid-cols-12 md:items-start md:gap-6 lg:gap-8">
-          <div className="md:col-span-7">
-            <div className="rounded-2xl border border-[#e8e4dc] bg-[#faf8f4] p-3 sm:p-4 md:p-5">
-              <h1 className="sr-only">Keranjang belanja</h1>
-              <ul className="space-y-10">
-                {lines.map((line) => (
-                  <li key={line.lineId}>
-                    <CartLineCard line={line} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <aside className="mt-6 md:col-span-5 md:mt-0">
-            <div className="md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto rounded-2xl bg-[#1a1a1a] p-5 text-white shadow-lg sm:p-6">
-              <h2 className="text-lg font-bold">Ringkasan pesanan</h2>
-              <dl className="mt-6 space-y-4 border-b border-white/15 pb-6 text-sm">
-                <div className="flex justify-between gap-4">
-                  <dt className="text-white/75">Sub total ({itemCount} item)</dt>
-                  <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(subtotalGross)}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-white/75">Diskon</dt>
-                  <dd className={cn("shrink-0 font-semibold tabular-nums", discountTotal > 0 && "text-[#EA5329]")}>
-                    {discountTotal > 0 ? `−${formatRupiah(discountTotal)}` : formatRupiah(0)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-white/75">Pajak</dt>
-                  <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(tax)}</dd>
-                </div>
-              </dl>
-              <div className="mt-6 flex justify-between gap-4 text-lg font-black tabular-nums">
-                <span>Total</span>
-                <span>{formatRupiah(total + tax)}</span>
-              </div>
-              <Button asChild variant="primary" className="mt-6 w-full">
-                <Link href="/checkout">Beli sekarang</Link>
-              </Button>
-            </div>
-          </aside>
-        </div>
+        <h1 className="sr-only">Keranjang belanja</h1>
+        <CartClientShell lines={lines} />
 
         {crossSell.length > 0 ? (
           <section className="mt-16 border-t border-[#e8e4dc] pt-12">

@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Loader2, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { CartLineCard, type CartLineView } from "@/components/store/cart-line-card";
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   MIDTRANS_CHECKOUT_PAYMENT_OPTIONS,
   type MidtransCheckoutPaymentId,
@@ -55,13 +57,29 @@ declare global {
   }
 }
 
+export type AvailableCoupon = {
+  id: string;
+  code: string;
+  title: string | null;
+  description: string | null;
+  type: "percentage" | "fixed";
+  value: number;
+  min_purchase: number;
+  max_discount: number | null;
+  valid_until: string | null;
+  image_url: string | null;
+  applies_to: "all" | "product" | "category" | "brand";
+  applies_to_ids: string[];
+};
+
 type CheckoutPageClientProps = {
   lines: CartLineView[];
   addresses: AddressRow[];
   initialAddressId: string | null;
+  availableCoupons: AvailableCoupon[];
 };
 
-export function CheckoutPageClient({ lines, addresses, initialAddressId }: CheckoutPageClientProps) {
+export function CheckoutPageClient({ lines, addresses, initialAddressId, availableCoupons }: CheckoutPageClientProps) {
   const router = useRouter();
   const [addressId, setAddressId] = useState<string>(initialAddressId ?? addresses[0]?.id ?? "");
   const [shippingOpen, setShippingOpen] = useState(true);
@@ -71,7 +89,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponLabel, setCouponLabel] = useState("");
   const [couponApplying, setCouponApplying] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
   const [submitting, setSubmitting] = useState(false);
   const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
@@ -80,9 +100,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   const subtotalGross = useMemo(() => lines.reduce((s, l) => s + l.listPrice * l.qty, 0), [lines]);
   const subtotalNet = useMemo(() => lines.reduce((s, l) => s + l.unitPrice * l.qty, 0), [lines]);
   const catalogDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet));
-  const tax = 0;
+  const serviceFee = 1000;
   const shippingFee = selectedShipping?.price ?? 0;
-  const grandTotal = Math.max(0, Math.round(subtotalNet) - couponDiscount + shippingFee + tax);
+  const grandTotal = Math.max(0, Math.round(subtotalNet) - couponDiscount + shippingFee + serviceFee);
   const itemCount = useMemo(() => lines.reduce((s, l) => s + l.qty, 0), [lines]);
 
   const selectedAddress = useMemo(
@@ -136,8 +156,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
     return () => clearTimeout(t);
   }, [doneState, countdown, router]);
 
-  const applyCoupon = async () => {
-    const code = couponInput.trim();
+  const applyCoupon = async (overrideCode?: string) => {
+    const code = (overrideCode ?? couponInput).trim();
     if (!code) {
       setCouponDiscount(0);
       return;
@@ -147,7 +167,17 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, subtotal: Math.round(subtotalNet) }),
+        body: JSON.stringify({
+          code,
+          subtotal: Math.round(subtotalNet),
+          lines: lines.map((l) => ({
+            productId: l.productId,
+            categoryId: l.categoryId,
+            brandId: l.brandId,
+            unitPrice: l.unitPrice,
+            qty: l.qty,
+          })),
+        }),
       });
       const json = (await res.json()) as {
         success: boolean;
@@ -160,6 +190,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
         return;
       }
       setCouponDiscount(json.data.discountAmount);
+      const matched = availableCoupons.find((c) => c.code.toUpperCase() === code.toUpperCase());
+      setCouponLabel(matched?.title ?? (matched ? (matched.type === "percentage" ? `${matched.value}% OFF` : `−${formatRupiah(matched.value)}`) : "Diskon kupon"));
       toast.success("Kupon diterapkan.");
     } catch {
       toast.error("Gagal memvalidasi kupon.");
@@ -299,6 +331,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
   }
 
   return (
+    <>
     <div className="bg-gradient-to-b from-[#f4f1ea]/50 to-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-6 text-[#1d1d1f] sm:pt-8 md:pb-20 lg:pb-20">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="py-2 sm:py-3">
@@ -399,8 +432,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-white/75">Pajak</dt>
-                    <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(tax)}</dd>
+                    <dt className="text-white/75">Biaya jasa aplikasi</dt>
+                    <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(serviceFee)}</dd>
                   </div>
                 </dl>
 
@@ -464,23 +497,56 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
                 )}
 
                 <div className="border-t border-white/15 py-4">
-                  <p className="text-xs font-semibold uppercase text-white/60">Ada kupon diskon?</p>
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                    <input
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value)}
-                      placeholder="Kode kupon"
-                      className="h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/40 focus:ring-2 focus:ring-[#EA5329]/40"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void applyCoupon()}
-                      disabled={couponApplying}
-                      className="h-11 shrink-0 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
-                    >
-                      {couponApplying ? "…" : "Pakai"}
-                    </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase text-white/60">Ada kupon diskon?</p>
+                    {availableCoupons.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setPromoOpen(true)}
+                        className="flex items-center gap-1 text-[11px] font-semibold text-white hover:underline"
+                      >
+                        <Tag className="h-3 w-3" />
+                        pakai promo biar lebih hemat
+                      </button>
+                    )}
                   </div>
+                  {couponDiscount > 0 ? (
+                    <div className="mt-2 flex items-center gap-3 rounded-lg border border-[#EA5329]/40 bg-[#EA5329]/10 px-3 py-2.5">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-[#EA5329]" />
+                      <span className="min-w-0 flex-1 text-sm font-semibold text-white">
+                        {couponInput.toUpperCase()} · {couponLabel}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCouponDiscount(0);
+                          setCouponInput("");
+                          setCouponLabel("");
+                        }}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+                        aria-label="Hapus kupon"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        placeholder="Kode kupon"
+                        className="h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/40 focus:ring-2 focus:ring-[#EA5329]/40"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void applyCoupon(undefined)}
+                        disabled={couponApplying}
+                        className="h-11 shrink-0 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+                      >
+                        {couponApplying ? "…" : "Pakai"}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-end justify-between gap-4 border-t border-white/15 py-5">
@@ -551,5 +617,115 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId }: Check
         </div>
       </div>
     </div>
+
+    <Dialog open={promoOpen} onOpenChange={setPromoOpen}>
+      <DialogContent className="max-h-[85vh] max-w-lg overflow-hidden p-0">
+        <DialogHeader className="flex-row items-center justify-between border-b border-[#e0e0e0] px-6 py-4">
+          <DialogTitle className="text-[17px] font-semibold text-[#1d1d1f]">Promo tersedia</DialogTitle>
+          <button
+            type="button"
+            onClick={() => setPromoOpen(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f7] text-[#1d1d1f] transition hover:bg-[#e8e8ed]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </DialogHeader>
+
+        <div className="overflow-y-auto px-6 pb-6 pt-4">
+          {availableCoupons.length === 0 ? (
+            <p className="py-8 text-center text-sm text-[#7a7a7a]">Tidak ada promo tersedia.</p>
+          ) : (
+            <ul className="space-y-3">
+              {availableCoupons
+                .map((c) => {
+                  let notEligible: string | null = null;
+                  if (c.min_purchase > 0 && subtotalNet < c.min_purchase) {
+                    notEligible = `Min. belanja ${formatRupiah(c.min_purchase)} (kurang ${formatRupiah(c.min_purchase - subtotalNet)})`;
+                  } else if (c.applies_to !== "all" && c.applies_to_ids.length > 0) {
+                    const hasEligible = lines.some((l) => {
+                      if (c.applies_to === "product") return c.applies_to_ids.includes(l.productId);
+                      if (c.applies_to === "category") return l.categoryId != null && c.applies_to_ids.includes(l.categoryId);
+                      if (c.applies_to === "brand") return l.brandId != null && c.applies_to_ids.includes(l.brandId);
+                      return true;
+                    });
+                    if (!hasEligible) {
+                      const scopeLabel = c.applies_to === "product" ? "produk" : c.applies_to === "category" ? "kategori" : "merek";
+                      notEligible = `Tidak ada ${scopeLabel} yang memenuhi syarat kupon ini di pesanan Anda`;
+                    }
+                  }
+                  return { c, notEligible };
+                })
+                .sort((a, b) => (a.notEligible ? 1 : 0) - (b.notEligible ? 1 : 0))
+                .map(({ c, notEligible }) => (
+                <li key={c.id}>
+                  <div className={cn(
+                    "overflow-hidden rounded-[18px] border bg-white transition",
+                    notEligible ? "border-[#e0e0e0] opacity-60" : "border-[#e0e0e0]",
+                  )}>
+                    {c.image_url && (
+                      <div className="relative h-28 w-full bg-[#f5f5f7]">
+                        <Image src={c.image_url} alt={c.title ?? c.code} fill className="object-cover" sizes="448px" />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <span className={cn(
+                            "inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide",
+                            notEligible
+                              ? "bg-[#e0e0e0] text-[#9a9590]"
+                              : "bg-[#EA5329]/10 text-[#EA5329]",
+                          )}>
+                            {c.type === "percentage" ? `${c.value}% OFF` : `−${formatRupiah(c.value)}`}
+                          </span>
+                          <p className="mt-1.5 font-mono text-lg font-bold tracking-widest text-[#1d1d1f]">{c.code}</p>
+                          {c.title && <p className="mt-0.5 text-sm font-semibold text-[#1d1d1f]">{c.title}</p>}
+                          {c.description && <p className="mt-1 text-sm leading-relaxed text-[#5c5c5c]">{c.description}</p>}
+                          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#7a7a7a]">
+                            {c.min_purchase > 0 && <span>Min. belanja {formatRupiah(c.min_purchase)}</span>}
+                            {c.max_discount != null && <span>Maks. diskon {formatRupiah(c.max_discount)}</span>}
+                            {c.valid_until && (
+                              <span>
+                                s.d.{" "}
+                                {new Date(c.valid_until).toLocaleDateString("id-ID", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            )}
+                          </div>
+                          {notEligible && (
+                            <p className="mt-2 text-[11px] font-semibold text-[#EA5329]">{notEligible}</p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!!notEligible}
+                          onClick={() => {
+                            setCouponInput(c.code);
+                            setPromoOpen(false);
+                            void applyCoupon(c.code);
+                          }}
+                          className={cn(
+                            "shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold text-white transition",
+                            notEligible
+                              ? "cursor-not-allowed bg-[#d0cec9]"
+                              : "bg-[#EA5329] hover:bg-[#d44820] active:scale-95",
+                          )}
+                        >
+                          Pakai
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

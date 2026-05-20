@@ -8,8 +8,10 @@ import { Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { removeCartItemAction, updateCartItemQuantityAction } from "@/app/(public)/cart/_actions";
+import { CartRemoveConfirmDialog } from "@/components/store/cart-remove-confirm-dialog";
 import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { formatRupiah } from "@/lib/format";
 
@@ -19,9 +21,12 @@ export type CartLineView = {
   maxQty: number;
   variantId: string;
   variantName: string;
+  productId: string;
   productName: string;
   slug: string;
+  categoryId: string | null;
   categoryLabel: string;
+  brandId: string | null;
   descriptionExcerpt: string;
   rating: number;
   reviewCount: number;
@@ -31,13 +36,21 @@ export type CartLineView = {
   discountPercent: number | null;
   images: { url: string; alt: string | null }[];
   sku: string;
-  /** Berat per unit (gram), untuk ongkir/checkout */
   weightGrams: number;
 };
 
-export function CartLineCard({ line }: { line: CartLineView }) {
+export function CartLineCard({
+  line,
+  checked,
+  onCheckedChange,
+}: {
+  line: CartLineView;
+  checked?: boolean;
+  onCheckedChange?: () => void;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
 
   const lineTotal = line.unitPrice * line.qty;
@@ -62,12 +75,12 @@ export function CartLineCard({ line }: { line: CartLineView }) {
     });
   };
 
-  const onRemove = () => {
-    if (!window.confirm("Hapus barang ini dari keranjang?")) return;
+  const handleConfirmRemove = () => {
     startTransition(async () => {
       const res = await removeCartItemAction(line.lineId);
       if (res.success) {
-        toast.success("Barang dihapus.");
+        setConfirmRemoveOpen(false);
+        toast.success("Barang dihapus dari keranjang.");
         router.refresh();
       } else {
         toast.error(res.error);
@@ -76,7 +89,18 @@ export function CartLineCard({ line }: { line: CartLineView }) {
   };
 
   return (
+    <>
     <article className="flex flex-col gap-4 sm:flex-row sm:gap-5">
+      {onCheckedChange !== undefined && (
+        <div className="flex shrink-0 items-start pt-1 sm:pt-2">
+          <Checkbox
+            checked={checked ?? false}
+            onCheckedChange={onCheckedChange}
+            className="h-5 w-5"
+            aria-label={`Pilih ${line.productName}`}
+          />
+        </div>
+      )}
       <div className="relative mx-auto w-full max-w-[200px] shrink-0 sm:mx-0 sm:w-44">
         <div className="relative aspect-square overflow-hidden rounded-lg">
           {currentImg?.url ? (
@@ -158,7 +182,7 @@ export function CartLineCard({ line }: { line: CartLineView }) {
               size="icon-sm"
               aria-label="Hapus dari keranjang"
               disabled={pending}
-              onClick={onRemove}
+              onClick={() => setConfirmRemoveOpen(true)}
             >
               <Trash2 className="h-4 w-4" strokeWidth={2} />
             </Button>
@@ -172,5 +196,14 @@ export function CartLineCard({ line }: { line: CartLineView }) {
         </p>
       </div>
     </article>
+
+    <CartRemoveConfirmDialog
+      open={confirmRemoveOpen}
+      onOpenChange={setConfirmRemoveOpen}
+      productName={line.productName}
+      onConfirm={handleConfirmRemove}
+      isLoading={pending}
+    />
+    </>
   );
 }

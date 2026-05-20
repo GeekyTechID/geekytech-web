@@ -84,6 +84,67 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
         });
       }
     }
+
+    // Create Biteship shipment — only on first settlement transition
+    const { data: existingShipment } = await svc
+      .from("shipments")
+      .select("id")
+      .eq("order_id", order.id)
+      .maybeSingle();
+
+    if (!existingShipment) {
+      const { data: orderFull } = await svc
+        .from("orders")
+        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal")
+        .eq("id", order.id)
+        .single();
+
+      if (orderFull?.courier_company && orderFull.courier_service) {
+        const { data: orderItems } = await svc
+          .from("order_items")
+          .select("product_name, price, quantity, weight")
+          .eq("order_id", order.id);
+
+        if (orderItems?.length) {
+          const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
+          const shipResult = await createBiteshipOrder({
+            destinationName: orderFull.recipient_name,
+            destinationPhone: orderFull.recipient_phone,
+            destinationAddress: orderFull.shipping_address,
+            destinationPostalCode: postalNum,
+            courierCompany: orderFull.courier_company,
+            courierType: orderFull.courier_service,
+            items: orderItems.map((i) => ({
+              name: i.product_name,
+              value: i.price,
+              quantity: i.quantity,
+              weight: Math.round(i.weight / i.quantity),
+            })),
+            orderNote: `GeekyTech Order ${orderId}`,
+          });
+
+          if (shipResult.ok) {
+            await svc.from("shipments").insert({
+              order_id: order.id,
+              courier_company: orderFull.courier_company,
+              courier_name: shipResult.courierName,
+              courier_service: orderFull.courier_service,
+              biteship_order_id: shipResult.biteshipOrderId,
+              awb: shipResult.awb,
+              status: "pending",
+            });
+          } else {
+            // Log failure so admin can retry manually
+            await svc.from("order_status_history").insert({
+              order_id: order.id,
+              status: "paid",
+              note: `Biteship gagal: ${shipResult.error}`,
+              changed_by: null,
+            });
+          }
+        }
+      }
+    }
   }
 
   const vaNumber = notification.va_numbers?.[0]?.va_number ?? null;
@@ -101,51 +162,6 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
     })
     .eq("midtrans_order_id", orderId)
     .neq("status", "paid");
-
-  // Create Biteship shipment after payment confirmed
-  const { data: orderFull } = await svc
-    .from("orders")
-    .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal")
-    .eq("id", order.id)
-    .single();
-
-  if (orderFull?.courier_company && orderFull.courier_service) {
-    const { data: orderItems } = await svc
-      .from("order_items")
-      .select("product_name, price, quantity, weight")
-      .eq("order_id", order.id);
-
-    if (orderItems?.length) {
-      const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
-      const shipResult = await createBiteshipOrder({
-        destinationName: orderFull.recipient_name,
-        destinationPhone: orderFull.recipient_phone,
-        destinationAddress: orderFull.shipping_address,
-        destinationPostalCode: postalNum,
-        courierCompany: orderFull.courier_company,
-        courierType: orderFull.courier_service,
-        items: orderItems.map((i) => ({
-          name: i.product_name,
-          value: i.price,
-          quantity: i.quantity,
-          weight: Math.round(i.weight / i.quantity),
-        })),
-        orderNote: `GeekyTech Order ${orderId}`,
-      });
-
-      if (shipResult.ok) {
-        await svc.from("shipments").insert({
-          order_id: order.id,
-          courier_company: orderFull.courier_company,
-          courier_name: shipResult.courierName,
-          courier_service: orderFull.courier_service,
-          biteship_order_id: shipResult.biteshipOrderId,
-          awb: shipResult.awb,
-          status: "pending",
-        });
-      }
-    }
-  }
 }
 
 async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled" | "expired" | "failed") {

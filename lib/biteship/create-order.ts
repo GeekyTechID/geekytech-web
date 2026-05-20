@@ -34,7 +34,7 @@ export async function createBiteshipOrder(
   const shipperName = process.env.BITESHIP_SHIPPER_NAME?.trim();
   const shipperPhone = process.env.BITESHIP_SHIPPER_PHONE?.trim();
   const originAddress = process.env.BITESHIP_ORIGIN_ADDRESS?.trim();
-  const originPostalRaw = process.env.BITESHIP_ORIGIN_POSTAL?.trim();
+  const originPostalRaw = (process.env.BITESHIP_ORIGIN_POSTAL_CODE ?? process.env.BITESHIP_ORIGIN_POSTAL)?.trim();
 
   if (!key || !shipperName || !shipperPhone || !originAddress || !originPostalRaw) {
     return { ok: false, error: "Biteship origin belum dikonfigurasi." };
