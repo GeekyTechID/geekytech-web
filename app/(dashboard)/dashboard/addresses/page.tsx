@@ -53,7 +53,7 @@ export default async function AddressesPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button asChild variant="outline" size="sm" className="border-[#e0e0e0] text-xs">
+                  <Button asChild variant="dark" size="sm">
                     <Link href={`/dashboard/addresses/${a.id}/edit`}>Edit</Link>
                   </Button>
                   <AddressDeleteButton addressId={a.id} />

@@ -11,6 +11,7 @@ import { formatDate, formatRupiah } from "@/lib/format";
 import { fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { DashboardOrdersFilters } from "@/components/dashboard/dashboard-orders-filters";
 import { DashboardOrdersPagination } from "@/components/dashboard/dashboard-orders-pagination";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Pesanan saya",
@@ -143,12 +144,9 @@ export default async function DashboardOrdersPage({
 
                 {/* Footer */}
                 <div className="flex justify-end border-t border-[#f0f0f0] px-4 py-2.5">
-                  <Link
-                    href={`/dashboard/orders/${o.id}`}
-                    className="rounded-full bg-[#1d1d1f] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#3a3a3c] active:scale-[0.97]"
-                  >
-                    Lihat Detail
-                  </Link>
+                  <Button asChild variant="dark" size="sm">
+                    <Link href={`/dashboard/orders/${o.id}`}>Lihat Detail</Link>
+                  </Button>
                 </div>
               </li>
             );

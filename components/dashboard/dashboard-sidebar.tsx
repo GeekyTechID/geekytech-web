@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bell,
   Gift,
@@ -100,6 +100,11 @@ export function DashboardSidebar({
     (user?.user_metadata?.picture as string | undefined)?.trim() ||
     (user?.user_metadata?.avatar_url as string | undefined)?.trim() ||
     "";
+
+  useEffect(() => {
+    setImgError(false);
+  }, [avatarUrl]);
+
   const initials = profile?.full_name
     ? profile.full_name
         .split(/\s+/)

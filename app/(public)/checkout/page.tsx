@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchUserAddresses } from "@/lib/data/dashboard-user";
-import { fetchUserCartWithLines } from "@/lib/data/user-cart-lines";
+import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import { CheckoutPageClient, type AvailableCoupon } from "@/components/checkout/checkout-page-client";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ items?: string }>;
+  searchParams: Promise<{ items?: string; buyNow?: string; qty?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -26,23 +26,27 @@ export default async function CheckoutPage({
     redirect(`/login?redirectTo=${encodeURIComponent("/checkout")}`);
   }
 
-  const cart = await fetchUserCartWithLines(user.id);
-  if (!cart || cart.lines.length === 0) {
-    redirect("/cart");
-  }
+  const { items: itemsParam, buyNow: buyNowVariantId, qty: buyNowQtyStr } = await searchParams;
 
-  const { items: itemsParam } = await searchParams;
-  const selectedIds = itemsParam
-    ? new Set(itemsParam.split(",").filter(Boolean))
-    : null;
+  let lines: Awaited<ReturnType<typeof fetchUserCartWithLines>>["lines"] = [];
+  let isBuyNow = false;
 
-  const lines =
-    selectedIds && selectedIds.size > 0
+  if (buyNowVariantId) {
+    const buyNowQty = Math.max(1, parseInt(buyNowQtyStr ?? "1", 10));
+    const buyNowLine = await fetchVariantAsBuyNowLine(buyNowVariantId, buyNowQty);
+    if (!buyNowLine) redirect("/cart");
+    lines = [buyNowLine];
+    isBuyNow = true;
+  } else {
+    const cart = await fetchUserCartWithLines(user.id);
+    if (!cart || cart.lines.length === 0) redirect("/cart");
+
+    const selectedIds = itemsParam ? new Set(itemsParam.split(",").filter(Boolean)) : null;
+    lines = selectedIds && selectedIds.size > 0
       ? cart.lines.filter((l) => selectedIds.has(l.lineId))
       : cart.lines;
 
-  if (lines.length === 0) {
-    redirect("/cart");
+    if (lines.length === 0) redirect("/cart");
   }
 
   const addresses = await fetchUserAddresses(user.id);
@@ -81,6 +85,7 @@ export default async function CheckoutPage({
   return (
     <CheckoutPageClient
       lines={lines}
+      isBuyNow={isBuyNow}
       availableCoupons={availableCoupons}
       addresses={addresses.map((a) => ({
         id: a.id,

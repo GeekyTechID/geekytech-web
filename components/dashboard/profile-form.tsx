@@ -118,14 +118,15 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             </div>
           )}
         </button>
-        <button
+        <Button
           type="button"
+          variant="link"
+          size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="text-xs font-medium text-[#EA5329] hover:underline disabled:opacity-50"
         >
           {uploading ? "Mengunggah..." : "Ganti Foto"}
-        </button>
+        </Button>
         <p className="text-[11px] text-[#7a7a7a]">JPG, PNG, WebP, atau GIF · Maks. 2MB</p>
         <input
           ref={fileInputRef}

@@ -2,7 +2,8 @@ import { z } from "zod";
 import { createRequire } from "node:module";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { fetchUserCartWithLines } from "@/lib/data/user-cart-lines";
+import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
+import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
@@ -17,6 +18,8 @@ const bodySchema = z.object({
   ratesSource: z.enum(["biteship", "mock"]),
   couponCode: z.string().max(64).optional().nullable(),
   paymentMethod: z.enum(paymentMethods),
+  lineIds: z.array(z.string()).min(1).optional().nullable(),
+  buyNow: z.object({ variantId: z.string().uuid(), qty: z.number().int().min(1) }).optional().nullable(),
 });
 
 function postalToNumber(raw: string): number | null {
@@ -95,12 +98,34 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Alamat tidak ditemukan." }, { status: 404 });
     }
 
-    const cart = await fetchUserCartWithLines(user.id);
-    if (!cart || cart.lines.length === 0) {
-      return Response.json({ success: false, error: "Keranjang kosong." }, { status: 400 });
+    let orderLines: CartLineView[];
+    let cartId: string | null = null;
+
+    if (parsed.data.buyNow) {
+      const buyNowLine = await fetchVariantAsBuyNowLine(
+        parsed.data.buyNow.variantId,
+        parsed.data.buyNow.qty,
+      );
+      if (!buyNowLine) {
+        return Response.json({ success: false, error: "Produk tidak tersedia." }, { status: 400 });
+      }
+      orderLines = [buyNowLine];
+    } else {
+      const cart = await fetchUserCartWithLines(user.id);
+      if (!cart || cart.lines.length === 0) {
+        return Response.json({ success: false, error: "Keranjang kosong." }, { status: 400 });
+      }
+      cartId = cart.cartId;
+      const requestedIds = parsed.data.lineIds?.length ? new Set(parsed.data.lineIds) : null;
+      orderLines = requestedIds
+        ? cart.lines.filter((l) => requestedIds.has(l.lineId))
+        : cart.lines;
+      if (orderLines.length === 0) {
+        return Response.json({ success: false, error: "Tidak ada item yang valid untuk dipesan." }, { status: 400 });
+      }
     }
 
-    for (const line of cart.lines) {
+    for (const line of orderLines) {
       const { data: v } = await auth
         .from("product_variants")
         .select("stock, reserved")
@@ -126,7 +151,7 @@ export async function POST(req: Request) {
 
     const originPostal = postalToNumber((process.env.BITESHIP_ORIGIN_POSTAL ?? process.env.BITESHIP_ORIGIN_POSTAL_CODE)?.trim() ?? "10110") ?? 10110;
 
-    const itemsForShip = cart.lines.map((line) => ({
+    const itemsForShip = orderLines.map((line) => ({
       name: `${line.productName} (${line.variantName})`.slice(0, 80),
       value: Math.max(1000, Math.round(line.unitPrice * line.qty)),
       quantity: line.qty,
@@ -145,7 +170,7 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: ship.error }, { status: 400 });
     }
 
-    const subtotal = cart.lines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
+    const subtotal = orderLines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
     const subtotalRounded = Math.round(subtotal);
 
     let discountAmount = 0;
@@ -175,7 +200,7 @@ export async function POST(req: Request) {
         return Response.json({ success: false, error: "Anda sudah pernah menggunakan kupon ini." }, { status: 400 });
       }
 
-      const cartLinesForCoupon = cart.lines.map((l) => ({
+      const cartLinesForCoupon = orderLines.map((l) => ({
         productId: l.productId,
         categoryId: l.categoryId,
         brandId: l.brandId,
@@ -229,7 +254,7 @@ export async function POST(req: Request) {
     }
     createdOrderId = order.id;
 
-    const orderItems = cart.lines.map((line) => ({
+    const orderItems = orderLines.map((line) => ({
       order_id: order.id,
       variant_id: line.variantId,
       product_name: line.productName,
@@ -318,7 +343,7 @@ export async function POST(req: Request) {
       }
     }
 
-    for (const line of cart.lines) {
+    for (const line of orderLines) {
       const { data: v } = await svc.from("product_variants").select("reserved").eq("id", line.variantId).single();
       const reserved = v?.reserved ?? 0;
       const { error: rvErr } = await svc
@@ -331,15 +356,20 @@ export async function POST(req: Request) {
       }
     }
 
-    const { error: delCartErr } = await svc.from("cart_items").delete().eq("cart_id", cart.cartId);
-    if (delCartErr) {
-      for (const line of cart.lines) {
-        const { data: v } = await svc.from("product_variants").select("reserved").eq("id", line.variantId).single();
-        const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
-        await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
+    if (cartId) {
+      const { error: delCartErr } = await svc
+        .from("cart_items")
+        .delete()
+        .in("id", orderLines.map((l) => l.lineId));
+      if (delCartErr) {
+        for (const line of orderLines) {
+          const { data: v } = await svc.from("product_variants").select("reserved").eq("id", line.variantId).single();
+          const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
+          await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
+        }
+        await svc.from("orders").delete().eq("id", order.id);
+        return Response.json({ success: false, error: "Gagal menghapus item dari keranjang." }, { status: 500 });
       }
-      await svc.from("orders").delete().eq("id", order.id);
-      return Response.json({ success: false, error: "Gagal mengosongkan keranjang." }, { status: 500 });
     }
 
     if (couponId) {
@@ -349,14 +379,12 @@ export async function POST(req: Request) {
         order_id: order.id,
       });
       if (cuErr) {
-        await svc.from("cart_items").insert(
-          cart.lines.map((l) => ({
-            cart_id: cart.cartId,
-            variant_id: l.variantId,
-            quantity: l.qty,
-          })),
-        );
-        for (const line of cart.lines) {
+        if (cartId) {
+          await svc.from("cart_items").insert(
+            orderLines.map((l) => ({ cart_id: cartId, variant_id: l.variantId, quantity: l.qty })),
+          );
+        }
+        for (const line of orderLines) {
           const { data: v } = await svc.from("product_variants").select("reserved").eq("id", line.variantId).single();
           const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
           await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
@@ -370,14 +398,12 @@ export async function POST(req: Request) {
       const { error: bumpErr } = await svc.from("coupons").update({ used_count: nextUsed }).eq("id", couponId);
       if (bumpErr) {
         await svc.from("coupon_usages").delete().eq("order_id", order.id);
-        await svc.from("cart_items").insert(
-          cart.lines.map((l) => ({
-            cart_id: cart.cartId,
-            variant_id: l.variantId,
-            quantity: l.qty,
-          })),
-        );
-        for (const line of cart.lines) {
+        if (cartId) {
+          await svc.from("cart_items").insert(
+            orderLines.map((l) => ({ cart_id: cartId, variant_id: l.variantId, quantity: l.qty })),
+          );
+        }
+        for (const line of orderLines) {
           const { data: v } = await svc.from("product_variants").select("reserved").eq("id", line.variantId).single();
           const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
           await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);

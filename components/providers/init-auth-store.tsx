@@ -21,7 +21,11 @@ export function InitAuthStore({ user, profile }: Props) {
 
   useLayoutEffect(() => {
     setUser(user);
-    setProfile(profile);
+    // When user is authenticated but profile fetch failed (null), keep the
+    // existing store profile instead of overwriting it with null.
+    if (profile !== null || user === null) {
+      setProfile(profile);
+    }
     setLoading(false);
     setInitialized(true);
   }, [user, profile, setUser, setProfile, setLoading, setInitialized]);

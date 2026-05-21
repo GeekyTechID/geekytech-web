@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 import type { SpendingByMonth } from "@/lib/data/dashboard-user";
+import { Button } from "@/components/ui/button";
 
 type Period = 3 | 6 | 12;
 
@@ -62,20 +63,17 @@ export function SpendingChart({ data12 }: Props) {
         <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">
           Pengeluaran
         </h2>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {PERIOD_OPTIONS.map((opt) => (
-            <button
+            <Button
               key={opt.value}
               type="button"
+              variant={period === opt.value ? "primary" : "pearl"}
+              size="xs"
               onClick={() => setPeriod(opt.value)}
-              className={`rounded-full px-3 py-1 text-[12px] font-semibold transition ${
-                period === opt.value
-                  ? "bg-[#1d1d1f] text-white"
-                  : "bg-[#f5f5f7] text-[#5c5c5c] hover:bg-[#e8e8ed]"
-              }`}
             >
               {opt.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

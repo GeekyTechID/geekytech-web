@@ -1,13 +1,16 @@
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import { fetchUserCartWithLines } from "@/lib/data/user-cart-lines";
+import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { MOCK_CHECKOUT_SHIPPING } from "@/lib/shipping/checkout-shipping-options";
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
+  // buy-now mode: bypass cart lookup
+  variantId: z.string().uuid().optional(),
+  qty: z.number().int().min(1).optional(),
 });
 
 function postalToNumber(raw: string): number | null {
@@ -38,11 +41,6 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Alamat tidak ditemukan." }, { status: 404 });
     }
 
-    const cart = await fetchUserCartWithLines(user.id);
-    if (!cart || cart.lines.length === 0) {
-      return Response.json({ success: false, error: "Keranjang kosong." }, { status: 400 });
-    }
-
     const destPostal = postalToNumber(address.postal_code);
     if (destPostal == null) {
       return Response.json(
@@ -54,15 +52,40 @@ export async function POST(req: Request) {
     const originRaw = process.env.BITESHIP_ORIGIN_POSTAL_CODE?.trim() ?? "10110";
     const originPostal = postalToNumber(originRaw) ?? 10110;
 
-    const items = cart.lines.map((line) => ({
-      name: `${line.productName} (${line.variantName})`.slice(0, 80),
-      value: Math.max(1000, Math.round(line.unitPrice * line.qty)),
-      quantity: line.qty,
-      weight: line.weightGrams * line.qty,
-      length: 12,
-      width: 10,
-      height: 8,
-    }));
+    // build items: buy-now mode bypasses cart
+    type ShippingItem = { name: string; value: number; quantity: number; weight: number; length: number; width: number; height: number };
+    let items: ShippingItem[];
+
+    if (parsed.data.variantId) {
+      const qty = parsed.data.qty ?? 1;
+      const line = await fetchVariantAsBuyNowLine(parsed.data.variantId, qty);
+      if (!line) {
+        return Response.json({ success: false, error: "Produk tidak ditemukan." }, { status: 404 });
+      }
+      items = [{
+        name: `${line.productName} (${line.variantName})`.slice(0, 80),
+        value: Math.max(1000, Math.round(line.unitPrice * qty)),
+        quantity: qty,
+        weight: Math.max(1, line.weightGrams * qty),
+        length: 12,
+        width: 10,
+        height: 8,
+      }];
+    } else {
+      const cart = await fetchUserCartWithLines(user.id);
+      if (!cart || cart.lines.length === 0) {
+        return Response.json({ success: false, error: "Keranjang kosong." }, { status: 400 });
+      }
+      items = cart.lines.map((line) => ({
+        name: `${line.productName} (${line.variantName})`.slice(0, 80),
+        value: Math.max(1000, Math.round(line.unitPrice * line.qty)),
+        quantity: line.qty,
+        weight: Math.max(1, line.weightGrams * line.qty),
+        length: 12,
+        width: 10,
+        height: 8,
+      }));
+    }
 
     const biteship = await fetchBiteshipCourierRates({
       originPostal,

@@ -175,3 +175,96 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
 
   return { cartId: cart.id, lines, excludedProductIds, excludedCategoryIds };
 }
+
+export async function fetchVariantAsBuyNowLine(
+  variantId: string,
+  qty: number,
+): Promise<CartLineView | null> {
+  const supabase = await createClient();
+
+  const { data: row } = await supabase
+    .from("product_variants")
+    .select(
+      `id, name, sku, price, stock, reserved, weight,
+      products(
+        id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, category_id, brand_id,
+        categories:category_id(name),
+        product_images(url, is_primary, sort_order, alt_text)
+      )`,
+    )
+    .eq("id", variantId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!row) return null;
+
+  const p = firstRel(row.products as Parameters<typeof firstRel>[0]) as (typeof row.products & object) | null;
+  if (!p || typeof p !== "object" || !("id" in p)) return null;
+
+  const prod = p as {
+    id: string; name: string; slug: string; description: string | null;
+    base_price: number; sale_price: number | null;
+    average_rating: number | null; review_count: number | null; total_sold: number | null;
+    category_id: string | null; brand_id: string | null;
+    categories: { name: string } | { name: string }[] | null;
+    product_images: ImgRow[] | null;
+  };
+
+  const now = new Date();
+  const { data: flashRows } = await supabase
+    .from("flash_sale_products")
+    .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
+    .eq("variant_id", variantId);
+
+  let flashSalePrice: number | null = null;
+  for (const fr of flashRows ?? []) {
+    const fs = Array.isArray(fr.flash_sales) ? fr.flash_sales[0] : fr.flash_sales;
+    if (!fs?.is_active) continue;
+    if (new Date(fs.starts_at) > now || new Date(fs.ends_at) < now) continue;
+    const quota = fr.quota as number | null;
+    const sold = (fr.sold as number) ?? 0;
+    if (quota != null && quota > 0 && sold >= quota) continue;
+    const price = Number(fr.sale_price);
+    if (flashSalePrice == null || price < flashSalePrice) flashSalePrice = price;
+  }
+
+  const basePrice = Number(prod.base_price);
+  const productSalePrice = prod.sale_price != null ? Number(prod.sale_price) : null;
+  const effectiveSalePrice =
+    flashSalePrice != null && (productSalePrice == null || flashSalePrice < productSalePrice)
+      ? flashSalePrice
+      : productSalePrice;
+
+  const { listPrice, unitPrice, discountPercent } = computeVariantUnitPrice({
+    basePrice,
+    salePrice: effectiveSalePrice,
+    variantPrice: Number(row.price),
+  });
+
+  const maxQty = Math.max(1, row.stock - (row.reserved ?? 0));
+  const cat = firstRel(prod.categories);
+
+  return {
+    lineId: "buy-now",
+    qty: Math.min(Math.max(1, qty), maxQty),
+    maxQty,
+    variantId: row.id,
+    variantName: row.name,
+    productId: prod.id,
+    productName: prod.name,
+    slug: prod.slug,
+    categoryId: prod.category_id ?? null,
+    categoryLabel: cat?.name ?? "Produk",
+    brandId: prod.brand_id ?? null,
+    descriptionExcerpt: excerpt(prod.description),
+    rating: Number(prod.average_rating ?? 0),
+    reviewCount: prod.review_count ?? 0,
+    soldCount: prod.total_sold ?? 0,
+    listPrice,
+    unitPrice,
+    discountPercent,
+    images: sortImages(prod.product_images),
+    sku: row.sku,
+    weightGrams: Math.max(1, Math.round(Number(row.weight) || 1)),
+  };
+}

@@ -52,7 +52,7 @@ export function OrderSubNav({
               asChild
               variant={active ? "primary" : "pearl"}
               size="sm"
-              className="shrink-0 text-xs font-semibold uppercase"
+              className="shrink-0"
             >
               <Link href={tab.href}>{tab.label}</Link>
             </Button>

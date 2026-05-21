@@ -27,10 +27,9 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
         <p className="text-sm text-[#5c5c5c]">{items.filter((i) => !i.is_read).length} belum dibaca</p>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           disabled={pending}
-          className="border-[#e0e0e0]"
           onClick={() => {
             startTransition(async () => {
               const res = await markAllNotificationsReadAction();

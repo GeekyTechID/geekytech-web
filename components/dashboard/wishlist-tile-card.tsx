@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { addVariantToCart } from "@/app/(public)/products/_actions/product-detail-actions";
 import type { WishlistItemRow } from "@/lib/data/dashboard-user";
 import { formatRupiah } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 
 import { WishlistRemoveButton } from "@/components/dashboard/wishlist-remove-button";
+import { Button } from "@/components/ui/button";
 
 export function WishlistTileCard({ item }: { item: WishlistItemRow }) {
   const router = useRouter();
@@ -115,18 +115,18 @@ export function WishlistTileCard({ item }: { item: WishlistItemRow }) {
           </p>
         )}
 
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           disabled={pending || !item.variantId}
           onClick={onAddCart}
-          className={cn(
-            "mt-1 inline-flex w-full items-center justify-center rounded-full border border-brand py-2 text-center text-xs font-bold text-brand transition hover:bg-brand hover:text-white disabled:cursor-not-allowed disabled:opacity-50",
-          )}
+          className="mt-1 w-full"
         >
           + Keranjang
-        </button>
+        </Button>
 
-        <WishlistRemoveButton wishlistId={item.wishlistId} className="mt-1 w-full rounded-full border border-neutral-200 text-xs font-bold text-neutral-800 hover:bg-neutral-50 dark:border-border dark:text-foreground dark:hover:bg-muted" />
+        <WishlistRemoveButton wishlistId={item.wishlistId} className="mt-1 w-full" />
       </div>
     </article>
   );

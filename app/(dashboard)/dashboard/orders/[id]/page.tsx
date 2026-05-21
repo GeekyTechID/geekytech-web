@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
 import { MapPin, Package, Truck } from "lucide-react";
 
@@ -134,13 +136,12 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
 
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[#f0f0f0] pt-5">
           {hasShipment && (
-            <Link
-              href={`/dashboard/orders/${id}/tracking`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#e0e0e0] bg-white px-4 py-2 text-sm font-semibold text-[#1d1d1f] transition hover:border-[#EA5329]/50 hover:text-[#EA5329] active:scale-[0.97]"
-            >
-              <Package className="h-4 w-4" />
-              Lacak Pengiriman
-            </Link>
+            <Button asChild variant="secondary" size="sm" className="gap-1.5">
+              <Link href={`/dashboard/orders/${id}/tracking`}>
+                <Package className="h-4 w-4" />
+                Lacak Pengiriman
+              </Link>
+            </Button>
           )}
           <OrderToolbar
             orderId={order.id}

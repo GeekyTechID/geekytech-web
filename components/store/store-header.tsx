@@ -206,6 +206,10 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
 
   const avatarUrl = resolveStoreHeaderAvatarUrl(profile, user);
 
+  useEffect(() => {
+    setAvatarImgError(false);
+  }, [avatarUrl]);
+
   const userInitials = profile?.full_name
     ? profile.full_name
         .split(" ")

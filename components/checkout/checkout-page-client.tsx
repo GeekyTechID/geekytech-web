@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -77,9 +77,10 @@ type CheckoutPageClientProps = {
   addresses: AddressRow[];
   initialAddressId: string | null;
   availableCoupons: AvailableCoupon[];
+  isBuyNow?: boolean;
 };
 
-export function CheckoutPageClient({ lines, addresses, initialAddressId, availableCoupons }: CheckoutPageClientProps) {
+export function CheckoutPageClient({ lines, addresses, initialAddressId, availableCoupons, isBuyNow = false }: CheckoutPageClientProps) {
   const router = useRouter();
   const [addressId, setAddressId] = useState<string>(initialAddressId ?? addresses[0]?.id ?? "");
   const [shippingOpen, setShippingOpen] = useState(true);
@@ -99,6 +100,31 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
 
   const subtotalGross = useMemo(() => lines.reduce((s, l) => s + l.listPrice * l.qty, 0), [lines]);
   const subtotalNet = useMemo(() => lines.reduce((s, l) => s + l.unitPrice * l.qty, 0), [lines]);
+
+  const appliedCoupon = useMemo(
+    () =>
+      couponDiscount > 0
+        ? (availableCoupons.find((c) => c.code.toUpperCase() === couponInput.toUpperCase()) ?? null)
+        : null,
+    [couponDiscount, couponInput, availableCoupons],
+  );
+
+  const eligibleLineIds = useMemo(() => {
+    if (!appliedCoupon) return new Set<string>();
+    if (appliedCoupon.applies_to === "all" || appliedCoupon.applies_to_ids.length === 0) {
+      return new Set(lines.map((l) => l.lineId));
+    }
+    return new Set(
+      lines
+        .filter((l) => {
+          if (appliedCoupon.applies_to === "product") return appliedCoupon.applies_to_ids.includes(l.productId);
+          if (appliedCoupon.applies_to === "category") return l.categoryId != null && appliedCoupon.applies_to_ids.includes(l.categoryId);
+          if (appliedCoupon.applies_to === "brand") return l.brandId != null && appliedCoupon.applies_to_ids.includes(l.brandId);
+          return false;
+        })
+        .map((l) => l.lineId),
+    );
+  }, [appliedCoupon, lines]);
   const catalogDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet));
   const serviceFee = 1000;
   const shippingFee = selectedShipping?.price ?? 0;
@@ -114,10 +140,15 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     if (!addressId) return;
     setRatesLoading(true);
     try {
+      const body: Record<string, unknown> = { addressId };
+      if (isBuyNow && lines[0]) {
+        body.variantId = lines[0].variantId;
+        body.qty = lines[0].qty;
+      }
       const res = await fetch("/api/shipping/rates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addressId }),
+        body: JSON.stringify(body),
       });
       const json = (await res.json()) as {
         success: boolean;
@@ -140,7 +171,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     } finally {
       setRatesLoading(false);
     }
-  }, [addressId]);
+  }, [addressId, isBuyNow, lines]);
 
   useEffect(() => {
     void loadRates();
@@ -156,13 +187,13 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     return () => clearTimeout(t);
   }, [doneState, countdown, router]);
 
-  const applyCoupon = async (overrideCode?: string) => {
+  const applyCoupon = async (overrideCode?: string, silent = false) => {
     const code = (overrideCode ?? couponInput).trim();
     if (!code) {
       setCouponDiscount(0);
       return;
     }
-    setCouponApplying(true);
+    if (!silent) setCouponApplying(true);
     try {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
@@ -185,21 +216,35 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         error?: string;
       };
       if (!json.success || !json.data) {
-        toast.error(json.error ?? "Kupon tidak bisa dipakai.");
+        if (silent) toast.info("Kupon tidak berlaku untuk produk yang tersisa.");
+        else toast.error(json.error ?? "Kupon tidak bisa dipakai.");
         setCouponDiscount(0);
+        setCouponInput("");
+        setCouponLabel("");
         return;
       }
       setCouponDiscount(json.data.discountAmount);
       const matched = availableCoupons.find((c) => c.code.toUpperCase() === code.toUpperCase());
       setCouponLabel(matched?.title ?? (matched ? (matched.type === "percentage" ? `${matched.value}% OFF` : `−${formatRupiah(matched.value)}`) : "Diskon kupon"));
-      toast.success("Kupon diterapkan.");
+      if (!silent) toast.success("Kupon diterapkan.");
     } catch {
-      toast.error("Gagal memvalidasi kupon.");
+      if (!silent) toast.error("Gagal memvalidasi kupon.");
       setCouponDiscount(0);
     } finally {
-      setCouponApplying(false);
+      if (!silent) setCouponApplying(false);
     }
   };
+
+  const linesChangedRef = useRef(false);
+  useEffect(() => {
+    if (!linesChangedRef.current) {
+      linesChangedRef.current = true;
+      return;
+    }
+    if (!couponInput.trim() || couponDiscount === 0) return;
+    void applyCoupon(couponInput.trim(), true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lines]);
 
   const loadSnapScript = (clientKey: string, isProduction: boolean): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -241,6 +286,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           ratesSource,
           couponCode: couponInput.trim() || null,
           paymentMethod,
+          ...(isBuyNow
+            ? { buyNow: { variantId: lines[0]!.variantId, qty: lines[0]!.qty } }
+            : { lineIds: lines.map((l) => l.lineId) }),
         }),
       });
       const json = (await res.json()) as {
@@ -346,7 +394,15 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               <ul className="mt-8 space-y-10">
                 {lines.map((line) => (
                   <li key={line.lineId} className="border-b border-[#ece8e0] pb-10 last:border-0 last:pb-0">
-                    <CartLineCard line={line} />
+                    {eligibleLineIds.has(line.lineId) && (
+                      <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-[#EA5329]/10 px-3 py-1.5">
+                        <Tag className="h-3.5 w-3.5 shrink-0 text-[#EA5329]" />
+                        <span className="text-[12px] font-semibold text-[#EA5329]">
+                          Dapat potongan kupon {couponInput.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <CartLineCard line={line} readonly={isBuyNow} />
                   </li>
                 ))}
               </ul>
@@ -412,11 +468,20 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                     </dd>
                   </div>
                   {couponDiscount > 0 ? (
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-white/75">Diskon kupon</dt>
-                      <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
-                        −{formatRupiah(couponDiscount)}
-                      </dd>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-white/75">Diskon kupon</dt>
+                        <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
+                          −{formatRupiah(couponDiscount)}
+                        </dd>
+                      </div>
+                      {appliedCoupon && (
+                        <p className="text-[11px] text-white/50">
+                          {appliedCoupon.applies_to === "all" || appliedCoupon.applies_to_ids.length === 0
+                            ? "Berlaku untuk semua produk"
+                            : `Berlaku untuk ${eligibleLineIds.size} produk di pesanan ini`}
+                        </p>
+                      )}
                     </div>
                   ) : null}
                   <div className="flex justify-between gap-4">
@@ -455,7 +520,13 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                     ) : shippingOptions.length === 0 ? (
                       <p className="text-sm text-white/70">Tidak ada tarif untuk alamat ini.</p>
                     ) : (
-                      shippingOptions.map((opt) => {
+                      <>
+                      {ratesSource === "mock" && (
+                        <p className="mb-2 rounded-lg bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-300">
+                          Tarif estimasi — Biteship belum terhubung. Ongkir final dihitung saat konfirmasi.
+                        </p>
+                      )}
+                      {shippingOptions.map((opt) => {
                         const selected =
                           selectedShipping?.courierCode === opt.courierCode &&
                           selectedShipping?.serviceCode === opt.serviceCode;
@@ -485,7 +556,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                             </span>
                           </label>
                         );
-                      })
+                      })}
+                      </>
                     )}
                   </div>
                 ) : (

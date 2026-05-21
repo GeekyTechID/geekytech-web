@@ -65,8 +65,7 @@ export function DashboardShell({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 shrink-0 text-[#1d1d1f] hover:bg-black/5"
+                    size="icon-sm"
                     aria-label="Tutup menu"
                     onClick={() => setMobileOpen(false)}
                   >
@@ -88,9 +87,9 @@ export function DashboardShell({
             <header className="sticky top-0 z-30 flex w-full shrink-0 items-center gap-3 bg-white/95 px-3 py-2.5 backdrop-blur-sm supports-[backdrop-filter]:bg-white/90 sm:px-4 sm:py-3 lg:hidden">
               <Button
                 type="button"
-                variant="outline"
-                size="icon"
-                className="h-10 w-10 shrink-0 border-[#e0e0e0] sm:h-9 sm:w-9"
+                variant="pearl"
+                size="icon-sm"
+                className="shrink-0 sm:size-9"
                 aria-label="Buka menu akun"
                 onClick={() => setMobileOpen(true)}
               >

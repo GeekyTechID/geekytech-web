@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Bell, ShoppingBag, Tag, Truck, CheckCircle, Info } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchDashboardOverview,
@@ -151,12 +153,9 @@ export default async function DashboardOverviewPage() {
                   Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.
                 </p>
               </div>
-              <Link
-                href="/dashboard/orders?status=pending_payment"
-                className="shrink-0 rounded-full bg-amber-600 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-amber-700 active:scale-[0.97]"
-              >
-                Lihat semua
-              </Link>
+              <Button asChild variant="secondary" size="sm" className="shrink-0">
+                <Link href="/dashboard/orders?status=pending_payment">Lihat semua</Link>
+              </Button>
             </div>
 
             <ul className="mt-4 flex flex-col divide-y divide-amber-100">
@@ -183,12 +182,9 @@ export default async function DashboardOverviewPage() {
                   {/* Total + CTA */}
                   <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <p className="text-[12px] font-semibold tabular-nums text-amber-900">{formatRupiah(o.total)}</p>
-                    <Link
-                      href={`/dashboard/orders/${o.id}`}
-                      className="rounded-full bg-amber-600 px-2.5 py-0.5 text-[11px] font-semibold text-white transition hover:bg-amber-700"
-                    >
-                      Bayar
-                    </Link>
+                    <Button asChild variant="primary" size="xs" className="min-h-8">
+                      <Link href={`/dashboard/orders/${o.id}`}>Bayar</Link>
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -320,12 +316,9 @@ export default async function DashboardOverviewPage() {
                   <p className="text-[13px] font-semibold tabular-nums text-[#1d1d1f] sm:text-[14px]">
                     {formatRupiah(o.total)}
                   </p>
-                  <Link
-                    href={`/dashboard/orders/${o.id}`}
-                    className="rounded-full bg-[#1d1d1f] px-3 py-1 text-[11px] font-semibold text-white transition hover:bg-[#3a3a3c] active:scale-[0.97] sm:text-[12px]"
-                  >
-                    Detail
-                  </Link>
+                  <Button asChild variant="dark" size="sm">
+                    <Link href={`/dashboard/orders/${o.id}`}>Detail</Link>
+                  </Button>
                 </div>
               </li>
             ))}

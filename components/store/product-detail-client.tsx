@@ -133,15 +133,7 @@ export function ProductDetailClient({
       return;
     }
     const q = clampQty(qty);
-    startTransition(async () => {
-      const res = await addVariantToCart(variant.id, q);
-      if (!res.success) {
-        toast.error(res.error);
-        return;
-      }
-      incrementCart(q);
-      router.push("/checkout");
-    });
+    router.push(`/checkout?buyNow=${variant.id}&qty=${q}`);
   };
 
   const handleWishlist = () => {

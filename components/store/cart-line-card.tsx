@@ -43,10 +43,12 @@ export function CartLineCard({
   line,
   checked,
   onCheckedChange,
+  readonly,
 }: {
   line: CartLineView;
   checked?: boolean;
   onCheckedChange?: () => void;
+  readonly?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -166,27 +168,32 @@ export function CartLineCard({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
-            <QuantityStepper
-              value={line.qty}
-              min={1}
-              max={line.maxQty}
-              size="compact"
-              disabled={pending}
-              onDecrease={() => bumpQty(-1)}
-              onIncrease={() => bumpQty(1)}
-            />
-            <Button
-              type="button"
-              variant="destructive-ghost"
-              size="icon-sm"
-              aria-label="Hapus dari keranjang"
-              disabled={pending}
-              onClick={() => setConfirmRemoveOpen(true)}
-            >
-              <Trash2 className="h-4 w-4" strokeWidth={2} />
-            </Button>
-          </div>
+          {!readonly && (
+            <div className="flex items-center gap-2">
+              <QuantityStepper
+                value={line.qty}
+                min={1}
+                max={line.maxQty}
+                size="compact"
+                disabled={pending}
+                onDecrease={() => bumpQty(-1)}
+                onIncrease={() => bumpQty(1)}
+              />
+              <Button
+                type="button"
+                variant="destructive-ghost"
+                size="icon-sm"
+                aria-label="Hapus dari keranjang"
+                disabled={pending}
+                onClick={() => setConfirmRemoveOpen(true)}
+              >
+                <Trash2 className="h-4 w-4" strokeWidth={2} />
+              </Button>
+            </div>
+          )}
+          {readonly && (
+            <p className="text-sm font-medium text-[#5c5c5c]">Qty: {line.qty}</p>
+          )}
         </div>
 
         <p className="mt-3 text-right text-xs font-semibold text-[#7a7a7a] sm:hidden">Subtotal baris: {formatRupiah(lineTotal)}</p>

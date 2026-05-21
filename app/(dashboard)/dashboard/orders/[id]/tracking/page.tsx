@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 import { createClient } from "@/lib/supabase/server";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipTracking } from "@/lib/biteship/fetch-tracking";
@@ -69,14 +71,11 @@ export default async function OrderTrackingPage({ params }: { params: Promise<{ 
                     )}
                   </div>
                   {result?.ok && result.link ? (
-                    <a
-                      href={result.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center rounded-full border border-[#e0e0e0] px-4 py-1.5 text-xs font-semibold text-[#1d1d1f] transition hover:border-[#EA5329]/40 sm:mt-0"
-                    >
-                      Lacak di situs kurir ↗
-                    </a>
+                    <Button asChild variant="secondary" size="sm" className="mt-2 sm:mt-0">
+                      <a href={result.link} target="_blank" rel="noopener noreferrer">
+                        Lacak di situs kurir ↗
+                      </a>
+                    </Button>
                   ) : null}
                 </div>
 

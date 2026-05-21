@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 
-export type ProductActionResult = { success: true } | { success: false; error: string };
+export type ProductActionResult = { success: true; lineId: string } | { success: false; error: string };
 
 async function getAvailableStock(supabase: SupabaseClient<Database>, variantId: string) {
   const { data, error } = await supabase
@@ -72,17 +72,18 @@ export async function addVariantToCart(variantId: string, quantity: number): Pro
         .update({ quantity: nextQty, updated_at: new Date().toISOString() })
         .eq("id", existing.id);
       if (upErr) return { success: false, error: upErr.message };
+      revalidatePath("/cart");
+      return { success: true, lineId: existing.id };
     } else {
-      const { error: addErr } = await supabase.from("cart_items").insert({
-        cart_id: cart.id,
-        variant_id: variantId,
-        quantity: qty,
-      });
-      if (addErr) return { success: false, error: addErr.message };
+      const { data: inserted, error: addErr } = await supabase
+        .from("cart_items")
+        .insert({ cart_id: cart.id, variant_id: variantId, quantity: qty })
+        .select("id")
+        .single();
+      if (addErr || !inserted) return { success: false, error: addErr?.message ?? "Gagal menambahkan ke keranjang." };
+      revalidatePath("/cart");
+      return { success: true, lineId: inserted.id };
     }
-
-    revalidatePath("/cart");
-    return { success: true };
   } catch {
     return { success: false, error: "Terjadi kesalahan. Coba lagi." };
   }
