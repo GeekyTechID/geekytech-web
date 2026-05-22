@@ -45,8 +45,7 @@ export async function createBiteshipOrder(
     return { ok: false, error: "BITESHIP_ORIGIN_POSTAL tidak valid." };
   }
 
-  const isProd = process.env.BITESHIP_IS_PRODUCTION === "true";
-  const base = isProd ? "https://api.biteship.com" : "https://api.sandbox.biteship.com";
+  const base = "https://api.biteship.com";
 
   const body = {
     shipper_contact_name: shipperName,

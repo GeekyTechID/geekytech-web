@@ -72,6 +72,60 @@ export type AvailableCoupon = {
   applies_to_ids: string[];
 };
 
+const COURIER_LOGOS: Record<string, string> = {
+  jne: "/couriers/jne.svg",
+  sicepat: "/couriers/sicepat.svg",
+  anteraja: "/couriers/anteraja.svg",
+  tiki: "/couriers/tiki.svg",
+  gosend: "/couriers/gosend.svg",
+  gojek: "/couriers/gosend.svg",
+  wahana: "/couriers/wahana.png",
+  jnt: "/couriers/jnt.svg",
+  ninja: "/couriers/ninja.svg",
+  ninja_xpress: "/couriers/ninja.svg",
+  pos: "/couriers/pos.svg",
+  sap: "/couriers/sap.svg",
+};
+
+function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { code: string; name: string; className?: string }) {
+  const src = COURIER_LOGOS[code.toLowerCase()];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={name}
+      className={`shrink-0 object-contain ${className}`}
+      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+    />
+  );
+}
+
+const PAYMENT_LOGOS: Record<string, string> = {
+  gopay: "/payments/gopay.svg",
+  shopeepay: "/payments/shopeepay.svg",
+  qris: "/payments/qris.svg",
+  bca_va: "/payments/bca_va.svg",
+  bni_va: "/payments/bni_va.svg",
+  bri_va: "/payments/bri_va.svg",
+  permata_va: "/payments/permata_va.svg",
+  echannel: "/payments/echannel.svg",
+  indomaret: "/payments/indomaret.svg",
+  alfamart: "/payments/alfamart.svg",
+};
+
+function PaymentLogo({ id, label, className = "h-8 w-auto max-w-[80px]" }: { id: string; label: string; className?: string }) {
+  const src = PAYMENT_LOGOS[id];
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={label}
+      className={`shrink-0 object-contain ${className}`}
+      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+    />
+  );
+}
+
 type CheckoutPageClientProps = {
   lines: CartLineView[];
   addresses: AddressRow[];
@@ -94,6 +148,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [couponApplying, setCouponApplying] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
+  const [paymentOpen, setPaymentOpen] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [countdown, setCountdown] = useState(5);
@@ -164,6 +219,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       setRatesSource(json.data.source);
       setShippingOptions(json.data.options);
       setSelectedShipping(json.data.options[0] ?? null);
+      setShippingOpen(true);
     } catch {
       toast.error("Gagal memuat ongkir.");
       setShippingOptions([]);
@@ -453,6 +509,94 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
+            <div className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={() => setShippingOpen((o) => !o)}
+                className={cn(
+                  "flex w-full items-center justify-between px-4 py-4 transition-colors",
+                  selectedShipping && !shippingOpen
+                    ? "bg-white text-[#1d1d1f]"
+                    : "bg-[#2a2a2c] text-white",
+                )}
+              >
+                <span className="text-sm font-semibold uppercase">Metode pengiriman</span>
+                {selectedShipping && !shippingOpen ? (
+                  <span className="flex items-center gap-2">
+                    <CourierLogo code={selectedShipping.courierCode} name={selectedShipping.courierName} className="h-6 w-auto max-w-[56px]" />
+                    <span className="flex flex-col items-end">
+                      <span className="text-sm font-semibold text-[#1d1d1f] leading-tight">{selectedShipping.serviceName} · {formatRupiah(selectedShipping.price)}</span>
+                      <span className="text-[11px] text-[#7a7a7a] leading-tight">{selectedShipping.etd}</span>
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#1d1d1f]" aria-hidden />
+                  </span>
+                ) : shippingOpen ? (
+                  <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
+                ) : (
+                  <ChevronDown className="h-4 w-4 opacity-80" aria-hidden />
+                )}
+              </button>
+              {shippingOpen && (
+                <div className="space-y-2 p-4">
+                  {ratesLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-[#5c5c5c]">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Menghitung ongkir…
+                    </div>
+                  ) : shippingOptions.length === 0 ? (
+                    <p className="text-sm text-[#5c5c5c]">Tidak ada tarif untuk alamat ini.</p>
+                  ) : (
+                    <>
+                      {ratesSource === "mock" && (
+                        <p className="mb-2 rounded-lg bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-700">
+                          Tarif estimasi — Biteship belum terhubung. Ongkir final dihitung saat konfirmasi.
+                        </p>
+                      )}
+                      {shippingOptions.map((opt) => {
+                        const selected =
+                          selectedShipping?.courierCode === opt.courierCode &&
+                          selectedShipping?.serviceCode === opt.serviceCode;
+                        return (
+                          <label
+                            key={`${opt.courierCode}-${opt.serviceCode}`}
+                            className={cn(
+                              "flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm transition",
+                              selected
+                                ? "border-[#EA5329] bg-[#fff8f5]"
+                                : "border-[#e0e0e0] bg-[#fafafa] hover:border-[#EA5329]/40",
+                            )}
+                          >
+                            <input
+                              type="radio"
+                              name="ship"
+                              className="mt-1 accent-[#EA5329]"
+                              checked={selected}
+                              onChange={() => {
+                                setSelectedShipping(opt);
+                                setShippingOpen(false);
+                              }}
+                            />
+                            <span className="flex flex-1 items-center gap-3">
+                              <CourierLogo code={opt.courierCode} name={opt.courierName} />
+                              <span>
+                                <span className="font-semibold text-[#1d1d1f]">
+                                  {opt.courierName} — {opt.serviceName}
+                                </span>
+                                <span className="mt-0.5 block text-xs text-[#7a7a7a]">{opt.etd}</span>
+                                <span className="mt-1 block text-sm font-bold tabular-nums text-[#1d1d1f]">
+                                  {formatRupiah(opt.price)}
+                                </span>
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="overflow-hidden rounded-2xl border border-[#1a1a1a]/40 bg-[#1a1a1a] text-white shadow-lg">
               <div className="px-5 pt-5">
                 <h2 className="text-lg font-bold">Ringkasan pesanan</h2>
@@ -502,71 +646,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                   </div>
                 </dl>
 
-                <button
-                  type="button"
-                  onClick={() => setShippingOpen((o) => !o)}
-                  className="mt-4 flex w-full items-center justify-between rounded-xl bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-white transition hover:bg-white/15"
-                >
-                  <span>Metode pengiriman</span>
-                  {shippingOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
-                {shippingOpen ? (
-                  <div className="mt-3 space-y-2 pb-4">
-                    {ratesLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-white/70">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Menghitung ongkir…
-                      </div>
-                    ) : shippingOptions.length === 0 ? (
-                      <p className="text-sm text-white/70">Tidak ada tarif untuk alamat ini.</p>
-                    ) : (
-                      <>
-                      {ratesSource === "mock" && (
-                        <p className="mb-2 rounded-lg bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-300">
-                          Tarif estimasi — Biteship belum terhubung. Ongkir final dihitung saat konfirmasi.
-                        </p>
-                      )}
-                      {shippingOptions.map((opt) => {
-                        const selected =
-                          selectedShipping?.courierCode === opt.courierCode &&
-                          selectedShipping?.serviceCode === opt.serviceCode;
-                        return (
-                          <label
-                            key={`${opt.courierCode}-${opt.serviceCode}`}
-                            className={cn(
-                              "flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm transition",
-                              selected ? "border-[#EA5329] bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10",
-                            )}
-                          >
-                            <input
-                              type="radio"
-                              name="ship"
-                              className="mt-1 accent-[#EA5329]"
-                              checked={selected}
-                              onChange={() => setSelectedShipping(opt)}
-                            />
-                            <span>
-                              <span className="font-semibold">
-                                {opt.courierName} — {opt.serviceName}
-                              </span>
-                              <span className="mt-0.5 block text-xs text-white/70">{opt.etd}</span>
-                              <span className="mt-1 block text-sm font-bold tabular-nums text-white">
-                                {formatRupiah(opt.price)}
-                              </span>
-                            </span>
-                          </label>
-                        );
-                      })}
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <p className="mt-2 pb-4 text-xs text-white/60">
-                    {selectedShipping
-                      ? `${selectedShipping.courierName} (${formatRupiah(selectedShipping.price)})`
-                      : "Belum dipilih"}
-                  </p>
-                )}
 
                 <div className="border-t border-white/15 py-4">
                   <div className="flex items-center justify-between gap-2">
@@ -633,10 +712,33 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#e8e4dc] bg-white p-5 shadow-sm">
-              <h2 className="text-base font-bold text-[#1d1d1f]">Metode pembayaran</h2>
-              <p className="mt-1 text-xs text-[#7a7a7a]">Pilih salah satu. Anda akan menyelesaikan pembayaran di Snap Midtrans.</p>
-              <ul className="mt-4 space-y-2">
+            <div className="overflow-hidden rounded-2xl border border-[#e8e4dc] bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={() => setPaymentOpen((o) => !o)}
+                className={cn(
+                  "flex w-full items-center justify-between px-4 py-4 transition-colors",
+                  !paymentOpen
+                    ? "bg-white text-[#1d1d1f]"
+                    : "bg-[#2a2a2c] text-white",
+                )}
+              >
+                <span className="text-sm font-semibold uppercase">Metode pembayaran</span>
+                {!paymentOpen ? (
+                  <span className="flex items-center gap-2">
+                    <PaymentLogo id={paymentMethod} label={MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod)?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
+                    <span className="text-sm font-semibold text-[#1d1d1f]">
+                      {MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod)?.label}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#1d1d1f]" aria-hidden />
+                  </span>
+                ) : (
+                  <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
+                )}
+              </button>
+              {paymentOpen && (
+              <div className="p-5">
+              <ul className="space-y-2">
                 {MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.map((m) => (
                   <li key={m.id}>
                     <label
@@ -649,12 +751,15 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                         type="radio"
                         name="pay"
                         checked={paymentMethod === m.id}
-                        onChange={() => setPaymentMethod(m.id)}
+                        onChange={() => {
+                          setPaymentMethod(m.id);
+                          setPaymentOpen(false);
+                        }}
                         className="accent-[#EA5329]"
                       />
                       <span className="flex flex-1 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f5f5f7] text-[10px] font-bold text-[#1d1d1f]">
-                          {m.id.replace("_va", "").replace("indomaret", "IND").toUpperCase().slice(0, 3)}
+                        <span className="flex h-9 w-[68px] shrink-0 items-center justify-center rounded-lg bg-[#f5f5f7]">
+                          <PaymentLogo id={m.id} label={m.label} className="h-7 w-auto max-w-[60px]" />
                         </span>
                         <span className="font-medium text-[#1d1d1f]">{m.label}</span>
                       </span>
@@ -662,7 +767,10 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                   </li>
                 ))}
               </ul>
+              </div>
+              )}
 
+              <div className="p-5 pt-0">
               <Button
                 type="button"
                 variant="primary"
@@ -683,6 +791,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                 Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko. Asuransi pengiriman
                 mengikuti ketentuan kurir (Biteship).
               </p>
+              </div>
             </div>
 
           </aside>

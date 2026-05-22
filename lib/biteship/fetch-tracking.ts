@@ -30,8 +30,7 @@ export async function fetchBiteshipTracking(
   const key = process.env.BITESHIP_API_KEY?.trim();
   if (!key) return { ok: false, error: "Biteship tidak dikonfigurasi." };
 
-  const isProd = process.env.BITESHIP_IS_PRODUCTION === "true";
-  const base = isProd ? "https://api.biteship.com" : "https://api.sandbox.biteship.com";
+  const base = "https://api.biteship.com";
 
   try {
     const res = await fetch(

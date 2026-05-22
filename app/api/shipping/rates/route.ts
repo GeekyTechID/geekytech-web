@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const originRaw = process.env.BITESHIP_ORIGIN_POSTAL_CODE?.trim() ?? "10110";
+    const originRaw = process.env.BITESHIP_ORIGIN_POSTAL?.trim() ?? "10110";
     const originPostal = postalToNumber(originRaw) ?? 10110;
 
     // build items: buy-now mode bypasses cart

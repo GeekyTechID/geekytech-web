@@ -36,8 +36,7 @@ export async function fetchBiteshipCourierRates(params: {
     return { ok: false, error: "Biteship tidak dikonfigurasi." };
   }
 
-  const isProd = process.env.BITESHIP_IS_PRODUCTION === "true";
-  const base = isProd ? "https://api.biteship.com" : "https://api.sandbox.biteship.com";
+  const base = "https://api.biteship.com";
 
   const body = {
     origin_postal_code: String(params.originPostal),

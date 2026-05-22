@@ -1160,6 +1160,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           deleted_at: string | null
+          first_login_done: boolean
           full_name: string | null
           id: string
           phone: string | null
@@ -1170,6 +1171,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           deleted_at?: string | null
+          first_login_done?: boolean
           full_name?: string | null
           id: string
           phone?: string | null
@@ -1180,6 +1182,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           deleted_at?: string | null
+          first_login_done?: boolean
           full_name?: string | null
           id?: string
           phone?: string | null

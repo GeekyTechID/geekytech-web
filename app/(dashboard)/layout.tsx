@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { HomeMainHero } from "@/components/store/home-main-hero";
 import { StoreFooter } from "@/components/store/store-footer";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 import { fetchMainHeroBanners } from "@/lib/data/home-storefront";
 import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
@@ -49,6 +50,7 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         {children}
       </DashboardShell>
 
+      <WhatsAppButton />
       <div className="mt-10 md:mt-16">
         {heroBanners.length > 0 ? <HomeMainHero banners={heroBanners} hideNav /> : null}
       </div>

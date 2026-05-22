@@ -32,6 +32,26 @@ export async function markNotificationReadAction(notificationId: string): Promis
   }
 }
 
+export async function markFirstLoginDoneAction(): Promise<SimpleActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ first_login_done: true })
+      .eq("id", user.id)
+      .eq("first_login_done", false);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch {
+    return { success: false, error: "Terjadi kesalahan. Coba lagi." };
+  }
+}
+
 export async function markAllNotificationsReadAction(): Promise<SimpleActionResult> {
   try {
     const supabase = await createClient();

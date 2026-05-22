@@ -117,7 +117,6 @@ function LoginForm() {
         /* ignore */
       }
       router.push(redirectTo);
-      router.refresh();
     } catch (err) {
       if (err instanceof Error && err.message === "timeout") {
         toast.error("Koneksi timeout. Periksa koneksi internet kamu dan coba lagi.");
@@ -151,7 +150,7 @@ function LoginForm() {
     <div className="space-y-10">
       <div className="space-y-2">
         <h1 className="text-[28px] font-semibold text-[#1d1d1f]">
-          Selamat Datang Kembali!
+          Selamat Datang
         </h1>
         <p className="text-[17px] font-normal text-[#1d1d1f]">
           Silahkan masukan detail Anda.

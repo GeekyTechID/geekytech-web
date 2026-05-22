@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } fro
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { ChoiceChip } from "@/components/ui/choice-chip";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
@@ -52,6 +53,8 @@ export function ProductDetailClient({
   siteBaseUrl,
 }: ProductDetailClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
   const [isPending, startTransition] = useTransition();
   const incrementCart = useCartStore((s) => s.incrementCart);
   const defaultId = useMemo(
@@ -110,6 +113,10 @@ export function ProductDetailClient({
   const histMax = Math.max(1, ...histogram.map((h) => h.count));
 
   const handleAddCart = () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
     if (!variant || variant.stock < 1) {
       toast.error("Varian tidak tersedia atau stok habis.");
       return;
@@ -128,6 +135,10 @@ export function ProductDetailClient({
   };
 
   const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+      return;
+    }
     if (!variant || variant.stock < 1) {
       toast.error("Varian tidak tersedia atau stok habis.");
       return;
