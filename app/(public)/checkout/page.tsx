@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchUserAddresses } from "@/lib/data/dashboard-user";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
+import type { CartLineView } from "@/components/store/cart-line-card";
 import { CheckoutPageClient, type AvailableCoupon } from "@/components/checkout/checkout-page-client";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function CheckoutPage({
 
   const { items: itemsParam, buyNow: buyNowVariantId, qty: buyNowQtyStr } = await searchParams;
 
-  let lines: Awaited<ReturnType<typeof fetchUserCartWithLines>>["lines"] = [];
+  let lines: CartLineView[] = [];
   let isBuyNow = false;
 
   if (buyNowVariantId) {
