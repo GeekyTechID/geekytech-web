@@ -88,6 +88,9 @@ export async function POST(req: Request) {
       return Response.json({ ok: true }); // unknown order, silently accept
     }
 
+    // Temporary debug log — hapus setelah masalah teridentifikasi
+    console.log("[biteship-webhook] payload:", JSON.stringify(body));
+
     const newShipStatus = mapShipmentStatus(body.status ?? "");
     const awb = body.courier?.waybill_id ?? null;
     const courierName = body.courier?.name ?? null;
