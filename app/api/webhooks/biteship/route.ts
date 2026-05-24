@@ -72,7 +72,8 @@ export async function POST(req: Request) {
     // Biteship identifies the order by order_id (which is our biteship_order_id)
     const biteshipOrderId = body.order_id;
     if (!biteshipOrderId) {
-      return Response.json({ ok: false }, { status: 400 });
+      // Installation ping dari Biteship — body kosong, wajib return 200 ok
+      return Response.json({ ok: true });
     }
 
     const svc = createServiceClient();
