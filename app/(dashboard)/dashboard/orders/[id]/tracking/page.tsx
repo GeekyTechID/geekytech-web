@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package, CheckCircle2, Circle, Truck } from "lucide-react";
