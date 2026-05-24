@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, CheckCircle2, Circle, Truck } from "lucide-react";
+import { ArrowLeft, Package, Truck, Info } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
@@ -38,40 +38,60 @@ function formatDate(iso: string | null) {
 function TrackingTimeline({ result }: { result: TrackingResult }) {
   if (!result.ok || result.steps.length === 0) return null;
 
+  // Biteship returns newest-first → reverse to oldest-first (chronological, top → bottom)
+  const steps = [...result.steps].reverse();
+  const lastIdx = steps.length - 1;
+
   return (
-    <div className="mt-4 space-y-0">
-      {result.steps.map((step, i) => {
-        const isFirst = i === 0;
-        const isLast = i === result.steps.length - 1;
-        return (
-          <div key={i} className="flex gap-3">
-            <div className="flex flex-col items-center">
-              <div
-                className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${isFirst ? "bg-[#EA5329]" : "bg-[#e0e0e0]"}`}
-              >
-                {isFirst ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-                ) : (
-                  <Circle className="h-3 w-3 text-[#a0a0a0]" />
+    <div>
+      <p className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-[#a0a0a0]">
+        Riwayat Pengiriman
+      </p>
+      <div>
+        {steps.map((step, i) => {
+          const isCurrent = i === lastIdx;
+          const isLast = i === lastIdx;
+          return (
+            <div key={i} className="flex gap-4">
+              {/* dot + connector */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full ${
+                    isCurrent ? "bg-[#EA5329]" : "border border-[#d0d0d0] bg-white"
+                  }`}
+                >
+                  {isCurrent && (
+                    <div className="h-[7px] w-[7px] rounded-full bg-white" />
+                  )}
+                </div>
+                {!isLast && (
+                  <div
+                    className="my-1 w-px flex-1 bg-[#e0e0e0]"
+                    style={{ minHeight: 20 }}
+                  />
                 )}
               </div>
-              {!isLast && (
-                <div className="my-1 w-px flex-1 bg-[#e0e0e0]" style={{ minHeight: 20 }} />
-              )}
+              {/* content */}
+              <div className={`min-w-0 ${isLast ? "pb-0" : "pb-5"}`}>
+                <p
+                  className={`text-sm leading-snug tracking-[-0.224px] ${
+                    isCurrent
+                      ? "font-semibold text-[#1d1d1f]"
+                      : "font-normal text-[#7a7a7a]"
+                  }`}
+                >
+                  {step.description || step.status}
+                </p>
+                {step.at && (
+                  <p className="mt-0.5 text-xs text-[#a0a0a0]">
+                    {formatDate(step.at)}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className={`pb-5 ${isLast ? "pb-0" : ""}`}>
-              <p
-                className={`text-sm font-semibold ${isFirst ? "text-[#1d1d1f]" : "text-[#5c5c5c]"}`}
-              >
-                {step.description || step.status}
-              </p>
-              {step.at && (
-                <p className="mt-0.5 text-xs text-[#a0a0a0]">{formatDate(step.at)}</p>
-              )}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -110,19 +130,26 @@ export default async function OrderTrackingPage({
         Kembali ke detail pesanan
       </Link>
 
-      <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
+      <div className="rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <div className="flex items-start gap-3">
           <Package className="mt-0.5 h-5 w-5 shrink-0 text-[#EA5329]" />
           <div>
-            <h2 className="text-lg font-bold text-[#1d1d1f]">Lacak pengiriman</h2>
-            <p className="mt-0.5 text-sm text-[#5c5c5c]">Pesanan {order.order_number}</p>
+            <h2 className="text-lg font-semibold tracking-[-0.374px] text-[#1d1d1f]">
+              Lacak Kiriman
+            </h2>
+            <p className="mt-0.5 text-sm text-[#7a7a7a]">
+              Pesanan {order.order_number}
+            </p>
           </div>
         </div>
 
         {shipmentsWithAwb.length === 0 ? (
-          <p className="mt-6 text-sm text-[#5c5c5c]">
-            Nomor resi belum tersedia — tim kami akan memperbarui setelah paket dikirim.
-          </p>
+          <div className="mt-6 flex items-start gap-2">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#a0a0a0]" />
+            <p className="text-sm text-[#7a7a7a]">
+              Nomor resi belum tersedia — tim kami akan memperbarui setelah paket dikirim.
+            </p>
+          </div>
         ) : (
           <div className="mt-6 space-y-8">
             {shipmentsWithAwb.map((s, i) => {
@@ -138,11 +165,13 @@ export default async function OrderTrackingPage({
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 shrink-0 text-[#EA5329]" />
                       <div>
-                        <p className="font-semibold text-[#1d1d1f]">
+                        <p className="font-semibold tracking-[-0.374px] text-[#1d1d1f]">
                           {s.courier_name ?? s.courier_company?.toUpperCase()} ·{" "}
                           {s.courier_service}
                         </p>
-                        <p className="mt-0.5 font-mono text-sm text-[#5c5c5c]">AWB: {s.awb}</p>
+                        <p className="mt-0.5 font-mono text-sm text-[#7a7a7a]">
+                          AWB: {s.awb}
+                        </p>
                       </div>
                     </div>
                     <a
@@ -155,7 +184,7 @@ export default async function OrderTrackingPage({
                     </a>
                   </div>
 
-                  {/* status from DB — always shown */}
+                  {/* current status badge */}
                   <div className="mt-3 flex items-center gap-2">
                     <span className="inline-block rounded-full bg-[#EA5329]/10 px-3 py-1 text-xs font-semibold text-[#EA5329]">
                       {STATUS_LABEL[dbStatus] ?? dbStatus}
@@ -167,17 +196,19 @@ export default async function OrderTrackingPage({
                     )}
                   </div>
 
-                  {/* timeline from API (if available) */}
-                  <div className="mt-4 rounded-xl border border-[#e0e0e0] p-4">
-                    {hasSteps ? (
+                  {/* tracking history */}
+                  {hasSteps ? (
+                    <div className="mt-4 rounded-[18px] border border-[#e0e0e0] bg-[#f5f5f7] p-5">
                       <TrackingTimeline result={tracking} />
-                    ) : (
-                      <p className="text-sm text-[#5c5c5c]">
-                        Riwayat tracking dari kurir belum tersedia — status di atas sudah
-                        diperbarui secara otomatis.
+                    </div>
+                  ) : (
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <Info className="h-3.5 w-3.5 shrink-0 text-[#a0a0a0]" />
+                      <p className="text-xs text-[#a0a0a0]">
+                        Riwayat dari kurir belum tersedia.
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
