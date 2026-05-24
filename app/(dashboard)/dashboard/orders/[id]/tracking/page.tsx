@@ -12,16 +12,16 @@ import type { Database } from "@/types/supabase";
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
 
 const STATUS_LABEL: Record<ShipmentStatus, string> = {
-  pending: "Menunggu konfirmasi kurir",
-  confirmed: "Dikonfirmasi kurir",
-  allocated: "Kurir dialokasikan",
-  picking_up: "Kurir menuju pengirim",
-  picked: "Paket diambil kurir",
-  dropping_off: "Dalam pengiriman",
-  delivered: "Terkirim",
+  pending: "Menunggu Konfirmasi",
+  confirmed: "Pesanan Dikonfirmasi",
+  allocated: "Kurir Dialokasikan",
+  picking_up: "Penjemputan",
+  picked: "Paket Diambil",
+  dropping_off: "Dalam Pengantaran",
+  delivered: "Paket Diterima",
   rejected: "Ditolak",
   cancelled: "Dibatalkan",
-  returned: "Dikembalikan",
+  returned: "Diretur",
 };
 
 function formatDate(iso: string | null) {
