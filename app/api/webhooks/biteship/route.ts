@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     // Debug: simpan raw payload agar mudah dicek — hapus setelah masalah teridentifikasi
     await svc.from("order_status_history").insert({
       order_id: shipment.order_id,
-      status: newShipStatus,
+      status: "processing" as const,
       note: `[DEBUG] raw payload: ${JSON.stringify(body)}`,
       changed_by: null,
     });
