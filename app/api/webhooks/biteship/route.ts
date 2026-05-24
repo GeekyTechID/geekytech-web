@@ -88,9 +88,6 @@ export async function POST(req: Request) {
       return Response.json({ ok: true }); // unknown order, silently accept
     }
 
-    // Temporary debug log — hapus setelah masalah teridentifikasi
-    console.log("[biteship-webhook] payload:", JSON.stringify(body));
-
     const newShipStatus = mapShipmentStatus(body.status ?? "");
     const awb = body.courier?.waybill_id ?? null;
     const courierName = body.courier?.name ?? null;
@@ -106,6 +103,14 @@ export async function POST(req: Request) {
     }
 
     await svc.from("shipments").update(updatePayload).eq("id", shipment.id);
+
+    // Debug: simpan raw payload agar mudah dicek — hapus setelah masalah teridentifikasi
+    await svc.from("order_status_history").insert({
+      order_id: shipment.order_id,
+      status: newShipStatus,
+      note: `[DEBUG] raw payload: ${JSON.stringify(body)}`,
+      changed_by: null,
+    });
 
     // Sync order status
     const newOrderStatus = orderStatusFromShipment(newShipStatus);
