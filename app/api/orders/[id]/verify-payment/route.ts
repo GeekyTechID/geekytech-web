@@ -111,11 +111,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       .eq("order_id", order.id);
 
     if (items) {
+      const productQtyMap = new Map<string, number>();
+
       for (const item of items) {
         if (!item.variant_id) continue;
         const { data: v } = await svc
           .from("product_variants")
-          .select("stock, reserved")
+          .select("stock, reserved, product_id")
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
@@ -134,6 +136,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           note: `Pesanan ${order.order_number} settlement`,
           changed_by: null,
         });
+        if (v.product_id) {
+          productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
+        }
+      }
+
+      for (const [productId, qty] of productQtyMap) {
+        const { data: p } = await svc
+          .from("products")
+          .select("total_sold")
+          .eq("id", productId)
+          .single();
+        if (p) {
+          await svc
+            .from("products")
+            .update({ total_sold: p.total_sold + qty })
+            .eq("id", productId);
+        }
       }
     }
 

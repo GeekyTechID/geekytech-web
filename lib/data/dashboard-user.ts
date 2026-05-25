@@ -46,11 +46,18 @@ function mapOrderItemRow(row: OrderItemQueryRow): DashboardOrderItemRow {
   };
 }
 
+export type OrderStatusHistoryItem = {
+  status: string;
+  note: string | null;
+  created_at: string;
+};
+
 export type DashboardOrderDetail = {
   order: Database["public"]["Tables"]["orders"]["Row"];
   items: DashboardOrderItemRow[];
   payments: Database["public"]["Tables"]["payments"]["Row"][];
   shipments: Database["public"]["Tables"]["shipments"]["Row"][];
+  statusHistory: OrderStatusHistoryItem[];
 };
 
 export type DashboardOverview = {
@@ -332,7 +339,7 @@ export const fetchOrderDetailForUser = cache(async (userId: string, orderId: str
       .maybeSingle();
     if (oErr || !order) return null;
 
-    const [itemsRes, payRes, shipRes] = await Promise.all([
+    const [itemsRes, payRes, shipRes, historyRes] = await Promise.all([
       supabase
         .from("order_items")
         .select(
@@ -348,6 +355,11 @@ export const fetchOrderDetailForUser = cache(async (userId: string, orderId: str
         .order("id", { ascending: true }),
       supabase.from("payments").select("*").eq("order_id", orderId).order("created_at", { ascending: false }),
       supabase.from("shipments").select("*").eq("order_id", orderId).order("created_at", { ascending: false }),
+      supabase
+        .from("order_status_history")
+        .select("status, note, created_at")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: true }),
     ]);
 
     const rawItems = (itemsRes.data ?? []) as OrderItemQueryRow[];
@@ -358,6 +370,7 @@ export const fetchOrderDetailForUser = cache(async (userId: string, orderId: str
       items,
       payments: payRes.data ?? [],
       shipments: shipRes.data ?? [],
+      statusHistory: (historyRes.data ?? []) as OrderStatusHistoryItem[],
     };
   } catch {
     return null;

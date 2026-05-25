@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications/create-notification";
 import type { Database } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
@@ -111,13 +112,11 @@ export async function POST(req: Request) {
 
     await svc.from("shipments").update(updatePayload).eq("id", shipment.id);
 
-    // Debug: simpan raw payload agar mudah dicek — hapus setelah masalah teridentifikasi
-    await svc.from("order_status_history").insert({
-      order_id: shipment.order_id,
-      status: "processing" as const,
-      note: `[DEBUG] raw payload: ${JSON.stringify(body)}`,
-      changed_by: null,
-    });
+    const { data: orderRow } = await svc
+      .from("orders")
+      .select("user_id, order_number")
+      .eq("id", shipment.order_id)
+      .maybeSingle();
 
     // Sync order status
     const newOrderStatus = orderStatusFromShipment(newShipStatus);
@@ -135,6 +134,34 @@ export async function POST(req: Request) {
           status: newOrderStatus,
           note: `Status diperbarui otomatis dari Biteship: ${body.status ?? ""}`,
           changed_by: null,
+        });
+      }
+    }
+
+    if (orderRow?.user_id && orderRow.order_number) {
+      if (newShipStatus === "picking_up" || newShipStatus === "picked") {
+        await createNotification({
+          userId: orderRow.user_id,
+          title: "Pesanan Sedang Dikemas",
+          body: `Pesanan ${orderRow.order_number} sedang dikemas dan siap dikirim.`,
+          type: "order_shipped",
+          data: { orderId: shipment.order_id, awb: awb ?? undefined },
+        });
+      } else if (newShipStatus === "dropping_off") {
+        await createNotification({
+          userId: orderRow.user_id,
+          title: "Pesanan Dalam Perjalanan",
+          body: `Pesanan ${orderRow.order_number} sedang dalam perjalanan ke alamatmu.`,
+          type: "order_in_transit",
+          data: { orderId: shipment.order_id, awb: awb ?? undefined },
+        });
+      } else if (newShipStatus === "delivered") {
+        await createNotification({
+          userId: orderRow.user_id,
+          title: "Pesanan Telah Sampai",
+          body: `Pesanan ${orderRow.order_number} telah sampai di tujuan. Jangan lupa beri ulasan!`,
+          type: "order_delivered",
+          data: { orderId: shipment.order_id },
         });
       }
     }

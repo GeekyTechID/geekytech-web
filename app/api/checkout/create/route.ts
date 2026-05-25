@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createRequire } from "node:module";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications/create-notification";
+import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
@@ -412,6 +414,21 @@ export async function POST(req: Request) {
         return Response.json({ success: false, error: "Gagal memperbarui kupon." }, { status: 500 });
       }
     }
+
+    await createNotification({
+      userId: user.id,
+      title: "Pesanan Berhasil Dibuat",
+      body: `Pesanan ${order.order_number} telah kami terima. Selesaikan pembayaran sebelum kedaluwarsa.`,
+      type: "order_placed",
+      data: { orderId: order.id, orderNumber: order.order_number },
+    });
+
+    await createAdminNotification({
+      title: "Pesanan Baru Masuk",
+      body: `Pesanan ${order.order_number} dari ${address.recipient} senilai Rp${total.toLocaleString("id-ID")}.`,
+      type: "new_order",
+      data: { orderId: order.id, orderNumber: order.order_number },
+    });
 
     return Response.json({
       success: true,

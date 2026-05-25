@@ -9,6 +9,7 @@ import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { OrderToolbar } from "@/components/dashboard/order-toolbar";
+import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
 import type { Database } from "@/types/supabase";
 
 type PaymentStatus = Database["public"]["Enums"]["payment_status"];
@@ -78,7 +79,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const detail = await fetchOrderDetailForUser(user.id, id);
   if (!detail) notFound();
 
-  const { order, items, payments, shipments } = detail;
+  const { order, items, payments, shipments, statusHistory } = detail;
   const hasPendingPayment = payments.some((p) => p.status === "pending");
   const paidPayment = payments.find((p) => p.status === "paid");
   const problemPayments = payments.filter((p) => PROBLEM_PAYMENT.includes(p.status));
@@ -151,6 +152,14 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           />
         </div>
       </div>
+
+      {/* ── Status perjalanan pesanan ── */}
+      <section>
+        <h2 className="mb-3 text-base font-bold text-[#1d1d1f]">Status Pesanan</h2>
+        <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
+          <OrderStatusStepper currentStatus={order.status} statusHistory={statusHistory} />
+        </div>
+      </section>
 
       {/* ── Items ── */}
       <section>

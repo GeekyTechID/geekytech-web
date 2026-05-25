@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   ChevronDown,
   ExternalLink,
   LogOut,
@@ -17,6 +16,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import { cn } from "@/lib/utils";
 
 /* ──────────────────────────────────────────────────────────────
@@ -135,13 +135,8 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         {/* Theme toggle */}
         <ThemeToggle />
 
-        {/* Notification bell (placeholder) */}
-        <button
-          className="relative p-2 text-muted-foreground hover:text-foreground transition-swiss"
-          aria-label="Notifikasi"
-        >
-          <Bell size={18} />
-        </button>
+        {/* Notification bell */}
+        <AdminNotificationBell />
 
         {/* User avatar + dropdown */}
         <div ref={userMenuRef} className="relative ml-1">

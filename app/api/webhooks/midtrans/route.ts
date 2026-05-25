@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
+import { createNotification } from "@/lib/notifications/create-notification";
+import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import type { Json } from "@/types/supabase";
 
 type MidtransNotification = {
@@ -37,7 +39,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
 
   const { data: order } = await svc
     .from("orders")
-    .select("id, status")
+    .select("id, status, user_id")
     .eq("order_number", orderId)
     .maybeSingle();
 
@@ -52,6 +54,23 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
       changed_by: null,
     });
 
+    if (order.user_id) {
+      await createNotification({
+        userId: order.user_id,
+        title: "Pembayaran Dikonfirmasi",
+        body: `Pembayaran untuk pesanan ${orderId} berhasil dikonfirmasi. Pesanan sedang diproses.`,
+        type: "payment_confirmed",
+        data: { orderId: order.id, orderNumber: orderId },
+      });
+    }
+
+    await createAdminNotification({
+      title: "Pembayaran Diterima",
+      body: `Pesanan ${orderId} telah dibayar. Siap untuk diproses.`,
+      type: "payment_confirmed",
+      data: { orderId: order.id, orderNumber: orderId },
+    });
+
     // Deduct stock and clear reservation
     const { data: items } = await svc
       .from("order_items")
@@ -59,21 +78,32 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
       .eq("order_id", order.id);
 
     if (items) {
+      const productQtyMap = new Map<string, number>();
+
       for (const item of items) {
         if (!item.variant_id) continue;
         const { data: v } = await svc
           .from("product_variants")
-          .select("stock, reserved")
+          .select("stock, reserved, product_id")
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
+        const newStock = Math.max(0, v.stock - item.quantity);
         await svc
           .from("product_variants")
           .update({
-            stock: Math.max(0, v.stock - item.quantity),
+            stock: newStock,
             reserved: Math.max(0, v.reserved - item.quantity),
           })
           .eq("id", item.variant_id);
+        if (newStock <= 5) {
+          await createAdminNotification({
+            title: "Stok Menipis",
+            body: `Variant ${item.variant_id} tersisa ${newStock} unit setelah pesanan ${orderId}.`,
+            type: "low_stock",
+            data: { variantId: item.variant_id, stock: newStock, orderId: order.id },
+          });
+        }
         await svc.from("stock_history").insert({
           variant_id: item.variant_id,
           order_id: order.id,
@@ -82,6 +112,23 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
           note: `Pesanan ${orderId} settlement`,
           changed_by: null,
         });
+        if (v.product_id) {
+          productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
+        }
+      }
+
+      for (const [productId, qty] of productQtyMap) {
+        const { data: p } = await svc
+          .from("products")
+          .select("total_sold")
+          .eq("id", productId)
+          .single();
+        if (p) {
+          await svc
+            .from("products")
+            .update({ total_sold: p.total_sold + qty })
+            .eq("id", productId);
+        }
       }
     }
 
@@ -169,7 +216,7 @@ async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled
 
   const { data: order } = await svc
     .from("orders")
-    .select("id, status")
+    .select("id, status, user_id")
     .eq("order_number", orderId)
     .maybeSingle();
 
@@ -204,6 +251,38 @@ async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled
     .update({ status: newPaymentStatus })
     .eq("midtrans_order_id", orderId)
     .eq("status", "pending");
+
+  if (order.user_id) {
+    const notifMap: Record<typeof newPaymentStatus, { title: string; body: string }> = {
+      expired: {
+        title: "Pembayaran Kedaluwarsa",
+        body: `Pesanan ${orderId} dibatalkan karena melewati batas waktu pembayaran.`,
+      },
+      cancelled: {
+        title: "Pembayaran Dibatalkan",
+        body: `Pesanan ${orderId} dibatalkan. Hubungi kami jika ada pertanyaan.`,
+      },
+      failed: {
+        title: "Pembayaran Ditolak",
+        body: `Pembayaran untuk pesanan ${orderId} ditolak oleh sistem. Silakan coba lagi.`,
+      },
+    };
+    const notif = notifMap[newPaymentStatus];
+    await createNotification({
+      userId: order.user_id,
+      title: notif.title,
+      body: notif.body,
+      type: `payment_${newPaymentStatus}`,
+      data: { orderId: order.id, orderNumber: orderId },
+    });
+  }
+
+  await createAdminNotification({
+    title: "Pembayaran Gagal/Kedaluwarsa",
+    body: `Pesanan ${orderId} dibatalkan (${newPaymentStatus}).`,
+    type: "payment_issue",
+    data: { orderId: order.id, orderNumber: orderId, reason: newPaymentStatus },
+  });
 }
 
 export async function POST(req: Request) {

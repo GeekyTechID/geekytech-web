@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/types/supabase";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
+import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -134,6 +135,13 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
     });
     if (insErr) return { success: false, error: insErr.message };
 
+    await createAdminNotification({
+      title: "Ulasan Baru — Menunggu Moderasi",
+      body: `Ulasan bintang ${rating} untuk produk perlu disetujui (pesanan ${orderId}).`,
+      type: "new_review",
+      data: { orderId, productId, rating },
+    });
+
     revalidatePath(`/dashboard/orders/${orderId}`);
     revalidatePath(`/dashboard/orders/${orderId}/review`);
     return { success: true };
@@ -184,6 +192,13 @@ export async function submitComplaintAction(input: z.infer<typeof complaintSchem
       status: "open",
     });
     if (insErr) return { success: false, error: insErr.message };
+
+    await createAdminNotification({
+      title: "Komplain Baru Masuk",
+      body: `Komplain baru untuk pesanan ${orderId}: "${reason}"`,
+      type: "new_complaint",
+      data: { orderId, reason },
+    });
 
     revalidatePath(`/dashboard/orders/${orderId}`);
     revalidatePath(`/dashboard/orders/${orderId}/complaint`);

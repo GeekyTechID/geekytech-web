@@ -36,12 +36,63 @@ export async function updateOrderStatus(
 
   const supabase = await createServiceClient();
 
+  const { data: currentOrder } = await supabase
+    .from("orders")
+    .select("status")
+    .eq("id", orderId)
+    .single();
+
   const { error } = await supabase
     .from("orders")
     .update({ status: newStatus })
     .eq("id", orderId);
 
   if (error) return { error: error.message };
+
+  // Jika dibatalkan setelah pembayaran settlement, kembalikan stok & kurangi total_sold
+  const prevStatus = currentOrder?.status;
+  const wasAlreadyPaid = prevStatus === "paid" || prevStatus === "processing";
+  if (newStatus === "cancelled" && wasAlreadyPaid) {
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("variant_id, quantity")
+      .eq("order_id", orderId);
+
+    if (items) {
+      const productQtyMap = new Map<string, number>();
+
+      for (const item of items) {
+        if (!item.variant_id) continue;
+        const { data: v } = await supabase
+          .from("product_variants")
+          .select("stock, product_id")
+          .eq("id", item.variant_id)
+          .single();
+        if (!v) continue;
+        await supabase
+          .from("product_variants")
+          .update({ stock: v.stock + item.quantity })
+          .eq("id", item.variant_id);
+        if (v.product_id) {
+          productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
+        }
+      }
+
+      for (const [productId, qty] of productQtyMap) {
+        const { data: p } = await supabase
+          .from("products")
+          .select("total_sold")
+          .eq("id", productId)
+          .single();
+        if (p) {
+          await supabase
+            .from("products")
+            .update({ total_sold: Math.max(0, p.total_sold - qty) })
+            .eq("id", productId);
+        }
+      }
+    }
+  }
 
   const { error: historyError } = await supabase
     .from("order_status_history")

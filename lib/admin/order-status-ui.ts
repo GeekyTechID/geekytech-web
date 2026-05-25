@@ -1,14 +1,14 @@
 /** Badge kelas Tailwind untuk status pesanan — selaras admin (brand / muted / emerald / destructive). */
 
 export const ADMIN_ORDER_STATUS_LABEL: Record<string, string> = {
-  pending_payment: "Menunggu Bayar",
+  pending_payment: "Menunggu pembayaran",
   paid: "Dibayar",
   processing: "Diproses",
   shipped: "Dikirim",
-  delivered: "Terkirim",
+  delivered: "Tiba di tujuan",
   completed: "Selesai",
   cancelled: "Dibatalkan",
-  refunded: "Refund",
+  refunded: "Dikembalikan",
 };
 
 export function adminOrderStatusBadgeClass(status: string): string {

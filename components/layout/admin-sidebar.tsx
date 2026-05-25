@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Bell,
   Building2,
   ChevronDown,
   ChevronRight,
@@ -96,6 +97,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Sistem",
     items: [
+      { label: "Notifikasi", href: "/admin/notifications", icon: Bell },
       { label: "Pengaturan", href: "/admin/settings", icon: Settings },
     ],
   },

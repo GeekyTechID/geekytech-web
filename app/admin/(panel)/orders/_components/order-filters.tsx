@@ -10,14 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const STATUS_OPTIONS = [
   { value: "all", label: "Semua" },
-  { value: "pending_payment", label: "Menunggu Bayar" },
+  { value: "pending_payment", label: "Menunggu pembayaran" },
   { value: "paid", label: "Dibayar" },
   { value: "processing", label: "Diproses" },
   { value: "shipped", label: "Dikirim" },
-  { value: "delivered", label: "Terkirim" },
+  { value: "delivered", label: "Tiba di tujuan" },
   { value: "completed", label: "Selesai" },
   { value: "cancelled", label: "Dibatalkan" },
-  { value: "refunded", label: "Refund" },
+  { value: "refunded", label: "Dikembalikan" },
 ];
 
 const SORT_OPTIONS = [
