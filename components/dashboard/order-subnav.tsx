@@ -13,7 +13,6 @@ const tabs = (orderId: string): { href: string; label: string; exact?: boolean }
   { href: `/dashboard/orders/${orderId}`, label: "Ringkasan", exact: true },
   { href: `/dashboard/orders/${orderId}/tracking`, label: "Lacak kiriman" },
   { href: `/dashboard/orders/${orderId}/invoice`, label: "Invoice" },
-  { href: `/dashboard/orders/${orderId}/review`, label: "Ulasan" },
   { href: `/dashboard/orders/${orderId}/complaint`, label: "Komplain" },
 ];
 

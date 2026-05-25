@@ -1,4 +1,4 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
@@ -12,7 +12,6 @@ const PER_PAGE = 20;
 
 type SearchParams = Promise<{
   q?: string;
-  status?: string;
   rating?: string;
   page?: string;
 }>;
@@ -24,7 +23,6 @@ export default async function AdminReviewsPage({
 }) {
   const params = await searchParams;
   const q = params.q ?? "";
-  const status = params.status ?? "";
   const rating = params.rating ?? "";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
   const from = (page - 1) * PER_PAGE;
@@ -35,7 +33,7 @@ export default async function AdminReviewsPage({
   let query = supabase
     .from("product_reviews")
     .select(
-      `id, rating, comment, is_approved, deleted_at, created_at, product_id,
+      `id, rating, comment, deleted_at, created_at, product_id,
        products:product_id (name, slug),
        profiles:user_id (full_name)`,
       { count: "exact" }
@@ -44,20 +42,11 @@ export default async function AdminReviewsPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (status === "approved") query = query.eq("is_approved", true);
-  if (status === "rejected") query = query.eq("is_approved", false).not("updated_at", "is", null);
-  if (status === "pending") query = query.eq("is_approved", false);
   if (rating) query = query.eq("rating", parseInt(rating, 10));
 
   const { data: reviews, count } = await query;
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
-
-  const pendingCount = await supabase
-    .from("product_reviews")
-    .select("id", { count: "exact", head: true })
-    .is("deleted_at", null)
-    .eq("is_approved", false);
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -68,14 +57,9 @@ export default async function AdminReviewsPage({
           <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             {count ?? 0} ulasan
             {q ? ` untuk "${q}"` : ""}
-            {status ? ` · filter: ${status}` : ""}
+            {rating ? ` · bintang ${rating}` : ""}
           </p>
         </div>
-        {(pendingCount.count ?? 0) > 0 ? (
-          <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1.5 text-xs font-semibold uppercase text-brand">
-            {pendingCount.count} menunggu persetujuan
-          </div>
-        ) : null}
       </div>
 
       {/* Filters */}

@@ -131,17 +131,27 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
       user_id: user.id,
       rating,
       comment: comment?.trim() || null,
-      is_approved: false,
+      is_approved: true,
     });
     if (insErr) return { success: false, error: insErr.message };
 
+    // Jika pesanan masih "delivered", tandai selesai setelah user memberi ulasan
+    if (order.status === "delivered") {
+      await supabase
+        .from("orders")
+        .update({ status: "completed", updated_at: new Date().toISOString() })
+        .eq("id", orderId)
+        .eq("user_id", user.id);
+    }
+
     await createAdminNotification({
-      title: "Ulasan Baru — Menunggu Moderasi",
-      body: `Ulasan bintang ${rating} untuk produk perlu disetujui (pesanan ${orderId}).`,
+      title: "Ulasan Produk Baru",
+      body: `Ulasan bintang ${rating} telah dikirim oleh pelanggan (pesanan ${orderId}).`,
       type: "new_review",
       data: { orderId, productId, rating },
     });
 
+    revalidatePath("/dashboard/orders");
     revalidatePath(`/dashboard/orders/${orderId}`);
     revalidatePath(`/dashboard/orders/${orderId}/review`);
     return { success: true };

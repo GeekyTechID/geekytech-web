@@ -149,7 +149,7 @@ async function fetchDashboardData() {
     // Recent reviews
     supabase
       .from("product_reviews")
-      .select("id, rating, comment, created_at, is_approved, products!inner(name), profiles!inner(full_name)")
+      .select("id, rating, comment, created_at, products!inner(name), profiles!inner(full_name)")
       .order("created_at", { ascending: false })
       .limit(5),
 
@@ -519,7 +519,6 @@ export default async function AdminDashboardPage() {
                 rating: number;
                 comment: string | null;
                 created_at: string;
-                is_approved: boolean;
                 products: { name: string } | { name: string }[];
                 profiles: { full_name: string | null } | { full_name: string | null }[];
               }) => {
@@ -546,19 +545,7 @@ export default async function AdminDashboardPage() {
                     <p className="text-xs text-foreground line-clamp-1">
                       {r.comment ?? "—"}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-foreground">{reviewerName}</p>
-                      <span
-                        className={cn(
-                          "text-[10px] font-bold px-1.5 py-0.5",
-                          r.is_approved
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-                        )}
-                      >
-                        {r.is_approved ? "Approved" : "Pending"}
-                      </span>
-                    </div>
+                    <p className="text-xs text-foreground">{reviewerName}</p>
                   </li>
                 );
               })

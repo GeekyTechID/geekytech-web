@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Package, Truck, Info } from "lucide-react";
+import { Package, Truck, Info } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipTracking, type TrackingResult } from "@/lib/biteship/fetch-tracking";
+import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
 import type { Database } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
@@ -111,7 +111,7 @@ export default async function OrderTrackingPage({
   const detail = await fetchOrderDetailForUser(user.id, id);
   if (!detail) notFound();
 
-  const { order, shipments } = detail;
+  const { order, shipments, statusHistory } = detail;
   const shipmentsWithAwb = shipments.filter((s) => s.awb);
 
   const trackingResults = await Promise.all(
@@ -121,15 +121,16 @@ export default async function OrderTrackingPage({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <Link
-        href={`/dashboard/orders/${id}`}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#EA5329] hover:underline"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Kembali ke detail pesanan
-      </Link>
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+      {/* ── Status Pesanan (kiri) ── */}
+      <div className="rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-[#a0a0a0]">
+          Status Pesanan
+        </p>
+        <OrderStatusStepper currentStatus={order.status} statusHistory={statusHistory} />
+      </div>
 
+      {/* ── Lacak Kiriman (kanan) ── */}
       <div className="rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <div className="flex items-start gap-3">
           <Package className="mt-0.5 h-5 w-5 shrink-0 text-[#EA5329]" />

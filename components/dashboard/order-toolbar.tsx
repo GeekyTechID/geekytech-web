@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -19,17 +20,20 @@ export function OrderToolbar({
   orderNumber,
   status,
   hasPendingPayment,
+  allReviewed,
 }: {
   orderId: string;
   orderNumber: string;
   status: OrderStatus;
   hasPendingPayment: boolean;
+  allReviewed: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   const canCancel = status === "pending_payment" || status === "paid";
-  const canConfirm = status === "delivered";
+  const canConfirm = status === "delivered" && !allReviewed;
+  const canReview = status === "completed" && !allReviewed;
 
   const onCancel = () => {
     toast("Batalkan pesanan ini?", {
@@ -94,7 +98,7 @@ export function OrderToolbar({
     });
   };
 
-  if (!canCancel && !canConfirm && !hasPendingPayment) {
+  if (!canCancel && !canConfirm && !canReview && !hasPendingPayment) {
     return null;
   }
 
@@ -120,6 +124,11 @@ export function OrderToolbar({
           className="w-full sm:w-auto"
         >
           Selesai &amp; Beri Ulasan
+        </Button>
+      ) : null}
+      {canReview ? (
+        <Button asChild variant="primary" className="w-full sm:w-auto">
+          <Link href={`/dashboard/orders/${orderId}/review`}>Beri Ulasan</Link>
         </Button>
       ) : null}
       {hasPendingPayment && status === "pending_payment" ? (

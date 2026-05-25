@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -7,18 +7,14 @@ import { toast } from "sonner";
 
 import { formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import {
-  AdminTableDeleteButton,
-  AdminTableRowTextButton,
-} from "@/components/admin/admin-table-row-actions";
+import { AdminTableDeleteButton } from "@/components/admin/admin-table-row-actions";
 import { Button } from "@/components/ui/button";
-import { approveReview, rejectReview, deleteReview } from "../_actions";
+import { deleteReview } from "../_actions";
 
 export type ReviewRow = {
   id: string;
   rating: number;
   comment: string | null;
-  is_approved: boolean;
   deleted_at: string | null;
   created_at: string;
   product_id: string;
@@ -48,24 +44,8 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function ReviewActions({ review }: { review: ReviewRow }) {
+function ReviewDeleteAction({ review }: { review: ReviewRow }) {
   const [isPending, startTransition] = useTransition();
-
-  const handleApprove = () => {
-    startTransition(async () => {
-      const { error } = await approveReview(review.id);
-      if (error) toast.error(error);
-      else toast.success("Ulasan disetujui.");
-    });
-  };
-
-  const handleReject = () => {
-    startTransition(async () => {
-      const { error } = await rejectReview(review.id);
-      if (error) toast.error(error);
-      else toast.success("Ulasan ditolak.");
-    });
-  };
 
   const handleDelete = () => {
     if (!confirm("Hapus ulasan ini? Tindakan tidak bisa dibatalkan.")) return;
@@ -77,20 +57,9 @@ function ReviewActions({ review }: { review: ReviewRow }) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {!review.is_approved ? (
-        <AdminTableRowTextButton tone="brand" onClick={handleApprove} disabled={isPending}>
-          Setujui
-        </AdminTableRowTextButton>
-      ) : (
-        <AdminTableRowTextButton tone="danger" onClick={handleReject} disabled={isPending}>
-          Tolak
-        </AdminTableRowTextButton>
-      )}
-      <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
-        Hapus
-      </AdminTableDeleteButton>
-    </div>
+    <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
+      Hapus
+    </AdminTableDeleteButton>
   );
 }
 
@@ -137,9 +106,6 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   Tanggal
                 </th>
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Aksi
                 </th>
               </tr>
@@ -174,20 +140,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   </td>
 
                   <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
-                        review.is_approved
-                          ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                          : "bg-brand/10 text-brand",
-                      )}
-                    >
-                      {review.is_approved ? "Disetujui" : "Menunggu"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <ReviewActions review={review} />
+                    <ReviewDeleteAction review={review} />
                   </td>
                 </tr>
               ))}

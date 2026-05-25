@@ -2,14 +2,18 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
-import { MapPin, Package, Truck } from "lucide-react";
+import { MapPin, Package, Star, Truck } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
+import {
+  fetchOrderDetailForUser,
+  fetchReviewedProductIdsForOrder,
+  fetchReviewsForOrder,
+  type DashboardOrderItemRow,
+} from "@/lib/data/dashboard-user";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { OrderToolbar } from "@/components/dashboard/order-toolbar";
-import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
 import type { Database } from "@/types/supabase";
 
 type PaymentStatus = Database["public"]["Enums"]["payment_status"];
@@ -76,10 +80,21 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirectTo=/dashboard/orders/${id}`);
 
-  const detail = await fetchOrderDetailForUser(user.id, id);
+  const [detail, reviewedIds, existingReviews] = await Promise.all([
+    fetchOrderDetailForUser(user.id, id),
+    fetchReviewedProductIdsForOrder(user.id, id),
+    fetchReviewsForOrder(user.id, id),
+  ]);
   if (!detail) notFound();
 
-  const { order, items, payments, shipments, statusHistory } = detail;
+  const { order, items, payments, shipments } = detail;
+
+  const reviewableItems = items.filter((it) => it.product_id);
+  const allReviewed = reviewableItems.length > 0 && reviewableItems.every((it) => reviewedIds.includes(it.product_id!));
+  const itemByProductId = items.reduce<Record<string, DashboardOrderItemRow>>(
+    (acc, it) => { if (it.product_id) acc[it.product_id] = it; return acc; },
+    {},
+  );
   const hasPendingPayment = payments.some((p) => p.status === "pending");
   const paidPayment = payments.find((p) => p.status === "paid");
   const problemPayments = payments.filter((p) => PROBLEM_PAYMENT.includes(p.status));
@@ -149,17 +164,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             orderNumber={order.order_number}
             status={order.status}
             hasPendingPayment={hasPendingPayment}
+            allReviewed={allReviewed}
           />
         </div>
       </div>
-
-      {/* ── Status perjalanan pesanan ── */}
-      <section>
-        <h2 className="mb-3 text-base font-bold text-[#1d1d1f]">Status Pesanan</h2>
-        <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
-          <OrderStatusStepper currentStatus={order.status} statusHistory={statusHistory} />
-        </div>
-      </section>
 
       {/* ── Items ── */}
       <section>
@@ -346,6 +354,60 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           </div>
         )}
       </section>
+
+      {/* ── Ulasan saya ── */}
+      {existingReviews.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-base font-bold text-[#1d1d1f]">Ulasan saya</h2>
+          <ul className="divide-y divide-[#f0f0f0] rounded-xl border border-[#e0e0e0] bg-white">
+            {existingReviews.map((review) => {
+              const item = itemByProductId[review.product_id];
+              return (
+                <li key={review.id} className="flex gap-4 px-4 py-4 sm:gap-5">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-[#fafafa]">
+                    {item?.image_url ? (
+                      <img src={item.image_url} alt="" className="h-full w-full object-contain p-1" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[#1d1d1f]">
+                      {item?.product_name ?? "Produk"}
+                    </p>
+                    {item?.variant_name ? (
+                      <p className="text-xs text-[#7a7a7a]">{item.variant_name}</p>
+                    ) : null}
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star
+                            key={n}
+                            className={`h-3.5 w-3.5 ${n <= review.rating ? "fill-amber-400 text-amber-400" : "text-[#d0d0d0]"}`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-[#7a7a7a]">
+                        {formatDate(review.created_at, { day: "numeric", month: "short", year: "numeric" })}
+                      </span>
+                    </div>
+                    {review.comment ? (
+                      <p className="mt-1.5 text-sm leading-relaxed text-[#5c5c5c]">{review.comment}</p>
+                    ) : null}
+                    <span
+                      className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                        review.is_approved
+                          ? "bg-green-50 text-green-700"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {review.is_approved ? "Ditampilkan" : "Menunggu moderasi"}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

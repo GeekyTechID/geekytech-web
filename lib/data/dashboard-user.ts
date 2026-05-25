@@ -766,3 +766,28 @@ export async function fetchReviewedProductIdsForOrder(userId: string, orderId: s
     return [];
   }
 }
+
+export type OrderReviewRow = {
+  id: string;
+  product_id: string;
+  rating: number;
+  comment: string | null;
+  is_approved: boolean;
+  created_at: string;
+};
+
+export async function fetchReviewsForOrder(userId: string, orderId: string): Promise<OrderReviewRow[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("product_reviews")
+      .select("id, product_id, rating, comment, is_approved, created_at")
+      .eq("order_id", orderId)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+    if (error || !data) return [];
+    return data as OrderReviewRow[];
+  } catch {
+    return [];
+  }
+}

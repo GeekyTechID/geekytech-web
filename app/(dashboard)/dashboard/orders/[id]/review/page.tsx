@@ -20,13 +20,17 @@ export default async function OrderReviewPage({ params }: { params: Promise<{ id
 
   return (
     <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-[#1d1d1f]">Ulasan produk</h2>
+      <h2 className="text-base font-bold text-[#1d1d1f]">Beri ulasan</h2>
       {!canReview ? (
-        <p className="mt-3 text-sm text-[#5c5c5c]">Ulasan dapat dikirim setelah pesanan berstatus tiba di tujuan atau selesai.</p>
+        <p className="mt-3 text-sm text-[#5c5c5c]">
+          Ulasan dapat dikirim setelah pesanan berstatus tiba di tujuan atau selesai.
+        </p>
       ) : (
         <>
-          <p className="mt-2 text-sm text-[#5c5c5c]">Ulasan akan ditinjau tim kami sebelum tampil di halaman produk.</p>
-          <div className="mt-8">
+          <p className="mt-2 text-sm text-[#5c5c5c]">
+            Ulasan akan ditinjau tim kami sebelum tampil di halaman produk.
+          </p>
+          <div className="mt-6">
             <OrderReviewForms orderId={detail.order.id} items={detail.items} reviewedProductIds={reviewedIds} />
           </div>
         </>

@@ -8,13 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const STATUS_OPTIONS = [
-  { value: "all", label: "Semua Status" },
-  { value: "pending", label: "Menunggu" },
-  { value: "approved", label: "Disetujui" },
-  { value: "rejected", label: "Ditolak" },
-];
-
 const RATING_OPTIONS = [
   { value: "all", label: "Semua Rating" },
   { value: "5", label: "★ 5" },
@@ -32,7 +25,6 @@ export function ReviewFilters() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const q = searchParams.get("q") ?? "";
-  const status = searchParams.get("status") ?? "all";
   const rating = searchParams.get("rating") ?? "all";
 
   useEffect(() => {
@@ -52,7 +44,7 @@ export function ReviewFilters() {
     [router, pathname, searchParams],
   );
 
-  const hasFilters = Boolean(q) || status !== "all" || rating !== "all";
+  const hasFilters = Boolean(q) || rating !== "all";
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -86,20 +78,6 @@ export function ReviewFilters() {
           </button>
         )}
       </div>
-
-      <Select
-        value={status}
-        onValueChange={(v) => updateParam("status", v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Semua Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {STATUS_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
 
       <Select
         value={rating}
