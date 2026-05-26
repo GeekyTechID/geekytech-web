@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -165,7 +166,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
               )}
             >
               {uploading ? (
-                <Loader2 size={24} className="animate-spin text-brand" />
+                <Spinner className="size-6 text-brand" />
               ) : (
                 <ImagePlus size={24} />
               )}
@@ -287,8 +288,8 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" variant="primary" disabled={isPending || uploading}>
-          {isPending ? "Menyimpan..." : initialData ? "Perbarui Banner" : "Buat Banner"}
+        <Button type="submit" variant="primary" loading={isPending} disabled={uploading}>
+          {initialData ? "Perbarui Banner" : "Buat Banner"}
         </Button>
         <Button
           type="button"

@@ -126,6 +126,30 @@ function PaymentLogo({ id, label, className = "h-8 w-auto max-w-[80px]" }: { id:
   );
 }
 
+// Defined outside component — stateless, no deps on React state
+function loadSnapScript(clientKey: string, isProduction: boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return reject(new Error("no window"));
+    if (window.snap) return resolve();
+    const existing = document.querySelector<HTMLScriptElement>('script[data-midtrans-snap="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("snap load error")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = isProduction
+      ? "https://app.midtrans.com/snap/snap.js"
+      : "https://app.sandbox.midtrans.com/snap/snap.js";
+    s.async = true;
+    s.dataset.midtransSnap = "1";
+    s.setAttribute("data-client-key", clientKey);
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("snap load error"));
+    document.body.appendChild(s);
+  });
+}
+
 type CheckoutPageClientProps = {
   lines: CartLineView[];
   addresses: AddressRow[];
@@ -191,6 +215,43 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     [addresses, addressId],
   );
 
+  const selectedPaymentOption = useMemo(
+    () => MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod) ?? null,
+    [paymentMethod],
+  );
+
+  const couponEligibilityList = useMemo(
+    () =>
+      availableCoupons
+        .map((c) => {
+          let notEligible: string | null = null;
+          if (c.min_purchase > 0 && subtotalNet < c.min_purchase) {
+            notEligible = `Min. belanja ${formatRupiah(c.min_purchase)} (kurang ${formatRupiah(c.min_purchase - subtotalNet)})`;
+          } else if (c.applies_to !== "all" && c.applies_to_ids.length > 0) {
+            const hasEligible = lines.some((l) => {
+              if (c.applies_to === "product") return c.applies_to_ids.includes(l.productId);
+              if (c.applies_to === "category")
+                return l.categoryId != null && c.applies_to_ids.includes(l.categoryId);
+              if (c.applies_to === "brand")
+                return l.brandId != null && c.applies_to_ids.includes(l.brandId);
+              return true;
+            });
+            if (!hasEligible) {
+              const scopeLabel =
+                c.applies_to === "product"
+                  ? "produk"
+                  : c.applies_to === "category"
+                    ? "kategori"
+                    : "merek";
+              notEligible = `Tidak ada ${scopeLabel} yang memenuhi syarat kupon ini di pesanan Anda`;
+            }
+          }
+          return { c, notEligible };
+        })
+        .sort((a, b) => (a.notEligible ? 1 : 0) - (b.notEligible ? 1 : 0)),
+    [availableCoupons, subtotalNet, lines],
+  );
+
   const loadRates = useCallback(async () => {
     if (!addressId) return;
     setRatesLoading(true);
@@ -243,7 +304,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     return () => clearTimeout(t);
   }, [doneState, countdown, router]);
 
-  const applyCoupon = async (overrideCode?: string, silent = false) => {
+  const applyCoupon = useCallback(async (overrideCode?: string, silent = false) => {
     const code = (overrideCode ?? couponInput).trim();
     if (!code) {
       setCouponDiscount(0);
@@ -289,7 +350,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     } finally {
       if (!silent) setCouponApplying(false);
     }
-  };
+  }, [availableCoupons, couponInput, lines, subtotalNet]);
 
   const linesChangedRef = useRef(false);
   useEffect(() => {
@@ -299,31 +360,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     }
     if (!couponInput.trim() || couponDiscount === 0) return;
     void applyCoupon(couponInput.trim(), true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lines]);
-
-  const loadSnapScript = (clientKey: string, isProduction: boolean): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (typeof window === "undefined") return reject(new Error("no window"));
-      if (window.snap) return resolve();
-      const existing = document.querySelector<HTMLScriptElement>('script[data-midtrans-snap="1"]');
-      if (existing) {
-        existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("snap load error")), { once: true });
-        return;
-      }
-      const s = document.createElement("script");
-      s.src = isProduction
-        ? "https://app.midtrans.com/snap/snap.js"
-        : "https://app.sandbox.midtrans.com/snap/snap.js";
-      s.async = true;
-      s.dataset.midtransSnap = "1";
-      s.setAttribute("data-client-key", clientKey);
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error("snap load error"));
-      document.body.appendChild(s);
-    });
-  };
+  }, [lines, applyCoupon, couponInput, couponDiscount]);
 
   const handleCheckout = async () => {
     if (!addressId || !selectedShipping) {
@@ -726,9 +763,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                 <span className="text-sm font-semibold uppercase">Metode pembayaran</span>
                 {!paymentOpen ? (
                   <span className="flex items-center gap-2">
-                    <PaymentLogo id={paymentMethod} label={MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod)?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
+                    <PaymentLogo id={paymentMethod} label={selectedPaymentOption?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
                     <span className="text-sm font-semibold text-[#1d1d1f]">
-                      {MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod)?.label}
+                      {selectedPaymentOption?.label}
                     </span>
                     <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#1d1d1f]" aria-hidden />
                   </span>
@@ -774,18 +811,12 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               <Button
                 type="button"
                 variant="primary"
-                disabled={submitting || !addressId || !selectedShipping || addresses.length === 0}
+                loading={submitting}
+                disabled={!addressId || !selectedShipping || addresses.length === 0}
                 onClick={() => void handleCheckout()}
                 className="mt-6 w-full uppercase"
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Memproses…
-                  </>
-                ) : (
-                  "Beli sekarang"
-                )}
+                Beli sekarang
               </Button>
               <p className="mt-3 text-center text-[10px] leading-relaxed text-[#9a9590]">
                 Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko. Asuransi pengiriman
@@ -817,27 +848,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
             <p className="py-8 text-center text-sm text-[#7a7a7a]">Tidak ada promo tersedia.</p>
           ) : (
             <ul className="space-y-3">
-              {availableCoupons
-                .map((c) => {
-                  let notEligible: string | null = null;
-                  if (c.min_purchase > 0 && subtotalNet < c.min_purchase) {
-                    notEligible = `Min. belanja ${formatRupiah(c.min_purchase)} (kurang ${formatRupiah(c.min_purchase - subtotalNet)})`;
-                  } else if (c.applies_to !== "all" && c.applies_to_ids.length > 0) {
-                    const hasEligible = lines.some((l) => {
-                      if (c.applies_to === "product") return c.applies_to_ids.includes(l.productId);
-                      if (c.applies_to === "category") return l.categoryId != null && c.applies_to_ids.includes(l.categoryId);
-                      if (c.applies_to === "brand") return l.brandId != null && c.applies_to_ids.includes(l.brandId);
-                      return true;
-                    });
-                    if (!hasEligible) {
-                      const scopeLabel = c.applies_to === "product" ? "produk" : c.applies_to === "category" ? "kategori" : "merek";
-                      notEligible = `Tidak ada ${scopeLabel} yang memenuhi syarat kupon ini di pesanan Anda`;
-                    }
-                  }
-                  return { c, notEligible };
-                })
-                .sort((a, b) => (a.notEligible ? 1 : 0) - (b.notEligible ? 1 : 0))
-                .map(({ c, notEligible }) => (
+              {couponEligibilityList.map(({ c, notEligible }) => (
                 <li key={c.id}>
                   <div className={cn(
                     "overflow-hidden rounded-[18px] border bg-white transition",

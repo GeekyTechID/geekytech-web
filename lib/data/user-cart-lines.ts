@@ -73,25 +73,31 @@ export type UserCartWithLines = {
  */
 export async function fetchUserCartWithLines(userId: string): Promise<UserCartWithLines | null> {
   const supabase = await createClient();
-  const { data: cart } = await supabase.from("carts").select("id").eq("user_id", userId).maybeSingle();
-  if (!cart) return null;
 
-  const { data: rows } = await supabase
-    .from("cart_items")
+  // Single query: carts → cart_items → product_variants → products (saves one round-trip)
+  const { data: cartData } = await supabase
+    .from("carts")
     .select(
-      `id, quantity,
-      product_variants(
-        id, name, sku, price, stock, reserved, weight, length, height, width,
-        products(
-          id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, category_id, brand_id,
-          categories:category_id(name),
-          product_images(url, is_primary, sort_order, alt_text)
+      `id,
+      cart_items(
+        id, quantity,
+        product_variants(
+          id, name, sku, price, stock, reserved, weight, length, height, width,
+          products(
+            id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, category_id, brand_id,
+            categories:category_id(name),
+            product_images(url, is_primary, sort_order, alt_text)
+          )
         )
       )`,
     )
-    .eq("cart_id", cart.id);
+    .eq("user_id", userId)
+    .maybeSingle();
 
-  const items = (rows ?? []) as unknown as CartQueryRow[];
+  if (!cartData) return null;
+  const cart = { id: cartData.id };
+
+  const items = ((cartData.cart_items as unknown[]) ?? []) as unknown as CartQueryRow[];
   if (!items.length) return { cartId: cart.id, lines: [], excludedProductIds: [], excludedCategoryIds: [] };
 
   // Fetch active flash sale prices for all variants in cart

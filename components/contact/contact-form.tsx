@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const contactFormSchema = z.object({
@@ -164,15 +163,8 @@ export function ContactForm() {
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Mengirim...
-          </>
-        ) : (
-          "Kirim Pesan"
-        )}
+      <Button type="submit" variant="primary" loading={isLoading} className="w-full">
+        Kirim Pesan
       </Button>
 
       <p className="text-[12px] text-[#7a7a7a] dark:text-[#cccccc] text-center">

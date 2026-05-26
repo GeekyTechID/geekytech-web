@@ -136,8 +136,8 @@ export function FaqForm({ initialData }: FaqFormProps) {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-          {isPending ? "Menyimpan..." : initialData ? "Perbarui FAQ" : "Buat FAQ"}
+        <Button type="submit" variant="primary" size="sm" loading={isPending}>
+          {initialData ? "Perbarui FAQ" : "Buat FAQ"}
         </Button>
         <Button
           type="button"

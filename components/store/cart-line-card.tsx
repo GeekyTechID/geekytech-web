@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { memo, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,15 +39,15 @@ export type CartLineView = {
   weightGrams: number;
 };
 
-export function CartLineCard({
+function CartLineCardInner({
   line,
   checked,
-  onCheckedChange,
+  onToggle,
   readonly,
 }: {
   line: CartLineView;
   checked?: boolean;
-  onCheckedChange?: () => void;
+  onToggle?: (lineId: string) => void;
   readonly?: boolean;
 }) {
   const router = useRouter();
@@ -93,11 +93,11 @@ export function CartLineCard({
   return (
     <>
     <article className="flex flex-col gap-4 sm:flex-row sm:gap-5">
-      {onCheckedChange !== undefined && (
+      {onToggle !== undefined && (
         <div className="flex shrink-0 items-start pt-1 sm:pt-2">
           <Checkbox
             checked={checked ?? false}
-            onCheckedChange={onCheckedChange}
+            onCheckedChange={() => onToggle(line.lineId)}
             className="h-5 w-5"
             aria-label={`Pilih ${line.productName}`}
           />
@@ -214,3 +214,5 @@ export function CartLineCard({
     </>
   );
 }
+
+export const CartLineCard = memo(CartLineCardInner);

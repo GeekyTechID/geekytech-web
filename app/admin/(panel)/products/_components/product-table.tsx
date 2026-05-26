@@ -536,9 +536,9 @@ export function ProductTable({
               size="sm"
               className="flex-1"
               onClick={handleDelete}
-              disabled={isPending}
-            >
-              {isPending ? "Menghapus..." : "Hapus"}
+              
+             loading={isPending}>
+              Hapus
             </Button>
           </div>
         </DialogContent>
@@ -570,9 +570,9 @@ export function ProductTable({
               size="sm"
               className="flex-1"
               onClick={handleBulkDelete}
-              disabled={isPending}
-            >
-              {isPending ? "Menghapus..." : `Hapus ${selectedIds.size} Produk`}
+              
+             loading={isPending}>
+              {`Hapus ${selectedIds.size} Produk`}
             </Button>
           </div>
         </DialogContent>
@@ -619,10 +619,10 @@ export function ProductTable({
                 size="sm"
                 className="flex-1"
                 onClick={handleBulkSetCondition}
-                disabled={isPending}
-              >
-                {isPending ? "Menyimpan..." : "Terapkan"}
-              </Button>
+                
+               loading={isPending}>
+          Terapkan
+        </Button>
             </div>
           </div>
         </DialogContent>
@@ -673,7 +673,7 @@ export function ProductTable({
                 onClick={handleBulkSetBrand}
                 disabled={isPending || !selectedBrandId}
               >
-                {isPending ? "Menyimpan..." : "Terapkan"}
+                Terapkan
               </Button>
             </div>
           </div>

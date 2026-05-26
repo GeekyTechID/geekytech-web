@@ -3,7 +3,8 @@
 import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -483,7 +484,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
               disabled={uploading}
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
-              {uploading ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
+              {uploading ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold">{uploading ? "Mengupload..." : "Klik untuk upload gambar"}</span>
               <span className="text-[11px]">JPG, PNG, WebP — maks. 5 MB</span>
             </button>
@@ -511,8 +512,8 @@ export function CouponForm({ initialData, products = [], categories = [], brands
 
       {/* ── Submit ───────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-          {isPending ? "Menyimpan..." : initialData ? "Perbarui Kupon" : "Buat Kupon"}
+        <Button type="submit" variant="primary" size="sm" loading={isPending}>
+          {initialData ? "Perbarui Kupon" : "Buat Kupon"}
         </Button>
         <Button
           type="button"

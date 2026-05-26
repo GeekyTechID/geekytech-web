@@ -42,11 +42,11 @@ export function AddToCartButton({ variantId, className }: Props) {
       type="button"
       variant="secondary"
       size="sm"
-      disabled={isPending}
+      loading={isPending}
       onClick={handleClick}
       className={cn("mt-1 w-full", className)}
     >
-      {isPending ? "Menambahkan..." : "+ Keranjang"}
+      + Keranjang
     </Button>
   );
 }

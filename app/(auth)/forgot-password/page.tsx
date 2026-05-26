@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -91,8 +91,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="space-y-3">
-          <Button type="button" variant="primary" onClick={handleResend} disabled={isLoading} className="w-full">
-            {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
+          <Button type="button" variant="primary" onClick={handleResend} loading={isLoading} className="w-full">
             Kirim ulang email
           </Button>
           <Link href="/login">
@@ -139,8 +138,7 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
-          {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
+        <Button type="submit" variant="primary" loading={isLoading} className="w-full">
           Kirim Link Reset
         </Button>
       </form>

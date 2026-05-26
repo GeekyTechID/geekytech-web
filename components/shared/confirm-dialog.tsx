@@ -59,9 +59,9 @@ export function ConfirmDialog({
             type="button"
             variant={variant === "destructive" ? "destructive" : "primary"}
             onClick={onConfirm}
-            disabled={isLoading}
+            loading={isLoading}
           >
-            {isLoading ? "Memproses..." : confirmLabel}
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -560,9 +560,9 @@ export function HomeSectionsEditor({
       </div>
 
       {/* Save */}
-      <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Simpan Perubahan"}
-      </Button>
+      <Button type="button" variant="primary" size="sm" onClick={handleSave}  loading={isPending}>
+          Simpan Perubahan
+        </Button>
     </div>
   );
 }

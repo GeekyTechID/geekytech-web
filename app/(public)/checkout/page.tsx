@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchUserAddresses } from "@/lib/data/dashboard-user";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
+import type { UserCartWithLines } from "@/lib/data/user-cart-lines";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { CheckoutPageClient, type AvailableCoupon } from "@/components/checkout/checkout-page-client";
 
@@ -28,18 +29,34 @@ export default async function CheckoutPage({
   }
 
   const { items: itemsParam, buyNow: buyNowVariantId, qty: buyNowQtyStr } = await searchParams;
+  const buyNowQty = buyNowVariantId ? Math.max(1, parseInt(buyNowQtyStr ?? "1", 10)) : 0;
+  const now = new Date().toISOString();
+
+  // All three fetches only need user.id — run in parallel to eliminate the waterfall
+  const [linesData, addresses, { data: couponRows }] = await Promise.all([
+    buyNowVariantId
+      ? fetchVariantAsBuyNowLine(buyNowVariantId, buyNowQty)
+      : fetchUserCartWithLines(user.id),
+    fetchUserAddresses(user.id),
+    supabase
+      .from("coupons")
+      .select("id, code, title, description, type, value, min_purchase, max_discount, max_usage, used_count, valid_until, image_url, applies_to, applies_to_ids")
+      .eq("is_active", true)
+      .or(`valid_from.is.null,valid_from.lte.${now}`)
+      .or(`valid_until.is.null,valid_until.gte.${now}`)
+      .order("created_at", { ascending: false }),
+  ]);
 
   let lines: CartLineView[] = [];
   let isBuyNow = false;
 
   if (buyNowVariantId) {
-    const buyNowQty = Math.max(1, parseInt(buyNowQtyStr ?? "1", 10));
-    const buyNowLine = await fetchVariantAsBuyNowLine(buyNowVariantId, buyNowQty);
+    const buyNowLine = linesData as CartLineView | null;
     if (!buyNowLine) redirect("/cart");
     lines = [buyNowLine];
     isBuyNow = true;
   } else {
-    const cart = await fetchUserCartWithLines(user.id);
+    const cart = linesData as UserCartWithLines | null;
     if (!cart || cart.lines.length === 0) redirect("/cart");
 
     const selectedIds = itemsParam ? new Set(itemsParam.split(",").filter(Boolean)) : null;
@@ -50,21 +67,11 @@ export default async function CheckoutPage({
     if (lines.length === 0) redirect("/cart");
   }
 
-  const addresses = await fetchUserAddresses(user.id);
   if (addresses.length === 0) {
     redirect(`/dashboard/addresses/new?redirectTo=${encodeURIComponent("/checkout")}`);
   }
 
   const defaultAddr = addresses.find((a) => a.is_default)?.id ?? addresses[0]?.id ?? null;
-
-  const now = new Date().toISOString();
-  const { data: couponRows } = await supabase
-    .from("coupons")
-    .select("id, code, title, description, type, value, min_purchase, max_discount, max_usage, used_count, valid_until, image_url, applies_to, applies_to_ids")
-    .eq("is_active", true)
-    .or(`valid_from.is.null,valid_from.lte.${now}`)
-    .or(`valid_until.is.null,valid_until.gte.${now}`)
-    .order("created_at", { ascending: false });
 
   const availableCoupons: AvailableCoupon[] = (couponRows ?? [])
     .filter((c) => c.max_usage == null || (c.used_count ?? 0) < c.max_usage)

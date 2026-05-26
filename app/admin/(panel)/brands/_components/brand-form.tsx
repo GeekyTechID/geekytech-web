@@ -6,7 +6,8 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
@@ -250,7 +251,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               disabled={uploading}
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
-              {uploading ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
+              {uploading ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
                 {uploading ? "Mengupload..." : "Klik untuk upload logo"}
               </span>
@@ -307,7 +308,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               disabled={uploadingBanner}
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
-              {uploadingBanner ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
+              {uploadingBanner ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
                 {uploadingBanner ? "Mengupload..." : "Klik untuk upload banner utama"}
               </span>
@@ -364,7 +365,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               disabled={uploadingBannerSecondary}
               className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
             >
-              {uploadingBannerSecondary ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
+              {uploadingBannerSecondary ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
                 {uploadingBannerSecondary ? "Mengupload..." : "Klik untuk upload banner kedua"}
               </span>
@@ -429,14 +430,8 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
         >
           Batal
         </Button>
-        <Button type="submit" variant="primary" disabled={isLoading}>
-          {isLoading
-            ? brandId
-              ? "Menyimpan..."
-              : "Membuat..."
-            : brandId
-              ? "Simpan Perubahan"
-              : "Buat Merek"}
+        <Button type="submit" variant="primary" loading={isLoading}>
+          {brandId ? "Simpan Perubahan" : "Buat Merek"}
         </Button>
       </div>
     </form>

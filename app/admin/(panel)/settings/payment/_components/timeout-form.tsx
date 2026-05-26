@@ -46,9 +46,9 @@ export function TimeoutForm({ initialValue }: TimeoutFormProps) {
           className="h-10 w-full max-w-[7rem] rounded-lg border-[#e0e0e0] text-sm dark:border-border sm:w-28"
         />
       </div>
-      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave} disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Simpan"}
-      </Button>
+      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave}  loading={isPending}>
+          Simpan
+        </Button>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -80,8 +80,7 @@ function VerifyEmailContent() {
 
       <div className="space-y-3">
         {email && (
-          <Button type="button" variant="primary" onClick={handleResend} disabled={isResending} className="w-full">
-            {isResending && <Loader2 size={16} className="mr-2 animate-spin" />}
+          <Button type="button" variant="primary" onClick={handleResend} loading={isResending} className="w-full">
             Kirim ulang email verifikasi
           </Button>
         )}

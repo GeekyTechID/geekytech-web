@@ -2,7 +2,8 @@
 
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { ImageOff, ImagePlus, Images, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ImageOff, ImagePlus, Images, Pencil, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
@@ -153,7 +154,7 @@ function BannerEditDialog({
             )}
           >
             {uploading ? (
-              <Loader2 size={20} className="animate-spin text-brand" />
+              <Spinner className="size-5 text-brand" />
             ) : (
               <ImagePlus size={20} />
             )}
@@ -211,9 +212,10 @@ function BannerEditDialog({
           variant="primary"
           size="sm"
           className="flex-1"
-          disabled={isPending || uploading}
+          loading={isPending}
+          disabled={uploading}
         >
-          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+          Simpan Perubahan
         </Button>
       </div>
     </form>
@@ -413,9 +415,9 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
               size="sm"
               className="flex-1"
               onClick={handleDelete}
-              disabled={isPending}
+              loading={isPending}
             >
-              {isPending ? "Menghapus..." : "Hapus"}
+              Hapus
             </Button>
           </div>
         </DialogContent>

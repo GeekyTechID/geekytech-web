@@ -28,10 +28,11 @@ type TurnstileWidgetProps = {
   theme?: "light" | "dark" | "auto";
 };
 
-const SITE_KEY =
-  process.env.NODE_ENV === "production"
-    ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-    : undefined;
+import { isTurnstileRequired } from "@/lib/auth/turnstile-config";
+
+const SITE_KEY = isTurnstileRequired()
+  ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  : undefined;
 const SCRIPT_ID = "cf-turnstile-script";
 
 export function TurnstileWidget({

@@ -40,9 +40,9 @@ export function WhatsappForm({ initialValue }: WhatsappFormProps) {
           className="h-10 rounded-lg border-[#e0e0e0] text-sm dark:border-border"
         />
       </div>
-      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave} disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Simpan"}
-      </Button>
+      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave}  loading={isPending}>
+          Simpan
+        </Button>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 interface LoadingSpinnerProps {
@@ -17,10 +17,10 @@ export function LoadingSpinner({ size = "md", fullscreen = false, className }: L
   if (fullscreen) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <Loader2 className={cn("animate-spin text-brand", sizeClass[size], className)} />
+        <Spinner className={cn("text-brand", sizeClass[size], className)} />
       </div>
     )
   }
 
-  return <Loader2 className={cn("animate-spin text-brand", sizeClass[size], className)} />
+  return <Spinner className={cn("text-brand", sizeClass[size], className)} />
 }

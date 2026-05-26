@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
@@ -149,8 +148,7 @@ export default function ResetPasswordPage() {
           </li>
         </ul>
 
-        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
-          {isLoading && <Loader2 size={16} className="mr-2 animate-spin" />}
+        <Button type="submit" variant="primary" loading={isLoading} className="w-full">
           Simpan Kata Sandi Baru
         </Button>
       </form>

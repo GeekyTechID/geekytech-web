@@ -188,7 +188,7 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
       </div>
 
       <div className="mt-4 flex gap-3">
-        <Button type="submit" variant="primary" disabled={pending}>
+        <Button type="submit" variant="primary" loading={pending}>
           {mode === "create" ? "Simpan alamat" : "Perbarui alamat"}
         </Button>
         {mode === "edit" && (

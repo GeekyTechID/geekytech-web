@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { ImagePlus, Loader2, Star, Trash2 } from "lucide-react";
+import { ImagePlus, Star, Trash2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -81,7 +82,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
         )}
       >
         {uploading ? (
-          <Loader2 size={24} className="animate-spin" />
+          <Spinner className="size-6" />
         ) : (
           <ImagePlus size={24} />
         )}

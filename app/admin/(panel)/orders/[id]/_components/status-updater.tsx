@@ -129,9 +129,10 @@ export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
                 size="sm"
                 className="flex-1"
                 onClick={handleSubmit}
-                disabled={!selectedStatus || isPending}
+                loading={isPending}
+                disabled={!selectedStatus}
               >
-                {isPending ? "Menyimpan..." : "Simpan"}
+                Simpan
               </Button>
             </div>
           </div>

@@ -193,14 +193,8 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
         >
           Batal
         </Button>
-        <Button type="submit" variant="primary" disabled={isLoading}>
-          {isLoading
-            ? categoryId
-              ? "Menyimpan..."
-              : "Membuat..."
-            : categoryId
-              ? "Simpan Perubahan"
-              : "Buat Kategori"}
+        <Button type="submit" variant="primary" loading={isLoading}>
+          {categoryId ? "Simpan Perubahan" : "Buat Kategori"}
         </Button>
       </div>
     </form>

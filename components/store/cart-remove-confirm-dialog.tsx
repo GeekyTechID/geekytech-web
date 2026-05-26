@@ -58,9 +58,9 @@ export function CartRemoveConfirmDialog({
             variant="destructive"
             className="w-full sm:w-auto text-white mb-4"
             onClick={onConfirm}
-            disabled={isLoading}
+            loading={isLoading}
           >
-            {isLoading ? "Menghapus..." : "Hapus"}
+            Hapus
           </Button>
         </DialogFooter>
       </DialogContent>

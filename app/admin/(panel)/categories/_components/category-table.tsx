@@ -230,9 +230,9 @@ export function CategoryTable({
               size="sm"
               className="flex-1"
               onClick={handleDelete}
-              disabled={isPending}
-            >
-              {isPending ? "Menghapus..." : "Hapus"}
+              
+             loading={isPending}>
+              Hapus
             </Button>
           </div>
         </DialogContent>

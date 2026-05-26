@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -744,8 +744,7 @@ export function ProductForm({
 
         {/* ── Submit ─────────────────────────────────────────────────── */}
         <div className="flex gap-3 pt-8">
-          <Button type="submit" variant="primary" disabled={isPending}>
-            {isPending && <Loader2 size={14} className="mr-2 animate-spin" />}
+          <Button type="submit" variant="primary" loading={isPending}>
             {isEdit ? "Simpan Perubahan" : "Tambah Produk"}
           </Button>
 

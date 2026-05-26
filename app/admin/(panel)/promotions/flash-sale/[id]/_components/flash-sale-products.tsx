@@ -99,7 +99,7 @@ function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: ()
           min={1}
         />
       </div>
-      <Button type="button" variant="primary" size="icon-sm" onClick={handleSave} disabled={isPending} aria-label="Simpan">
+      <Button type="button" variant="primary" size="icon-sm" onClick={handleSave} loading={isPending} aria-label="Simpan">
         <Save size={13} />
       </Button>
       <Button type="button" variant="pearl" size="icon-sm" onClick={onDone} disabled={isPending} aria-label="Batal">
@@ -249,8 +249,8 @@ function AddProductForm({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="primary" size="sm" onClick={handleAdd} disabled={isPending}>
-          {isPending ? "Menambahkan..." : "Tambahkan"}
+        <Button type="button" variant="primary" size="sm" onClick={handleAdd}  loading={isPending}>
+          Tambahkan
         </Button>
         <Button
           type="button"
@@ -376,9 +376,9 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                                 variant="destructive"
                                 size="xs"
                                 onClick={() => handleRemove(product.id)}
-                                disabled={isPending}
+                                loading={isPending}
                               >
-                                {isPending ? "..." : "Ya"}
+                                Ya
                               </Button>
                               <Button
                                 type="button"

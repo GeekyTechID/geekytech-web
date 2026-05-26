@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 
 import { CartLineCard } from "@/components/store/cart-line-card";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+const SERVICE_FEE = 1000;
+
 export function CartClientShell({ lines }: { lines: CartLineView[] }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => new Set(lines.map((l) => l.lineId)),
@@ -18,25 +20,36 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
   const allSelected = lines.length > 0 && selectedIds.size === lines.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < lines.length;
 
-  const selectedLines = lines.filter((l) => selectedIds.has(l.lineId));
-  const itemCount = selectedLines.reduce((s, l) => s + l.qty, 0);
-  const subtotalGross = selectedLines.reduce((s, l) => s + l.listPrice * l.qty, 0);
-  const subtotal = selectedLines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
-  const discountTotal = Math.max(0, subtotalGross - subtotal);
-  const serviceFee = 1000;
+  const selectedLines = useMemo(
+    () => lines.filter((l) => selectedIds.has(l.lineId)),
+    [lines, selectedIds],
+  );
+  const itemCount = useMemo(() => selectedLines.reduce((s, l) => s + l.qty, 0), [selectedLines]);
+  const subtotalGross = useMemo(
+    () => selectedLines.reduce((s, l) => s + l.listPrice * l.qty, 0),
+    [selectedLines],
+  );
+  const subtotal = useMemo(
+    () => selectedLines.reduce((s, l) => s + l.unitPrice * l.qty, 0),
+    [selectedLines],
+  );
+  const discountTotal = useMemo(() => Math.max(0, subtotalGross - subtotal), [subtotalGross, subtotal]);
+  const serviceFee = SERVICE_FEE;
 
-  const toggleAll = () => {
-    if (allSelected) setSelectedIds(new Set());
-    else setSelectedIds(new Set(lines.map((l) => l.lineId)));
-  };
+  const toggleAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === lines.length ? new Set() : new Set(lines.map((l) => l.lineId)),
+    );
+  }, [lines]);
 
-  const toggleLine = (lineId: string) =>
+  const toggleLine = useCallback((lineId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(lineId)) next.delete(lineId);
       else next.add(lineId);
       return next;
     });
+  }, []);
 
   return (
     <div className="mt-6 md:mt-8 md:grid md:grid-cols-12 md:items-start md:gap-6 lg:gap-8">
@@ -61,7 +74,7 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
                 <CartLineCard
                   line={line}
                   checked={selectedIds.has(line.lineId)}
-                  onCheckedChange={() => toggleLine(line.lineId)}
+                  onToggle={toggleLine}
                 />
               </li>
             ))}

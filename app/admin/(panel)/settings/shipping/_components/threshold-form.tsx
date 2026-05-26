@@ -49,9 +49,9 @@ export function ThresholdForm({ initialValue }: ThresholdFormProps) {
           />
         </div>
       </div>
-      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave} disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Simpan"}
-      </Button>
+      <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={handleSave}  loading={isPending}>
+          Simpan
+        </Button>
     </div>
   );
 }

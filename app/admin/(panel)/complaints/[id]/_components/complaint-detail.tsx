@@ -176,7 +176,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                 rows={4}
                 className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-[17px] leading-[1.47] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
               />
-              <Button type="button" variant="primary" size="sm" onClick={handleSaveNote} disabled={isPending}>
+              <Button type="button" variant="primary" size="sm" onClick={handleSaveNote} loading={isPending}>
                 Simpan Catatan
               </Button>
             </div>
@@ -218,7 +218,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                   size="sm"
                   className="w-full"
                   onClick={() => handleStatusUpdate("in_review")}
-                  disabled={isPending}
+                  loading={isPending}
                 >
                   <Clock size={14} />
                   Mulai Tinjau
@@ -233,7 +233,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                     size="sm"
                     className="w-full"
                     onClick={() => handleStatusUpdate("resolved")}
-                    disabled={isPending}
+                    loading={isPending}
                   >
                     <CheckCircle2 size={14} />
                     Tandai Selesai
@@ -244,7 +244,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                     size="sm"
                     className="w-full"
                     onClick={() => handleStatusUpdate("rejected")}
-                    disabled={isPending}
+                    loading={isPending}
                   >
                     <XCircle size={14} />
                     Tolak Komplain
@@ -259,7 +259,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                   size="sm"
                   className="w-full"
                   onClick={() => handleStatusUpdate("open")}
-                  disabled={isPending}
+                  loading={isPending}
                 >
                   Buka Kembali
                 </Button>

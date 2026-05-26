@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
+import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 
 /**
@@ -98,26 +99,45 @@ function resolveVariant(
   return variant
 }
 
+type ButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+    /** Tampilkan Spinner shadcn + nonaktifkan tombol (design: Button Spinner). */
+    loading?: boolean
+  }
+
 function Button({
   className,
   variant = "primary",
   size = "default",
   asChild = false,
+  loading = false,
+  disabled,
   children,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button"
   const resolved = resolveVariant(variant)
   const withRipple = !asChild && resolved !== "link"
+  const isDisabled = disabled || loading
+
+  const inner = loading ? (
+    <>
+      <Spinner data-icon="inline-start" />
+      {children}
+    </>
+  ) : (
+    children
+  )
 
   return (
     <Comp
       data-slot="button"
       data-variant={resolved}
       data-size={size}
+      data-loading={loading ? "" : undefined}
+      aria-busy={loading || undefined}
+      disabled={isDisabled}
       className={cn(
         buttonVariants({ variant: resolved, size, className }),
         withRipple && "relative overflow-hidden",
@@ -130,9 +150,11 @@ function Button({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 scale-0 rounded-[inherit] bg-current opacity-0 transition-[transform,opacity] duration-300 ease-spring group-active/button:scale-150 group-active/button:opacity-[0.12] group-active/button:[transition-duration:50ms] motion-reduce:hidden"
           />
-          {children}
+          {inner}
         </>
-      ) : children}
+      ) : (
+        inner
+      )}
     </Comp>
   )
 }

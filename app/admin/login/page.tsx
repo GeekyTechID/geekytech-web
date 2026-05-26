@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
@@ -151,15 +151,8 @@ function AdminLoginContent() {
             )}
           </div>
 
-          <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
-            {isLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin mr-2" />
-                Memproses...
-              </>
-            ) : (
-              "Masuk"
-            )}
+          <Button type="submit" variant="primary" loading={isLoading} className="w-full">
+            Masuk
           </Button>
         </form>
 

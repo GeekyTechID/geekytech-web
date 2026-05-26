@@ -329,8 +329,8 @@ export function PromotionForm({
       {bannerSection}
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-          {isPending ? "Menyimpan..." : initialData ? "Perbarui" : "Buat Promosi"}
+        <Button type="submit" variant="primary" size="sm" loading={isPending}>
+          {initialData ? "Perbarui" : "Buat Promosi"}
         </Button>
         <Button
           type="button"

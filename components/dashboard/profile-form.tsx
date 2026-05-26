@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 
 import { updateProfileAction } from "@/app/(dashboard)/dashboard/profile/_actions";
@@ -107,14 +108,14 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           )}
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
             {uploading ? (
-              <Loader2 size={20} className="animate-spin text-white" />
+              <Spinner className="size-5 text-white" />
             ) : (
               <Camera size={20} className="text-white" />
             )}
           </div>
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Loader2 size={20} className="animate-spin text-white" />
+              <Spinner className="size-5 text-white" />
             </div>
           )}
         </button>
@@ -146,8 +147,8 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <Input id="phone" name="phone" defaultValue={profile.phone ?? ""} className="mt-1 border-[#e0e0e0]" />
       </div>
 
-      <Button type="submit" variant="primary" disabled={pending || uploading}>
-        {pending ? <Loader2 size={14} className="animate-spin" /> : "Simpan"}
+      <Button type="submit" variant="primary" loading={pending || uploading}>
+        Simpan
       </Button>
     </form>
   );

@@ -88,9 +88,9 @@ function FlashSaleActions({ sale }: { sale: FlashSaleRow }) {
             variant="destructive"
             size="xs"
             onClick={handleDelete}
-            disabled={isPending}
-          >
-            {isPending ? "..." : "Ya, Hapus"}
+            
+           loading={isPending}>
+            Ya, Hapus
           </Button>
           <Button
             type="button"

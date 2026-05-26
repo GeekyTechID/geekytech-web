@@ -51,9 +51,10 @@ export function AWBForm({ orderId, currentAWB }: AWBFormProps) {
             variant="primary"
             size="sm"
             className="shrink-0"
-            disabled={isPending || !awb.trim()}
+            loading={isPending}
+            disabled={!awb.trim()}
           >
-            {isPending ? "..." : "Simpan"}
+            Simpan
           </Button>
         </div>
       </div>

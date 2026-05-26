@@ -52,9 +52,9 @@ export function AnnouncementForm({ initialText, initialActive }: AnnouncementFor
           inactiveLabel="Nonaktif"
         />
       </div>
-      <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={isPending}>
-        {isPending ? "Menyimpan..." : "Simpan"}
-      </Button>
+      <Button type="button" variant="primary" size="sm" onClick={handleSave}  loading={isPending}>
+          Simpan
+        </Button>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchCartCrossSellProducts } from "@/lib/data/product-detail-page";
@@ -15,6 +16,34 @@ export const metadata: Metadata = {
   title: "Keranjang",
   description: "Review barang di keranjang belanja GeekyTech Anda sebelum checkout.",
 };
+
+async function CrossSellSection({
+  excludedCategoryIds,
+  excludedProductIds,
+}: {
+  excludedCategoryIds: string[];
+  excludedProductIds: string[];
+}) {
+  const crossSell = await fetchCartCrossSellProducts({
+    excludedCategoryIds,
+    excludedProductIds,
+    limit: 5,
+  });
+  if (!crossSell.length) return null;
+  return (
+    <section className="mt-16 border-t border-[#e8e4dc] pt-12">
+      <h2 className="text-lg font-bold text-[#1d1d1f] sm:text-xl">Produk acak dari kategori lainnya</h2>
+      <p className="mt-1 text-sm text-[#7a7a7a]">Kurasi otomatis di luar kategori barang di keranjang Anda.</p>
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
+        {crossSell.map((p) => (
+          <div key={p.productId} className="min-w-0 overflow-hidden">
+            <HomeProductTile product={p} layout="fluidRow" className="h-full border-0" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default async function CartPage() {
   const supabase = await createClient();
@@ -51,11 +80,8 @@ export default async function CartPage() {
     );
   }
 
-  const crossSell = await fetchCartCrossSellProducts({
-    excludedCategoryIds: [...new Set(cart.excludedCategoryIds)],
-    excludedProductIds: [...new Set(cart.excludedProductIds)],
-    limit: 5,
-  });
+  const excludedCategoryIds = [...new Set(cart.excludedCategoryIds)];
+  const excludedProductIds = [...new Set(cart.excludedProductIds)];
 
   return (
     <div className="bg-gradient-to-b from-[#f4f1ea]/70 to-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-6 text-[#1d1d1f] sm:pt-8 md:pb-20 lg:pb-20">
@@ -67,19 +93,12 @@ export default async function CartPage() {
         <h1 className="sr-only">Keranjang belanja</h1>
         <CartClientShell lines={lines} />
 
-        {crossSell.length > 0 ? (
-          <section className="mt-16 border-t border-[#e8e4dc] pt-12">
-            <h2 className="text-lg font-bold text-[#1d1d1f] sm:text-xl">Produk acak dari kategori lainnya</h2>
-            <p className="mt-1 text-sm text-[#7a7a7a]">Kurasi otomatis di luar kategori barang di keranjang Anda.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
-              {crossSell.map((p) => (
-                <div key={p.productId} className="min-w-0 overflow-hidden">
-                  <HomeProductTile product={p} layout="fluidRow" className="h-full border-0" />
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <Suspense fallback={null}>
+          <CrossSellSection
+            excludedCategoryIds={excludedCategoryIds}
+            excludedProductIds={excludedProductIds}
+          />
+        </Suspense>
       </div>
     </div>
   );
