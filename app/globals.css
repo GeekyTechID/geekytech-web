@@ -47,6 +47,9 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* Easing — Emil-style strong ease-out for button press feedback */
+  --transition-timing-function-spring: cubic-bezier(0.23, 1, 0.32, 1);
+
   /* Radius */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -60,6 +63,7 @@
   --color-brand: #ea5329;
   --color-brand-hover: #d44820;
   --color-brand-foreground: #ffffff;
+  --color-rating: oklch(0.80 0.15 83);
   --color-swiss-black: #000000;
   --color-swiss-white: #ffffff;
   --color-swiss-gray-100: oklch(0.97 0 0);

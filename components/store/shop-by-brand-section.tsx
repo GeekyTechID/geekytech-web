@@ -8,34 +8,35 @@ type ShopByBrandSectionProps = {
 };
 
 export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
+  const filteredBrands = brands.filter((b) => b.name.toLowerCase() !== "lainnya");
+
   return (
-    <section className="bg-white py-12 dark:border-border dark:bg-background">
+    <section className="bg-background py-12 dark:border-border">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-black text-black md:text-2xl dark:text-foreground">
+        <h2 className="text-xl font-black text-foreground md:text-2xl">
           Belanja Berdasarkan Brand
         </h2>
 
-        <p className="mt-3 max-w-md text-lg leading-relaxed text-black dark:text-muted-foreground">
-          Temukan berbagai koleksi produk berkualitas dari merek-merek pilihan yang sudah teruji 
-          keunggulannya di seluruh dunia. Jelajahi katalog lengkap kami sekarang untuk mendapatkan barang original langsung dari brand kesayangan Anda.
+        <p className="mt-3 max-w-md text-lg leading-relaxed text-muted-foreground">
+          Brand-brand tech terpercaya — semua produk original bergaransi resmi, langsung dari distributor resmi di Indonesia.
         </p>
 
-        {brands.filter((b) => b.name.toLowerCase() !== "lainnya").length === 0 ? (
+        {filteredBrands.length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">Belum ada merek aktif.</p>
         ) : (
           <div className="mt-10 grid justify-start items-start grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {brands.filter((b) => b.name.toLowerCase() !== "lainnya").map((b) => (
+            {filteredBrands.map((b) => (
               <Link
                 key={b.id}
                 href={`/brands/${encodeURIComponent(b.slug)}`}
-                className="cursor-pointer group flex items-center justify-center transition hover:border-brand/40 dark:border-border dark:bg-muted"
+                className="cursor-pointer group flex items-center justify-center overflow-hidden transition hover:border-brand/40 dark:border-border dark:bg-muted"
               >
                 {b.logo_url ? (
-                  <div className="relative h-15 w-90 transition group-hover:grayscale-0">
-                    <Image src={b.logo_url} alt={b.name} fill className="object-contain" sizes="100px" />
+                  <div className="relative h-12 w-full sm:h-15 transition group-hover:grayscale-0">
+                    <Image src={b.logo_url} alt={b.name} fill className="object-contain" sizes="(min-width: 1024px) 220px, (min-width: 768px) 180px, (min-width: 640px) 160px, calc(50vw - 2rem)" />
                   </div>
                 ) : (
-                  <span className="text-center text-xs font-bold uppercase text-neutral-600 group-hover:text-brand dark:text-muted-foreground">
+                  <span className="text-center text-xs font-bold uppercase text-muted-foreground group-hover:text-brand">
                     {b.name}
                   </span>
                 )}

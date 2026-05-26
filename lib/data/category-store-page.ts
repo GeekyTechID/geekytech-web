@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { createServiceClient } from "@/lib/supabase/server";
 import {
   productRowToShelf,
@@ -63,7 +65,7 @@ export async function fetchActiveCategoriesForProductIndex(): Promise<CategorySt
   }
 }
 
-export async function fetchCategoryBySlugForStore(slug: string): Promise<CategoryStorePublicCategory | null> {
+export const fetchCategoryBySlugForStore = cache(async function fetchCategoryBySlugForStore(slug: string): Promise<CategoryStorePublicCategory | null> {
   const trimmed = slug.trim();
   if (!trimmed) return null;
   try {
@@ -79,7 +81,7 @@ export async function fetchCategoryBySlugForStore(slug: string): Promise<Categor
   } catch {
     return null;
   }
-}
+});
 
 export async function fetchCategoryProductsGroupedByBrand(
   categoryId: string,

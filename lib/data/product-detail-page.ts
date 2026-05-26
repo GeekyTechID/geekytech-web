@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { createServiceClient } from "@/lib/supabase/server";
 import {
   productRowToShelf,
@@ -61,7 +63,7 @@ function mapImages(rows: ImageRow[] | null | undefined): ProductDetailImage[] {
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export async function fetchProductDetailBySlug(slug: string): Promise<ProductDetailPublic | null> {
+export const fetchProductDetailBySlug = cache(async function fetchProductDetailBySlug(slug: string): Promise<ProductDetailPublic | null> {
   const trimmed = slug.trim();
   if (!trimmed) return null;
   try {
@@ -120,7 +122,7 @@ export async function fetchProductDetailBySlug(slug: string): Promise<ProductDet
   } catch {
     return null;
   }
-}
+});
 
 export async function fetchProductReviewsForStore(
   productId: string,

@@ -28,19 +28,23 @@ export function CarouselDots({
   const active = tone === "light" ? "w-8 bg-white" : "w-8 bg-[#1d1d1f]";
 
   return (
-    <div className={cn("flex justify-center gap-2", className)}>
+    <div className={cn("flex justify-center gap-1", className)}>
       {Array.from({ length: count }, (_, i) => (
         <button
           key={i}
           type="button"
           onClick={() => onSelect(i)}
           aria-label={`Slide ${i + 1} dari ${count}`}
-          aria-current={i === activeIndex}
-          className={cn(
-            "h-2 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] active:scale-95",
-            i === activeIndex ? active : cn("w-2", inactive),
-          )}
-        />
+          aria-current={i === activeIndex ? true : undefined}
+          className="flex h-8 w-8 items-center justify-center transition-transform duration-[160ms] ease-spring focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] motion-safe:active:scale-95 motion-safe:active:duration-[50ms]"
+        >
+          <span
+            className={cn(
+              "h-2 rounded-full transition-all",
+              i === activeIndex ? active : cn("w-2", inactive),
+            )}
+          />
+        </button>
       ))}
     </div>
   );

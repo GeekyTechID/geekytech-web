@@ -19,7 +19,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   if (!block || block.products.length === 0) {
     if (hideWhenEmpty) return null;
     return (
-      <section className="border-b border-neutral-200 bg-white py-8 sm:py-10 dark:border-border dark:bg-background">
+      <section className="border-b border-neutral-200 bg-background py-8 sm:py-10 dark:border-border">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <p className="text-sm leading-relaxed text-muted-foreground">
             Flash sale{" "}
@@ -33,16 +33,16 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   }
 
   return (
-    <section className="bg-white py-8 sm:py-10 dark:border-border dark:bg-background">
+    <section className="bg-background py-8 sm:py-10 dark:border-border">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between">
-          <h3 className="text-lg font-black leading-tight text-black sm:text-xl md:text-2xl dark:text-foreground">
+          <h3 className="text-lg font-black leading-tight text-foreground sm:text-xl md:text-2xl">
             {block.saleName}
           </h3>
         </div>
 
         {block.subtitle ? (
-          <p className="mb-5 max-w-2xl text-base leading-relaxed text-black sm:mb-6 sm:text-lg dark:text-muted-foreground">
+          <p className="mb-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mb-6 sm:text-lg">
             {block.subtitle}
           </p>
         ) : null}

@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
+
 import type { Database } from "@/types/supabase";
 
 import type { OrderStatus } from "@/lib/constants/order-status-labels";
@@ -61,10 +62,49 @@ export type DashboardOrderDetail = {
 };
 
 export type DashboardOverview = {
+  /** @deprecated orderCount moved to DashboardOrderStats.totalOrders */
   orderCount: number;
   unreadNotifications: number;
   wishlistCount: number;
 };
+
+/**
+ * Semua order-related stats dalam SATU DB query.
+ * Menggantikan: fetchProcessingOrdersCount, fetchPaidAndShippedOrderCounts,
+ *               fetchCompletedOrdersCount, fetchTotalSpending, dan orderCount dari overview.
+ */
+export type DashboardOrderStats = {
+  totalOrders: number;
+  processingCount: number; // paid | processing | shipped
+  shippedCount: number;
+  completedCount: number;
+  totalSpending: number;   // paid | processing | shipped | delivered | completed
+};
+
+export async function fetchDashboardOrderStats(userId: string): Promise<DashboardOrderStats> {
+  const zero: DashboardOrderStats = { totalOrders: 0, processingCount: 0, shippedCount: 0, completedCount: 0, totalSpending: 0 };
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select("status, total")
+      .eq("user_id", userId);
+    if (error || !data) return zero;
+
+    const ACTIVE_STATUSES = new Set(["paid", "processing", "shipped", "delivered", "completed"]);
+    let totalOrders = 0, processingCount = 0, shippedCount = 0, completedCount = 0, totalSpending = 0;
+    for (const { status: s, total } of data) {
+      totalOrders++;
+      if (s === "paid" || s === "processing" || s === "shipped") processingCount++;
+      if (s === "shipped") shippedCount++;
+      if (s === "completed") completedCount++;
+      if (ACTIVE_STATUSES.has(s)) totalSpending += total ?? 0;
+    }
+    return { totalOrders, processingCount, shippedCount, completedCount, totalSpending };
+  } catch {
+    return zero;
+  }
+}
 
 export type WishlistItemRow = {
   wishlistId: string;
@@ -95,13 +135,13 @@ export type ProblemPaymentRow = {
 export async function fetchDashboardOverview(userId: string): Promise<DashboardOverview> {
   try {
     const supabase = await createClient();
-    const [ordersRes, notifRes, wishRes] = await Promise.all([
-      supabase.from("orders").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    // orders count removed — now computed by fetchDashboardOrderStats (1 query instead of 3+)
+    const [notifRes, wishRes] = await Promise.all([
       supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("is_read", false),
       supabase.from("wishlists").select("id", { count: "exact", head: true }).eq("user_id", userId),
     ]);
     return {
-      orderCount: ordersRes.count ?? 0,
+      orderCount: 0, // kept for type compat, use orderStats.totalOrders instead
       unreadNotifications: notifRes.count ?? 0,
       wishlistCount: wishRes.count ?? 0,
     };
@@ -608,7 +648,8 @@ export type CouponPublicRow = Pick<
   "id" | "code" | "type" | "value" | "min_purchase" | "max_discount" | "valid_from" | "valid_until" | "used_count" | "max_usage"
 >;
 
-export async function fetchActiveCouponsForStore(): Promise<CouponPublicRow[]> {
+// cache() deduplicates across generateMetadata + page render, and across concurrent requests
+export const fetchActiveCouponsForStore = cache(async function fetchActiveCouponsForStore(): Promise<CouponPublicRow[]> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -622,7 +663,7 @@ export async function fetchActiveCouponsForStore(): Promise<CouponPublicRow[]> {
   } catch {
     return [];
   }
-}
+});
 
 export async function fetchUserProfile(userId: string): Promise<Database["public"]["Tables"]["profiles"]["Row"] | null> {
   try {
@@ -749,6 +790,61 @@ export async function fetchSpendingByMonth(
     });
   } catch {
     return [];
+  }
+}
+
+export async function fetchCompletedOrdersCount(userId: string): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { count, error } = await supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "completed");
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function fetchTotalSpending(userId: string): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("orders")
+      .select("total")
+      .eq("user_id", userId)
+      .in("status", ["paid", "processing", "shipped", "delivered", "completed"]);
+    if (error || !data) return 0;
+    return data.reduce((sum, o) => sum + (o.total ?? 0), 0);
+  } catch {
+    return 0;
+  }
+}
+
+export async function fetchPendingReviewsCount(userId: string): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data: orders, error: oErr } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "completed");
+    if (oErr || !orders?.length) return 0;
+
+    const orderIds = orders.map((o) => o.id);
+    const { data: reviewed, error: rErr } = await supabase
+      .from("product_reviews")
+      .select("order_id")
+      .eq("user_id", userId)
+      .in("order_id", orderIds);
+    if (rErr) return 0;
+
+    const reviewedSet = new Set((reviewed ?? []).map((r) => r.order_id));
+    return orderIds.filter((id) => !reviewedSet.has(id)).length;
+  } catch {
+    return 0;
   }
 }
 

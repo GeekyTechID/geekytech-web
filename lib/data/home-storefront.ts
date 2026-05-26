@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { createServiceClient } from "@/lib/supabase/server";
 import type { HomeSection, HomeSectionKey } from "@/app/admin/(panel)/promotions/home-sections/_actions";
 import { flashSaleBannerTemplate } from "@/app/admin/(panel)/promotions/flash-sale/_lib/flash-sale-banner-template";
@@ -307,7 +309,7 @@ export async function fetchMainHeroBanners(): Promise<StoreBanner[]> {
   }
 }
 
-export async function fetchTemplateBanners(template: string): Promise<StoreBanner[]> {
+export const fetchTemplateBanners = cache(async (template: string): Promise<StoreBanner[]> => {
   try {
     const supabase = createServiceClient();
     const { data, error } = await supabase
@@ -322,7 +324,7 @@ export async function fetchTemplateBanners(template: string): Promise<StoreBanne
   } catch {
     return [];
   }
-}
+});
 
 export type FlashSaleBlockData = {
   saleId: string;
@@ -448,17 +450,21 @@ async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBl
     .order("starts_at", { ascending: false });
   if (error || !sales?.length) return null;
 
-  for (const row of sales) {
-    const products = await loadFlashSaleShelfProductsForSaleId(row.id);
-    if (products.length === 0) continue;
-    return {
-      saleId: row.id,
-      saleName: row.name,
-      subtitle: row.subtitle ?? null,
-      products,
-    };
-  }
-  return null;
+  const results = await Promise.all(
+    sales.map(async (row) => ({
+      row,
+      products: await loadFlashSaleShelfProductsForSaleId(row.id),
+    })),
+  );
+
+  const first = results.find((r) => r.products.length > 0);
+  if (!first) return null;
+  return {
+    saleId: first.row.id,
+    saleName: first.row.name,
+    subtitle: first.row.subtitle ?? null,
+    products: first.products,
+  };
 }
 
 async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlockData | null> {
@@ -508,17 +514,17 @@ export async function fetchPrimaryHomeFlashSaleBlock(): Promise<FlashSaleBlockDa
  */
 export async function fetchFlashSaleBlockByCampaignName(name: string): Promise<FlashSaleBlockData | null> {
   try {
-    for (const candidate of flashSaleCampaignNameCandidates(name)) {
-      const sale = await fetchFlashSaleByExactName(candidate);
-      if (sale) {
-        const products = await loadFlashSaleShelfProductsForSaleId(sale.id);
-        return {
-          saleId: sale.id,
-          saleName: sale.name,
-          subtitle: sale.subtitle,
-          products,
-        };
-      }
+    const candidates = flashSaleCampaignNameCandidates(name);
+    const saleResults = await Promise.all(candidates.map((c) => fetchFlashSaleByExactName(c)));
+    const sale = saleResults.find((s) => s !== null) ?? null;
+    if (sale) {
+      const products = await loadFlashSaleShelfProductsForSaleId(sale.id);
+      return {
+        saleId: sale.id,
+        saleName: sale.name,
+        subtitle: sale.subtitle,
+        products,
+      };
     }
     return await fetchFirstActiveFlashSaleBlockWithProducts();
   } catch {
@@ -671,14 +677,18 @@ async function pickFirstFlashSaleIdWithContent(
     .select("id")
     .eq("is_active", true)
     .order("starts_at", { ascending: false });
-  for (const row of sales ?? []) {
-    if (exclude.has(row.id)) continue;
-    const storefront = await fetchFlashSaleStorefrontById(row.id);
-    if (storefront !== null && (storefront.banners.length > 0 || storefront.products.length > 0)) {
-      return row.id;
-    }
-  }
-  return null;
+  const candidates = (sales ?? []).filter((r) => !exclude.has(r.id));
+  if (candidates.length === 0) return null;
+  const results = await Promise.all(
+    candidates.map(async (row) => ({
+      id: row.id,
+      storefront: await fetchFlashSaleStorefrontById(row.id),
+    })),
+  );
+  const first = results.find(
+    (r) => r.storefront !== null && (r.storefront.banners.length > 0 || r.storefront.products.length > 0),
+  );
+  return first?.id ?? null;
 }
 
 async function pickFirstPromotionIdWithContent(
@@ -714,76 +724,75 @@ export async function fetchDynamicHomePromoBlocks(
     const sections = parseHomeSections(settingsRow?.value);
     const excludeFlash = new Set(options?.excludeFlashSaleIds ?? []);
 
-    const blocks: DynamicPromoBlock[] = [];
+    const results = await Promise.all(
+      sections.map(async (s): Promise<DynamicPromoBlock | null> => {
+        if (!s.is_active) return null;
 
-    for (const s of sections) {
-      if (!s.is_active) continue;
-
-      if (s.key === "main_banner") {
-        const banners = await fetchTemplateBanners("main_banner");
-        if (banners.length === 0) continue;
-        blocks.push({
-          sectionKey: "main_banner",
-          title: MAIN_BANNER_SECTION_TITLE,
-          subtitle: null,
-          banners,
-          products: [],
-        });
-        continue;
-      }
-
-      if (s.key === "flash_sale") {
-        let saleId = s.selected_id;
-        if (!saleId) {
-          saleId = await pickFirstFlashSaleIdWithContent(supabase, excludeFlash);
+        if (s.key === "main_banner") {
+          const banners = await fetchTemplateBanners("main_banner");
+          if (banners.length === 0) return null;
+          return {
+            sectionKey: "main_banner",
+            title: MAIN_BANNER_SECTION_TITLE,
+            subtitle: null,
+            banners,
+            products: [],
+          };
         }
-        if (!saleId) continue;
-        const fs = await fetchFlashSaleStorefrontById(saleId);
-        if (!fs) continue;
-        if (fs.banners.length === 0 && fs.products.length === 0) continue;
-        blocks.push({
-          sectionKey: "flash_sale",
-          title: fs.saleName,
-          subtitle: fs.subtitle,
-          banners: fs.banners,
-          products: fs.products,
-        });
-        continue;
-      }
 
-      if (s.key === "second_products" || s.key === "featured_products") {
-        let promoId = s.selected_id;
-        if (!promoId) {
-          promoId = await pickFirstPromotionIdWithContent(supabase, s.key);
+        if (s.key === "flash_sale") {
+          let saleId = s.selected_id;
+          if (!saleId) {
+            saleId = await pickFirstFlashSaleIdWithContent(supabase, excludeFlash);
+          }
+          if (!saleId) return null;
+          const fs = await fetchFlashSaleStorefrontById(saleId);
+          if (!fs || (fs.banners.length === 0 && fs.products.length === 0)) return null;
+          return {
+            sectionKey: "flash_sale",
+            title: fs.saleName,
+            subtitle: fs.subtitle,
+            banners: fs.banners,
+            products: fs.products,
+          };
         }
-        if (!promoId) continue;
 
-        const { data: promo } = await supabase
-          .from("promotions")
-          .select("id, type, title, subtitle, is_active")
-          .eq("id", promoId)
-          .single();
+        if (s.key === "second_products" || s.key === "featured_products") {
+          let promoId = s.selected_id;
+          if (!promoId) {
+            promoId = await pickFirstPromotionIdWithContent(supabase, s.key);
+          }
+          if (!promoId) return null;
 
-        if (!promo || promo.is_active !== true) continue;
-        if (promo.type !== s.key) continue;
+          const { data: promo } = await supabase
+            .from("promotions")
+            .select("id, type, title, subtitle, is_active")
+            .eq("id", promoId)
+            .single();
 
-        const template = s.key;
-        const [banners, products] = await Promise.all([
-          fetchTemplateBanners(template),
-          resolvePromotionShelfProducts(promo.id, s.key),
-        ]);
+          if (!promo || promo.is_active !== true || promo.type !== s.key) return null;
 
-        if (banners.length === 0 && products.length === 0) continue;
+          const [banners, products] = await Promise.all([
+            fetchTemplateBanners(s.key),
+            resolvePromotionShelfProducts(promo.id, s.key),
+          ]);
 
-        blocks.push({
-          sectionKey: s.key,
-          title: promo.title,
-          subtitle: promo.subtitle,
-          banners,
-          products,
-        });
-      }
-    }
+          if (banners.length === 0 && products.length === 0) return null;
+
+          return {
+            sectionKey: s.key,
+            title: promo.title,
+            subtitle: promo.subtitle,
+            banners,
+            products,
+          };
+        }
+
+        return null;
+      }),
+    );
+
+    const blocks = results.filter((b): b is DynamicPromoBlock => b !== null);
 
     if (blocks.length === 0) {
       const products = await fetchDefaultHomeShelfProducts(12);

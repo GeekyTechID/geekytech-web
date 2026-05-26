@@ -28,7 +28,8 @@ export type ProductDetailClientProps = {
   product: ProductDetailPublic;
   reviews: ProductReviewPublic[];
   histogram: RatingHistogramRow[];
-  initialInWishlist: boolean;
+  /** Tidak lagi di-pass dari server — di-fetch client-side via /api/wishlist/check */
+  initialInWishlist?: boolean;
   siteBaseUrl: string;
 };
 
@@ -66,8 +67,17 @@ export function ProductDetailClient({
   const [imgIndex, setImgIndex] = useState(0);
   const [descExpanded, setDescExpanded] = useState(false);
   const [detailTab, setDetailTab] = useState<"detail" | "extra">("detail");
-  const [inWishlist, setInWishlist] = useState(initialInWishlist);
+  const [inWishlist, setInWishlist] = useState(initialInWishlist ?? false);
   const [reviewIndex, setReviewIndex] = useState(0);
+
+  // Fetch wishlist state client-side so the product page can be ISR-cached
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch(`/api/wishlist/check?productId=${product.id}`)
+      .then((r) => r.json())
+      .then(({ inWishlist: w }: { inWishlist: boolean }) => setInWishlist(w))
+      .catch(() => {});
+  }, [isAuthenticated, product.id]);
 
   const variant = useMemo(
     () => product.variants.find((v) => v.id === variantId) ?? product.variants[0] ?? null,

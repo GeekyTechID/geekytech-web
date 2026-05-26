@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ProductDetailClient } from "@/components/store/product-detail-client";
-import { createClient } from "@/lib/supabase/server";
 import {
   fetchOtherBrandProductsGrouped,
   fetchProductDetailBySlug,
@@ -15,7 +14,8 @@ import { ProductDetailMoreChoicesSection } from "@/components/store/product-deta
 import { ProductDetailOtherBrandsSection } from "@/components/store/product-detail-other-brands-section";
 import type { ProductDetailPublic } from "@/lib/types/product-detail";
 
-export const dynamic = "force-dynamic";
+// ISR: revalidate every 60s per CLAUDE.md — wishlist state is fetched client-side
+export const revalidate = 60;
 
 type PageParams = Promise<{ slug: string }>;
 
@@ -94,12 +94,8 @@ export default async function ProductDetailPage({ params }: { params: PageParams
     }),
   ]);
 
-  const excludeRandomIds: string[] = [];
-  for (const g of otherBrandGroups) {
-    for (const p of g.products) {
-      excludeRandomIds.push(p.productId);
-    }
-  }
+  // flatMap replaces the double loop (js-flatmap-filter)
+  const excludeRandomIds = otherBrandGroups.flatMap((g) => g.products.map((p) => p.productId));
 
   const moreChoices = await fetchRandomProductPicks({
     currentProductId: product.id,
@@ -107,21 +103,8 @@ export default async function ProductDetailPage({ params }: { params: PageParams
     limit: 5,
   });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  let initialInWishlist = false;
-  if (user) {
-    const { data: w } = await supabase
-      .from("wishlists")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("product_id", product.id)
-      .maybeSingle();
-    initialInWishlist = Boolean(w);
-  }
-
+  // Wishlist state is fetched client-side via /api/wishlist/check so this page
+  // can stay ISR-cached. No auth cookie read here = no force-dynamic needed.
   const siteBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
   return (
@@ -135,7 +118,6 @@ export default async function ProductDetailPage({ params }: { params: PageParams
         product={product}
         reviews={reviews}
         histogram={histogram}
-        initialInWishlist={initialInWishlist}
         siteBaseUrl={siteBaseUrl}
       />
       <ProductDetailOtherBrandsSection groups={otherBrandGroups} />

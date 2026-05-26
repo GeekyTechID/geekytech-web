@@ -49,25 +49,25 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <p className="line-clamp-1 text-[11px] text-neutral-500 dark:text-muted-foreground">{product.eyebrow}</p>
-        <Link href={href} className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-black hover:text-brand dark:text-foreground">
+        <p className="line-clamp-1 text-[11px] text-muted-foreground">{product.eyebrow}</p>
+        <Link href={href} className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-foreground hover:text-brand">
           {product.name}
         </Link>
         {product.variantName && (
-          <p className="line-clamp-1 text-[14px] text-neutral-500 dark:text-muted-foreground">{product.variantName}</p>
+          <p className="line-clamp-1 text-[14px] text-muted-foreground">{product.variantName}</p>
         )}
         <div className="mt-auto space-y-0.5">
-          <p className="text-sm font-bold text-black dark:text-foreground">{formatRupiah(product.currentPrice)}</p>
+          <p className="text-sm font-bold text-foreground">{formatRupiah(product.currentPrice)}</p>
           {showCompare && (
-            <p className="text-xs text-neutral-400 line-through dark:text-muted-foreground">
+            <p className="text-xs text-muted-foreground/70 line-through">
               {formatRupiah(product.compareAtPrice!)}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-muted-foreground">
-          <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
-          <span className="font-medium text-neutral-800 dark:text-foreground">{product.rating.toFixed(1)}</span>
-          <span className="text-neutral-300 dark:text-border">·</span>
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Star className="h-3.5 w-3.5 shrink-0 fill-[--color-rating] text-[--color-rating]" aria-hidden />
+          <span className="font-medium text-foreground">{product.rating.toFixed(1)}</span>
+          <span className="text-muted-foreground/40">·</span>
           <span>{product.soldCount} terjual</span>
         </div>
         <AddToCartButton variantId={product.variantId} />

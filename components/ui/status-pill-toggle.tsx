@@ -31,8 +31,8 @@ export function StatusPillToggle({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border transition-colors",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] active:scale-95 disabled:opacity-50",
+        "group/pill relative overflow-hidden inline-flex items-center gap-2 rounded-full border transition-[transform,background-color,color,border-color] duration-[160ms] ease-spring motion-reduce:transition-[background-color,color,border-color]",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] motion-safe:active:scale-95 motion-safe:active:duration-[50ms] disabled:opacity-50",
         size === "default"
           ? "min-h-10 px-4 text-sm font-normal leading-[1.29] tracking-[-0.224px]"
           : "min-h-8 px-3 text-[10px] font-semibold uppercase leading-none tracking-normal",
@@ -42,6 +42,10 @@ export function StatusPillToggle({
         className,
       )}
     >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 scale-0 rounded-[inherit] bg-current opacity-0 transition-[transform,opacity] duration-300 ease-spring group-active/pill:scale-150 group-active/pill:opacity-[0.12] group-active/pill:[transition-duration:50ms] motion-reduce:hidden"
+      />
       {active ? activeLabel : inactiveLabel}
     </button>
   );

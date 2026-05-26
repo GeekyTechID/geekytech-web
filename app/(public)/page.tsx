@@ -1,12 +1,12 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import { HomeDynamicPromoBlocks } from "@/components/store/home-dynamic-promo-blocks";
+import { HomeDynamicPromoBlocksFetcher } from "@/components/store/home-dynamic-promo-blocks";
 import { HomeFlashSaleBlock } from "@/components/store/home-flash-sale-block";
 import { HomeMainHero } from "@/components/store/home-main-hero";
 import { ShopByBrandSection } from "@/components/store/shop-by-brand-section";
 import { HOME_HERO_FLASH_SALE_CAMPAIGN_NAME } from "@/lib/constants/home-flash-sale";
 import {
-  fetchDynamicHomePromoBlocks,
   fetchFlashSaleBlockByCampaignName,
   fetchMainHeroBanners,
   fetchShopBrands,
@@ -36,22 +36,16 @@ export default async function HomePage() {
   }
 
   const [heroBanners, flashSaleBlock, brands] = loaded;
-
-  let dynamicBlocks: Awaited<ReturnType<typeof fetchDynamicHomePromoBlocks>> = [];
-  try {
-    dynamicBlocks = await fetchDynamicHomePromoBlocks({
-      excludeFlashSaleIds: flashSaleBlock?.saleId ? [flashSaleBlock.saleId] : [],
-    });
-  } catch {
-    dynamicBlocks = [];
-  }
+  const excludeFlashSaleIds = flashSaleBlock?.saleId ? [flashSaleBlock.saleId] : [];
 
   return (
     <div className="bg-white dark:bg-background">
       <HomeMainHero banners={heroBanners} />
       <HomeFlashSaleBlock block={flashSaleBlock} />
       <ShopByBrandSection brands={brands} />
-      <HomeDynamicPromoBlocks blocks={dynamicBlocks} />
+      <Suspense>
+        <HomeDynamicPromoBlocksFetcher excludeFlashSaleIds={excludeFlashSaleIds} />
+      </Suspense>
     </div>
   );
 }

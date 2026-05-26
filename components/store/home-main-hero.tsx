@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { CarouselDots } from "@/components/ui/carousel-dots";
@@ -14,16 +14,17 @@ type HomeMainHeroProps = {
   hideNav?: boolean;
 };
 
-function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolean }) {
+const HeroSlide = memo(function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolean }) {
   const inner = (
     <div className="relative grid min-h-[220px] overflow-hidden md:min-h-[320px] lg:min-h-[400px]">
       <div className="relative min-h-[220px] md:min-h-0">
         {/* eslint-disable-next-line @next/next/no-img-element -- URL banner dari admin bisa domain eksternal */}
         <img
           src={banner.image_url}
-          alt={banner.title ?? "Banner promosi"}
+          alt={banner.title ?? ""}
           className="absolute inset-0 h-full w-full object-cover object-center"
           loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
         />
       </div>
@@ -42,10 +43,11 @@ function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolea
   }
 
   return <div className="min-w-full shrink-0">{inner}</div>;
-}
+});
 
 export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const n = banners.length;
 
   const go = useCallback(
@@ -57,16 +59,25 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
   );
 
   useEffect(() => {
-    if (n <= 1) return;
+    if (n <= 1 || isPaused) return;
     const t = window.setInterval(() => {
       setIndex((i) => (i + 1) % n);
     }, AUTO_MS);
     return () => window.clearInterval(t);
-  }, [n]);
+  }, [n, isPaused]);
+
+  const handleFocus = useCallback((e: React.FocusEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsPaused(true);
+  }, []);
+
+  const handleBlur = useCallback((e: React.FocusEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsPaused(false);
+  }, []);
 
   if (n === 0) {
     return (
       <section className="border-b border-neutral-200 bg-neutral-900 py-16 text-center text-white dark:border-border">
+        <h1 className="sr-only">GeekyTech</h1>
         <p className="text-sm font-medium text-white/70">Belum ada banner utama. Atur di Admin → Promosi → Main Banner.</p>
       </section>
     );
@@ -77,7 +88,15 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
       className="group/hero relative shadow-[0_12px_24px_-18px_rgba(0,0,0,0.35)] dark:border-border"
       aria-roledescription="carousel"
       aria-label="Banner utama"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     >
+      <h1 className="sr-only">GeekyTech — Toko Tech & Gadget</h1>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {n > 1 ? (banners[index]?.title ?? `Slide ${index + 1} dari ${n}`) : null}
+      </div>
       <div className="relative overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"

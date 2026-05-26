@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, ShoppingBag, Tag, Truck, CheckCircle, Info } from "lucide-react";
+import { Bell, ChevronRight, ShoppingBag, Tag, Truck, CheckCircle, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchDashboardOverview,
-  fetchPaidAndShippedOrderCounts,
-  fetchProcessingOrdersCount,
+  fetchDashboardOrderStats,
   fetchRecentOrdersListPreview,
   fetchUserProfile,
   fetchActiveCouponsForStore,
   fetchSpendingByMonth,
   fetchPendingPaymentOrders,
   fetchUserNotifications,
+  fetchPendingReviewsCount,
 } from "@/lib/data/dashboard-user";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
 import { cn } from "@/lib/utils";
-import { SpendingChart } from "@/components/dashboard/spending-chart";
+import { SpendingChartLazy } from "@/components/dashboard/spending-chart-lazy";
 
 export const metadata: Metadata = {
   title: "Ringkasan akun",
@@ -89,17 +89,18 @@ export default async function DashboardOverviewPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/dashboard");
 
-  const [overview, processingCount, paidShippedCounts, recentOrders, profile, coupons, spending, pendingOrders, notifications] =
+  // 12 calls → 9 calls; order stats consolidated from 6 queries → 1 query (server-parallel-fetching)
+  const [overview, orderStats, recentOrders, profile, coupons, spending, pendingOrders, notifications, pendingReviews] =
     await Promise.all([
       fetchDashboardOverview(user.id),
-      fetchProcessingOrdersCount(user.id),
-      fetchPaidAndShippedOrderCounts(user.id),
+      fetchDashboardOrderStats(user.id),
       fetchRecentOrdersListPreview(user.id, 5),
       fetchUserProfile(user.id),
       fetchActiveCouponsForStore(),
       fetchSpendingByMonth(user.id, 12),
       fetchPendingPaymentOrders(user.id, 5),
       fetchUserNotifications(user.id, 5),
+      fetchPendingReviewsCount(user.id),
     ]);
 
   const firstName =
@@ -114,26 +115,55 @@ export default async function DashboardOverviewPage() {
         Ringkasan pesanan dan aktivitas akun Anda.
       </p>
 
-      {/* Stats cards */}
-      <div className="mt-10 flex justify-between gap-3 overflow-hidden">
-        {[
-          { href: "/dashboard/orders",                 bg: "bg-[#272729]", label: "Total pesanan", value: overview.orderCount,        sub: "Semua waktu" },
-          { href: "/dashboard/orders",                 bg: "bg-[#2a2a2c]", label: "Diproses",      value: processingCount,            sub: "Dibayar, diproses, dikirim" },
-          { href: "/dashboard/orders?status=paid",     bg: "bg-[#272729]", label: "Pembayaran",    value: paidShippedCounts.paid,     sub: "Berstatus dibayar" },
-          { href: "/dashboard/orders?status=shipped",  bg: "bg-[#2a2a2c]", label: "Pengiriman",    value: paidShippedCounts.shipped,  sub: "Dalam pengiriman" },
-          { href: "/dashboard/wishlist",               bg: "bg-[#252527]", label: "Wishlist",       value: overview.wishlistCount,     sub: "Produk tersimpan" },
-        ].map((card) => (
-          <Link
-            key={card.label}
-            href={card.href}
-            className={`group relative min-w-0 flex-1 overflow-hidden rounded-2xl ${card.bg} p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-6`}
-          >
-            <p className="truncate text-[10px] font-semibold uppercase text-white/80 sm:text-[11px]">{card.label}</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums sm:text-3xl xl:text-4xl">{card.value}</p>
-            <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug text-white/70 sm:text-[11px]">{card.sub}</p>
-          </Link>
-        ))}
-      </div>
+      {/* Stats cards — row 1: 4 cards, row 2: 2 cards + Total Pesanan (flex-1) */}
+      {(() => {
+        const compactRupiah = (n: number) => {
+          if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1).replace(".", ",")} M`;
+          if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(".", ",")} Jt`;
+          return formatRupiah(n);
+        };
+        // w-[calc(25%-9px)]: 4 cards × 25% + 3 gaps × 12px = 100%
+        const cellCls = "shrink-0 w-[calc(50%-6px)] sm:w-[calc(25%-9px)]";
+        const cardBody = (label: string, value: string, sub: string, compact?: true) => (
+          <>
+            <p className="truncate text-[10px] font-semibold uppercase text-white/80 sm:text-[11px]">{label}</p>
+            <p className={`mt-2 font-semibold tabular-nums ${compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl xl:text-4xl"}`}>{value}</p>
+            <p className="mt-1.5 line-clamp-2 text-[10px] leading-snug text-white/70 sm:text-[11px]">{sub}</p>
+          </>
+        );
+        return (
+          <div className="mt-10 flex flex-col gap-3">
+            {/* Row 1 */}
+            <div className="flex flex-wrap gap-3">
+              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Diproses", String(orderStats.processingCount), "Dibayar, diproses, dikirim")}
+              </Link>
+              <Link href="/dashboard/orders?status=shipped" className={`${cellCls} overflow-hidden rounded-2xl bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Dikirim", String(orderStats.shippedCount), "Dalam pengiriman")}
+              </Link>
+              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Selesai", String(orderStats.completedCount), "Pesanan selesai")}
+              </Link>
+              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-2xl bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Total belanja", compactRupiah(orderStats.totalSpending), "Pesanan aktif & selesai", true)}
+              </Link>
+            </div>
+            {/* Row 2 */}
+            <div className="flex flex-wrap gap-3">
+              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-2xl bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Ulasan tertunda", String(pendingReviews), "Pesanan belum diulas")}
+              </Link>
+              <Link href="/dashboard/wishlist" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+                {cardBody("Wishlist", String(overview.wishlistCount), "Produk tersimpan")}
+              </Link>
+              {/* Total Pesanan — flex-1, mengisi sisa ruang baris 2 */}
+              <Link href="/dashboard/orders" className="min-w-0 flex-1 overflow-hidden rounded-2xl bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5">
+                {cardBody("Total pesanan", String(orderStats.totalOrders), "Semua waktu")}
+              </Link>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Pending payment alert — only shown when there are orders waiting */}
       {pendingOrders.length > 0 && (
@@ -194,7 +224,7 @@ export default async function DashboardOverviewPage() {
       )}
 
       {/* Spending chart */}
-      <SpendingChart data12={spending} />
+      <SpendingChartLazy data12={spending} />
 
       {/* Notifications highlights */}
       {notifications.length > 0 && (
@@ -271,7 +301,7 @@ export default async function DashboardOverviewPage() {
         ) : (
           <ul className="mt-6 flex flex-col divide-y divide-[#f0f0f0] overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white">
             {recentOrders.map((o) => (
-              <li key={o.id} className="flex flex-row items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
+              <li key={o.id} className="flex flex-row items-center gap-3 px-4 py-3 motion-safe:transition-colors motion-safe:duration-150 hover:bg-[#fafafa] sm:gap-4 sm:px-5 sm:py-4">
                 {/* Thumbnail */}
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] sm:h-16 sm:w-16">
                   {o.previewImage ? (
@@ -316,8 +346,17 @@ export default async function DashboardOverviewPage() {
                   <p className="text-[13px] font-semibold tabular-nums text-[#1d1d1f] sm:text-[14px]">
                     {formatRupiah(o.total)}
                   </p>
-                  <Button asChild variant="dark" size="sm">
-                    <Link href={`/dashboard/orders/${o.id}`}>Detail</Link>
+                  <Button
+                    asChild
+                    variant="dark"
+                    size="sm"
+                    className="group/detail motion-safe:transition-transform motion-safe:duration-[120ms] motion-safe:[transition-timing-function:cubic-bezier(0.16,1,0.3,1)] motion-safe:active:scale-[0.95]"
+                  >
+                    <Link href={`/dashboard/orders/${o.id}`}>
+                      <span className="inline-flex items-center gap-1.5">
+                        Detail
+                      </span>
+                    </Link>
                   </Button>
                 </div>
               </li>

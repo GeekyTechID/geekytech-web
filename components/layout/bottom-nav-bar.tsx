@@ -39,7 +39,7 @@ export function BottomNavBar() {
               <Link
                 href={resolvedHref}
                 className={cn(
-                  "flex flex-col items-center justify-center h-full gap-1 transition-swiss",
+                  "flex flex-col items-center justify-center h-full gap-1 transition-[transform,color] duration-[160ms] ease-spring motion-safe:active:scale-95 motion-safe:active:duration-[50ms]",
                   active
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground",

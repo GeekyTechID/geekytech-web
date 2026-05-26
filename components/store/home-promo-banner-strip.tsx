@@ -18,7 +18,7 @@ export function HomePromoBannerStrip({ banners, className }: HomePromoBannerStri
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={b.image_url}
-              alt={b.title ?? "Banner"}
+              alt={b.title ?? ""}
               className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
               decoding="async"

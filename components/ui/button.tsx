@@ -14,9 +14,10 @@ import { cn } from "@/lib/utils"
  */
 const buttonVariants = cva(
   [
-    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border bg-clip-padding whitespace-nowrap transition-transform outline-none select-none",
+    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border bg-clip-padding whitespace-nowrap outline-none select-none",
+    "transition-[transform,background-color,color,border-color,opacity] duration-[160ms] ease-spring motion-reduce:transition-[background-color,color,border-color,opacity]",
     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52]",
-    "active:scale-95",
+    "motion-safe:active:scale-95 motion-safe:active:duration-[50ms]",
     "disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ],
@@ -102,6 +103,7 @@ function Button({
   variant = "primary",
   size = "default",
   asChild = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -109,15 +111,29 @@ function Button({
   }) {
   const Comp = asChild ? Slot.Root : "button"
   const resolved = resolveVariant(variant)
+  const withRipple = !asChild && resolved !== "link"
 
   return (
     <Comp
       data-slot="button"
       data-variant={resolved}
       data-size={size}
-      className={cn(buttonVariants({ variant: resolved, size, className }))}
+      className={cn(
+        buttonVariants({ variant: resolved, size, className }),
+        withRipple && "relative overflow-hidden",
+      )}
       {...props}
-    />
+    >
+      {withRipple ? (
+        <>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 scale-0 rounded-[inherit] bg-current opacity-0 transition-[transform,opacity] duration-300 ease-spring group-active/button:scale-150 group-active/button:opacity-[0.12] group-active/button:[transition-duration:50ms] motion-reduce:hidden"
+          />
+          {children}
+        </>
+      ) : children}
+    </Comp>
   )
 }
 

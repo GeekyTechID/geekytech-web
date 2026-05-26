@@ -6,7 +6,19 @@ import {
   HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS,
 } from "@/lib/constants/home-product-row-slot";
 
-import type { DynamicPromoBlock } from "@/lib/data/home-storefront";
+import { fetchDynamicHomePromoBlocks } from "@/lib/data/home-storefront";
+import type { DynamicPromoBlock, FetchDynamicHomePromoBlocksOptions } from "@/lib/data/home-storefront";
+
+/** Async server component — fetches its own data and renders. Use inside a Suspense boundary. */
+export async function HomeDynamicPromoBlocksFetcher({ excludeFlashSaleIds }: FetchDynamicHomePromoBlocksOptions) {
+  let blocks: DynamicPromoBlock[] = [];
+  try {
+    blocks = await fetchDynamicHomePromoBlocks({ excludeFlashSaleIds });
+  } catch {
+    blocks = [];
+  }
+  return <HomeDynamicPromoBlocks blocks={blocks} />;
+}
 
 /** Setiap blok promosi: maks. 5 produk tampil sekaligus; sisanya geser kiri/kanan. */
 export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[] }) {
@@ -17,7 +29,7 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
       {blocks.map((block, blockIndex) => (
         <section
           key={`${block.sectionKey}-${blockIndex}`}
-          className="bg-white py-8 sm:py-10 dark:border-border dark:bg-background"
+          className="bg-background py-8 sm:py-10 dark:border-border [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
         >
           {block.banners.length > 0 ? (
             <div className="relative left-1/2 w-screen max-w-none -translate-x-1/2">
@@ -27,11 +39,11 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
 
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
             <div className={block.banners.length > 0 ? "mb-6 mt-8 space-y-2 sm:mt-10" : "mb-6 space-y-2"}>
-              <h3 className="text-lg font-bold leading-tight text-black sm:text-xl dark:text-foreground">
+              <h3 className="text-lg font-bold leading-tight text-foreground sm:text-xl">
                 {block.title}
               </h3>
               {block.subtitle ? (
-                <p className="max-w-2xl text-base font-normal leading-relaxed text-neutral-600 sm:text-lg dark:text-muted-foreground">
+                <p className="max-w-2xl text-base font-normal leading-relaxed text-muted-foreground sm:text-lg">
                   {block.subtitle}
                 </p>
               ) : null}
