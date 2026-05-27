@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 type AnnouncementBarProps = {
   text: string;
   link?: string;
@@ -46,13 +48,16 @@ export function AnnouncementBar({ text, link }: AnnouncementBarProps) {
           content
         )}
       </div>
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
         onClick={dismiss}
         aria-label="Tutup pengumuman"
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-swiss p-1"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:bg-white/10 hover:text-white"
       >
         <X size={14} />
-      </button>
+      </Button>
     </div>
   );
 }

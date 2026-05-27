@@ -5,7 +5,7 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah } from "@/lib/format";
-import { RevenueChart, OrdersChart } from "@/components/admin/revenue-chart";
+import { DashboardRevenueChart, DashboardOrdersChart } from "@/components/admin/dashboard-charts";
 
 export const metadata: Metadata = { title: "Laporan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -32,6 +32,8 @@ type DailyData = { date: string; revenue: number; orders: number };
 type MonthlyData = { month: string; revenue: number; orders: number };
 type BestSeller = { product_name: string; qty: number; share: number };
 
+const BESTSELLERS_HEADERS = ["#", "Produk", "Qty Terjual", "Share"] as const;
+
 async function fetchReportsData() {
   const supabase = await createClient();
 
@@ -41,7 +43,8 @@ async function fetchReportsData() {
 
   const [
     allTimeRevenue,
-    allOrders,
+    totalOrdersResult,
+    paidOrdersResult,
     completedOrders,
     dailyRevenue,
     monthlyRevenue,
@@ -49,9 +52,11 @@ async function fetchReportsData() {
   ] = await Promise.all([
     supabase.from("orders").select("total").in("status", STATUS_PAID),
 
-    supabase.from("orders").select("id, status", { count: "exact" }),
+    supabase.from("orders").select("*", { count: "exact", head: true }),
 
-    supabase.from("orders").select("id", { count: "exact" }).eq("status", "completed"),
+    supabase.from("orders").select("*", { count: "exact", head: true }).in("status", STATUS_PAID),
+
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "completed"),
 
     supabase
       .from("orders")
@@ -67,13 +72,16 @@ async function fetchReportsData() {
       .gte("created_at", twelveMonthsAgo)
       .order("created_at"),
 
-    supabase.from("order_items").select("product_name, quantity"),
+    supabase
+      .from("order_items")
+      .select("product_name, quantity")
+      .limit(5000),
   ]);
 
   const totalRevenue = (allTimeRevenue.data ?? []).reduce((sum, r) => sum + r.total, 0);
-  const totalOrders = allOrders.count ?? 0;
+  const totalOrders = totalOrdersResult.count ?? 0;
   const totalCompleted = completedOrders.count ?? 0;
-  const paidCount = (allOrders.data ?? []).filter((o) => STATUS_PAID.includes(o.status as OrderStatus)).length;
+  const paidCount = paidOrdersResult.count ?? 0;
 
   const dailyMap: Record<string, DailyData> = {};
   for (let i = 29; i >= 0; i--) {
@@ -184,22 +192,22 @@ export default async function AdminReportsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="admin-utility-card space-y-3 p-6 lg:col-span-2">
           <h2 className="admin-section-title">Revenue — 30 Hari Terakhir</h2>
-          <RevenueChart data={dailyChartData} />
+          <DashboardRevenueChart data={dailyChartData} />
         </div>
         <div className="admin-utility-card space-y-3 p-6">
           <h2 className="admin-section-title">Orders — 30 Hari Terakhir</h2>
-          <OrdersChart data={dailyChartData} />
+          <DashboardOrdersChart data={dailyChartData} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="admin-utility-card space-y-3 p-6">
           <h2 className="admin-section-title">Revenue — 12 Bulan Terakhir</h2>
-          <RevenueChart data={monthlyChartData} />
+          <DashboardRevenueChart data={monthlyChartData} />
         </div>
         <div className="admin-utility-card space-y-3 p-6">
           <h2 className="admin-section-title">Orders — 12 Bulan Terakhir</h2>
-          <OrdersChart data={monthlyChartData} />
+          <DashboardOrdersChart data={monthlyChartData} />
         </div>
       </div>
 
@@ -211,7 +219,7 @@ export default async function AdminReportsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
-                {["#", "Produk", "Qty Terjual", "Share"].map((h) => (
+                {BESTSELLERS_HEADERS.map((h) => (
                   <th
                     key={h}
                     className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-foreground"

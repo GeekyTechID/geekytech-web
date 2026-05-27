@@ -25,14 +25,11 @@ export default async function AdminNotificationsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, items] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user.id).single(),
+    fetchAdminNotifications(80),
+  ]);
   if (profile?.role !== "admin") redirect("/admin/login");
-
-  const items = await fetchAdminNotifications(80);
 
   return (
     <div className="w-full">

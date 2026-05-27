@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Star } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { addVariantToCart, toggleWishlistProduct } from "@/app/(public)/products/_actions/product-detail-actions";
@@ -18,8 +18,10 @@ import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { ChoiceChip } from "@/components/ui/choice-chip";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
 const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
@@ -229,41 +231,41 @@ export function ProductDetailClient({
                     )}
                     {images.length > 1 ? (
                       <>
-                        <button
-                          type="button"
-                          aria-label="Gambar sebelumnya"
-                          className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm transition hover:bg-white"
+                        <CarouselNavButton
+                          direction="prev"
+                          surface="on-photo"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm hover:bg-white"
                           onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                        >
-                          <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Gambar berikutnya"
-                          className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm transition hover:bg-white"
+                        />
+                        <CarouselNavButton
+                          direction="next"
+                          surface="on-photo"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm hover:bg-white"
                           onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                        >
-                          <ChevronRight className="h-5 w-5" />
-                        </button>
+                        />
                       </>
                     ) : null}
                   </div>
                   {images.length > 1 ? (
                     <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                       {images.map((im, i) => (
-                        <button
+                        <Button
                           key={`${im.url}-${i}`}
                           type="button"
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => setImgIndex(i)}
                           className={cn(
-                            "relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7]",
+                            "relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
                             i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
                           )}
+                          aria-label={`Gambar ${i + 1}`}
+                          aria-current={i === safeImgIndex ? "true" : undefined}
                         >
                           {im.url ? (
                             <Image src={im.url} alt="" fill className="object-contain p-1" sizes="48px" />
                           ) : null}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   ) : null}
@@ -401,29 +403,30 @@ export function ProductDetailClient({
                   <span className="text-[#e0e0e0]" aria-hidden>
                     |
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="sm"
                     onClick={handleWishlist}
-                    disabled={isPending}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 transition hover:underline",
-                      inWishlist ? "text-[#EA5329]" : "text-[#1d1d1f]",
-                    )}
+                    loading={isPending}
+                    className={cn("gap-1.5", inWishlist && "text-brand")}
                   >
                     <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} aria-hidden />
                     Wishlist
-                  </button>
+                  </Button>
                   <span className="text-[#e0e0e0]" aria-hidden>
                     |
                   </span>
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="sm"
                     onClick={() => void handleShare()}
-                    className="inline-flex items-center gap-1.5 text-[#1d1d1f] transition hover:underline"
+                    className="gap-1.5 text-[#1d1d1f]"
                   >
                     <Share2 className="h-4 w-4" aria-hidden />
                     Share
-                  </button>
+                  </Button>
                 </div>
               </div>
             </aside>
@@ -436,31 +439,30 @@ export function ProductDetailClient({
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-2 md:gap-10 lg:gap-16">
             <div>
-              <div className="flex gap-8 border-b border-[#e0e0e0]">
-                <button
-                  type="button"
-                  onClick={() => setDetailTab("detail")}
-                  className={cn(
-                    "-mb-px border-b-2 pb-3 text-[17px] font-semibold transition",
-                    detailTab === "detail" ? "border-[#1d1d1f] text-[#1d1d1f]" : "border-transparent text-[#7a7a7a]",
-                  )}
+              <Tabs
+                value={detailTab}
+                onValueChange={(v) => setDetailTab(v as "detail" | "extra")}
+                className="gap-6"
+              >
+                <TabsList
+                  variant="line"
+                  className="h-auto w-full justify-start gap-8 rounded-none border-b border-[#e0e0e0] bg-transparent p-0"
                 >
-                  Detail
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDetailTab("extra")}
-                  className={cn(
-                    "-mb-px border-b-2 pb-3 text-[17px] font-semibold transition",
-                    detailTab === "extra" ? "border-[#1d1d1f] text-[#1d1d1f]" : "border-transparent text-[#7a7a7a]",
-                  )}
-                >
-                  Informasi lainnya
-                </button>
-              </div>
+                  <TabsTrigger
+                    value="detail"
+                    className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-0 pb-3 text-[17px] font-semibold text-[#7a7a7a] shadow-none data-[state=active]:border-[#1d1d1f] data-[state=active]:bg-transparent data-[state=active]:text-[#1d1d1f]"
+                  >
+                    Detail
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="extra"
+                    className="rounded-none border-0 border-b-2 border-transparent bg-transparent px-0 pb-3 text-[17px] font-semibold text-[#7a7a7a] shadow-none data-[state=active]:border-[#1d1d1f] data-[state=active]:bg-transparent data-[state=active]:text-[#1d1d1f]"
+                  >
+                    Informasi lainnya
+                  </TabsTrigger>
+                </TabsList>
 
-              <div className="mt-6">
-                {detailTab === "detail" ? (
+                <TabsContent value="detail" className="mt-0">
                   <div className="space-y-4">
                     {description ? (
                       <>
@@ -469,20 +471,24 @@ export function ProductDetailClient({
                           {!descExpanded && showDescToggle ? "…" : null}
                         </div>
                         {showDescToggle ? (
-                          <button
+                          <Button
                             type="button"
+                            variant="link"
+                            size="sm"
                             onClick={() => setDescExpanded((e) => !e)}
-                            className="text-[15px] font-semibold text-[#EA5329] hover:underline"
+                            className="h-auto p-0 text-[15px] font-semibold"
                           >
                             {descExpanded ? "Tampilkan lebih sedikit" : "Lihat lebih lanjut"}
-                          </button>
+                          </Button>
                         ) : null}
                       </>
                     ) : (
                       <p className="text-[17px] text-[#7a7a7a]">Belum ada deskripsi untuk produk ini.</p>
                     )}
                   </div>
-                ) : (
+                </TabsContent>
+
+                <TabsContent value="extra" className="mt-0">
                   <div className="space-y-6 text-[17px] leading-relaxed">
                     {product.tags.length > 0 ? (
                       <div>
@@ -505,8 +511,8 @@ export function ProductDetailClient({
                       </ul>
                     </div>
                   </div>
-                )}
-              </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
             <div>
@@ -553,22 +559,20 @@ export function ProductDetailClient({
                       <p className="mt-1 text-xs text-[#7a7a7a]">{formatDate(currentReview.createdAt)}</p>
                     </div>
                     <div className="flex gap-1">
-                      <button
-                        type="button"
+                      <CarouselNavButton
+                        direction="prev"
+                        surface="surface"
+                        className="border border-[#e0e0e0] bg-white"
                         aria-label="Ulasan sebelumnya"
-                        className="rounded-full border border-[#e0e0e0] bg-white p-2"
                         onClick={() => setReviewIndex((i) => (i - 1 + reviews.length) % reviews.length)}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
+                      />
+                      <CarouselNavButton
+                        direction="next"
+                        surface="surface"
+                        className="border border-[#e0e0e0] bg-white"
                         aria-label="Ulasan berikutnya"
-                        className="rounded-full border border-[#e0e0e0] bg-white p-2"
                         onClick={() => setReviewIndex((i) => (i + 1) % reviews.length)}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                      />
                     </div>
                   </div>
                   {currentReview.comment ? (

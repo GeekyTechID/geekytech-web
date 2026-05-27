@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/components/providers/auth-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -13,8 +14,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem={false}
       disableTransitionOnChange
     >
-      <AuthProvider>{children}</AuthProvider>
-      <Toaster richColors position="top-center" />
+      <TooltipProvider delayDuration={300}>
+        <AuthProvider>{children}</AuthProvider>
+        <Toaster richColors position="top-center" />
+      </TooltipProvider>
     </ThemeProvider>
   );
 }

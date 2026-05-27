@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 
 import { markAllNotificationsReadAction } from "@/app/(dashboard)/dashboard/notifications/_actions";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 type NotifItem = {
@@ -35,11 +37,9 @@ export function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  // Use ref for fetched flag so fetchNotifs stays stable (no stale-closure issues)
   const fetchedRef = useRef(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifs = useCallback(async () => {
     if (fetchedRef.current) return;
@@ -55,29 +55,11 @@ export function NotificationBell() {
     } finally {
       setLoading(false);
     }
-  }, []); // stable — reads fetchedRef, not state
+  }, []);
 
-  // Fetch once on mount for badge count
   useEffect(() => {
     void fetchNotifs();
   }, [fetchNotifs]);
-
-  // Close on click outside
-  useEffect(() => {
-    if (!open) return;
-    function onOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", onOutside);
-    return () => document.removeEventListener("mousedown", onOutside);
-  }, [open]);
-
-  // Close on route change (navigation inside dropdown)
-  useEffect(() => {
-    setOpen(false);
-  }, []);
 
   const handleMouseEnter = useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -92,14 +74,6 @@ export function NotificationBell() {
     closeTimer.current = setTimeout(() => setOpen(false), 200);
   }, []);
 
-  // Toggle on click — supports mobile/touch
-  const handleBellClick = useCallback(() => {
-    if (openTimer.current) clearTimeout(openTimer.current);
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpen((v) => !v);
-    void fetchNotifs();
-  }, [fetchNotifs]);
-
   const handleMarkAllRead = () => {
     startTransition(async () => {
       const res = await markAllNotificationsReadAction();
@@ -111,47 +85,40 @@ export function NotificationBell() {
   };
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {/* Bell button */}
-      <button
-        type="button"
-        onClick={handleBellClick}
-        className="relative inline-flex items-center justify-center rounded-full p-2 text-neutral-600 outline-none transition-colors hover:bg-black/[0.04] hover:text-[#1d1d1f] focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 dark:hover:bg-white/10 dark:hover:text-foreground"
-        aria-label="Notifikasi"
-        aria-expanded={open}
-        aria-haspopup="true"
-      >
-        <Bell size={18} />
-        {unread > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#EA5329] text-[9px] font-black text-white leading-none">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div
-          className="absolute right-0 top-full z-50 mt-2 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white/95 shadow-none backdrop-blur-xl backdrop-saturate-150"
-          role="dialog"
-          aria-label="Daftar notifikasi"
+    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="relative text-neutral-600 dark:text-muted-foreground"
+            aria-label="Notifikasi"
+            onClick={() => void fetchNotifs()}
+          >
+            <Bell size={18} />
+            {unread > 0 ? (
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[9px] font-black leading-none text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            ) : null}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          sideOffset={8}
+          className="w-[min(100vw-2rem,22rem)] gap-0 overflow-hidden rounded-[18px] border-[#e0e0e0] p-0 shadow-none backdrop-blur-xl backdrop-saturate-150"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          {/* Header — strip gelap seperti utility / sub-nav (design.mdc) */}
           <div className="flex items-center gap-2 border-b border-black/10 bg-[#2a2a2c] px-4 py-3 text-white">
-            <span className="text-[14px] font-semibold leading-[1.29] text-white">Notifikasi</span>
-            {unread > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1.5 text-[10px] font-semibold tabular-nums text-white">
+            <span className="text-[14px] font-semibold leading-[1.29]">Notifikasi</span>
+            {unread > 0 ? (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1.5 text-[10px] font-semibold tabular-nums">
                 {unread}
               </span>
-            )}
+            ) : null}
           </div>
 
-          {/* List — kartu utilitas; baris: hover parchment lembut (tanpa shadow) */}
           <div className="max-h-72 overflow-y-auto bg-white">
             {loading ? (
               <div>
@@ -173,23 +140,23 @@ export function NotificationBell() {
                   key={notif.id}
                   className={cn(
                     "border-b border-[#e0e0e0] px-4 py-3 transition-colors last:border-b-0",
-                    !notif.is_read
-                      ? "bg-[#fff8f5] hover:bg-[#f5f5f7]"
-                      : "bg-white hover:bg-[#f5f5f7]",
+                    !notif.is_read ? "bg-[#fff8f5] hover:bg-[#f5f5f7]" : "bg-white hover:bg-[#f5f5f7]",
                   )}
                 >
                   <div className="flex items-start gap-3">
-                    {!notif.is_read && (
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#EA5329]" aria-hidden />
-                    )}
-                    <div className={cn("min-w-0 flex-1", notif.is_read && "pl-0")}>
+                    {!notif.is_read ? (
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-[14px] font-semibold leading-[1.29] text-[#1d1d1f]">
                         {notif.title}
                       </p>
                       <p className="mt-1 line-clamp-2 text-[14px] font-normal leading-[1.43] text-[#5c5c5c]">
                         {notif.body}
                       </p>
-                      <p className="mt-1.5 text-[12px] leading-none text-[#7a7a7a]">{timeAgo(notif.created_at)}</p>
+                      <p className="mt-1.5 text-[12px] leading-none text-[#7a7a7a]">
+                        {timeAgo(notif.created_at)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -197,27 +164,27 @@ export function NotificationBell() {
             )}
           </div>
 
-          {/* Footer — parchment ringan + hairline */}
           <div className="flex items-center justify-between gap-2 border-t border-[#e0e0e0] bg-[#f5f5f7] px-3 py-2.5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              loading={pending}
+              disabled={unread === 0}
               onClick={handleMarkAllRead}
-              disabled={pending || unread === 0}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] font-medium leading-[1.29] text-[#333333] outline-none transition-colors hover:bg-white hover:text-[#EA5329] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#333333] focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2"
+              className="h-auto gap-1.5 px-2 py-1.5 text-[13px] text-[#333333] hover:text-brand"
             >
-              <CheckCheck size={14} className="shrink-0" aria-hidden />
+              <CheckCheck size={14} aria-hidden />
               Tandai semua dibaca
-            </button>
-            <Link
-              href="/dashboard/notifications"
-              onClick={() => setOpen(false)}
-              className="rounded-full px-3 py-1.5 text-[13px] font-medium leading-[1.29] text-[#EA5329] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 hover:underline"
-            >
-              Lihat selengkapnya
-            </Link>
+            </Button>
+            <Button asChild variant="link" size="sm" className="h-auto px-3 py-1.5 text-[13px]">
+              <Link href="/dashboard/notifications" onClick={() => setOpen(false)}>
+                Lihat selengkapnya
+              </Link>
+            </Button>
           </div>
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

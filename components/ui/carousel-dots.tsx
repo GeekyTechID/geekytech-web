@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type CarouselDotsProps = {
@@ -30,13 +31,15 @@ export function CarouselDots({
   return (
     <div className={cn("flex justify-center gap-1", className)}>
       {Array.from({ length: count }, (_, i) => (
-        <button
+        <Button
           key={i}
           type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onSelect(i)}
           aria-label={`Slide ${i + 1} dari ${count}`}
           aria-current={i === activeIndex ? true : undefined}
-          className="flex h-8 w-8 items-center justify-center transition-transform duration-[160ms] ease-spring focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] motion-safe:active:scale-95 motion-safe:active:duration-[50ms]"
+          className="h-8 w-8"
         >
           <span
             className={cn(
@@ -44,7 +47,7 @@ export function CarouselDots({
               i === activeIndex ? active : cn("w-2", inactive),
             )}
           />
-        </button>
+        </Button>
       ))}
     </div>
   );

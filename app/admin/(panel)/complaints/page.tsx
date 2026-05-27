@@ -46,13 +46,11 @@ export default async function AdminComplaintsPage({
     query = query.or(`reason.ilike.%${q}%`);
   }
 
-  const { data: complaints, count } = await query;
+  const [{ data: complaints, count }, openCount] = await Promise.all([
+    query,
+    supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
+  ]);
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
-
-  const openCount = await supabase
-    .from("complaints")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "open");
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">

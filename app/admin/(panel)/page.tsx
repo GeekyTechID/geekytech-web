@@ -14,10 +14,12 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { cache } from "react";
+
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah, formatDate, formatRelativeDate } from "@/lib/format";
-import { RevenueChart, OrdersChart } from "@/components/admin/revenue-chart";
+import { formatRupiah, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { DashboardRevenueChart, DashboardOrdersChart } from "@/components/admin/dashboard-charts";
 
 export const metadata: Metadata = { title: "Dashboard Admin" };
 export const revalidate = 60; // ISR: refresh data setiap 60 detik
@@ -50,18 +52,28 @@ const ORDER_STATUS_CONFIG: Record<
 };
 
 // ----------------------------------------------------------------
-// Data fetching
+// Module-level constants (avoids re-allocation on every request)
 // ----------------------------------------------------------------
-async function fetchDashboardData() {
-  const supabase = await createClient();
+const PAID_STATUSES: OrderStatus[] = [
+  "paid",
+  "processing",
+  "shipped",
+  "delivered",
+  "completed",
+];
 
-  const PAID_STATUSES: OrderStatus[] = [
-    "paid",
-    "processing",
-    "shipped",
-    "delivered",
-    "completed",
-  ];
+const ALL_STATUSES: OrderStatus[] = [
+  "pending_payment", "paid", "processing", "shipped",
+  "delivered", "completed", "cancelled", "refunded",
+];
+
+const TABLE_HEADERS = ["No. Order", "Pembeli", "Status", "Total", "Tanggal"] as const;
+
+// ----------------------------------------------------------------
+// Data fetching — wrapped in cache() for per-request deduplication
+// ----------------------------------------------------------------
+const fetchDashboardData = cache(async function fetchDashboardData() {
+  const supabase = await createClient();
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
@@ -73,7 +85,7 @@ async function fetchDashboardData() {
     revenueToday,
     revenueWeek,
     revenueMonth,
-    ordersByStatus,
+    statusCountResults,
     newCustomersWeek,
     newCustomersMonth,
     lowStockVariants,
@@ -103,10 +115,12 @@ async function fetchDashboardData() {
       .in("status", PAID_STATUSES)
       .gte("created_at", monthStart),
 
-    // Order breakdown by status
-    supabase
-      .from("orders")
-      .select("status"),
+    // Order counts per status — COUNT only, no row data transferred
+    Promise.all(
+      ALL_STATUSES.map((s) =>
+        supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", s),
+      ),
+    ),
 
     // Pelanggan baru minggu ini
     supabase
@@ -185,19 +199,21 @@ async function fetchDashboardData() {
     ...v,
   }));
 
-  // Order status counts
+  // Order status counts — assembled from per-status COUNT results
   const statusCounts: Partial<Record<OrderStatus, number>> = {};
-  for (const row of ordersByStatus.data ?? []) {
-    const s = row.status as OrderStatus;
-    statusCounts[s] = (statusCounts[s] ?? 0) + 1;
-  }
+  let totalOrders = 0;
+  ALL_STATUSES.forEach((s, i) => {
+    const c = statusCountResults[i].count ?? 0;
+    statusCounts[s] = c;
+    totalOrders += c;
+  });
 
   return {
     stats: {
       revenueToday: sumRevenue(revenueToday.data),
       revenueWeek: sumRevenue(revenueWeek.data),
       revenueMonth: sumRevenue(revenueMonth.data),
-      totalOrders: (ordersByStatus.data ?? []).length,
+      totalOrders,
       newCustomersWeek: newCustomersWeek.count ?? 0,
       newCustomersMonth: newCustomersMonth.count ?? 0,
     },
@@ -208,7 +224,7 @@ async function fetchDashboardData() {
     recentReviews: recentReviews.data ?? [],
     dailyChartData,
   };
-}
+});
 
 // ----------------------------------------------------------------
 // Page
@@ -296,7 +312,7 @@ export default async function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="admin-section-title">Revenue — 30 Hari Terakhir</h2>
           </div>
-          <RevenueChart data={dailyChartData} />
+          <DashboardRevenueChart data={dailyChartData} />
         </div>
 
         {/* Side stats */}
@@ -304,7 +320,7 @@ export default async function AdminDashboardPage() {
           {/* Orders chart */}
           <div className="admin-utility-card flex flex-1 flex-col space-y-3 p-5">
             <h2 className="admin-section-title">Order — 30 Hari Terakhir</h2>
-            <OrdersChart data={dailyChartData} />
+            <DashboardOrdersChart data={dailyChartData} />
           </div>
 
           {/* Pelanggan */}
@@ -385,7 +401,7 @@ export default async function AdminDashboardPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
-                {["No. Order", "Pembeli", "Status", "Total", "Tanggal"].map((h) => (
+                {TABLE_HEADERS.map((h) => (
                   <th
                     key={h}
                     className="whitespace-nowrap px-5 py-2.5 text-left text-[11px] font-semibold uppercase text-foreground"

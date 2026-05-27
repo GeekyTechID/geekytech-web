@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   ChevronDown,
   LayoutDashboard,
-  Loader2,
   LogOut,
   Menu,
   Package,
@@ -18,6 +17,41 @@ import {
   X,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { toast } from "sonner";
+
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/auth-store";
+import { useCartStore } from "@/store/cart-store";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { NotificationBell } from "@/components/layout/notification-bell";
+import type { Tables } from "@/types/supabase";
 
 type SearchResult = {
   id: string;
@@ -27,16 +61,6 @@ type SearchResult = {
   sale_price: number | null;
   image: string | null;
 };
-import { toast } from "sonner";
-
-import { useAuth } from "@/hooks/use-auth";
-import { useAuthStore } from "@/store/auth-store";
-import { useCartStore } from "@/store/cart-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Button } from "@/components/ui/button";
-import { NotificationBell } from "@/components/layout/notification-bell";
-import { cn } from "@/lib/utils";
-import type { Tables } from "@/types/supabase";
 
 export type StoreHeaderCategory = { id: string; name: string; slug: string };
 
@@ -61,6 +85,9 @@ type StoreHeaderProps = {
   initialCartCount?: number;
 };
 
+const searchInputClass =
+  "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0 dark:bg-transparent";
+
 export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -78,35 +105,15 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [avatarImgError, setAvatarImgError] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     startTransition(() => {
       setMobileMenuOpen(false);
     });
   }, [pathname]);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
 
   const fetchSearchResults = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -160,8 +167,12 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
           key={r.id}
           href={`/products/${r.slug}`}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => { setShowDropdown(false); setSearchQuery(""); setSearchResults([]); }}
-          className="flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-muted"
+          onClick={() => {
+            setShowDropdown(false);
+            setSearchQuery("");
+            setSearchResults([]);
+          }}
+          className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-muted"
         >
           {r.image ? (
             <Image src={r.image} alt={r.name} width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
@@ -181,8 +192,12 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
       <Link
         href={`/search?q=${encodeURIComponent(searchQuery.trim())}`}
         onMouseDown={(e) => e.preventDefault()}
-        onClick={() => { setShowDropdown(false); setSearchQuery(""); setSearchResults([]); }}
-        className="flex items-center justify-center border-t border-neutral-100 px-3 py-2 text-xs font-medium text-[#EA5329] hover:bg-neutral-50 dark:border-border dark:hover:bg-muted"
+        onClick={() => {
+          setShowDropdown(false);
+          setSearchQuery("");
+          setSearchResults([]);
+        }}
+        className="flex items-center justify-center border-t border-neutral-100 px-3 py-2 text-xs font-medium text-brand transition-colors hover:bg-neutral-50 dark:border-border dark:hover:bg-muted"
       >
         Lihat semua hasil untuk &ldquo;{searchQuery.trim()}&rdquo; →
       </Link>
@@ -206,10 +221,6 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
 
   const avatarUrl = resolveStoreHeaderAvatarUrl(profile, user);
 
-  useEffect(() => {
-    setAvatarImgError(false);
-  }, [avatarUrl]);
-
   const userInitials = profile?.full_name
     ? profile.full_name
         .split(" ")
@@ -223,16 +234,17 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
     <>
       <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white dark:border-border dark:bg-background">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          {/* Baris atas */}
           <div className="flex items-center gap-3 py-3 md:py-4">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setMobileMenuOpen(true)}
-              className="shrink-0 p-2 text-neutral-600 md:hidden dark:text-muted-foreground"
+              className="shrink-0 text-neutral-600 md:hidden dark:text-muted-foreground"
               aria-label="Buka menu"
             >
               <Menu size={22} />
-            </button>
+            </Button>
 
             <Link href="/" className="relative block h-8 w-[9.5rem] shrink-0 sm:h-9 sm:w-[11.5rem]" aria-label="GeekyTech — Beranda">
               <Image
@@ -250,8 +262,8 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
               className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 sm:block"
             >
               <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3 dark:border-border dark:bg-muted">
-                <Search size={14} className="mr-2 shrink-0 text-neutral-400" />
-                <input
+                <Search size={14} className="mr-2 shrink-0 text-neutral-400" aria-hidden />
+                <Input
                   ref={searchInputRef}
                   type="search"
                   value={searchQuery}
@@ -260,108 +272,116 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                   onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
                   onBlur={closeDropdown}
                   placeholder="Cari produk..."
-                  className="h-11 min-w-0 flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500 dark:text-foreground dark:placeholder:text-muted-foreground"
+                  className={searchInputClass}
                   aria-label="Cari produk"
                   aria-expanded={showDropdown}
                   aria-autocomplete="list"
                 />
-                {isSearching && <Loader2 size={14} className="shrink-0 animate-spin text-neutral-400" />}
+                {isSearching ? <Spinner className="size-3.5 shrink-0 text-neutral-400" /> : null}
               </div>
               {searchDropdown}
             </form>
 
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-              <Link
-                href="/cart"
-                className="relative hidden items-center justify-center rounded-full p-2 text-neutral-600 outline-none transition-colors hover:bg-black/[0.04] hover:text-black focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 sm:inline-flex dark:text-muted-foreground dark:hover:bg-white/10 dark:hover:text-foreground"
-                aria-label={`Keranjang${cartCount > 0 ? ` (${cartCount})` : ""}`}
-              >
-                <ShoppingCart size={20} />
-                {cartCount > 0 && (
-                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#EA5329] px-1 text-[10px] font-bold leading-none text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </Link>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="icon-sm"
+                    className="relative hidden sm:inline-flex"
+                  >
+                    <Link
+                      href="/cart"
+                      aria-label={`Keranjang${cartCount > 0 ? ` (${cartCount})` : ""}`}
+                    >
+                      <ShoppingCart size={20} />
+                      {cartCount > 0 ? (
+                        <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">
+                          {cartCount > 99 ? "99+" : cartCount}
+                        </span>
+                      ) : null}
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Keranjang</TooltipContent>
+              </Tooltip>
               <ThemeToggle className="hidden sm:flex" />
-              {isAuthenticated && <NotificationBell />}
+              {isAuthenticated ? <NotificationBell /> : null}
 
               {isAuthenticated ? (
-                <div ref={userMenuRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                    className="flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium dark:border-border"
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="menu"
-                    aria-label="Menu akun"
-                  >
-                    <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full bg-black dark:bg-foreground">
-                      {avatarUrl && !avatarImgError ? (
-                        <img
-                          key={avatarUrl}
-                          src={avatarUrl}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={() => setAvatarImgError(true)}
-                        />
-                      ) : (
-                        <span className="flex h-full w-full items-center justify-center text-[10px] font-black text-white dark:text-background">
-                          {userInitials}
-                        </span>
-                      )}
-                    </span>
-                    <ChevronDown
-                      size={12}
-                      className={cn(
-                        "shrink-0 text-muted-foreground transition-transform duration-150",
-                        userMenuOpen && "rotate-180",
-                      )}
-                    />
-                  </button>
-                  {userMenuOpen && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-full z-50 mt-1 w-52 border border-neutral-200 bg-white py-1 shadow-lg dark:border-border dark:bg-background"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 px-2"
+                      aria-label="Menu akun"
                     >
-                      <div className="border-b border-neutral-100 px-3 py-2 dark:border-border">
-                        <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Pengguna"}</p>
-                        <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-                      </div>
-                      <HeaderMenuLink icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
-                      <HeaderMenuLink icon={User} label="Profil" href="/dashboard/profile" />
-                      <HeaderMenuLink icon={Package} label="Pesanan" href="/dashboard/orders" />
-                      {isAdmin && (
-                        <HeaderMenuLink icon={Settings} label="Admin" href="/admin" />
-                      )}
-                      <div className="my-1 border-t border-neutral-100 dark:border-border" />
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
-                      >
-                        {isLoggingOut ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <LogOut size={14} />
-                        )}
-                        Keluar
-                      </button>
-                    </div>
-                  )}
-                </div>
+                      <Avatar className="h-8 w-8">
+                        {avatarUrl ? (
+                          <AvatarImage src={avatarUrl} alt="" referrerPolicy="no-referrer" />
+                        ) : null}
+                        <AvatarFallback className="bg-[#1d1d1f] text-[10px] font-black text-white dark:bg-foreground dark:text-background">
+                          {userInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown size={12} className="shrink-0 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Pengguna"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="flex items-center gap-2">
+                        <LayoutDashboard size={14} />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/profile" className="flex items-center gap-2">
+                        <User size={14} />
+                        Profil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/orders" className="flex items-center gap-2">
+                        <Package size={14} />
+                        Pesanan
+                      </Link>
+                    </DropdownMenuItem>
+                    {isAdmin ? (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center gap-2">
+                          <Settings size={14} />
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : null}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => void handleLogout()}
+                      disabled={isLoggingOut}
+                      className="gap-2"
+                    >
+                      <LogOut size={14} />
+                      Keluar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <div className="flex items-center gap-1">
-                  <Link
-                    href="/login"
-                    className="hidden items-center gap-1.5 px-2 text-sm font-semibold text-neutral-800 sm:flex dark:text-foreground"
-                  >
-                    <User size={16} strokeWidth={1.75} />
-                    Masuk
-                  </Link>
+                  <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                    <Link href="/login">
+                      <User size={16} strokeWidth={1.75} />
+                      Masuk
+                    </Link>
+                  </Button>
                   <Button asChild variant="primary" size="sm" className="text-xs font-bold uppercase">
                     <Link href="/register">Daftar</Link>
                   </Button>
@@ -370,11 +390,10 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
             </div>
           </div>
 
-          {/* Pencarian mobile */}
           <form onSubmit={handleSearchSubmit} className="relative pb-3 sm:hidden">
             <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3 dark:border-border dark:bg-muted">
-              <Search size={15} className="shrink-0 text-neutral-500" />
-              <input
+              <Search size={15} className="shrink-0 text-neutral-500" aria-hidden />
+              <Input
                 type="search"
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -382,18 +401,17 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                 onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
                 onBlur={closeDropdown}
                 placeholder="Cari produk..."
-                className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-neutral-500"
+                className="h-10 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0"
                 aria-label="Cari produk"
               />
-              {isSearching && <Loader2 size={13} className="shrink-0 animate-spin text-neutral-400" />}
+              {isSearching ? <Spinner className="size-3 shrink-0 text-neutral-400" /> : null}
             </div>
             {searchDropdown}
           </form>
 
-          {/* Kategori */}
           <nav
             aria-label="Kategori produk"
-            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6 dark:border-border dark:text-foreground"
+            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6 dark:text-foreground"
           >
             {categories.length === 0 ? (
               <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>
@@ -412,96 +430,95 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
         </div>
       </header>
 
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-black/50 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden
-          />
-          <aside className="fixed left-0 top-0 z-[60] flex h-full w-[min(100%,20rem)] flex-col border-r border-neutral-200 bg-white dark:border-border dark:bg-background md:hidden">
-            <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-border">
-              <span className="text-sm font-black uppercase">Menu</span>
-              <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-2" aria-label="Tutup">
-                <X size={18} />
-              </button>
-            </div>
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
-              <p className="mb-2 px-2 text-[10px] font-semibold uppercase text-muted-foreground">Kategori</p>
-              <ul className="space-y-0.5">
-                {categories.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      href={`/products?category=${encodeURIComponent(c.slug)}`}
-                      className="flex h-10 items-center px-2 text-sm font-medium"
-                    >
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <div className="my-4 border-t border-neutral-100 dark:border-border" />
-              {!isAuthenticated ? (
-                <div className="space-y-2 px-2">
-                  <Button asChild variant="pearl" className="w-full font-bold uppercase">
-                    <Link href="/login">Masuk</Link>
-                  </Button>
-                  <Button asChild variant="primary" className="w-full font-bold uppercase">
-                    <Link href="/register">Daftar</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-1 px-2">
-                  <HeaderMenuLink icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
-                  <HeaderMenuLink icon={User} label="Profil" href="/dashboard/profile" />
-                  <HeaderMenuLink icon={Package} label="Pesanan" href="/dashboard/orders" />
-                  {isAdmin && <HeaderMenuLink icon={Settings} label="Admin" href="/admin" />}
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex w-full items-center gap-2 py-2 text-sm text-red-600 disabled:opacity-50"
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" showCloseButton={false} className="w-[min(100%,20rem)] gap-0 p-0">
+          <SheetHeader className="flex-row items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-border">
+            <SheetTitle className="text-sm font-black uppercase">Menu</SheetTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Tutup menu"
+            >
+              <X size={18} />
+            </Button>
+          </SheetHeader>
+          <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <p className="mb-2 px-2 text-[10px] font-semibold uppercase text-muted-foreground">Kategori</p>
+            <ul className="space-y-0.5">
+              {categories.map((c) => (
+                <li key={c.id}>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="h-10 w-full justify-start px-2 text-sm font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    {isLoggingOut ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <LogOut size={16} />
-                    )}
-                    Keluar
-                  </button>
-                </div>
-              )}
-            </nav>
-            <div className="border-t border-neutral-100 p-4 dark:border-border">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Tema</span>
-                <ThemeToggle variant="full" />
+                    <Link href={`/products?category=${encodeURIComponent(c.slug)}`}>{c.name}</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <div className="my-4 border-t border-neutral-100 dark:border-border" />
+            {!isAuthenticated ? (
+              <div className="space-y-2 px-2">
+                <Button asChild variant="pearl" className="w-full font-bold uppercase">
+                  <Link href="/login">Masuk</Link>
+                </Button>
+                <Button asChild variant="primary" className="w-full font-bold uppercase">
+                  <Link href="/register">Daftar</Link>
+                </Button>
               </div>
+            ) : (
+              <div className="space-y-1 px-2">
+                <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                  <Link href="/dashboard">
+                    <LayoutDashboard size={16} />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                  <Link href="/dashboard/profile">
+                    <User size={16} />
+                    Profil
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                  <Link href="/dashboard/orders">
+                    <Package size={16} />
+                    Pesanan
+                  </Link>
+                </Button>
+                {isAdmin ? (
+                  <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                    <Link href="/admin">
+                      <Settings size={16} />
+                      Admin
+                    </Link>
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="destructive-ghost"
+                  loading={isLoggingOut}
+                  onClick={() => void handleLogout()}
+                  className="w-full justify-start gap-2"
+                >
+                  <LogOut size={16} />
+                  Keluar
+                </Button>
+              </div>
+            )}
+          </nav>
+          <div className="border-t border-neutral-100 p-4 dark:border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">Tema</span>
+              <ThemeToggle variant="full" />
             </div>
-          </aside>
-        </>
-      )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
-  );
-}
-
-function HeaderMenuLink({
-  icon: Icon,
-  label,
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-}) {
-  return (
-    <Link
-      role="menuitem"
-      href={href}
-      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-muted"
-    >
-      <Icon size={14} className="text-muted-foreground" />
-      {label}
-    </Link>
   );
 }

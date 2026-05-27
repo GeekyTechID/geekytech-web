@@ -40,6 +40,8 @@ const HISTORY_TYPE_BADGE: Record<StockHistoryType, string> = {
   adjustment: "bg-muted text-foreground",
 };
 
+const STOCK_HISTORY_HEADERS = ["Tanggal", "Produk / Varian", "Tipe", "Jumlah", "Catatan"] as const;
+
 const HISTORY_TYPE_LABEL: Record<StockHistoryType, string> = {
   in: "Masuk",
   out: "Keluar",
@@ -99,14 +101,12 @@ function buildAlertHref(filters: StockListFilters, enableAlert: boolean): string
 async function fetchStockData(filters: StockListFilters, requestedPage: number) {
   const supabase = await createClient();
 
-  const { count: totalCountRaw } = await buildStockVariantCountQuery(supabase, filters);
-  const totalCount = totalCountRaw ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
-  const page = Math.min(Math.max(1, requestedPage), totalPages);
+  const page = Math.max(1, requestedPage);
   const from = (page - 1) * PER_PAGE;
   const to = from + PER_PAGE - 1;
 
-  const [variants, history] = await Promise.all([
+  const [countResult, variants, history] = await Promise.all([
+    buildStockVariantCountQuery(supabase, filters),
     buildStockVariantListQuery(supabase, filters).range(from, to),
     supabase
       .from("stock_history")
@@ -117,12 +117,15 @@ async function fetchStockData(filters: StockListFilters, requestedPage: number) 
       .limit(50),
   ]);
 
+  const totalCount = countResult.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
+
   return {
     variants: (variants.data ?? []) as VariantRow[],
     history: (history.data ?? []) as HistoryRow[],
     totalCount,
     totalPages,
-    page,
+    page: Math.min(page, totalPages),
   };
 }
 
@@ -232,7 +235,7 @@ export default async function AdminStockPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
-                {["Tanggal", "Produk / Varian", "Tipe", "Jumlah", "Catatan"].map((h) => (
+                {STOCK_HISTORY_HEADERS.map((h) => (
                   <th
                     key={h}
                     className="whitespace-nowrap px-5 py-2.5 text-[10px] font-semibold uppercase text-foreground"

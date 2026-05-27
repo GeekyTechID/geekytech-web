@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronDown, ChevronUp, Loader2, Tag, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { CartLineCard, type CartLineView } from "@/components/store/cart-line-card";
@@ -13,7 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
   MIDTRANS_CHECKOUT_PAYMENT_OPTIONS,
   type MidtransCheckoutPaymentId,
@@ -546,38 +553,43 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm">
-              <button
-                type="button"
-                onClick={() => setShippingOpen((o) => !o)}
-                className={cn(
-                  "flex w-full items-center justify-between px-4 py-4 transition-colors",
-                  selectedShipping && !shippingOpen
-                    ? "bg-white text-[#1d1d1f]"
-                    : "bg-[#2a2a2c] text-white",
-                )}
-              >
-                <span className="text-sm font-semibold uppercase">Metode pengiriman</span>
-                {selectedShipping && !shippingOpen ? (
-                  <span className="flex items-center gap-2">
-                    <CourierLogo code={selectedShipping.courierCode} name={selectedShipping.courierName} className="h-6 w-auto max-w-[56px]" />
-                    <span className="flex flex-col items-end">
-                      <span className="text-sm font-semibold text-[#1d1d1f] leading-tight">{selectedShipping.serviceName} · {formatRupiah(selectedShipping.price)}</span>
-                      <span className="text-[11px] text-[#7a7a7a] leading-tight">{selectedShipping.etd}</span>
+            <Collapsible
+              open={shippingOpen}
+              onOpenChange={setShippingOpen}
+              className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={cn(
+                    "h-auto w-full justify-between rounded-none px-4 py-4 hover:bg-transparent",
+                    selectedShipping && !shippingOpen
+                      ? "bg-white text-[#1d1d1f]"
+                      : "bg-[#2a2a2c] text-white hover:bg-[#2a2a2c]",
+                  )}
+                >
+                  <span className="text-sm font-semibold uppercase">Metode pengiriman</span>
+                  {selectedShipping && !shippingOpen ? (
+                    <span className="flex items-center gap-2">
+                      <CourierLogo code={selectedShipping.courierCode} name={selectedShipping.courierName} className="h-6 w-auto max-w-[56px]" />
+                      <span className="flex flex-col items-end">
+                        <span className="text-sm font-semibold text-[#1d1d1f] leading-tight">{selectedShipping.serviceName} · {formatRupiah(selectedShipping.price)}</span>
+                        <span className="text-[11px] text-[#7a7a7a] leading-tight">{selectedShipping.etd}</span>
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-[#1d1d1f] opacity-50" aria-hidden />
                     </span>
-                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#1d1d1f]" aria-hidden />
-                  </span>
-                ) : shippingOpen ? (
-                  <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
-                ) : (
-                  <ChevronDown className="h-4 w-4 opacity-80" aria-hidden />
-                )}
-              </button>
-              {shippingOpen && (
-                <div className="space-y-2 p-4">
+                  ) : shippingOpen ? (
+                    <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 opacity-80" aria-hidden />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 p-4">
                   {ratesLoading ? (
                     <div className="flex items-center gap-2 text-sm text-[#5c5c5c]">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Spinner className="size-4" />
                       Menghitung ongkir…
                     </div>
                   ) : shippingOptions.length === 0 ? (
@@ -630,9 +642,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                       })}
                     </>
                   )}
-                </div>
-              )}
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="overflow-hidden rounded-2xl border border-[#1a1a1a]/40 bg-[#1a1a1a] text-white shadow-lg">
               <div className="px-5 pt-5">
@@ -688,14 +699,16 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase text-white/60">Ada kupon diskon?</p>
                     {availableCoupons.length > 0 && (
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="xs"
                         onClick={() => setPromoOpen(true)}
-                        className="flex items-center gap-1 text-[11px] font-semibold text-white hover:underline"
+                        className="h-auto gap-1 p-0 text-[11px] font-semibold text-white"
                       >
                         <Tag className="h-3 w-3" />
                         pakai promo biar lebih hemat
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {couponDiscount > 0 ? (
@@ -704,35 +717,38 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                       <span className="min-w-0 flex-1 text-sm font-semibold text-white">
                         {couponInput.toUpperCase()} · {couponLabel}
                       </span>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => {
                           setCouponDiscount(0);
                           setCouponInput("");
                           setCouponLabel("");
                         }}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+                        className="h-6 w-6 shrink-0 rounded-full bg-white/15 text-white hover:bg-white/25"
                         aria-label="Hapus kupon"
                       >
                         <X className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   ) : (
                     <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                      <input
+                      <Input
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value)}
                         placeholder="Kode kupon"
-                        className="h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-black/20 px-3 text-sm text-white outline-none placeholder:text-white/40 focus:ring-2 focus:ring-[#EA5329]/40"
+                        className="h-11 min-w-0 flex-1 rounded-lg border-white/20 bg-black/20 text-sm text-white placeholder:text-white/40 focus-visible:ring-[#EA5329]/40"
                       />
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        loading={couponApplying}
                         onClick={() => void applyCoupon(undefined)}
-                        disabled={couponApplying}
-                        className="h-11 shrink-0 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+                        className="h-11 shrink-0 border-white/30 bg-transparent text-white hover:bg-white/10"
                       >
-                        {couponApplying ? "…" : "Pakai"}
-                      </button>
+                        Pakai
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -749,32 +765,37 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-[#e8e4dc] bg-white shadow-sm">
-              <button
-                type="button"
-                onClick={() => setPaymentOpen((o) => !o)}
-                className={cn(
-                  "flex w-full items-center justify-between px-4 py-4 transition-colors",
-                  !paymentOpen
-                    ? "bg-white text-[#1d1d1f]"
-                    : "bg-[#2a2a2c] text-white",
-                )}
-              >
-                <span className="text-sm font-semibold uppercase">Metode pembayaran</span>
-                {!paymentOpen ? (
-                  <span className="flex items-center gap-2">
-                    <PaymentLogo id={paymentMethod} label={selectedPaymentOption?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
-                    <span className="text-sm font-semibold text-[#1d1d1f]">
-                      {selectedPaymentOption?.label}
+            <Collapsible
+              open={paymentOpen}
+              onOpenChange={setPaymentOpen}
+              className="overflow-hidden rounded-2xl border border-[#e8e4dc] bg-white shadow-sm"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={cn(
+                    "h-auto w-full justify-between rounded-none px-4 py-4 hover:bg-transparent",
+                    !paymentOpen
+                      ? "bg-white text-[#1d1d1f]"
+                      : "bg-[#2a2a2c] text-white hover:bg-[#2a2a2c]",
+                  )}
+                >
+                  <span className="text-sm font-semibold uppercase">Metode pembayaran</span>
+                  {!paymentOpen ? (
+                    <span className="flex items-center gap-2">
+                      <PaymentLogo id={paymentMethod} label={selectedPaymentOption?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
+                      <span className="text-sm font-semibold text-[#1d1d1f]">
+                        {selectedPaymentOption?.label}
+                      </span>
+                      <ChevronDown className="h-4 w-4 shrink-0 text-[#1d1d1f] opacity-50" aria-hidden />
                     </span>
-                    <ChevronDown className="h-4 w-4 opacity-50 shrink-0 text-[#1d1d1f]" aria-hidden />
-                  </span>
-                ) : (
-                  <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
-                )}
-              </button>
-              {paymentOpen && (
-              <div className="p-5">
+                  ) : (
+                    <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-5">
               <ul className="space-y-2">
                 {MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.map((m) => (
                   <li key={m.id}>
@@ -804,8 +825,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                   </li>
                 ))}
               </ul>
-              </div>
-              )}
+              </CollapsibleContent>
 
               <div className="p-5 pt-0">
               <Button
@@ -823,7 +843,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                 mengikuti ketentuan kurir (Biteship).
               </p>
               </div>
-            </div>
+            </Collapsible>
 
           </aside>
         </div>
@@ -834,13 +854,15 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       <DialogContent className="max-h-[85vh] max-w-lg overflow-hidden p-0">
         <DialogHeader className="flex-row items-center justify-between border-b border-[#e0e0e0] px-6 py-4">
           <DialogTitle className="text-[17px] font-semibold text-[#1d1d1f]">Promo tersedia</DialogTitle>
-          <button
+          <Button
             type="button"
+            variant="pearl"
+            size="icon-sm"
             onClick={() => setPromoOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f7] text-[#1d1d1f] transition hover:bg-[#e8e8ed]"
+            aria-label="Tutup"
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </DialogHeader>
 
         <div className="overflow-y-auto px-6 pb-6 pt-4">
@@ -891,8 +913,10 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                             <p className="mt-2 text-[11px] font-semibold text-[#EA5329]">{notEligible}</p>
                           )}
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="primary"
+                          size="sm"
                           disabled={!!notEligible}
                           onClick={() => {
                             setCouponInput(c.code);
@@ -900,14 +924,12 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                             void applyCoupon(c.code);
                           }}
                           className={cn(
-                            "shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold text-white transition",
-                            notEligible
-                              ? "cursor-not-allowed bg-[#d0cec9]"
-                              : "bg-[#EA5329] hover:bg-[#d44820] active:scale-95",
+                            "shrink-0 text-[13px]",
+                            notEligible && "opacity-60",
                           )}
                         >
                           Pakai
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>

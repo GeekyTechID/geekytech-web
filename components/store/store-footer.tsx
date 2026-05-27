@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { fetchShopBrands } from "@/lib/data/home-storefront";
 
 const FOOTER_DISCOVER = [
@@ -45,21 +47,23 @@ export async function StoreFooter() {
               <label htmlFor="footer-newsletter" className="sr-only">
                 Email newsletter
               </label>
-              <input
+              <Input
                 id="footer-newsletter"
                 name="email"
                 type="email"
                 autoComplete="email"
                 placeholder="Email kamu.."
-                className="h-12 w-full rounded-full border border-white/25 bg-transparent pl-5 pr-14 text-sm text-white placeholder:text-white/45 focus:border-white focus:outline-none"
+                className="h-12 rounded-full border-white/25 bg-transparent pr-14 pl-5 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-white focus-visible:ring-white/30 dark:bg-transparent"
               />
-              <button
+              <Button
                 type="button"
-                className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black transition hover:bg-white/90"
+                variant="pearl"
+                size="icon-sm"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white text-black hover:bg-white/90"
                 aria-label="Daftar newsletter"
               >
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </form>
 
             <p className="relative z-10 mt-14 text-xs text-white/45">

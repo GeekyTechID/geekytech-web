@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import type { BrandStoreCategoryOption, BrandStoreSortKey } from "@/lib/types/brand-store-catalog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SORT_OPTIONS: { value: BrandStoreSortKey; label: string }[] = [
   { value: "latest", label: "Terbaru" },
@@ -15,32 +23,8 @@ const SORT_OPTIONS: { value: BrandStoreSortKey; label: string }[] = [
   { value: "name-desc", label: "Nama Z–A" },
 ];
 
-const pillSelectClass =
-  "h-11 w-full min-w-[10.5rem] cursor-pointer appearance-none rounded-full border border-[#e0e0e0] bg-white pl-4 pr-11 text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#EA5329]/30";
-
-type PillSelectProps = {
-  id: string;
-  ariaLabel: string;
-  value: string;
-  onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
-  children: ReactNode;
-};
-
-function PillSelect({ id, ariaLabel, value, onChange, children }: PillSelectProps) {
-  return (
-    <div className="relative min-w-[10.5rem] shrink-0">
-      <select id={id} aria-label={ariaLabel} className={pillSelectClass} value={value} onChange={onChange}>
-        {children}
-      </select>
-      <span
-        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#1d1d1f]"
-        aria-hidden
-      >
-        <ChevronDown className="h-4 w-4 shrink-0" strokeWidth={2} />
-      </span>
-    </div>
-  );
-}
+const pillSelectTriggerClass =
+  "h-11 min-w-[10.5rem] rounded-full border-[#e0e0e0] bg-white text-sm text-[#1d1d1f] focus:ring-[#EA5329]/30";
 
 type BrandStoreCatalogFiltersProps = {
   categories: BrandStoreCategoryOption[];
@@ -103,13 +87,13 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
         <label htmlFor="brand-catalog-search" className="sr-only">
           Cari produk
         </label>
-        <input
+        <Input
           id="brand-catalog-search"
           type="search"
           value={qInput}
           onChange={(e) => scheduleSearch(e.target.value)}
           placeholder="Cari produkmu di sini..."
-          className="h-11 w-full rounded-full border border-[#e0e0e0] bg-[#fafafc] py-2 pl-4 pr-12 text-sm text-[#1d1d1f] placeholder:text-[#7a7a7a] focus:border-[#EA5329] focus:outline-none focus:ring-2 focus:ring-[#EA5329]/25"
+          className="h-11 rounded-full border-[#e0e0e0] bg-[#fafafc] pr-12 text-sm text-[#1d1d1f] placeholder:text-[#7a7a7a] focus-visible:border-[#EA5329] focus-visible:ring-[#EA5329]/25"
           autoComplete="off"
         />
         <span className="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#1d1d1f] text-white">
@@ -118,44 +102,49 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
       </div>
 
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <PillSelect
-          id="brand-catalog-category"
-          ariaLabel="Kategori produk"
-          value={categoryId}
-          onChange={(e) => {
-            const v = e.target.value;
+        <Select
+          value={categoryId || "all"}
+          onValueChange={(v) => {
             pushParams((p) => {
-              if (v) p.set("category", v);
+              if (v && v !== "all") p.set("category", v);
               else p.delete("category");
             });
           }}
         >
-          <option value="">Semua kategori</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </PillSelect>
+          <SelectTrigger className={pillSelectTriggerClass} aria-label="Kategori produk">
+            <SelectValue placeholder="Semua kategori" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua kategori</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <PillSelect
-          id="brand-catalog-sort"
-          ariaLabel="Urutkan"
+        <Select
           value={sort}
-          onChange={(e) => {
-            const v = e.target.value as BrandStoreSortKey;
+          onValueChange={(v) => {
+            const key = v as BrandStoreSortKey;
             pushParams((p) => {
-              if (v && v !== "latest") p.set("sort", v);
+              if (key && key !== "latest") p.set("sort", key);
               else p.delete("sort");
             });
           }}
         >
-          {SORT_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </PillSelect>
+          <SelectTrigger className={pillSelectTriggerClass} aria-label="Urutkan">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
