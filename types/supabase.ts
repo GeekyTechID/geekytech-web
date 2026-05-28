@@ -722,6 +722,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          app_fee: number
           coupon_code: string | null
           coupon_id: string | null
           courier_company: string | null
@@ -748,6 +749,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          app_fee?: number
           coupon_code?: string | null
           coupon_id?: string | null
           courier_company?: string | null
@@ -774,6 +776,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          app_fee?: number
           coupon_code?: string | null
           coupon_id?: string | null
           courier_company?: string | null
