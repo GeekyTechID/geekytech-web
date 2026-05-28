@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -17,11 +16,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-/* ──────────────────────────────────────────────────────────────
-   Page title mapping berdasarkan pathname
-   ────────────────────────────────────────────────────────────── */
 const PAGE_TITLES: { pattern: RegExp; title: string }[] = [
   { pattern: /^\/admin$/, title: "Dashboard" },
   { pattern: /^\/admin\/products\/new$/, title: "Tambah Produk" },
@@ -49,9 +53,6 @@ function getPageTitle(pathname: string): string {
   return "Admin Panel";
 }
 
-/* ──────────────────────────────────────────────────────────────
-   AdminTopbar
-   ────────────────────────────────────────────────────────────── */
 type AdminTopbarProps = {
   onMenuClick: () => void;
 };
@@ -61,23 +62,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const { user, profile } = useAuth();
   const { reset } = useAuthStore();
 
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
   const pageTitle = getPageTitle(pathname);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(e.target as Node)
-      ) {
-        setUserMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -102,25 +87,22 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
   return (
     <header className="admin-topbar-surface sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 px-4 lg:px-6">
-      {/* Hamburger — tampil di mobile */}
       <button
+        type="button"
         onClick={onMenuClick}
-        className="md:hidden -ml-1 p-2 text-muted-foreground hover:text-foreground transition-swiss"
+        className="md:hidden -ml-1 p-2 text-muted-foreground transition-swiss hover:text-foreground"
         aria-label="Buka menu navigasi"
       >
         <Menu size={20} />
       </button>
 
-      {/* Judul halaman — memakai ruang antara menu & aksi */}
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-base font-semibold uppercase text-foreground sm:text-[21px]">
           {pageTitle}
         </h1>
       </div>
 
-      {/* Actions kanan */}
       <div className="flex items-center gap-1">
-        {/* Link ke website publik */}
         <Link
           href="/"
           target="_blank"
@@ -129,118 +111,71 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
-          <span className="hidden lg:inline font-medium text-sm">Website</span>
+          <span className="hidden text-sm font-medium lg:inline">Website</span>
         </Link>
 
-        {/* Theme toggle */}
         <ThemeToggle />
-
-        {/* Notification bell */}
         <AdminNotificationBell />
 
-        {/* User avatar + dropdown */}
-        <div ref={userMenuRef} className="relative ml-1">
-          <button
-            onClick={() => setUserMenuOpen((v) => !v)}
-            className="flex h-11 items-center gap-1.5 rounded-md border border-transparent px-3 transition-colors hover:border-[#e0e0e0] hover:bg-muted/60 dark:hover:border-border"
-            aria-expanded={userMenuOpen}
-            aria-haspopup="menu"
-            aria-label="Menu akun"
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
-              {initials}
-            </div>
-            <div className="hidden lg:block text-left min-w-0 max-w-[8rem]">
-              <p className="text-xs font-semibold leading-none truncate">
-                {profile?.full_name ?? "Admin"}
-              </p>
-              <p className="text-[10px] text-muted-foreground leading-none mt-0.5 truncate">
-                {user?.email}
-              </p>
-            </div>
-            <ChevronDown
-              size={12}
-              className={cn(
-                "text-muted-foreground transition-transform duration-150 hidden lg:block",
-                userMenuOpen && "rotate-180",
-              )}
-            />
-          </button>
-
-          {userMenuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-[#e0e0e0] bg-card py-1 dark:border-border"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="ml-1 h-11 gap-1.5 px-3 hover:bg-muted/60"
+              aria-label="Menu akun"
             >
-              {/* Info user */}
-              <div className="border-b border-[#e0e0e0] px-3 py-2.5 dark:border-border">
-                <p className="text-sm font-semibold truncate">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-[10px] font-black text-foreground">
+                {initials}
+              </div>
+              <div className="hidden min-w-0 max-w-[8rem] text-left lg:block">
+                <p className="truncate text-xs font-semibold leading-none">
                   {profile?.full_name ?? "Admin"}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="mt-0.5 truncate text-[10px] leading-none text-muted-foreground">
                   {user?.email}
                 </p>
               </div>
-
-              <TopbarMenuItem
-                icon={User}
-                label="Profil Saya"
-                href="/admin/settings/account"
-              />
-              <TopbarMenuItem
-                icon={Settings}
-                label="Pengaturan"
-                href="/admin/settings"
-              />
-              <TopbarMenuItem
-                icon={ExternalLink}
-                label="Lihat Website"
-                href="/"
-                external
-              />
-
-              <div className="border-t border-border my-1" />
-
-              <button
-                role="menuitem"
-                onClick={handleLogout}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-swiss"
-              >
-                <LogOut size={14} />
-                Keluar
-              </button>
-            </div>
-          )}
-        </div>
+              <ChevronDown size={12} className="hidden shrink-0 text-muted-foreground lg:block" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel className="font-normal">
+              <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Admin"}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/admin/settings/account" className="flex items-center gap-2">
+                <User size={14} />
+                Profil Saya
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/settings" className="flex items-center gap-2">
+                <Settings size={14} />
+                Pengaturan
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                <ExternalLink size={14} />
+                Lihat Website
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => void handleLogout()}
+              className="gap-2"
+            >
+              <LogOut size={14} />
+              Keluar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────
-   Helper
-   ────────────────────────────────────────────────────────────── */
-function TopbarMenuItem({
-  icon: Icon,
-  label,
-  href,
-  external = false,
-}: {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  external?: boolean;
-}) {
-  return (
-    <Link
-      role="menuitem"
-      href={href}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-      className="mx-1 flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
-    >
-      <Icon size={14} className="text-muted-foreground" />
-      {label}
-    </Link>
   );
 }

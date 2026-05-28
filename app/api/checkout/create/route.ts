@@ -218,8 +218,9 @@ export async function POST(req: Request) {
       couponCodeStored = disc.data.code;
     }
 
+    const APP_SERVICE_FEE = 1000;
     const shippingCost = ship.price;
-    const total = Math.max(0, subtotalRounded - discountAmount + shippingCost);
+    const total = Math.max(0, subtotalRounded - discountAmount + shippingCost + APP_SERVICE_FEE);
     if (total < 1000) {
       return Response.json({ success: false, error: "Total pembayaran terlalu kecil." }, { status: 400 });
     }
@@ -241,6 +242,7 @@ export async function POST(req: Request) {
         shipping_cost: shippingCost,
         shipping_insurance: 0,
         discount_amount: discountAmount,
+        app_fee: APP_SERVICE_FEE,
         total,
         courier_company: parsed.data.courierCode.toLowerCase(),
         courier_service: parsed.data.serviceCode,

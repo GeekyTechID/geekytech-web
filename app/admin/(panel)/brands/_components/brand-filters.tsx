@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "Semua Status" },
@@ -76,24 +76,17 @@ export function BrandFilters() {
         )}
       </div>
 
-      <Select
+      <FilterDropdown
+        aria-label="Status merek"
         value={status}
+        options={STATUS_OPTIONS}
         onValueChange={(v) => updateParam("status", v === "all" ? "" : v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Semua Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {STATUS_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
       {hasFilters && (
         <Button
           type="button"
-          variant="secondary"
+          variant="pearl"
           size="sm"
           className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
           onClick={() => {

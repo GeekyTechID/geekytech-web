@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Terbaru" },
@@ -48,7 +48,6 @@ export function CustomerFilters() {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Search */}
       <div className="relative min-w-0 flex-1">
         <Search
           size={14}
@@ -80,25 +79,17 @@ export function CustomerFilters() {
         )}
       </div>
 
-      {/* Sort */}
-      <Select
+      <FilterDropdown
+        aria-label="Urutkan pelanggan"
         value={sort}
+        options={SORT_OPTIONS}
         onValueChange={(v) => updateParam("sort", v === "newest" ? "" : v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Urutkan" />
-        </SelectTrigger>
-        <SelectContent>
-          {SORT_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
       {hasFilters && (
         <Button
           type="button"
-          variant="secondary"
+          variant="pearl"
           size="sm"
           className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
           onClick={() => {

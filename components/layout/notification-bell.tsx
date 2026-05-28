@@ -6,7 +6,11 @@ import { Bell, CheckCheck } from "lucide-react";
 
 import { markAllNotificationsReadAction } from "@/app/(dashboard)/dashboard/notifications/_actions";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 type NotifItem = {
@@ -74,6 +78,17 @@ export function NotificationBell() {
     closeTimer.current = setTimeout(() => setOpen(false), 200);
   }, []);
 
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      setOpen(next);
+      if (next) {
+        fetchedRef.current = false;
+        void fetchNotifs();
+      }
+    },
+    [fetchNotifs],
+  );
+
   const handleMarkAllRead = () => {
     startTransition(async () => {
       const res = await markAllNotificationsReadAction();
@@ -86,15 +101,14 @@ export function NotificationBell() {
 
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <DropdownMenu open={open} onOpenChange={handleOpenChange} modal={false}>
+        <DropdownMenuTrigger asChild>
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
             className="relative text-neutral-600 dark:text-muted-foreground"
             aria-label="Notifikasi"
-            onClick={() => void fetchNotifs()}
           >
             <Bell size={18} />
             {unread > 0 ? (
@@ -103,12 +117,12 @@ export function NotificationBell() {
               </span>
             ) : null}
           </Button>
-        </PopoverTrigger>
-        <PopoverContent
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
           align="end"
           sideOffset={8}
-          className="w-[min(100vw-2rem,22rem)] gap-0 overflow-hidden rounded-[18px] border-[#e0e0e0] p-0 shadow-none backdrop-blur-xl backdrop-saturate-150"
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="w-[min(100vw-2rem,22rem)] gap-0 overflow-hidden rounded-[18px] border-[#e0e0e0] p-0 shadow-md"
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <div className="flex items-center gap-2 border-b border-black/10 bg-[#2a2a2c] px-4 py-3 text-white">
             <span className="text-[14px] font-semibold leading-[1.29]">Notifikasi</span>
@@ -183,8 +197,8 @@ export function NotificationBell() {
               </Link>
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

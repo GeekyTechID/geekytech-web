@@ -3,13 +3,14 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ChevronDown, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AdminTableDeleteButton,
   AdminTableEditLink,
@@ -638,24 +639,19 @@ export function ProductTable({
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 space-y-4">
-            <div className="relative">
-              <select
-                value={selectedBrandId}
-                onChange={(e) => setSelectedBrandId(e.target.value)}
-                className="h-10 w-full appearance-none rounded-lg border border-[#e0e0e0] bg-background pl-3 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 dark:border-border"
-              >
-                <option value="">Pilih merek...</option>
-                <option value="__none__">— Tanpa merek</option>
+            <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
+              <SelectTrigger className="h-10 w-full">
+                <SelectValue placeholder="Pilih merek..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">— Tanpa merek</SelectItem>
                 {brands.map((b) => (
-                  <option key={b.id} value={b.id}>
+                  <SelectItem key={b.id} value={b.id}>
                     {b.name}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-foreground">
-                <ChevronDown className="h-4 w-4 shrink-0" strokeWidth={2} />
-              </span>
-            </div>
+              </SelectContent>
+            </Select>
             <div className="flex gap-2">
               <Button
                 variant="secondary"

@@ -319,7 +319,7 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                       className="gap-1.5 px-2"
                       aria-label="Menu akun"
                     >
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8 after:border-0">
                         {avatarUrl ? (
                           <AvatarImage src={avatarUrl} alt="" referrerPolicy="no-referrer" />
                         ) : null}

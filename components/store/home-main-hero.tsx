@@ -6,7 +6,6 @@ import Link from "next/link";
 import { CarouselDots } from "@/components/ui/carousel-dots";
 import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import type { StoreBanner } from "@/lib/data/home-storefront";
-
 const AUTO_MS = 6500;
 
 type HomeMainHeroProps = {
@@ -16,18 +15,16 @@ type HomeMainHeroProps = {
 
 const HeroSlide = memo(function HeroSlide({ banner, priority }: { banner: StoreBanner; priority: boolean }) {
   const inner = (
-    <div className="relative grid min-h-[220px] overflow-hidden md:min-h-[320px] lg:min-h-[400px]">
-      <div className="relative min-h-[220px] md:min-h-0">
-        {/* eslint-disable-next-line @next/next/no-img-element -- URL banner dari admin bisa domain eksternal */}
-        <img
-          src={banner.image_url}
-          alt={banner.title ?? ""}
-          className="absolute inset-0 h-full w-full object-cover object-center"
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : "auto"}
-          decoding="async"
-        />
-      </div>
+    <div className="relative aspect-[21/9] w-full min-h-[200px] overflow-hidden sm:min-h-[220px] md:aspect-[24/7] md:min-h-[280px] lg:min-h-[360px]">
+      {/* eslint-disable-next-line @next/next/no-img-element -- URL banner dari admin bisa domain eksternal */}
+      <img
+        src={banner.image_url}
+        alt={banner.title ?? ""}
+        className="absolute inset-0 h-full w-full object-cover object-center"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+      />
     </div>
   );
 
@@ -97,43 +94,47 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {n > 1 ? (banners[index]?.title ?? `Slide ${index + 1} dari ${n}`) : null}
       </div>
-      <div className="relative overflow-hidden">
+      <div className="relative grid w-full overflow-hidden">
         <div
-          className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+          className="col-start-1 row-start-1 flex min-w-0 transition-transform duration-500 ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(-${index * 100}%)` }}
         >
           {banners.map((banner, i) => (
             <HeroSlide key={banner.id} banner={banner} priority={i === 0} />
           ))}
         </div>
+
+        {n > 1 && !hideNav ? (
+          <>
+            <div
+              className="pointer-events-none col-start-1 row-start-1 z-20 flex w-full min-h-0 items-center justify-between self-stretch px-3 sm:px-4 md:px-5"
+              aria-hidden
+            >
+              <CarouselNavButton
+                direction="prev"
+                surface="on-photo"
+                onClick={() => go(-1)}
+                className="pointer-events-auto shrink-0"
+                aria-label="Banner sebelumnya"
+              />
+              <CarouselNavButton
+                direction="next"
+                surface="on-photo"
+                onClick={() => go(1)}
+                className="pointer-events-auto shrink-0"
+                aria-label="Banner berikutnya"
+              />
+            </div>
+            <CarouselDots
+              count={n}
+              activeIndex={index}
+              onSelect={setIndex}
+              className="pointer-events-auto col-start-1 row-start-1 z-10 self-end justify-self-center pb-3 sm:pb-4"
+              tone="light"
+            />
+          </>
+        ) : null}
       </div>
-
-      {n > 1 && !hideNav && (
-        <>
-          <CarouselNavButton
-            direction="prev"
-            surface="on-photo"
-            onClick={() => go(-1)}
-            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 md:left-5"
-            aria-label="Banner sebelumnya"
-          />
-          <CarouselNavButton
-            direction="next"
-            surface="on-photo"
-            onClick={() => go(1)}
-            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 md:right-5"
-            aria-label="Banner berikutnya"
-          />
-
-          <CarouselDots
-            count={n}
-            activeIndex={index}
-            onSelect={setIndex}
-            className="absolute bottom-4 left-0 right-0 z-10"
-            tone="light"
-          />
-        </>
-      )}
     </section>
   );
 }

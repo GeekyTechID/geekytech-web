@@ -4,15 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
+import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import type { BrandStoreCategoryOption, BrandStoreSortKey } from "@/lib/types/brand-store-catalog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const SORT_OPTIONS: { value: BrandStoreSortKey; label: string }[] = [
   { value: "latest", label: "Terbaru" },
@@ -23,8 +17,8 @@ const SORT_OPTIONS: { value: BrandStoreSortKey; label: string }[] = [
   { value: "name-desc", label: "Nama Z–A" },
 ];
 
-const pillSelectTriggerClass =
-  "h-11 min-w-[10.5rem] rounded-full border-[#e0e0e0] bg-white text-sm text-[#1d1d1f] focus:ring-[#EA5329]/30";
+const brandFilterTriggerClass =
+  "h-11 min-h-11 rounded-full bg-white sm:min-w-[10.5rem] sm:w-auto";
 
 type BrandStoreCatalogFiltersProps = {
   categories: BrandStoreCategoryOption[];
@@ -81,6 +75,11 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
   const categoryId = searchParams.get("category") ?? "";
   const sort = (searchParams.get("sort") ?? "latest") as BrandStoreSortKey;
 
+  const categoryOptions = [
+    { value: "all", label: "Semua kategori" },
+    ...categories.map((c) => ({ value: c.id, label: c.name })),
+  ];
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
       <div className="relative min-w-0 flex-1 sm:max-w-xl">
@@ -93,7 +92,7 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
           value={qInput}
           onChange={(e) => scheduleSearch(e.target.value)}
           placeholder="Cari produkmu di sini..."
-          className="h-11 rounded-full border-[#e0e0e0] bg-[#fafafc] pr-12 text-sm text-[#1d1d1f] placeholder:text-[#7a7a7a] focus-visible:border-[#EA5329] focus-visible:ring-[#EA5329]/25"
+          className="h-11 rounded-full border-[#e0e0e0] bg-[#fafafc] pr-12 text-sm text-[#1d1d1f] placeholder:text-[#7a7a7a] focus-visible:border-[#1d1d1f] focus-visible:ring-[#1d1d1f]/15"
           autoComplete="off"
         />
         <span className="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#1d1d1f] text-white">
@@ -102,30 +101,24 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
       </div>
 
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <Select
+        <FilterDropdown
+          aria-label="Kategori produk"
+          className={brandFilterTriggerClass}
           value={categoryId || "all"}
+          options={categoryOptions}
           onValueChange={(v) => {
             pushParams((p) => {
               if (v && v !== "all") p.set("category", v);
               else p.delete("category");
             });
           }}
-        >
-          <SelectTrigger className={pillSelectTriggerClass} aria-label="Kategori produk">
-            <SelectValue placeholder="Semua kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua kategori</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
 
-        <Select
+        <FilterDropdown
+          aria-label="Urutkan"
+          className={brandFilterTriggerClass}
           value={sort}
+          options={SORT_OPTIONS}
           onValueChange={(v) => {
             const key = v as BrandStoreSortKey;
             pushParams((p) => {
@@ -133,18 +126,7 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
               else p.delete("sort");
             });
           }}
-        >
-          <SelectTrigger className={pillSelectTriggerClass} aria-label="Urutkan">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
     </div>
   );

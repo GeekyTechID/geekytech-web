@@ -20,6 +20,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { cn } from "@/lib/utils";
@@ -42,26 +50,10 @@ export function Navbar() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [avatarImgError, setAvatarImgError] = useState(false);
 
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Tutup user menu saat klik di luar
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(e.target as Node)
-      ) {
-        setUserMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Tutup mobile menu saat route berubah
   useEffect(() => {
@@ -212,82 +204,71 @@ export function Navbar() {
 
               {/* User menu / Auth buttons */}
               {isAuthenticated ? (
-                <div ref={userMenuRef} className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                    className="flex items-center gap-1.5 ml-1 h-8 px-2 text-sm font-medium border border-border hover:border-foreground/30 transition-swiss"
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="menu"
-                    aria-label="Menu akun"
-                  >
-                    <div className="w-5 h-5 overflow-hidden bg-foreground text-background text-[10px] font-black flex items-center justify-center shrink-0">
-                      {avatarUrl && !avatarImgError ? (
-                        <img
-                          src={avatarUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={() => setAvatarImgError(true)}
-                        />
-                      ) : (
-                        userInitials
-                      )}
-                    </div>
-                    <ChevronDown
-                      size={12}
-                      className={cn(
-                        "text-muted-foreground transition-transform duration-150",
-                        userMenuOpen && "rotate-180",
-                      )}
-                    />
-                  </button>
-
-                  {userMenuOpen && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-full mt-1 w-52 bg-background border border-border z-50 py-1"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="ml-1 h-8 gap-1.5 px-2"
+                      aria-label="Menu akun"
                     >
-                      {/* User info */}
-                      <div className="px-3 py-2 border-b border-border">
-                        <p className="text-sm font-semibold truncate">
-                          {profile?.full_name ?? "Pengguna"}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {user?.email}
-                        </p>
-                      </div>
-                      <UserMenuItem
-                        icon={User}
-                        label="Profil Saya"
-                        href="/dashboard/profile"
-                      />
-                      <UserMenuItem
-                        icon={Package}
-                        label="Pesanan Saya"
-                        href="/dashboard/orders"
-                      />
-                      {isAdmin && (
-                        <>
-                          <div className="border-t border-border my-1" />
-                          <UserMenuItem
-                            icon={Settings}
-                            label="Admin Panel"
-                            href="/admin"
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden bg-foreground text-[10px] font-black text-background">
+                        {avatarUrl && !avatarImgError ? (
+                          <img
+                            src={avatarUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            referrerPolicy="no-referrer"
+                            onError={() => setAvatarImgError(true)}
                           />
-                        </>
-                      )}
-                      <div className="border-t border-border my-1" />
-                      <button
-                        role="menuitem"
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-swiss"
-                      >
-                        <LogOut size={14} />
-                        Keluar
-                      </button>
-                    </div>
-                  )}
-                </div>
+                        ) : (
+                          userInitials
+                        )}
+                      </div>
+                      <ChevronDown size={12} className="shrink-0 text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Pengguna"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/profile" className="flex items-center gap-2">
+                        <User size={14} />
+                        Profil Saya
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/orders" className="flex items-center gap-2">
+                        <Package size={14} />
+                        Pesanan Saya
+                      </Link>
+                    </DropdownMenuItem>
+                    {isAdmin ? (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href="/admin" className="flex items-center gap-2">
+                            <Settings size={14} />
+                            Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : null}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => void handleLogout()}
+                      className="gap-2"
+                    >
+                      <LogOut size={14} />
+                      Keluar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <div className="hidden sm:flex items-center gap-1 ml-1">
                   <Link href="/login">
@@ -450,27 +431,6 @@ export function Navbar() {
 // ----------------------------------------------------------------
 // Sub-components
 // ----------------------------------------------------------------
-function UserMenuItem({
-  icon: Icon,
-  label,
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-}) {
-  return (
-    <Link
-      role="menuitem"
-      href={href}
-      className="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted transition-swiss"
-    >
-      <Icon size={14} className="text-muted-foreground" />
-      {label}
-    </Link>
-  );
-}
-
 function MobileMenuItem({
   icon: Icon,
   label,

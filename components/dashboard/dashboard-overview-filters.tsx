@@ -1,13 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+import { OrdersFilterDropdown } from "@/components/dashboard/orders-filter-dropdown";
 import { ORDER_STATUS_FILTER_OPTIONS, type OrderStatus } from "@/lib/constants/order-status-labels";
 import type { StoreHeaderCategoryRow } from "@/lib/data/store-header-server";
 import { cn } from "@/lib/utils";
 
-const selectClass =
-  "h-10 w-full min-w-0 cursor-pointer rounded-lg border border-[#e0e0e0] bg-white px-3 text-sm text-[#1d1d1f] outline-none focus:ring-2 focus:ring-[#EA5329]/30 sm:w-auto sm:min-w-[10.5rem] md:min-w-[11.5rem]";
+const ALL_STATUS_VALUE = "__all__";
+const ALL_CATEGORY_VALUE = "__all__";
 
 type DashboardOverviewFiltersProps = {
   categories: StoreHeaderCategoryRow[];
@@ -17,6 +19,23 @@ type DashboardOverviewFiltersProps = {
 export function DashboardOverviewFilters({ categories, className }: DashboardOverviewFiltersProps) {
   const router = useRouter();
 
+  const statusOptions = useMemo(
+    () =>
+      ORDER_STATUS_FILTER_OPTIONS.map((opt) => ({
+        value: opt.value || ALL_STATUS_VALUE,
+        label: opt.label,
+      })),
+    [],
+  );
+
+  const categoryOptions = useMemo(
+    () => [
+      { value: ALL_CATEGORY_VALUE, label: "Semua kategori" },
+      ...categories.map((c) => ({ value: c.slug, label: c.name })),
+    ],
+    [categories],
+  );
+
   return (
     <div
       className={cn(
@@ -24,50 +43,33 @@ export function DashboardOverviewFilters({ categories, className }: DashboardOve
         className,
       )}
     >
-      <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto sm:min-w-[10.5rem]">
+      <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto">
         <span className="text-xs font-semibold uppercase text-[#7a7a7a]">Status pesanan</span>
-        <label className="sr-only" htmlFor="overview-order-status">
-          Status pesanan
-        </label>
-        <select
-          id="overview-order-status"
-          defaultValue=""
-          onChange={(e) => {
-            const v = e.target.value as OrderStatus | "";
-            router.push(v ? `/dashboard/orders?status=${encodeURIComponent(v)}` : "/dashboard/orders");
+        <OrdersFilterDropdown
+          aria-label="Status pesanan"
+          value={ALL_STATUS_VALUE}
+          options={statusOptions}
+          className="sm:min-w-[12.5rem]"
+          onValueChange={(v) => {
+            const status = v === ALL_STATUS_VALUE ? "" : (v as OrderStatus);
+            router.push(status ? `/dashboard/orders?status=${encodeURIComponent(status)}` : "/dashboard/orders");
           }}
-          className={cn(selectClass, "sm:min-w-[12.5rem]")}
-        >
-          {ORDER_STATUS_FILTER_OPTIONS.map((opt) => (
-            <option key={opt.value || "all"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {categories.length > 0 ? (
-        <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto sm:min-w-[10.5rem]">
+        <div className="flex min-w-0 w-full flex-col gap-1.5 sm:w-auto">
           <span className="text-xs font-semibold uppercase text-[#7a7a7a]">Kategori produk</span>
-          <label className="sr-only" htmlFor="overview-category">
-            Kategori produk
-          </label>
-          <select
-            id="overview-category"
-            defaultValue=""
-            onChange={(e) => {
-              const slug = e.target.value;
+          <OrdersFilterDropdown
+            aria-label="Kategori produk"
+            value={ALL_CATEGORY_VALUE}
+            options={categoryOptions}
+            className="sm:min-w-[11.5rem]"
+            onValueChange={(v) => {
+              const slug = v === ALL_CATEGORY_VALUE ? "" : v;
               router.push(slug ? `/products?category=${encodeURIComponent(slug)}` : "/products");
             }}
-            className={cn(selectClass, "sm:min-w-[11.5rem]")}
-          >
-            <option value="">Semua kategori</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       ) : null}
     </div>

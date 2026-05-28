@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { OrdersFilterDropdown } from "@/components/dashboard/orders-filter-dropdown";
 import { ORDER_STATUS_FILTER_OPTIONS, type OrderStatus } from "@/lib/constants/order-status-labels";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { OrderSortOption } from "@/lib/data/dashboard-user";
+import { Button } from "@/components/ui/button";
 
 type Category = { id: string; name: string; slug: string };
 
@@ -16,11 +17,14 @@ type Props = {
 };
 
 const SORT_OPTIONS: { value: OrderSortOption; label: string }[] = [
-  { value: "newest",     label: "Terbaru" },
-  { value: "oldest",     label: "Terlama" },
+  { value: "newest", label: "Terbaru" },
+  { value: "oldest", label: "Terlama" },
   { value: "total_desc", label: "Total tertinggi" },
-  { value: "total_asc",  label: "Total terendah" },
+  { value: "total_asc", label: "Total terendah" },
 ];
+
+const ALL_STATUS_VALUE = "__all__";
+const ALL_CATEGORY_VALUE = "__all__";
 
 function buildUrl(status: string, q: string, category: string, sort: string) {
   const params = new URLSearchParams();
@@ -41,13 +45,29 @@ export function DashboardOrdersFilters({ categories = [], sort: sortProp = "newe
   const sort = (searchParams.get("sort") ?? sortProp) as OrderSortOption;
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const statusOptions = useMemo(
+    () =>
+      ORDER_STATUS_FILTER_OPTIONS.map((opt) => ({
+        value: opt.value || ALL_STATUS_VALUE,
+        label: opt.label,
+      })),
+    [],
+  );
+
+  const categoryOptions = useMemo(
+    () => [
+      { value: ALL_CATEGORY_VALUE, label: "Semua kategori" },
+      ...categories.map((c) => ({ value: c.id, label: c.name })),
+    ],
+    [categories],
+  );
+
   const navigate = (newStatus: string, newQ: string, newCategory: string, newSort: string) => {
     router.push(buildUrl(newStatus, newQ, newCategory, newSort));
   };
 
   return (
     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      {/* Search */}
       <form
         className="relative flex-1 sm:max-w-xs"
         onSubmit={(e) => {
@@ -61,76 +81,51 @@ export function DashboardOrdersFilters({ categories = [], sort: sortProp = "newe
           type="text"
           defaultValue={q}
           placeholder="Cari nomor pesanan atau nama produk…"
-          className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-white pl-9 pr-8 text-sm text-[#1d1d1f] outline-none placeholder:text-[#aaa] focus:ring-2 focus:ring-[#EA5329]/30"
+          className="h-8 w-full rounded-lg border border-[#e0e0e0] bg-white pl-9 pr-8 text-sm text-[#1d1d1f] outline-none placeholder:text-[#aaa] focus:border-[#1d1d1f] focus:ring-2 focus:ring-[#1d1d1f]/15"
         />
-        {q && (
-          <button
+        {q ? (
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             aria-label="Hapus pencarian"
+            className="absolute right-1 top-1/2 -translate-y-1/2 text-[#7a7a7a] hover:text-[#1d1d1f]"
             onClick={() => {
               if (inputRef.current) inputRef.current.value = "";
               navigate(status, "", category, sort);
             }}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a7a7a] hover:text-[#1d1d1f]"
           >
             <X className="h-4 w-4" />
-          </button>
-        )}
+          </Button>
+        ) : null}
       </form>
 
-      {/* Status filter */}
-      <Select
-        value={status || "__all__"}
-        onValueChange={(v) => navigate(v === "__all__" ? "" : v, inputRef.current?.value ?? q, category, sort)}
-      >
-        <SelectTrigger className="w-full sm:w-[13rem]">
-          <SelectValue placeholder="Semua status" />
-        </SelectTrigger>
-        <SelectContent>
-          {ORDER_STATUS_FILTER_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value || "__all__"} value={opt.value || "__all__"}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <OrdersFilterDropdown
+        aria-label="Filter status pesanan"
+        value={status || ALL_STATUS_VALUE}
+        options={statusOptions}
+        onValueChange={(v) =>
+          navigate(v === ALL_STATUS_VALUE ? "" : v, inputRef.current?.value ?? q, category, sort)
+        }
+      />
 
-      {/* Category filter */}
-      {categories.length > 0 && (
-        <Select
-          value={category || "__all__"}
-          onValueChange={(v) => navigate(status, inputRef.current?.value ?? q, v === "__all__" ? "" : v, sort)}
-        >
-          <SelectTrigger className="w-full sm:w-[13rem]">
-            <SelectValue placeholder="Semua kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Semua kategori</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      {categories.length > 0 ? (
+        <OrdersFilterDropdown
+          aria-label="Filter kategori produk"
+          value={category || ALL_CATEGORY_VALUE}
+          options={categoryOptions}
+          onValueChange={(v) =>
+            navigate(status, inputRef.current?.value ?? q, v === ALL_CATEGORY_VALUE ? "" : v, sort)
+          }
+        />
+      ) : null}
 
-      {/* Sort */}
-      <Select
+      <OrdersFilterDropdown
+        aria-label="Urutkan pesanan"
         value={sort}
-        onValueChange={(v) => navigate(status, inputRef.current?.value ?? q, category, v)}
-      >
-        <SelectTrigger className="w-full sm:w-[13rem]">
-          <SelectValue placeholder="Urutkan" />
-        </SelectTrigger>
-        <SelectContent>
-          {SORT_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        options={SORT_OPTIONS}
+        onValueChange={(v) => navigate(status, inputRef.current?.value ?? q, category, v as OrderSortOption)}
+      />
     </div>
   );
 }

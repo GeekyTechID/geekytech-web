@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
+import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const RATING_OPTIONS = [
   { value: "all", label: "Semua Rating" },
@@ -79,24 +79,18 @@ export function ReviewFilters() {
         )}
       </div>
 
-      <Select
+      <FilterDropdown
+        aria-label="Rating ulasan"
         value={rating}
+        options={RATING_OPTIONS}
+        className="sm:w-[11rem]"
         onValueChange={(v) => updateParam("rating", v)}
-      >
-        <SelectTrigger className="w-[11rem] shrink-0">
-          <SelectValue placeholder="Semua Rating" />
-        </SelectTrigger>
-        <SelectContent>
-          {RATING_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
       {hasFilters && (
         <Button
           type="button"
-          variant="secondary"
+          variant="pearl"
           size="sm"
           className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
           onClick={() => {

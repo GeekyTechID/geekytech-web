@@ -4,9 +4,9 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
 
+import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Category = { id: string; name: string };
 type Brand = { id: string; name: string };
@@ -16,6 +16,26 @@ interface ProductFiltersProps {
   brands?: Brand[];
 }
 
+const statusOptions = [
+  { value: "all", label: "Semua Status" },
+  { value: "active", label: "Aktif" },
+  { value: "inactive", label: "Nonaktif" },
+];
+
+const conditionOptions = [
+  { value: "all", label: "Semua Kondisi" },
+  { value: "new", label: "Baru" },
+  { value: "second", label: "Second" },
+];
+
+const sortOptions = [
+  { value: "latest", label: "Terbaru" },
+  { value: "oldest", label: "Terlama" },
+  { value: "name-asc", label: "Nama A-Z" },
+  { value: "name-desc", label: "Nama Z-A" },
+  { value: "price-asc", label: "Harga Termurah" },
+  { value: "price-desc", label: "Harga Termahal" },
+];
 
 export function ProductFilters({ categories, brands = [] }: ProductFiltersProps) {
   const router = useRouter();
@@ -59,30 +79,18 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
     Boolean(categoryId) ||
     sort !== "latest";
 
-  const statusOptions = [
-    { value: "all", label: "Semua Status" },
-    { value: "active", label: "Aktif" },
-    { value: "inactive", label: "Nonaktif" },
+  const brandOptions = [
+    { value: "__all__", label: "Semua Merek" },
+    ...brands.map((b) => ({ value: b.id, label: b.name })),
   ];
 
-  const conditionOptions = [
-    { value: "all", label: "Semua Kondisi" },
-    { value: "new", label: "Baru" },
-    { value: "second", label: "Second" },
-  ];
-
-  const sortOptions = [
-    { value: "latest", label: "Terbaru" },
-    { value: "oldest", label: "Terlama" },
-    { value: "name-asc", label: "Nama A-Z" },
-    { value: "name-desc", label: "Nama Z-A" },
-    { value: "price-asc", label: "Harga Termurah" },
-    { value: "price-desc", label: "Harga Termahal" },
+  const categoryOptions = [
+    { value: "__all__", label: "Semua Kategori" },
+    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
   ];
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Search */}
       <div className="relative min-w-0 flex-1">
         <Search
           size={14}
@@ -100,88 +108,49 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
         />
       </div>
 
-      {/* Status */}
-      <Select
+      <FilterDropdown
+        aria-label="Status produk"
         value={status || "all"}
+        options={statusOptions}
         onValueChange={(v) => updateParam("status", v === "all" ? "" : v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Semua Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {statusOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
-      {/* Kondisi */}
-      <Select
+      <FilterDropdown
+        aria-label="Kondisi produk"
         value={condition || "all"}
+        options={conditionOptions}
         onValueChange={(v) => updateParam("condition", v === "all" ? "" : v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Semua Kondisi" />
-        </SelectTrigger>
-        <SelectContent>
-          {conditionOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
-      {brands.length > 0 && (
-        <Select
+      {brands.length > 0 ? (
+        <FilterDropdown
+          aria-label="Merek produk"
           value={brandId || "__all__"}
+          options={brandOptions}
           onValueChange={(v) => updateParam("brand", v === "__all__" ? "" : v)}
-        >
-          <SelectTrigger className="w-[13rem] shrink-0">
-            <SelectValue placeholder="Semua Merek" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Semua Merek</SelectItem>
-            {brands.map((b) => (
-              <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+        />
+      ) : null}
 
-      {categories.length > 0 && (
-        <Select
+      {categories.length > 0 ? (
+        <FilterDropdown
+          aria-label="Kategori produk"
           value={categoryId || "__all__"}
+          options={categoryOptions}
           onValueChange={(v) => updateParam("category", v === "__all__" ? "" : v)}
-        >
-          <SelectTrigger className="w-[13rem] shrink-0">
-            <SelectValue placeholder="Semua Kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Semua Kategori</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+        />
+      ) : null}
 
-      <Select
+      <FilterDropdown
+        aria-label="Urutkan produk"
         value={sort}
+        options={sortOptions}
         onValueChange={(v) => updateParam("sort", v === "latest" ? "" : v)}
-      >
-        <SelectTrigger className="w-[13rem] shrink-0">
-          <SelectValue placeholder="Urutkan" />
-        </SelectTrigger>
-        <SelectContent>
-          {sortOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
-      {hasFilters && (
+      {hasFilters ? (
         <Button
           type="button"
-          variant="secondary"
+          variant="pearl"
           size="sm"
           className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
           onClick={clearAll}
@@ -189,7 +158,7 @@ export function ProductFilters({ categories, brands = [] }: ProductFiltersProps)
           <X size={12} />
           Reset
         </Button>
-      )}
+      ) : null}
     </div>
   );
 }
