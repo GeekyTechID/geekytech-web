@@ -12,6 +12,7 @@ import {
   type DashboardOrderItemRow,
 } from "@/lib/data/dashboard-user";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
+import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { OrderToolbar } from "@/components/dashboard/order-toolbar";
 import type { Database } from "@/types/supabase";
@@ -36,20 +37,6 @@ function courierLabel(code: string | null): string {
   if (!code) return "—";
   return COURIER_CODE_LABELS[code.toLowerCase()] ?? code.toUpperCase();
 }
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  bca_va: "BCA Virtual Account",
-  bni_va: "BNI Virtual Account",
-  bri_va: "BRI Virtual Account",
-  permata_va: "Permata Virtual Account",
-  echannel: "Mandiri Bill Payment",
-  gopay: "GoPay",
-  shopeepay: "ShopeePay",
-  qris: "QRIS",
-  indomaret: "Indomaret",
-  alfamart: "Alfamart",
-  credit_card: "Kartu Kredit",
-};
 
 const PAYMENT_STATUS_STYLES: Record<PaymentStatus, { label: string; cls: string }> = {
   pending:   { label: "Menunggu pembayaran", cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-100" },
