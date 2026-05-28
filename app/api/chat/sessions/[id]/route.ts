@@ -67,10 +67,14 @@ export async function PATCH(
       return Response.json({ success: false, error: "Sesi sudah ditutup" }, { status: 409 });
     }
 
-    await svc
+    const { error: updateError } = await svc
       .from("chat_sessions")
       .update({ status: "resolved", closed_at: new Date().toISOString() })
       .eq("id", id);
+
+    if (updateError) {
+      return Response.json({ success: false, error: "Gagal menutup sesi" }, { status: 500 });
+    }
 
     // System message
     await svc.from("chat_messages").insert({

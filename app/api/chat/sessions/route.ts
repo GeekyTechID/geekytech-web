@@ -66,7 +66,14 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (error || !session) {
+    if (error) {
+      // Partial unique index violation = concurrent session creation race
+      if (error.code === "23505") {
+        return Response.json({ success: false, error: "Sudah ada sesi aktif" }, { status: 409 });
+      }
+      return Response.json({ success: false, error: "Gagal membuat sesi" }, { status: 500 });
+    }
+    if (!session) {
       return Response.json({ success: false, error: "Gagal membuat sesi" }, { status: 500 });
     }
 

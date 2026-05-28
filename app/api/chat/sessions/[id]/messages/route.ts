@@ -3,18 +3,28 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 
-const SendSchema = z.object({
-  content: z.string().max(2000).optional(),
-  message_type: z.enum(["text", "image", "file"]).default("text"),
-  attachment: z
-    .object({
-      file_url: z.string().url(),
-      file_name: z.string(),
-      file_type: z.string(),
-      file_size: z.number(),
-    })
-    .optional(),
-});
+const SendSchema = z
+  .object({
+    content: z.string().max(2000).optional(),
+    message_type: z.enum(["text", "image", "file"]).default("text"),
+    attachment: z
+      .object({
+        file_url: z.string().url(),
+        file_name: z.string(),
+        file_type: z.string(),
+        file_size: z.number(),
+      })
+      .optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.message_type !== "text" && !val.attachment) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `attachment required when message_type is '${val.message_type}'`,
+        path: ["attachment"],
+      });
+    }
+  });
 
 // GET: message history with attachments
 export async function GET(
@@ -111,10 +121,13 @@ export async function POST(
 
     // Insert attachment if present
     if (parsed.data.attachment) {
-      await svc.from("chat_attachments").insert({
+      const { error: attachError } = await svc.from("chat_attachments").insert({
         message_id: message.id,
         ...parsed.data.attachment,
       });
+      if (attachError) {
+        return Response.json({ success: false, error: "Gagal menyimpan lampiran" }, { status: 500 });
+      }
     }
 
     // Notify the other party
