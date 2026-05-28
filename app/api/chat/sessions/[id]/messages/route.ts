@@ -126,6 +126,8 @@ export async function POST(
         ...parsed.data.attachment,
       });
       if (attachError) {
+        // Delete orphaned message to prevent broken chat history
+        await svc.from("chat_messages").delete().eq("id", message.id);
         return Response.json({ success: false, error: "Gagal menyimpan lampiran" }, { status: 500 });
       }
     }

@@ -21,6 +21,7 @@ export function ChatPopup({ onMinimize }: Props) {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
   const {
+    isOpen,
     activeSession,
     messages,
     isRemoteTyping,
@@ -29,6 +30,8 @@ export function ChatPopup({ onMinimize }: Props) {
     addMessage,
     updateMessage,
     setRemoteTyping,
+    incrementUnread,
+    setUnreadCount,
   } = useChatStore();
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -41,7 +44,8 @@ export function ChatPopup({ onMinimize }: Props) {
       .then((r) => r.json())
       .then((json) => { if (json.success) setMessages(json.data); });
     fetch(`/api/chat/sessions/${sessionId}/read`, { method: "PATCH" });
-  }, [sessionId, setMessages]);
+    setUnreadCount(0); // Reset badge when popup opens
+  }, [sessionId, setMessages, setUnreadCount]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,17 +55,25 @@ export function ChatPopup({ onMinimize }: Props) {
     (msg: ChatMessage) => {
       addMessage(msg);
       if (msg.sender_id !== user?.id) {
-        fetch(`/api/chat/sessions/${sessionId}/read`, { method: "PATCH" });
+        if (isOpen) {
+          // Popup is visible — mark read immediately
+          fetch(`/api/chat/sessions/${sessionId}/read`, { method: "PATCH" });
+        } else {
+          // Popup is closed — increment badge
+          incrementUnread();
+        }
       }
     },
-    [addMessage, user?.id, sessionId],
+    [addMessage, user?.id, sessionId, isOpen, incrementUnread],
   );
 
   const handleSessionUpdate = useCallback(
     (patch: Partial<ChatSession>) => {
-      setActiveSession({ ...activeSession!, ...patch });
+      useChatStore.setState((s) =>
+        s.activeSession ? { activeSession: { ...s.activeSession, ...patch } } : {},
+      );
     },
-    [activeSession, setActiveSession],
+    [],
   );
 
   const handleMessageUpdate = useCallback(
