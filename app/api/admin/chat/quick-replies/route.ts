@@ -20,8 +20,7 @@ export async function GET() {
       return Response.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("chat_quick_replies")
       .select("*")
       .order("shortcut");
@@ -48,8 +47,7 @@ export async function POST(req: Request) {
     }
 
     const svc = createServiceClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (svc as any)
+    const { data, error } = await svc
       .from("chat_quick_replies")
       .insert(parsed.data)
       .select()
@@ -78,12 +76,22 @@ export async function DELETE(req: Request) {
     const id = url.searchParams.get("id");
     if (!id) return Response.json({ success: false, error: "id required" }, { status: 400 });
 
-    const svc = createServiceClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (svc as any).from("chat_quick_replies").delete().eq("id", id);
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return Response.json({ success: false, error: "id tidak valid" }, { status: 400 });
+    }
 
-    if (error) {
-      return Response.json({ success: false, error: "Gagal menghapus" }, { status: 500 });
+    const svc = createServiceClient();
+    const { data: deleted, error } = await svc
+      .from("chat_quick_replies")
+      .delete()
+      .eq("id", id)
+      .select("id")
+      .single();
+
+    if (error || !deleted) {
+      return Response.json({ success: false, error: "Tidak ditemukan" }, { status: 404 });
     }
 
     return Response.json({ success: true });

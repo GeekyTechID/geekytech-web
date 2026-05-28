@@ -12,7 +12,7 @@ export type ChatSession = {
   updated_at: string;
   closed_at: string | null;
   // joined from profiles
-  profile?: { full_name: string | null; avatar_url: string | null; email?: string };
+  profile?: { full_name: string | null; avatar_url: string | null };
 };
 
 export type ChatAttachment = {

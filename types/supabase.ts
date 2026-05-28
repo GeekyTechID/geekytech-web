@@ -341,6 +341,27 @@ export type Database = {
           },
         ]
       }
+      chat_quick_replies: {
+        Row: {
+          id: string
+          shortcut: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          shortcut: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          shortcut?: string
+          content?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       chat_sessions: {
         Row: {
           closed_at: string | null

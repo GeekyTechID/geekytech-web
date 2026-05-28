@@ -31,7 +31,8 @@ export async function POST(req: Request) {
     }
 
     // Build storage path scoped to user
-    const ext = file.name.split(".").pop() ?? "bin";
+    const safeName = file.name.replace(/[^\w\s.\-]/g, "_").slice(0, 255);
+    const ext = (safeName.split(".").pop() ?? "bin").slice(0, 10);
     const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     const svc = createServiceClient();
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
       success: true,
       data: {
         file_url: urlData.publicUrl,
-        file_name: file.name,
+        file_name: safeName,
         file_type: file.type,
         file_size: file.size,
       },
