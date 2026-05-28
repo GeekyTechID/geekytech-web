@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
 CREATE INDEX IF NOT EXISTS chat_sessions_user_id_idx ON chat_sessions (user_id);
 CREATE INDEX IF NOT EXISTS chat_sessions_status_idx ON chat_sessions (status);
 CREATE INDEX IF NOT EXISTS chat_sessions_updated_at_idx ON chat_sessions (updated_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS chat_sessions_one_open_per_user_idx
+  ON chat_sessions (user_id)
+  WHERE status = 'open';
 
 -- chat_messages
 CREATE TABLE IF NOT EXISTS chat_messages (
@@ -47,7 +50,7 @@ CREATE INDEX IF NOT EXISTS chat_attachments_message_idx ON chat_attachments (mes
 -- chat_quick_replies (admin canned responses)
 CREATE TABLE IF NOT EXISTS chat_quick_replies (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  shortcut   text NOT NULL,
+  shortcut   text NOT NULL UNIQUE,
   content    text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -75,6 +78,8 @@ CREATE POLICY "chat_messages_user_own_session" ON chat_messages
   )
   WITH CHECK (
     EXISTS (SELECT 1 FROM chat_sessions cs WHERE cs.id = session_id AND cs.user_id = auth.uid())
+    AND sender_id = auth.uid()
+    AND sender_role = 'user'
   );
 
 CREATE POLICY "chat_messages_admin_all" ON chat_messages
@@ -118,6 +123,10 @@ CREATE TRIGGER trg_chat_messages_update_session
   AFTER INSERT ON chat_messages
   FOR EACH ROW EXECUTE FUNCTION update_chat_session_on_message();
 
+CREATE TRIGGER update_chat_sessions_updated_at
+  BEFORE UPDATE ON chat_sessions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 -- Storage bucket (public for simplicity; RLS on table is the real guard)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('chat-attachments', 'chat-attachments', true)
@@ -125,8 +134,18 @@ ON CONFLICT (id) DO NOTHING;
 
 CREATE POLICY "chat_attachments_upload" ON storage.objects
   FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'chat-attachments');
+  WITH CHECK (
+    bucket_id = 'chat-attachments'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
 
 CREATE POLICY "chat_attachments_read" ON storage.objects
   FOR SELECT TO authenticated
-  USING (bucket_id = 'chat-attachments');
+  USING (
+    bucket_id = 'chat-attachments'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Realtime publication
+ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
+ALTER PUBLICATION supabase_realtime ADD TABLE chat_sessions;
