@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { FileText, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,18 @@ function formatBytes(bytes: number) {
 
 export function ChatMessageItem({ message, myUserId, onReact }: Props) {
   const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showPicker) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showPicker]);
 
   if (message.sender_role === "system") {
     return (
@@ -66,6 +78,7 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
         {/* Emoji picker popover */}
         {showPicker && (
           <div
+            ref={pickerRef}
             className={cn(
               "absolute bottom-full z-20 mb-1",
               isMine ? "right-0" : "left-0",

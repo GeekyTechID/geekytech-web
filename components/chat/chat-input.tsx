@@ -55,13 +55,13 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
         if (prev?.preview_url) URL.revokeObjectURL(prev.preview_url);
         return null;
       });
-      // Reset textarea height
-      if (textRef.current) {
-        textRef.current.style.height = "auto";
-      }
-      textRef.current?.focus();
     } finally {
       setSending(false);
+      // Always reset height and restore focus, even on error
+      if (textRef.current) {
+        textRef.current.style.height = "auto";
+        textRef.current.focus();
+      }
     }
   }
 
