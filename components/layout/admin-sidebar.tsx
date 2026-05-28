@@ -71,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Konten",
     items: [
+      { label: "Chat", href: "/admin/chat", icon: MessageSquare },
       { label: "Ulasan", href: "/admin/reviews", icon: MessageSquare },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
       { label: "Kupon", href: "/admin/coupons", icon: Ticket },
