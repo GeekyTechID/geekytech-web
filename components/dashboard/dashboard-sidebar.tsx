@@ -10,6 +10,7 @@ import {
   Home,
   KeyRound,
   MapPin,
+  MessageCircle,
   Package,
   User,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const NAV_PRIMARY: NavItem[] = [
   { label: "Pesanan", href: "/dashboard/orders", icon: Package },
   { label: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
   { label: "Notifikasi", href: "/dashboard/notifications", icon: Bell },
+  { label: "Chat CS", href: "/dashboard/chat", icon: MessageCircle },
   { label: "Alamat", href: "/dashboard/addresses", icon: MapPin },
 ];
 

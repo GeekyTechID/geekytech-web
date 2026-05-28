@@ -3,7 +3,7 @@ import { AnnouncementBarServer } from "@/components/layout/announcement-bar-serv
 import { StoreHeader } from "@/components/store/store-header";
 import { StoreFooter } from "@/components/store/store-footer";
 import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
-import { WhatsAppButton } from "@/components/layout/whatsapp-button";
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
 import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
@@ -50,7 +50,7 @@ export default async function PublicLayout({
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">{children}</main>
       <StoreFooter />
       <BottomNavBar />
-      <WhatsAppButton />
+      <ChatWidget />
     </div>
   );
 }
