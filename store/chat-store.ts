@@ -18,6 +18,7 @@ type ChatActions = {
   addMessage: (message: ChatMessage) => void;
   updateMessage: (id: string, patch: Partial<ChatMessage>) => void;
   setUnreadCount: (count: number) => void;
+  incrementUnread: (by?: number) => void;
   setRemoteTyping: (typing: boolean) => void;
   reset: () => void;
 };
@@ -48,6 +49,8 @@ export const useChatStore = create<ChatStore>()(
           "updateMessage",
         ),
       setUnreadCount: (unreadCount) => set({ unreadCount }, false, "setUnreadCount"),
+      incrementUnread: (by = 1) =>
+        set((s) => ({ unreadCount: s.unreadCount + by }), false, "incrementUnread"),
       setRemoteTyping: (isRemoteTyping) => set({ isRemoteTyping }, false, "setRemoteTyping"),
       reset: () => set(initialState, false, "reset"),
     }),

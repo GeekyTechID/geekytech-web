@@ -12,7 +12,7 @@ export type ChatSession = {
   updated_at: string;
   closed_at: string | null;
   // joined from profiles
-  profile?: { full_name: string | null; avatar_url: string | null };
+  profile?: { full_name: string | null; avatar_url: string | null; email?: string };
 };
 
 export type ChatAttachment = {
@@ -59,7 +59,7 @@ export const ALLOWED_CHAT_FILE_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ] as const;
 
-export const CHAT_SIZE_LIMITS: Record<string, number> = {
+export const CHAT_SIZE_LIMITS = {
   image: 500 * 1024,       // 500 KB
   document: 1024 * 1024,   // 1 MB
-};
+} satisfies Record<string, number>;
