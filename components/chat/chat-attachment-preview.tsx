@@ -19,12 +19,20 @@ export function ChatAttachmentPreview({ attachment, onRemove }: Props) {
   return (
     <div className="relative flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 pr-8">
       {isImage && attachment.preview_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={attachment.preview_url}
-          alt={attachment.file.name}
-          className="h-10 w-10 rounded object-cover shrink-0"
-        />
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={attachment.preview_url}
+            alt={attachment.file.name}
+            className="h-10 w-10 rounded object-cover shrink-0"
+            onError={(e) => {
+              // Fallback to file icon if blob URL is broken
+              e.currentTarget.style.display = "none";
+              e.currentTarget.nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+          <FileText size={20} className="hidden shrink-0 text-muted-foreground" />
+        </>
       ) : (
         <FileText size={20} className="shrink-0 text-muted-foreground" />
       )}
