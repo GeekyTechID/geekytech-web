@@ -10,6 +10,11 @@ import {
   HeaderDropdownPanelHeader,
 } from "@/components/shared/header-dropdown-panel";
 import { Button } from "@/components/ui/button";
+import { formatRelativeDate } from "@/lib/format";
+import {
+  formatNotificationBody,
+  getNotificationTypeLabel,
+} from "@/lib/notifications/format-notification-display";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,16 +68,46 @@ function resolveNotifAction(notif: NotifItem): NotifAction {
   }
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "baru saja";
-  if (mins < 60) return `${mins} menit lalu`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} jam lalu`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} hari lalu`;
-  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+const NOTIF_ITEM_CLASS =
+  "block w-full border-b border-[#e0e0e0] px-4 py-3.5 text-left transition-colors last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand/40";
+
+function NotificationListItemContent({ notif }: { notif: NotifItem }) {
+  const body = formatNotificationBody(notif);
+  const typeLabel = getNotificationTypeLabel(notif.type);
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-5 w-2 shrink-0 items-center justify-center pt-0.5" aria-hidden>
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            !notif.is_read ? "bg-brand" : "bg-transparent",
+          )}
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[10px] font-semibold uppercase tracking-[0.04em] text-brand">
+            {typeLabel}
+          </span>
+          <time
+            dateTime={notif.created_at}
+            className="shrink-0 text-[11px] leading-none text-[#7a7a7a] tabular-nums"
+          >
+            {formatRelativeDate(notif.created_at)}
+          </time>
+        </div>
+        <p className="mt-1 truncate text-[14px] font-semibold leading-[1.29] text-[#1d1d1f]">
+          {notif.title}
+        </p>
+        {body ? (
+          <p className="mt-1 line-clamp-2 text-[13px] font-normal leading-[1.43] text-[#5c5c5c]">
+            {body}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 export function NotificationBell() {
@@ -193,13 +228,22 @@ export function NotificationBell() {
             }
           />
 
-          <div className="max-h-72 overflow-y-auto bg-white">
+          <div className="max-h-80 overflow-y-auto bg-white" role="list" aria-label="Daftar notifikasi">
             {loading ? (
               <div>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="border-b border-[#e0e0e0] px-4 py-3 last:border-b-0">
-                    <div className="mb-2 h-3 w-40 animate-pulse rounded bg-[#f5f5f7]" />
-                    <div className="h-2.5 w-56 animate-pulse rounded bg-[#f5f5f7]" />
+                  <div key={i} className="border-b border-[#e0e0e0] px-4 py-3.5 last:border-b-0">
+                    <div className="flex gap-3">
+                      <div className="h-5 w-2 shrink-0 animate-pulse rounded bg-[#f5f5f7]" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex justify-between gap-2">
+                          <div className="h-2.5 w-14 animate-pulse rounded bg-[#f5f5f7]" />
+                          <div className="h-2.5 w-12 animate-pulse rounded bg-[#f5f5f7]" />
+                        </div>
+                        <div className="h-3.5 w-44 animate-pulse rounded bg-[#f5f5f7]" />
+                        <div className="h-2.5 w-full animate-pulse rounded bg-[#f5f5f7]" />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -212,28 +256,8 @@ export function NotificationBell() {
               items.map((notif) => {
                 const action = resolveNotifAction(notif);
                 const itemClass = cn(
-                  "w-full border-b border-[#e0e0e0] px-4 py-3 text-left transition-colors last:border-b-0",
+                  NOTIF_ITEM_CLASS,
                   !notif.is_read ? "bg-[#fff8f5] hover:bg-[#f5f5f7]" : "bg-white hover:bg-[#f5f5f7]",
-                );
-                const content = (
-                  <div className="flex items-start gap-3">
-                    {!notif.is_read ? (
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
-                    ) : (
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0" aria-hidden />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-semibold leading-[1.29] text-[#1d1d1f]">
-                        {notif.title}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-[14px] font-normal leading-[1.43] text-[#5c5c5c]">
-                        {notif.body}
-                      </p>
-                      <p className="mt-1.5 text-[12px] leading-none text-[#7a7a7a]">
-                        {timeAgo(notif.created_at)}
-                      </p>
-                    </div>
-                  </div>
                 );
 
                 if (action.kind === "chat") {
@@ -241,10 +265,11 @@ export function NotificationBell() {
                     <button
                       key={notif.id}
                       type="button"
+                      role="listitem"
                       className={itemClass}
                       onClick={() => handleNotifClick(notif)}
                     >
-                      {content}
+                      <NotificationListItemContent notif={notif} />
                     </button>
                   );
                 }
@@ -253,10 +278,11 @@ export function NotificationBell() {
                   <Link
                     key={notif.id}
                     href={action.href}
+                    role="listitem"
                     className={itemClass}
                     onClick={() => handleNotifClick(notif)}
                   >
-                    {content}
+                    <NotificationListItemContent notif={notif} />
                   </Link>
                 );
               })
