@@ -1,5 +1,4 @@
 import type { CheckoutShippingOption } from "@/lib/shipping/checkout-shipping-options";
-import { fetchActiveCouriers } from "./fetch-active-couriers";
 
 type BiteshipPricingRow = {
   courier_code?: string;
@@ -31,6 +30,7 @@ export async function fetchBiteshipCourierRates(params: {
   originPostal: number;
   destinationPostal: number;
   items: { name: string; value: number; quantity: number; weight: number; length?: number; width?: number; height?: number }[];
+  couriers: string;
 }): Promise<{ ok: true; options: CheckoutShippingOption[] } | { ok: false; error: string }> {
   const key = process.env.BITESHIP_API_KEY?.trim();
   if (!key) {
@@ -38,7 +38,7 @@ export async function fetchBiteshipCourierRates(params: {
   }
 
   const base = "https://api.biteship.com";
-  const couriers = await fetchActiveCouriers();
+  const couriers = params.couriers;
 
   const body = {
     origin_postal_code: String(params.originPostal),

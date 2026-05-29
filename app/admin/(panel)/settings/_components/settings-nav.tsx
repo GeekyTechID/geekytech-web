@@ -8,6 +8,7 @@ const TABS = [
   { label: "Umum", href: "/admin/settings" },
   { label: "Pengiriman", href: "/admin/settings/shipping" },
   { label: "Pembayaran", href: "/admin/settings/payment" },
+  { label: "Kurir", href: "/admin/settings/couriers" },
 ] as const;
 
 export function SettingsNav() {

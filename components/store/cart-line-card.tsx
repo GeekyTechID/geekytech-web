@@ -113,24 +113,24 @@ function CartLineCardInner({
             </div>
           )}
           {hasCarousel ? (
-            <>
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-between px-1.5 sm:px-2">
               <CarouselNavButton
                 direction="prev"
-                surface="surface"
+                surface="on-photo"
                 aria-label="Gambar sebelumnya"
                 disabled={pending}
                 onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                className="absolute left-1 top-1/2 -translate-y-1/2"
+                className="pointer-events-auto size-8 min-h-0 shrink-0 rounded-full border border-[#e0e0e0] bg-white/95 p-0 text-[#1d1d1f] shadow-sm hover:bg-white [&_svg]:size-4"
               />
               <CarouselNavButton
                 direction="next"
-                surface="surface"
+                surface="on-photo"
                 aria-label="Gambar berikutnya"
                 disabled={pending}
                 onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                className="absolute right-1 top-1/2 -translate-y-1/2"
+                className="pointer-events-auto size-8 min-h-0 shrink-0 rounded-full border border-[#e0e0e0] bg-white/95 p-0 text-[#1d1d1f] shadow-sm hover:bg-white [&_svg]:size-4"
               />
-            </>
+            </div>
           ) : null}
         </div>
       </div>

@@ -1,84 +1,40 @@
-type BiteshipCourierService = {
-  courier_code?: string;
-  courier_service_code?: string;
+export type BiteshipCourierService = {
+  courier_code: string;
+  courier_service_code: string;
+  courier_name: string;
+  courier_service_name: string;
 };
 
-type BiteshipCouriersResponse = {
-  success?: boolean;
-  // Biteship returns couriers as a nested object: { courier_services: [...] }
-  couriers?:
-    | BiteshipCourierService[]
-    | { courier_services?: BiteshipCourierService[] };
-};
-
-const FALLBACK = "jne,sicepat,anteraja,tiki";
-const TTL_MS = 60 * 60 * 1000; // 1 hour
-
-let cache: { value: string; expiresAt: number } | null = null;
-
-function extractServices(
-  raw: BiteshipCouriersResponse["couriers"],
-): BiteshipCourierService[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === "object" && "courier_services" in raw) {
-    return raw.courier_services ?? [];
-  }
-  return [];
-}
-
-export async function fetchActiveCouriers(): Promise<string> {
-  const now = Date.now();
-  if (cache && cache.expiresAt > now) {
-    return cache.value;
-  }
-
+export async function fetchAllBiteshipCouriers(): Promise<BiteshipCourierService[]> {
   const key = process.env.BITESHIP_API_KEY?.trim();
-  if (!key) return FALLBACK;
+  if (!key) return [];
 
   try {
     const res = await fetch("https://api.biteship.com/v1/couriers", {
-      method: "GET",
       headers: {
         Authorization: key.startsWith("Bearer ") ? key : `Bearer ${key}`,
         Accept: "application/json",
       },
-      cache: "no-store",
+      next: { revalidate: 3600 },
     });
 
-    const json = (await res.json()) as BiteshipCouriersResponse;
+    const json = (await res.json()) as { success?: boolean; couriers?: unknown };
+    if (!res.ok || !json.success) return [];
 
-    if (!res.ok || !json.success) {
-      console.warn("[Biteship couriers] Gagal fetch, pakai fallback.", res.status);
-      return FALLBACK;
-    }
+    const raw = json.couriers;
+    const services: unknown[] = Array.isArray(raw)
+      ? raw
+      : ((raw as { courier_services?: unknown[] })?.courier_services ?? []);
 
-    const services = extractServices(json.couriers);
-
-    // Deduplicate — multiple services share the same courier_code (e.g. jne REG + jne YES)
-    const codes = [
-      ...new Set(
-        services
-          .map((s) => (s.courier_code ?? "").toLowerCase())
-          .filter(Boolean),
-      ),
-    ];
-
-    if (codes.length === 0) {
-      console.warn("[Biteship couriers] Tidak ada courier code, pakai fallback.");
-      return FALLBACK;
-    }
-
-    const value = codes.join(",");
-    cache = { value, expiresAt: now + TTL_MS };
-    return value;
-  } catch (err) {
-    console.warn("[Biteship couriers] Network error, pakai fallback.", err);
-    return FALLBACK;
+    return (services as Array<Record<string, unknown>>)
+      .filter((s) => s.courier_code && s.courier_service_code)
+      .map((s) => ({
+        courier_code: String(s.courier_code),
+        courier_service_code: String(s.courier_service_code),
+        courier_name: String(s.courier_name ?? s.courier_code),
+        courier_service_name: String(s.courier_service_name ?? s.courier_service_code),
+      }));
+  } catch {
+    return [];
   }
-}
-
-/** Invalidate cache — call setelah update konfigurasi courier di Biteship */
-export function invalidateActiveCouriersCache(): void {
-  cache = null;
 }

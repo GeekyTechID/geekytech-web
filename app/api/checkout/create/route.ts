@@ -50,6 +50,7 @@ async function resolveShippingPrice(params: {
       originPostal: params.originPostal,
       destinationPostal: params.destinationPostal,
       items: params.items.map((i) => ({ ...i, length: 12, width: 10, height: 8 })),
+      couriers: `${c}:${s}`,
     });
     if (res.ok) {
       const hit = res.options.find((o) => o.courierCode.toLowerCase() === c && o.serviceCode.toLowerCase() === s);

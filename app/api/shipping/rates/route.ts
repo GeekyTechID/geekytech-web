@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
@@ -87,18 +87,44 @@ export async function POST(req: Request) {
       }));
     }
 
+    const { data: courierSetting } = await createServiceClient()
+      .from("settings")
+      .select("value")
+      .eq("key", "active_couriers")
+      .single();
+
+    type StoredCourier = { courier_code: string; courier_service_code: string };
+    const activeList = Array.isArray(courierSetting?.value)
+      ? (courierSetting.value as StoredCourier[]).filter((c) => c.courier_code && c.courier_service_code)
+      : [];
+
+    // Biteship rates API only accepts plain courier codes (not "code:service" format).
+    // Send unique courier codes, then post-filter to admin-selected services.
+    const hasAdminSelection = activeList.length > 0;
+    const uniqueCourierCodes = hasAdminSelection
+      ? [...new Set(activeList.map((c) => c.courier_code.toLowerCase()))].join(",")
+      : "jne,sicepat,anteraja,tiki";
+
     const biteship = await fetchBiteshipCourierRates({
       originPostal,
       destinationPostal: destPostal,
       items,
+      couriers: uniqueCourierCodes,
     });
 
     if (biteship.ok) {
+      const allowedKeys = hasAdminSelection
+        ? new Set(activeList.map((c) => `${c.courier_code.toLowerCase()}:${c.courier_service_code.toLowerCase()}`))
+        : null;
+      const filtered = allowedKeys
+        ? biteship.options.filter((o) => allowedKeys.has(`${o.courierCode.toLowerCase()}:${o.serviceCode.toLowerCase()}`))
+        : biteship.options;
+
       return Response.json({
         success: true,
         data: {
           source: "biteship" as const,
-          options: biteship.options,
+          options: filtered.length > 0 ? filtered : biteship.options,
         },
       });
     }
