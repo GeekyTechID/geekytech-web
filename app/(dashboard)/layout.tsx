@@ -52,14 +52,18 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         {children}
       </DashboardShell>
 
-      <ChatWidget />
-      <div className="mt-10 md:mt-16">
+      <div data-no-print>
+        <ChatWidget />
+      </div>
+      <div data-no-print className="mt-10 md:mt-16">
         {heroBanners.length > 0 ? <HomeMainHero banners={heroBanners} hideNav /> : null}
       </div>
-      
-      <Suspense fallback={<div className="min-h-[120px] w-full bg-[#121212]" aria-hidden />}>
-        <StoreFooter />
-      </Suspense>
+
+      <div data-no-print>
+        <Suspense fallback={<div className="min-h-[120px] w-full bg-[#121212]" aria-hidden />}>
+          <StoreFooter />
+        </Suspense>
+      </div>
     </div>
   );
 }

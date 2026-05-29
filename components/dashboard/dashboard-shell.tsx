@@ -37,15 +37,18 @@ export function DashboardShell({
 
   return (
     <div className="flex min-h-screen w-full flex-col text-[#1d1d1f]">
-      <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      <div data-no-print>
+        <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      </div>
 
       <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col pt-4 sm:pt-6 lg:pt-8">
         {/* Sidebar kolom dari lg+; tablet (md–lg) pakai drawer agar konten tidak terlalu sempit */}
         <div className="mx-auto flex w-full max-w-[1400px] min-h-0 min-w-0 flex-1 flex-col px-4 sm:px-6 lg:px-8 lg:flex-row lg:gap-6 xl:gap-8">
-          <div className="hidden w-[min(100%,18rem)] shrink-0 lg:flex lg:self-start lg:sticky lg:top-28 xl:w-[min(100%,19rem)]">
+          <div data-no-print className="hidden w-[min(100%,18rem)] shrink-0 lg:flex lg:self-start lg:sticky lg:top-28 xl:w-[min(100%,19rem)]">
             <DashboardSidebar className="w-full" unreadNotifications={unreadNotifications} />
           </div>
 
+          <div data-no-print>
           {mobileOpen ? (
             <>
               <button
@@ -82,9 +85,10 @@ export function DashboardShell({
               </div>
             </>
           ) : null}
+          </div>
 
           <div className="flex w-full min-w-0 flex-1 flex-col bg-white">
-            <header className="sticky top-0 z-30 flex w-full shrink-0 items-center gap-3 bg-white/95 px-3 py-2.5 backdrop-blur-sm supports-[backdrop-filter]:bg-white/90 sm:px-4 sm:py-3 lg:hidden">
+            <header data-no-print className="sticky top-0 z-30 flex w-full shrink-0 items-center gap-3 bg-white/95 px-3 py-2.5 backdrop-blur-sm supports-[backdrop-filter]:bg-white/90 sm:px-4 sm:py-3 lg:hidden">
               <Button
                 type="button"
                 variant="pearl"
