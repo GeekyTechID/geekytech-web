@@ -204,6 +204,12 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             <span className="text-sm text-[#7a7a7a]">Ongkir</span>
             <span className="text-sm font-semibold tabular-nums">{formatRupiah(order.shipping_cost)}</span>
           </li>
+          {order.app_fee > 0 && (
+            <li className="flex justify-between gap-4 px-4 py-3">
+              <span className="text-sm text-[#7a7a7a]">Biaya jasa aplikasi</span>
+              <span className="text-sm font-semibold tabular-nums">{formatRupiah(order.app_fee)}</span>
+            </li>
+          )}
           <li className="flex justify-between gap-4 bg-[#fafafa] px-4 py-3">
             <span className="text-sm font-bold text-[#1d1d1f]">Total</span>
             <span className="text-sm font-black tabular-nums text-[#1d1d1f]">{formatRupiah(order.total)}</span>
