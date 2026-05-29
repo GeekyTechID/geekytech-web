@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,27 +43,28 @@ export async function StoreFooter() {
               Dapatkan info produk rating tertinggi dan promo eksklusif Gebyar Merdeka langsung di inbox-mu.
             </p>
             
-            <form className="relative mt-2 max-w-md" action="#" method="post">
+            <form className="mt-2 max-w-md" action="#" method="post">
               <label htmlFor="footer-newsletter" className="sr-only">
                 Email newsletter
               </label>
-              <Input
-                id="footer-newsletter"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="Email kamu.."
-                className="h-12 rounded-full border-white/25 bg-transparent pr-14 pl-5 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-white focus-visible:ring-white/30 dark:bg-transparent"
-              />
-              <Button
-                type="button"
-                variant="pearl"
-                size="icon-sm"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white text-black hover:bg-white/90"
-                aria-label="Daftar newsletter"
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              <div className="flex h-12 items-center gap-1 rounded-full border border-white/25 bg-transparent pl-5 pr-1.5 focus-within:border-white focus-within:ring-3 focus-within:ring-white/30">
+                <Input
+                  id="footer-newsletter"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Email kamu.."
+                  className="h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent"
+                />
+                <Button
+                  type="submit"
+                  size="icon-sm"
+                  className="size-9 shrink-0 rounded-full border-0 bg-white p-0 text-black hover:bg-white/90"
+                  aria-label="Daftar newsletter"
+                >
+                  <ChevronRight className="size-4" strokeWidth={2.25} aria-hidden />
+                </Button>
+              </div>
             </form>
 
             <p className="relative z-10 mt-14 text-xs text-white/45">

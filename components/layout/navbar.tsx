@@ -24,10 +24,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  HEADER_DROPDOWN_MENU_CONTENT_CLASS,
+  HEADER_DROPDOWN_MENU_ITEM_CLASS,
+  HeaderDropdownPanelBody,
+  HeaderDropdownPanelHeader,
+} from "@/components/shared/header-dropdown-panel";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { cn } from "@/lib/utils";
@@ -229,44 +233,48 @@ export function Navbar() {
                       <ChevronDown size={12} className="shrink-0 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52">
-                    <DropdownMenuLabel className="font-normal">
-                      <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Pengguna"}</p>
-                      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/profile" className="flex items-center gap-2">
-                        <User size={14} />
-                        Profil Saya
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/orders" className="flex items-center gap-2">
-                        <Package size={14} />
-                        Pesanan Saya
-                      </Link>
-                    </DropdownMenuItem>
-                    {isAdmin ? (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={8}
+                    className={cn("w-[min(100vw-2rem,14rem)]", HEADER_DROPDOWN_MENU_CONTENT_CLASS)}
+                  >
+                    <HeaderDropdownPanelHeader title={profile?.full_name ?? "Pengguna"} />
+                    <HeaderDropdownPanelBody className="py-1">
+                      <p className="truncate border-b border-[#e0e0e0] px-4 pb-2.5 text-[12px] leading-none text-[#7a7a7a]">
+                        {user?.email}
+                      </p>
+                      <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                        <Link href="/dashboard/profile" className="flex items-center gap-2">
+                          <User size={14} />
+                          Profil Saya
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                        <Link href="/dashboard/orders" className="flex items-center gap-2">
+                          <Package size={14} />
+                          Pesanan Saya
+                        </Link>
+                      </DropdownMenuItem>
+                      {isAdmin ? (
+                        <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
                           <Link href="/admin" className="flex items-center gap-2">
                             <Settings size={14} />
                             Admin Panel
                           </Link>
                         </DropdownMenuItem>
-                      </>
-                    ) : null}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => void handleLogout()}
-                      className="gap-2"
-                    >
-                      <LogOut size={14} />
-                      Keluar
-                    </DropdownMenuItem>
+                      ) : null}
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => void handleLogout()}
+                        className={cn(
+                          HEADER_DROPDOWN_MENU_ITEM_CLASS,
+                          "border-t border-[#e0e0e0] text-destructive focus:bg-destructive/10 focus:text-destructive",
+                        )}
+                      >
+                        <LogOut size={14} />
+                        Keluar
+                      </DropdownMenuItem>
+                    </HeaderDropdownPanelBody>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (

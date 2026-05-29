@@ -5,4 +5,4 @@
 -- ============================================================
 
 ALTER TABLE orders
-  ADD COLUMN app_fee numeric(12,2) NOT NULL DEFAULT 0;
+  ADD COLUMN app_fee integer NOT NULL DEFAULT 0;

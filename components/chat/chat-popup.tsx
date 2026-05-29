@@ -1,8 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
-import { ChevronDown, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import {
+  HeaderDropdownPanelBody,
+  HeaderDropdownPanelHeader,
+} from "@/components/shared/header-dropdown-panel";
 import { Button } from "@/components/ui/button";
 import { ChatMessageItem } from "./chat-message-item";
 import { ChatInput } from "./chat-input";
@@ -13,11 +17,7 @@ import { useChatPresence } from "@/lib/chat/use-chat-presence";
 import { useAuthStore } from "@/store/auth-store";
 import type { ChatMessage, ChatSession, PendingAttachment } from "@/types/chat";
 
-type Props = {
-  onMinimize: () => void;
-};
-
-export function ChatPopup({ onMinimize }: Props) {
+export function ChatPopup() {
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
   const {
@@ -125,25 +125,32 @@ export function ChatPopup({ onMinimize }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-semibold">{activeSession?.subject ?? "Chat"}</span>
-          <Badge variant={isResolved ? "secondary" : "default"} className="shrink-0 text-[10px]">
+      <HeaderDropdownPanelHeader
+        title={activeSession?.subject ?? "Chat"}
+        badge={
+          <Badge
+            variant={isResolved ? "secondary" : "default"}
+            className="shrink-0 border-0 bg-white/15 text-[10px] text-white hover:bg-white/15"
+          >
             {isResolved ? "Selesai" : "Aktif"}
           </Badge>
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          {!isResolved && myRole === "admin" && (
-            <Button variant="ghost" size="sm" onClick={handleCloseSession} className="h-7 text-xs">
+        }
+        trailing={
+          !isResolved && myRole === "admin" ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCloseSession}
+              className="h-7 shrink-0 text-xs text-white/90 hover:bg-white/10 hover:text-white"
+            >
               Tutup Sesi
             </Button>
-          )}
-          <Button variant="ghost" size="icon" onClick={onMinimize} aria-label="Minimize chat" className="h-7 w-7">
-            <ChevronDown size={16} />
-          </Button>
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
+      <HeaderDropdownPanelBody className="flex min-h-0 flex-1 flex-col">
       <div className="flex-1 overflow-y-auto px-3 py-2">
         {messages.map((msg) => (
           <ChatMessageItem key={msg.id} message={msg} myUserId={user?.id ?? ""} onReact={handleReact} />
@@ -153,13 +160,14 @@ export function ChatPopup({ onMinimize }: Props) {
       </div>
 
       {isResolved ? (
-        <div className="flex shrink-0 items-center gap-2 border-t border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2 border-t border-[#e0e0e0] bg-[#f5f5f7] p-3 text-xs text-[#7a7a7a]">
           <AlertCircle size={14} className="shrink-0" />
           Sesi ini telah ditutup. Buka sesi baru untuk chat lagi.
         </div>
       ) : (
         <ChatInput onSend={handleSend} onTyping={sendTyping} disabled={!activeSession} />
       )}
+      </HeaderDropdownPanelBody>
     </div>
   );
 }

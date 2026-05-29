@@ -80,7 +80,7 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
   const canSend = (content.trim().length > 0 || !!pending) && !disabled && !sending;
 
   return (
-    <div className="border-t border-border bg-background p-3">
+    <div className="shrink-0 border-t border-[#e0e0e0] bg-[#f5f5f7] p-3">
       {pending && (
         <div className="mb-2">
           <ChatAttachmentPreview attachment={pending} onRemove={handleRemovePending} />
@@ -117,17 +117,17 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
           }}
           onKeyDown={handleKeyDown}
           placeholder="Ketik pesan... (Enter untuk kirim, Shift+Enter untuk baris baru)"
-          rows={1}
+          rows={2}
           disabled={disabled || sending}
           className={cn(
-            "flex-1 resize-none rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm",
-            "placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary",
-            "max-h-28 overflow-y-auto",
+            "min-h-14 flex-1 resize-none rounded-2xl border border-[#e0e0e0] bg-white px-4 py-3 text-[15px] leading-[1.47]",
+            "placeholder:text-[#7a7a7a] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/40",
+            "max-h-40 overflow-y-auto",
           )}
           onInput={(e) => {
             const el = e.currentTarget;
             el.style.height = "auto";
-            el.style.height = `${Math.min(el.scrollHeight, 112)}px`;
+            el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
           }}
         />
 

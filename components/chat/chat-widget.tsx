@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
+import { HEADER_DROPDOWN_PANEL_CLASS } from "@/components/shared/header-dropdown-panel";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 import { useChatStore } from "@/store/chat-store";
@@ -68,7 +69,8 @@ export function ChatWidget() {
         <div
           ref={popupRef}
           className={cn(
-            "fixed z-50 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl",
+            "fixed z-50",
+            HEADER_DROPDOWN_PANEL_CLASS,
             "bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))]",
             "md:bottom-20 md:right-6",
             "w-[calc(100vw-2rem)] max-w-[420px]",
@@ -79,14 +81,14 @@ export function ChatWidget() {
           <button
             type="button"
             onClick={handleClose}
-            className="absolute right-3 top-3 z-10 rounded-full p-1 hover:bg-muted transition-colors"
+            className="absolute right-3 top-3 z-10 rounded-full p-1 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Tutup chat"
           >
             <X size={14} />
           </button>
 
           {showForm && <ChatSessionForm onCreated={handleSessionCreated} />}
-          {showChat && <ChatPopup onMinimize={handleClose} />}
+          {showChat && <ChatPopup />}
         </div>
       )}
 
