@@ -4,14 +4,21 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 
-import { markAllNotificationsReadAction } from "@/app/(dashboard)/dashboard/notifications/_actions";
+import { markAllNotificationsReadAction, markNotificationReadAction } from "@/app/(dashboard)/dashboard/notifications/_actions";
+import {
+  HEADER_DROPDOWN_MENU_CONTENT_CLASS,
+  HeaderDropdownPanelHeader,
+} from "@/components/shared/header-dropdown-panel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useChatStore } from "@/store/chat-store";
 import { cn } from "@/lib/utils";
+
+type NotifData = { orderId?: string; [key: string]: unknown } | null;
 
 type NotifItem = {
   id: string;
@@ -20,7 +27,41 @@ type NotifItem = {
   type: string;
   is_read: boolean;
   created_at: string;
+  data: NotifData;
 };
+
+type NotifAction =
+  | { kind: "url"; href: string }
+  | { kind: "chat" };
+
+function resolveNotifAction(notif: NotifItem): NotifAction {
+  const orderId = notif.data?.orderId as string | undefined;
+
+  switch (notif.type) {
+    case "chat_message":
+    case "chat_message_user":
+    case "chat_session_closed":
+      return { kind: "chat" };
+    case "order_shipped":
+    case "order_in_transit":
+      return {
+        kind: "url",
+        href: orderId ? `/dashboard/orders/${orderId}/tracking` : "/dashboard/orders",
+      };
+    case "order_placed":
+    case "payment_confirmed":
+    case "payment_issue":
+    case "order_delivered":
+      return {
+        kind: "url",
+        href: orderId ? `/dashboard/orders/${orderId}` : "/dashboard/orders",
+      };
+    case "welcome":
+      return { kind: "url", href: "/dashboard" };
+    default:
+      return { kind: "url", href: "/dashboard/notifications" };
+  }
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -40,6 +81,7 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
+  const setChatOpen = useChatStore((s) => s.setOpen);
 
   const fetchedRef = useRef(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -99,6 +141,22 @@ export function NotificationBell() {
     });
   };
 
+  const handleNotifClick = useCallback(
+    (notif: NotifItem) => {
+      if (!notif.is_read) {
+        setItems((prev) => prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n)));
+        setUnread((prev) => Math.max(0, prev - 1));
+        void markNotificationReadAction(notif.id);
+      }
+      setOpen(false);
+      const action = resolveNotifAction(notif);
+      if (action.kind === "chat") {
+        setChatOpen(true);
+      }
+    },
+    [setChatOpen],
+  );
+
   return (
     <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <DropdownMenu open={open} onOpenChange={handleOpenChange} modal={false}>
@@ -121,17 +179,19 @@ export function NotificationBell() {
         <DropdownMenuContent
           align="end"
           sideOffset={8}
-          className="w-[min(100vw-2rem,22rem)] gap-0 overflow-hidden rounded-[18px] border-[#e0e0e0] p-0 shadow-md"
+          className={cn("w-[min(100vw-2rem,22rem)]", HEADER_DROPDOWN_MENU_CONTENT_CLASS)}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="flex items-center gap-2 border-b border-black/10 bg-[#2a2a2c] px-4 py-3 text-white">
-            <span className="text-[14px] font-semibold leading-[1.29]">Notifikasi</span>
-            {unread > 0 ? (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1.5 text-[10px] font-semibold tabular-nums">
-                {unread}
-              </span>
-            ) : null}
-          </div>
+          <HeaderDropdownPanelHeader
+            title="Notifikasi"
+            badge={
+              unread > 0 ? (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/15 px-1.5 text-[10px] font-semibold tabular-nums">
+                  {unread}
+                </span>
+              ) : null
+            }
+          />
 
           <div className="max-h-72 overflow-y-auto bg-white">
             {loading ? (
@@ -149,18 +209,19 @@ export function NotificationBell() {
                 <p className="text-[14px] leading-[1.43] text-[#7a7a7a]">Belum ada notifikasi</p>
               </div>
             ) : (
-              items.map((notif) => (
-                <div
-                  key={notif.id}
-                  className={cn(
-                    "border-b border-[#e0e0e0] px-4 py-3 transition-colors last:border-b-0",
-                    !notif.is_read ? "bg-[#fff8f5] hover:bg-[#f5f5f7]" : "bg-white hover:bg-[#f5f5f7]",
-                  )}
-                >
+              items.map((notif) => {
+                const action = resolveNotifAction(notif);
+                const itemClass = cn(
+                  "w-full border-b border-[#e0e0e0] px-4 py-3 text-left transition-colors last:border-b-0",
+                  !notif.is_read ? "bg-[#fff8f5] hover:bg-[#f5f5f7]" : "bg-white hover:bg-[#f5f5f7]",
+                );
+                const content = (
                   <div className="flex items-start gap-3">
                     {!notif.is_read ? (
                       <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" aria-hidden />
-                    ) : null}
+                    ) : (
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0" aria-hidden />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[14px] font-semibold leading-[1.29] text-[#1d1d1f]">
                         {notif.title}
@@ -173,8 +234,32 @@ export function NotificationBell() {
                       </p>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+
+                if (action.kind === "chat") {
+                  return (
+                    <button
+                      key={notif.id}
+                      type="button"
+                      className={itemClass}
+                      onClick={() => handleNotifClick(notif)}
+                    >
+                      {content}
+                    </button>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={notif.id}
+                    href={action.href}
+                    className={itemClass}
+                    onClick={() => handleNotifClick(notif)}
+                  >
+                    {content}
+                  </Link>
+                );
+              })
             )}
           </div>
 
