@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
-import { MapPin, Package, Star, Truck } from "lucide-react";
+import { Clock, MapPin, Package, Star, Truck } from "lucide-react";
+
+import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -87,8 +89,84 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const problemPayments = payments.filter((p) => PROBLEM_PAYMENT.includes(p.status));
   const hasShipment = shipments.length > 0 || order.status === "shipped" || order.status === "delivered";
 
+  // Most recent pending payment, fallback to any payment record
+  const pendingPayment = payments.find((p) => p.status === "pending") ?? payments[0] ?? null;
+  // Expiry fallback: created_at + 3 hours if no payment record expiry
+  const expiryFallback = new Date(new Date(order.created_at).getTime() + 3 * 60 * 60 * 1000).toISOString();
+  const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
+
   return (
     <div className="space-y-6">
+      {/* ── Pending payment details — shown immediately below the tab line ── */}
+      {order.status === "pending_payment" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+              <span className="text-sm font-semibold text-amber-900">Menunggu pembayaran</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <PaymentCountdown expiryTime={paymentExpiry} />
+              <span className="text-lg font-black tabular-nums text-amber-900">
+                {formatRupiah(pendingPayment?.gross_amount ?? order.total)}
+              </span>
+            </div>
+          </div>
+
+          <dl className="mt-4 grid gap-y-3 gap-x-6 border-t border-amber-100 pt-4 text-sm sm:grid-cols-2">
+            {pendingPayment?.payment_type ? (
+              <div>
+                <dt className="text-[11px] font-bold uppercase text-amber-700">Metode pembayaran</dt>
+                <dd className="mt-0.5 font-semibold text-amber-900">
+                  {PAYMENT_METHOD_LABELS[pendingPayment.payment_type] ?? pendingPayment.payment_type}
+                </dd>
+              </div>
+            ) : null}
+            {pendingPayment?.va_number ? (
+              <div>
+                <dt className="text-[11px] font-bold uppercase text-amber-700">Nomor Virtual Account</dt>
+                <dd className="mt-0.5 font-mono text-base font-bold tracking-wider text-amber-900">
+                  {pendingPayment.va_number}
+                </dd>
+              </div>
+            ) : null}
+            {pendingPayment?.payment_code ? (
+              <div>
+                <dt className="text-[11px] font-bold uppercase text-amber-700">Kode pembayaran</dt>
+                <dd className="mt-0.5 font-mono text-base font-bold tracking-wider text-amber-900">
+                  {pendingPayment.payment_code}
+                </dd>
+              </div>
+            ) : null}
+            {pendingPayment?.midtrans_transaction_id && !pendingPayment.va_number && !pendingPayment.payment_code ? (
+              <div>
+                <dt className="text-[11px] font-bold uppercase text-amber-700">No. Transaksi</dt>
+                <dd className="mt-0.5 font-mono text-sm font-bold text-amber-900">
+                  {pendingPayment.midtrans_transaction_id}
+                </dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className="text-[11px] font-bold uppercase text-amber-700">Batas waktu bayar</dt>
+              <dd className="mt-0.5 text-amber-900">
+                {formatDate(paymentExpiry, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </dd>
+            </div>
+          </dl>
+
+          {pendingPayment?.pdf_url ? (
+            <a
+              href={pendingPayment.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900"
+            >
+              Unduh instruksi pembayaran (PDF) ↗
+            </a>
+          ) : null}
+        </div>
+      )}
+
       {/* ── Header card ── */}
       <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -148,9 +226,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           )}
           <OrderToolbar
             orderId={order.id}
-            orderNumber={order.order_number}
             status={order.status}
-            hasPendingPayment={hasPendingPayment}
             allReviewed={allReviewed}
           />
         </div>

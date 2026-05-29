@@ -576,6 +576,10 @@ export type PendingOrderPreview = {
   order_number: string;
   total: number;
   created_at: string;
+  expiryTime: string | null;
+  vaNumber: string | null;
+  paymentCode: string | null;
+  transactionId: string | null;
   previewName: string | null;
   previewImage: string | null;
 };
@@ -597,11 +601,18 @@ export async function fetchPendingPaymentOrders(
     if (oErr || !orders?.length) return [];
 
     const orderIds = orders.map((o) => o.id);
-    const { data: items } = await supabase
-      .from("order_items")
-      .select("order_id, product_name, image_url, id")
-      .in("order_id", orderIds)
-      .order("id", { ascending: true });
+    const [{ data: items }, { data: paymentsRaw }] = await Promise.all([
+      supabase
+        .from("order_items")
+        .select("order_id, product_name, image_url, id")
+        .in("order_id", orderIds)
+        .order("id", { ascending: true }),
+      supabase
+        .from("payments")
+        .select("order_id, expiry_time, va_number, payment_code, midtrans_transaction_id")
+        .in("order_id", orderIds)
+        .order("created_at", { ascending: false }),
+    ]);
 
     const firstByOrder = new Map<string, { product_name: string; image_url: string | null }>();
     for (const it of items ?? []) {
@@ -610,13 +621,40 @@ export async function fetchPendingPaymentOrders(
       }
     }
 
+    type PaymentMeta = {
+      expiry_time: string | null;
+      va_number: string | null;
+      payment_code: string | null;
+      midtrans_transaction_id: string | null;
+    };
+    const paymentByOrder = new Map<string, PaymentMeta>();
+    for (const p of paymentsRaw ?? []) {
+      if (!paymentByOrder.has(p.order_id)) {
+        paymentByOrder.set(p.order_id, {
+          expiry_time: p.expiry_time ?? null,
+          va_number: p.va_number ?? null,
+          payment_code: p.payment_code ?? null,
+          midtrans_transaction_id: p.midtrans_transaction_id ?? null,
+        });
+      }
+    }
+
+    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
     return orders.map((o) => {
       const fi = firstByOrder.get(o.id);
+      const pm = paymentByOrder.get(o.id);
+      const expiryTime = pm?.expiry_time
+        ? pm.expiry_time
+        : new Date(new Date(o.created_at).getTime() + THREE_HOURS_MS).toISOString();
       return {
         id: o.id,
         order_number: o.order_number,
         total: o.total,
         created_at: o.created_at,
+        expiryTime,
+        vaNumber: pm?.va_number ?? null,
+        paymentCode: pm?.payment_code ?? null,
+        transactionId: pm?.midtrans_transaction_id ?? null,
         previewName: fi?.product_name ?? null,
         previewImage: fi?.image_url ?? null,
       };

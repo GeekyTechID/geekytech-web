@@ -5,22 +5,14 @@ import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
-import { StoreHeader, type StoreHeaderCategory } from "@/components/store/store-header";
 import { Button } from "@/components/ui/button";
 
 type DashboardShellProps = {
   children: React.ReactNode;
-  categories: StoreHeaderCategory[];
-  initialCartCount?: number;
   unreadNotifications?: number;
 };
 
-export function DashboardShell({
-  children,
-  categories,
-  initialCartCount = 0,
-  unreadNotifications = 0,
-}: DashboardShellProps) {
+export function DashboardShell({ children, unreadNotifications = 0 }: DashboardShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -36,11 +28,7 @@ export function DashboardShell({
   }, [mobileOpen]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col text-[#1d1d1f]">
-      <div data-no-print>
-        <StoreHeader categories={categories} initialCartCount={initialCartCount} />
-      </div>
-
+    <div className="flex w-full min-h-0 flex-1 flex-col text-[#1d1d1f]">
       <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col pt-4 sm:pt-6 lg:pt-8">
         {/* Sidebar kolom dari lg+; tablet (md–lg) pakai drawer agar konten tidak terlalu sempit */}
         <div className="mx-auto flex w-full max-w-[1400px] min-h-0 min-w-0 flex-1 flex-col px-4 sm:px-6 lg:px-8 lg:flex-row lg:gap-6 xl:gap-8">
@@ -88,7 +76,7 @@ export function DashboardShell({
           </div>
 
           <div className="flex w-full min-w-0 flex-1 flex-col bg-white">
-            <header data-no-print className="sticky top-0 z-30 flex w-full shrink-0 items-center gap-3 bg-white/95 px-3 py-2.5 backdrop-blur-sm supports-[backdrop-filter]:bg-white/90 sm:px-4 sm:py-3 lg:hidden">
+            <header data-no-print className="flex w-full shrink-0 items-center gap-3 border-b border-[#f0f0f0] bg-white px-3 py-2.5 sm:px-4 sm:py-3 lg:hidden">
               <Button
                 type="button"
                 variant="pearl"

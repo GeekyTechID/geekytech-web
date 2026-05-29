@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, ChevronRight, ShoppingBag, Tag, Truck, CheckCircle, Info } from "lucide-react";
+import { Bell, ChevronRight, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
+
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +23,7 @@ import { formatDate, formatRupiah } from "@/lib/format";
 import { orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
 import { cn } from "@/lib/utils";
 import { SpendingChartLazy } from "@/components/dashboard/spending-chart-lazy";
+import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 
 export const metadata: Metadata = {
   title: "Ringkasan akun",
@@ -115,6 +118,60 @@ export default async function DashboardOverviewPage() {
         Ringkasan pesanan dan aktivitas akun Anda.
       </p>
 
+      {/* Pending payment alert — shown when user left during payment */}
+      {pendingOrders.length > 0 && (
+        <Alert variant="destructive" className="mt-6">
+          <AlertCircle />
+          <AlertTitle>
+            {pendingOrders.length === 1
+              ? "1 pesanan menunggu pembayaran"
+              : `${pendingOrders.length} pesanan menunggu pembayaran`}
+          </AlertTitle>
+          <AlertDescription>
+            <p className="mb-3">Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.</p>
+            <ul className="flex flex-col gap-2">
+              {pendingOrders.map((o) => (
+                <li key={o.id} className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-mono text-[12px] font-semibold">{o.order_number}</p>
+                    {o.previewName && (
+                      <p className="truncate text-[13px] font-bold opacity-80">{o.previewName}</p>
+                    )}
+                    {(() => {
+                      const ref = o.vaNumber ?? o.paymentCode ?? o.transactionId;
+                      const label = o.vaNumber ? "No. VA" : o.paymentCode ? "Kode bayar" : o.transactionId ? "No. transaksi" : null;
+                      return ref && label ? (
+                        <p className="mt-0.5 truncate text-[11px]">
+                          <span className="opacity-70">{label}: </span>
+                          <span className="font-mono font-semibold">{ref}</span>
+                        </p>
+                      ) : null;
+                    })()}
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    {o.expiryTime && <PaymentCountdown expiryTime={o.expiryTime} />}
+                    <div className="flex flex-row items-center gap-2">
+                      <p className="text-base font-bold tabular-nums">{formatRupiah(o.total)}</p>
+                      <Button asChild variant="dark" size="sm" className="no-underline text-white hover:text-white">
+                        <Link href={`/dashboard/orders/${o.id}`}>Bayar</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {pendingOrders.length > 1 && (
+              <Link
+                href="/dashboard/orders?status=pending_payment"
+                className="mt-3 inline-block text-[12px] font-medium underline underline-offset-2"
+              >
+                Lihat semua pesanan tertunda →
+              </Link>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats cards — row 1: 4 cards, row 2: 2 cards + Total Pesanan (flex-1) */}
       {(() => {
         const compactRupiah = (n: number) => {
@@ -164,64 +221,6 @@ export default async function DashboardOverviewPage() {
           </div>
         );
       })()}
-
-      {/* Pending payment alert — only shown when there are orders waiting */}
-      {pendingOrders.length > 0 && (
-        <section className="mt-8">
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                <Info className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold text-amber-900">
-                  {pendingOrders.length === 1
-                    ? "1 pesanan menunggu pembayaran"
-                    : `${pendingOrders.length} pesanan menunggu pembayaran`}
-                </p>
-                <p className="mt-0.5 text-[12px] text-amber-700">
-                  Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.
-                </p>
-              </div>
-              <Button asChild variant="secondary" size="sm" className="shrink-0">
-                <Link href="/dashboard/orders?status=pending_payment">Lihat semua</Link>
-              </Button>
-            </div>
-
-            <ul className="mt-4 flex flex-col divide-y divide-amber-100">
-              {pendingOrders.map((o) => (
-                <li key={o.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                  {/* Thumbnail */}
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-amber-200 bg-white">
-                    {o.previewImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={o.previewImage} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <ShoppingBag className="h-4 w-4 text-amber-300" />
-                      </div>
-                    )}
-                  </div>
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-mono text-[12px] font-semibold text-amber-900">{o.order_number}</p>
-                    {o.previewName && (
-                      <p className="truncate text-[11px] text-amber-700">{o.previewName}</p>
-                    )}
-                  </div>
-                  {/* Total + CTA */}
-                  <div className="flex shrink-0 flex-col items-end gap-1.5">
-                    <p className="text-[12px] font-semibold tabular-nums text-amber-900">{formatRupiah(o.total)}</p>
-                    <Button asChild variant="primary" size="xs" className="min-h-8">
-                      <Link href={`/dashboard/orders/${o.id}`}>Bayar</Link>
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
 
       {/* Spending chart */}
       <SpendingChartLazy data12={spending} />

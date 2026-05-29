@@ -240,9 +240,6 @@ export function Navbar() {
                   >
                     <HeaderDropdownPanelHeader title={profile?.full_name ?? "Pengguna"} />
                     <HeaderDropdownPanelBody className="py-1">
-                      <p className="truncate border-b border-[#e0e0e0] px-4 pb-2.5 text-[12px] leading-none text-[#7a7a7a]">
-                        {user?.email}
-                      </p>
                       <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
                         <Link href="/dashboard/profile" className="flex items-center gap-2">
                           <User size={14} />

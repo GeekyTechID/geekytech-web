@@ -88,12 +88,20 @@ function resolveStoreHeaderAvatarUrl(
 type StoreHeaderProps = {
   categories: StoreHeaderCategory[];
   initialCartCount?: number;
+  /** Default true — matikan jika header dibungkus sticky di parent (mis. layout dashboard). */
+  sticky?: boolean;
+  className?: string;
 };
 
 const searchInputClass =
   "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0 dark:bg-transparent";
 
-export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderProps) {
+export function StoreHeader({
+  categories,
+  initialCartCount = 0,
+  sticky = true,
+  className,
+}: StoreHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
@@ -237,7 +245,13 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white dark:border-border dark:bg-background">
+      <header
+        className={cn(
+          "w-full border-b border-neutral-200 bg-white dark:border-border dark:bg-background",
+          sticky && "sticky top-0 z-40 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 dark:bg-background/95",
+          className,
+        )}
+      >
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 py-3 md:py-4">
             <Button
@@ -342,9 +356,6 @@ export function StoreHeader({ categories, initialCartCount = 0 }: StoreHeaderPro
                   >
                     <HeaderDropdownPanelHeader title={profile?.full_name ?? "Pengguna"} />
                     <HeaderDropdownPanelBody className="py-1">
-                      <p className="truncate border-b border-[#e0e0e0] px-4 pb-2.5 text-[12px] leading-none text-[#7a7a7a]">
-                        {user?.email}
-                      </p>
                       <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
                         <Link href="/dashboard" className="flex items-center gap-2">
                           <LayoutDashboard size={14} />

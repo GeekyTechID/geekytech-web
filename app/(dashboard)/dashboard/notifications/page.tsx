@@ -16,7 +16,7 @@ export default async function NotificationsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/dashboard/notifications");
 
-  const items = await fetchUserNotifications(user.id, 80);
+  const items = await fetchUserNotifications(user.id, 10);
 
   return (
     <div className="w-full">

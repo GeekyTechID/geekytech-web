@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { HomeMainHero } from "@/components/store/home-main-hero";
 import { StoreFooter } from "@/components/store/store-footer";
+import { StoreHeader } from "@/components/store/store-header";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { fetchMainHeroBanners } from "@/lib/data/home-storefront";
@@ -44,13 +45,18 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   return (
     <div className="flex w-full flex-col">
       <InitAuthStore user={user} profile={profile} />
-      <DashboardShell
-        categories={categories}
-        initialCartCount={initialCartCount}
-        unreadNotifications={unreadNotifications}
+      <div
+        data-no-print
+        id="dashboard-site-header"
+        className="sticky top-0 z-50 w-full shrink-0 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 dark:bg-background/95"
       >
-        {children}
-      </DashboardShell>
+        <StoreHeader
+          categories={categories}
+          initialCartCount={initialCartCount}
+          sticky={false}
+        />
+      </div>
+      <DashboardShell unreadNotifications={unreadNotifications}>{children}</DashboardShell>
 
       <div data-no-print>
         <ChatWidget />

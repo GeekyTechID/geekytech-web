@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import {
   cancelOrderAction,
   confirmOrderReceivedAction,
-  getRetryPaymentWhatsAppLink,
 } from "@/app/(dashboard)/dashboard/orders/_actions";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/types/supabase";
@@ -17,15 +16,11 @@ type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 export function OrderToolbar({
   orderId,
-  orderNumber,
   status,
-  hasPendingPayment,
   allReviewed,
 }: {
   orderId: string;
-  orderNumber: string;
   status: OrderStatus;
-  hasPendingPayment: boolean;
   allReviewed: boolean;
 }) {
   const [pending, startTransition] = useTransition();
@@ -83,22 +78,7 @@ export function OrderToolbar({
     });
   };
 
-  const onRetryPayment = () => {
-    startTransition(async () => {
-      const res = await getRetryPaymentWhatsAppLink(orderNumber);
-      if (!res.success) {
-        toast.error(res.error);
-        return;
-      }
-      if (!res.url) {
-        toast.message("Hubungi layanan pelanggan untuk bantuan pembayaran.");
-        return;
-      }
-      window.open(res.url, "_blank", "noopener,noreferrer");
-    });
-  };
-
-  if (!canCancel && !canConfirm && !canReview && !hasPendingPayment) {
+  if (!canCancel && !canConfirm && !canReview) {
     return null;
   }
 
@@ -129,11 +109,6 @@ export function OrderToolbar({
       {canReview ? (
         <Button asChild variant="primary" className="w-full sm:w-auto">
           <Link href={`/dashboard/orders/${orderId}/review`}>Beri Ulasan</Link>
-        </Button>
-      ) : null}
-      {hasPendingPayment && status === "pending_payment" ? (
-        <Button type="button" variant="secondary" disabled={pending} onClick={onRetryPayment} className="w-full sm:w-auto">
-          Bantuan lanjut bayar (WhatsApp)
         </Button>
       ) : null}
     </div>
