@@ -71,7 +71,6 @@ export async function fetchActiveCouriers(): Promise<string> {
 
     const value = codes.join(",");
     cache = { value, expiresAt: now + TTL_MS };
-    console.info("[Biteship couriers] Couriers aktif:", value);
     return value;
   } catch (err) {
     console.warn("[Biteship couriers] Network error, pakai fallback.", err);
