@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, ChevronRight, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
+import { Bell, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
 
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
@@ -128,34 +128,36 @@ export default async function DashboardOverviewPage() {
               : `${pendingOrders.length} pesanan menunggu pembayaran`}
           </AlertTitle>
           <AlertDescription>
-            <p className="mb-3">Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.</p>
+            <p className="mb-3 text-[13px]">Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.</p>
             <ul className="flex flex-col gap-2">
               {pendingOrders.map((o) => (
-                <li key={o.id} className="flex items-center gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-mono text-[12px] font-semibold">{o.order_number}</p>
-                    {o.previewName && (
-                      <p className="truncate text-[13px] font-bold opacity-80">{o.previewName}</p>
-                    )}
-                    {(() => {
-                      const ref = o.vaNumber ?? o.paymentCode ?? o.transactionId;
-                      const label = o.vaNumber ? "No. VA" : o.paymentCode ? "Kode bayar" : o.transactionId ? "No. transaksi" : null;
-                      return ref && label ? (
-                        <p className="mt-0.5 truncate text-[11px]">
-                          <span className="opacity-70">{label}: </span>
-                          <span className="font-mono font-semibold">{ref}</span>
-                        </p>
-                      ) : null;
-                    })()}
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <li key={o.id} className="rounded-lg bg-white/50 px-3 py-2.5">
+                  {/* Baris 1: nomor pesanan + countdown */}
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <p className="font-mono text-[12px] font-bold tracking-tight">{o.order_number}</p>
                     {o.expiryTime && <PaymentCountdown expiryTime={o.expiryTime} />}
-                    <div className="flex flex-row items-center gap-2">
-                      <p className="text-base font-bold tabular-nums">{formatRupiah(o.total)}</p>
-                      <Button asChild variant="dark" size="sm" className="no-underline text-white hover:text-white">
-                        <Link href={`/dashboard/orders/${o.id}`}>Bayar</Link>
-                      </Button>
-                    </div>
+                  </div>
+                  {/* Nama produk */}
+                  {o.previewName && (
+                    <p className="mt-1 truncate text-[13px] font-medium leading-snug opacity-80">{o.previewName}</p>
+                  )}
+                  {/* Nomor VA / kode bayar */}
+                  {(() => {
+                    const ref = o.vaNumber ?? o.paymentCode ?? o.transactionId;
+                    const label = o.vaNumber ? "No. VA" : o.paymentCode ? "Kode bayar" : o.transactionId ? "No. transaksi" : null;
+                    return ref && label ? (
+                      <p className="mt-1 text-[12px]">
+                        <span className="opacity-60">{label}:</span>{" "}
+                        <span className="font-mono font-semibold">{ref}</span>
+                      </p>
+                    ) : null;
+                  })()}
+                  {/* Baris bawah: total + tombol bayar */}
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <p className="text-[15px] font-bold tabular-nums">{formatRupiah(o.total)}</p>
+                    <Button asChild variant="dark" size="sm" className="no-underline text-white hover:text-white">
+                      <Link href={`/dashboard/orders/${o.id}`}>Bayar sekarang</Link>
+                    </Button>
                   </div>
                 </li>
               ))}
