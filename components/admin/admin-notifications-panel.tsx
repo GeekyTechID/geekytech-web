@@ -22,8 +22,10 @@ type Row = {
 
 const TYPE_LABEL: Record<string, string> = {
   new_order: "Pesanan",
+  order_cancelled: "Pesanan",
   payment_confirmed: "Pembayaran",
   payment_issue: "Pembayaran",
+  payment_expired: "Pembayaran",
   low_stock: "Stok",
   new_complaint: "Komplain",
   new_review: "Ulasan",

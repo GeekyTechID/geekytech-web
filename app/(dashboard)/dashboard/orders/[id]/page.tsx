@@ -13,6 +13,7 @@ import {
   fetchReviewsForOrder,
   type DashboardOrderItemRow,
 } from "@/lib/data/dashboard-user";
+import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 import { formatDate, formatRupiah } from "@/lib/format";
@@ -94,76 +95,135 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   // Expiry fallback: created_at + 3 hours if no payment record expiry
   const expiryFallback = new Date(new Date(order.created_at).getTime() + 3 * 60 * 60 * 1000).toISOString();
   const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
+  // Payment window already closed — hide the "Menunggu pembayaran" block.
+  // The cron /api/cron/expire-orders will cancel the order asynchronously.
+  const paymentExpired = new Date(paymentExpiry).getTime() <= Date.now();
+
+  // Lazy-cancel: jika user membuka halaman ini saat waktu bayar sudah habis,
+  // langsung batalkan di DB dan redirect agar status tampil "Dibatalkan".
+  // Cron menjadi fallback untuk pesanan yang tidak pernah dibuka.
+  if (order.status === "pending_payment" && paymentExpired) {
+    try {
+      await cancelExpiredOrder(order.id);
+    } catch {
+      // DB error — lanjut render; cron akan retry
+    }
+    redirect(`/dashboard/orders/${id}`);
+  }
 
   return (
     <div className="space-y-6">
-      {/* ── Pending payment details — shown immediately below the tab line ── */}
-      {order.status === "pending_payment" && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 shrink-0 text-amber-600" />
-              <span className="text-sm font-semibold text-amber-900">Menunggu pembayaran</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <PaymentCountdown expiryTime={paymentExpiry} />
-              <span className="text-lg font-black tabular-nums text-amber-900">
-                {formatRupiah(pendingPayment?.gross_amount ?? order.total)}
+      {/* ── Pending payment details — shown only while window is still open ── */}
+      {order.status === "pending_payment" && !paymentExpired && (
+        <div className="overflow-hidden rounded-2xl border border-[#EA5329]/20 bg-[#FFF8F5]">
+          {/* Header: title + countdown pill */}
+          <div className="flex items-center justify-between gap-3 px-5 py-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#EA5329]/10">
+                <Clock className="h-4 w-4 text-[#EA5329]" />
               </span>
+              <span className="text-[15px] font-semibold text-[#1d1d1f]">Menunggu pembayaran</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#EA5329]/20">
+              <Clock className="h-3 w-3 shrink-0 text-[#EA5329]" />
+              <PaymentCountdown expiryTime={paymentExpiry} />
             </div>
           </div>
 
-          <dl className="mt-4 grid gap-y-3 gap-x-6 border-t border-amber-100 pt-4 text-sm sm:grid-cols-2">
-            {pendingPayment?.payment_type ? (
-              <div>
-                <dt className="text-[11px] font-bold uppercase text-amber-700">Metode pembayaran</dt>
-                <dd className="mt-0.5 font-semibold text-amber-900">
-                  {PAYMENT_METHOD_LABELS[pendingPayment.payment_type] ?? pendingPayment.payment_type}
-                </dd>
-              </div>
-            ) : null}
-            {pendingPayment?.va_number ? (
-              <div>
-                <dt className="text-[11px] font-bold uppercase text-amber-700">Nomor Virtual Account</dt>
-                <dd className="mt-0.5 font-mono text-base font-bold tracking-wider text-amber-900">
-                  {pendingPayment.va_number}
-                </dd>
-              </div>
-            ) : null}
-            {pendingPayment?.payment_code ? (
-              <div>
-                <dt className="text-[11px] font-bold uppercase text-amber-700">Kode pembayaran</dt>
-                <dd className="mt-0.5 font-mono text-base font-bold tracking-wider text-amber-900">
-                  {pendingPayment.payment_code}
-                </dd>
-              </div>
-            ) : null}
-            {pendingPayment?.midtrans_transaction_id && !pendingPayment.va_number && !pendingPayment.payment_code ? (
-              <div>
-                <dt className="text-[11px] font-bold uppercase text-amber-700">No. Transaksi</dt>
-                <dd className="mt-0.5 font-mono text-sm font-bold text-amber-900">
-                  {pendingPayment.midtrans_transaction_id}
-                </dd>
-              </div>
-            ) : null}
-            <div>
-              <dt className="text-[11px] font-bold uppercase text-amber-700">Batas waktu bayar</dt>
-              <dd className="mt-0.5 text-amber-900">
-                {formatDate(paymentExpiry, { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-              </dd>
-            </div>
-          </dl>
+          {/* Amount */}
+          <div className="border-t border-[#EA5329]/10 px-5 py-4">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#EA5329]/70">
+              Total yang harus dibayar
+            </p>
+            <p className="mt-1 text-[28px] font-black tabular-nums leading-none text-[#1d1d1f]">
+              {formatRupiah(pendingPayment?.gross_amount ?? order.total)}
+            </p>
+          </div>
 
-          {pendingPayment?.pdf_url ? (
-            <a
-              href={pendingPayment.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900"
-            >
-              Unduh instruksi pembayaran (PDF) ↗
-            </a>
-          ) : null}
+          {/* Info grid */}
+          <div className="border-t border-[#EA5329]/10 px-5 pb-5 pt-4">
+            <dl className="grid gap-4 sm:grid-cols-2">
+              {pendingPayment?.payment_type ? (
+                <div>
+                  <dt className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
+                    Metode pembayaran
+                  </dt>
+                  <dd className="mt-1.5 text-[14px] font-semibold text-[#1d1d1f]">
+                    {PAYMENT_METHOD_LABELS[pendingPayment.payment_type] ?? pendingPayment.payment_type}
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
+                  Batas waktu bayar
+                </dt>
+                <dd className="mt-1.5 text-[14px] font-medium text-[#1d1d1f]">
+                  {formatDate(paymentExpiry, {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </dd>
+              </div>
+            </dl>
+
+            {/* VA / payment code / transaction ID — prominent copy chip */}
+            {(pendingPayment?.va_number ||
+              pendingPayment?.payment_code ||
+              pendingPayment?.midtrans_transaction_id) && (
+              <div className="mt-4">
+                {pendingPayment.va_number ? (
+                  <>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
+                      Nomor Virtual Account
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-[#EA5329]/15">
+                      <span className="min-w-0 flex-1 select-all font-mono text-[22px] font-black tracking-widest text-[#1d1d1f]">
+                        {pendingPayment.va_number}
+                      </span>
+                      <span className="shrink-0 text-[11px] text-[#aaa]">tap untuk salin</span>
+                    </div>
+                  </>
+                ) : pendingPayment.payment_code ? (
+                  <>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
+                      Kode pembayaran
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-[#EA5329]/15">
+                      <span className="min-w-0 flex-1 select-all font-mono text-[22px] font-black tracking-widest text-[#1d1d1f]">
+                        {pendingPayment.payment_code}
+                      </span>
+                      <span className="shrink-0 text-[11px] text-[#aaa]">tap untuk salin</span>
+                    </div>
+                  </>
+                ) : pendingPayment.midtrans_transaction_id ? (
+                  <>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
+                      No. Transaksi
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-2 rounded-xl bg-white px-4 py-3 ring-1 ring-[#EA5329]/15">
+                      <span className="min-w-0 flex-1 select-all truncate font-mono text-sm font-bold text-[#1d1d1f]">
+                        {pendingPayment.midtrans_transaction_id}
+                      </span>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            )}
+
+            {pendingPayment?.pdf_url ? (
+              <a
+                href={pendingPayment.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#EA5329] underline-offset-2 hover:underline"
+              >
+                Unduh instruksi pembayaran (PDF) ↗
+              </a>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -362,38 +422,39 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                     </span>
                     <span className="text-lg font-black tabular-nums text-[#1d1d1f]">{formatRupiah(p.gross_amount)}</span>
                   </div>
-                  <dl className="mt-4 grid gap-y-2.5 gap-x-4 text-sm sm:grid-cols-2">
+                  <dl className="mt-4 grid gap-y-3 gap-x-4 text-sm sm:grid-cols-2">
                     {p.payment_type ? (
                       <div>
                         <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Metode</dt>
-                        <dd className="mt-0.5 font-medium text-[#1d1d1f]">
+                        <dd className="mt-1 font-medium text-[#1d1d1f]">
                           {PAYMENT_METHOD_LABELS[p.payment_type] ?? p.payment_type}
                         </dd>
-                      </div>
-                    ) : null}
-                    {p.va_number ? (
-                      <div>
-                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Nomor VA</dt>
-                        <dd className="mt-0.5 font-mono text-[#1d1d1f]">{p.va_number}</dd>
-                      </div>
-                    ) : null}
-                    {p.payment_code ? (
-                      <div>
-                        <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Kode bayar</dt>
-                        <dd className="mt-0.5 font-mono text-[#1d1d1f]">{p.payment_code}</dd>
                       </div>
                     ) : null}
                     {p.expiry_time ? (
                       <div>
                         <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">Batas bayar</dt>
-                        <dd className="mt-0.5 text-[#1d1d1f]">
+                        <dd className="mt-1 text-[#1d1d1f]">
                           {formatDate(p.expiry_time, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </dd>
                       </div>
                     ) : null}
                   </dl>
+                  {(p.va_number || p.payment_code) && (
+                    <div className="mt-3">
+                      <p className="text-[11px] font-bold uppercase text-[#7a7a7a]">
+                        {p.va_number ? "Nomor VA" : "Kode bayar"}
+                      </p>
+                      <div className="mt-1.5 flex items-center gap-3 rounded-xl bg-[#f5f5f7] px-4 py-2.5">
+                        <span className="min-w-0 flex-1 select-all font-mono text-base font-bold tracking-widest text-[#1d1d1f]">
+                          {p.va_number ?? p.payment_code}
+                        </span>
+                        <span className="shrink-0 text-[11px] text-[#aaa]">tap untuk salin</span>
+                      </div>
+                    </div>
+                  )}
                   {p.pdf_url ? (
-                    <a href={p.pdf_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-xs font-semibold text-[#EA5329] hover:underline">
+                    <a href={p.pdf_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#EA5329] underline-offset-2 hover:underline">
                       Instruksi pembayaran (PDF) ↗
                     </a>
                   ) : null}

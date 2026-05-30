@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { markAllNotificationsReadAction, markNotificationReadAction } from "@/app/(dashboard)/dashboard/notifications/_actions";
+import { useNotificationStore } from "@/store/notification-store";
 import { Button } from "@/components/ui/button";
 import { formatRelativeDate } from "@/lib/format";
 
@@ -21,6 +22,10 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
+  // Sync ke bell header saat mark-as-read
+  const storeMarkRead = useNotificationStore((s) => s.markRead);
+  const storeMarkAllRead = useNotificationStore((s) => s.markAllRead);
+
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -32,6 +37,8 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
           disabled={pending}
           onClick={() => {
             startTransition(async () => {
+              // Optimistic update ke bell header langsung
+              storeMarkAllRead();
               const res = await markAllNotificationsReadAction();
               if (res.success) {
                 toast.success("Semua ditandai dibaca.");
@@ -65,6 +72,8 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
                   className="shrink-0"
                   onClick={() => {
                     startTransition(async () => {
+                      // Optimistic update ke bell header langsung
+                      storeMarkRead(n.id);
                       const res = await markNotificationReadAction(n.id);
                       if (res.success) {
                         router.refresh();

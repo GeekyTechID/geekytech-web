@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ChevronRight, MapPin, Package, Phone, User } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { formatRupiah, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
@@ -57,6 +58,30 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
+
+  // Expiry: dari payment record, fallback ke created_at + 3 jam
+  const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+  const adminPaymentExpiry =
+    payment?.expiry_time ??
+    new Date(new Date(order.created_at).getTime() + THREE_HOURS_MS).toISOString();
+  const adminPaymentExpired =
+    order.status === "pending_payment" &&
+    new Date(adminPaymentExpiry).getTime() <= Date.now();
+
+  // Lazy-cancel: admin membuka halaman → cancel langsung → redirect ke halaman segar
+  if (adminPaymentExpired) {
+    try {
+      await cancelExpiredOrder(order.id);
+    } catch {
+      // DB error — lanjut render; cron akan retry
+    }
+    redirect(`/admin/orders/${id}`);
+  }
+
+  // Badge untuk payment pending yang kedaluwarsa (belum sempat di-cancel cron)
+  const paymentIsExpiredPending =
+    payment?.status === "pending" &&
+    adminPaymentExpired;
   const items = Array.isArray(order.order_items) ? order.order_items : [];
 
   return (
@@ -174,11 +199,15 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                     payment.status === "paid"
                       ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
-                      : payment.status === "pending"
-                        ? "bg-brand/10 text-brand"
-                        : "bg-destructive/10 text-destructive dark:text-destructive"
+                      : paymentIsExpiredPending
+                        ? "bg-destructive/10 text-destructive dark:text-destructive"
+                        : payment.status === "pending"
+                          ? "bg-brand/10 text-brand"
+                          : "bg-destructive/10 text-destructive dark:text-destructive"
                   )}>
-                    {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
+                    {paymentIsExpiredPending
+                      ? "Kedaluwarsa (menunggu cron)"
+                      : (PAYMENT_STATUS_LABELS[payment.status] ?? payment.status)}
                   </span>
                 } />
                 {payment.payment_type && (

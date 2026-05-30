@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useTransition } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 
@@ -21,7 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useChatStore } from "@/store/chat-store";
+import { useNotificationStore, type StoreNotifItem } from "@/store/notification-store";
 import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect } from "react";
 
 type NotifData = { orderId?: string; [key: string]: unknown } | null;
 
@@ -54,8 +56,10 @@ function resolveNotifAction(notif: NotifItem): NotifAction {
         href: orderId ? `/dashboard/orders/${orderId}/tracking` : "/dashboard/orders",
       };
     case "order_placed":
+    case "order_update":
     case "payment_confirmed":
     case "payment_issue":
+    case "payment_expired":
     case "order_delivered":
       return {
         kind: "url",
@@ -112,32 +116,38 @@ function NotificationListItemContent({ notif }: { notif: NotifItem }) {
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<NotifItem[]>([]);
-  const [unread, setUnread] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [pending, startTransition] = useTransition();
   const setChatOpen = useChatStore((s) => s.setOpen);
 
-  const fetchedRef = useRef(false);
+  // ── Shared notification store ──────────────────────────────────────────────
+  const items = useNotificationStore((s) => s.items);
+  const unread = useNotificationStore((s) => s.unread);
+  const loading = useNotificationStore((s) => s.loading);
+  const fetched = useNotificationStore((s) => s.fetched);
+  const hydrate = useNotificationStore((s) => s.hydrate);
+  const storeMarkRead = useNotificationStore((s) => s.markRead);
+  const storeMarkAllRead = useNotificationStore((s) => s.markAllRead);
+  const invalidate = useNotificationStore((s) => s.invalidate);
+  const setLoading = useNotificationStore((s) => s.setLoading);
+
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchNotifs = useCallback(async () => {
-    if (fetchedRef.current) return;
+    if (fetched) return;
     setLoading(true);
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
-        const data = (await res.json()) as { items: NotifItem[]; unread: number };
-        setItems(data.items ?? []);
-        setUnread(data.unread ?? 0);
-        fetchedRef.current = true;
+        const data = (await res.json()) as { items: StoreNotifItem[]; unread: number };
+        hydrate(data.items ?? [], data.unread ?? 0);
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetched, hydrate, setLoading]);
 
+  // Fetch on mount (untuk badge unread di header)
   useEffect(() => {
     void fetchNotifs();
   }, [fetchNotifs]);
@@ -146,9 +156,10 @@ export function NotificationBell() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     openTimer.current = setTimeout(() => {
       setOpen(true);
+      invalidate();
       void fetchNotifs();
     }, 80);
-  }, [fetchNotifs]);
+  }, [fetchNotifs, invalidate]);
 
   const handleMouseLeave = useCallback(() => {
     if (openTimer.current) clearTimeout(openTimer.current);
@@ -159,28 +170,25 @@ export function NotificationBell() {
     (next: boolean) => {
       setOpen(next);
       if (next) {
-        fetchedRef.current = false;
+        invalidate();
         void fetchNotifs();
       }
     },
-    [fetchNotifs],
+    [fetchNotifs, invalidate],
   );
 
   const handleMarkAllRead = () => {
     startTransition(async () => {
-      const res = await markAllNotificationsReadAction();
-      if (res.success) {
-        setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
-        setUnread(0);
-      }
+      // Optimistic update — bell badge langsung hilang
+      storeMarkAllRead();
+      await markAllNotificationsReadAction();
     });
   };
 
   const handleNotifClick = useCallback(
     (notif: NotifItem) => {
       if (!notif.is_read) {
-        setItems((prev) => prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n)));
-        setUnread((prev) => Math.max(0, prev - 1));
+        storeMarkRead(notif.id);
         void markNotificationReadAction(notif.id);
       }
       setOpen(false);
@@ -189,7 +197,7 @@ export function NotificationBell() {
         setChatOpen(true);
       }
     },
-    [setChatOpen],
+    [setChatOpen, storeMarkRead],
   );
 
   return (

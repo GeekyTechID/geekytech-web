@@ -1,4 +1,7 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createBiteshipOrder } from "@/lib/biteship/create-order";
+import { createNotification } from "@/lib/notifications/create-notification";
+import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 
 type MidtransStatusResponse = {
   transaction_status?: string;
@@ -89,6 +92,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       changed_by: null,
     });
 
+    await createNotification({
+      userId: order.user_id ?? "",
+      title: "Pembayaran Dikonfirmasi",
+      body: `Pembayaran untuk pesanan ${order.order_number} berhasil dikonfirmasi. Pesanan sedang diproses.`,
+      type: "payment_confirmed",
+      data: { orderId: order.id, orderNumber: order.order_number },
+    });
+
+    await createAdminNotification({
+      title: "Pembayaran Diterima",
+      body: `Pesanan ${order.order_number} telah dibayar. Siap untuk diproses.`,
+      type: "payment_confirmed",
+      data: { orderId: order.id, orderNumber: order.order_number },
+    });
+
     const vaNumber = mtStatus.va_numbers?.[0]?.va_number ?? null;
     await svc
       .from("payments")
@@ -121,13 +139,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
+        const newStock = Math.max(0, v.stock - item.quantity);
         await svc
           .from("product_variants")
           .update({
-            stock: Math.max(0, v.stock - item.quantity),
+            stock: newStock,
             reserved: Math.max(0, v.reserved - item.quantity),
           })
           .eq("id", item.variant_id);
+        if (newStock <= 5) {
+          await createAdminNotification({
+            title: "Stok Menipis",
+            body: `Variant ${item.variant_id} tersisa ${newStock} unit setelah pesanan ${order.order_number}.`,
+            type: "low_stock",
+            data: { variantId: item.variant_id, stock: newStock, orderId: order.id },
+          });
+        }
         await svc.from("stock_history").insert({
           variant_id: item.variant_id,
           order_id: order.id,
@@ -152,6 +179,66 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             .from("products")
             .update({ total_sold: p.total_sold + qty })
             .eq("id", productId);
+        }
+      }
+    }
+
+    // Create Biteship shipment — only on first settlement transition
+    const { data: existingShipment } = await svc
+      .from("shipments")
+      .select("id")
+      .eq("order_id", order.id)
+      .maybeSingle();
+
+    if (!existingShipment) {
+      const { data: orderFull } = await svc
+        .from("orders")
+        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal")
+        .eq("id", order.id)
+        .single();
+
+      if (orderFull?.courier_company && orderFull.courier_service) {
+        const { data: orderItems } = await svc
+          .from("order_items")
+          .select("product_name, price, quantity, weight")
+          .eq("order_id", order.id);
+
+        if (orderItems?.length) {
+          const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
+          const shipResult = await createBiteshipOrder({
+            destinationName: orderFull.recipient_name,
+            destinationPhone: orderFull.recipient_phone,
+            destinationAddress: orderFull.shipping_address,
+            destinationPostalCode: postalNum,
+            courierCompany: orderFull.courier_company,
+            courierType: orderFull.courier_service,
+            items: orderItems.map((i) => ({
+              name: i.product_name,
+              value: i.price,
+              quantity: i.quantity,
+              weight: Math.round(i.weight / i.quantity),
+            })),
+            orderNote: `GeekyTech Order ${order.order_number}`,
+          });
+
+          if (shipResult.ok) {
+            await svc.from("shipments").insert({
+              order_id: order.id,
+              courier_company: orderFull.courier_company,
+              courier_name: shipResult.courierName,
+              courier_service: orderFull.courier_service,
+              biteship_order_id: shipResult.biteshipOrderId,
+              awb: shipResult.awb,
+              status: "pending",
+            });
+          } else {
+            await svc.from("order_status_history").insert({
+              order_id: order.id,
+              status: "paid",
+              note: `Biteship gagal: ${shipResult.error}`,
+              changed_by: null,
+            });
+          }
         }
       }
     }

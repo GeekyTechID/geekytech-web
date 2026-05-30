@@ -13,7 +13,9 @@
       "mcp__claude_ai_Vercel__list_teams",
       "mcp__claude_ai_Vercel__get_deployment",
       "mcp__claude_ai_Vercel__list_projects",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

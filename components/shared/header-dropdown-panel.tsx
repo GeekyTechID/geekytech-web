@@ -50,4 +50,4 @@ export function HeaderDropdownPanelBody({ children, className }: HeaderDropdownP
 }
 
 export const HEADER_DROPDOWN_MENU_ITEM_CLASS =
-  "rounded-none px-4 py-2.5 text-[14px] leading-[1.43] text-[#1d1d1f] focus:bg-[#f5f5f7] focus:text-[#1d1d1f] [&_svg]:text-[#6e6e73] focus:[&_svg]:text-[#6e6e73]";
+  "rounded-none px-4 py-2.5 text-[14px] leading-[1.43] text-[#1d1d1f] focus:bg-[#f5f5f7] focus:text-[#1d1d1f] [&_svg]:text-[#6e6e73] focus:[&_svg]:text-[#1d1d1f] [&_svg]:transition-colors";

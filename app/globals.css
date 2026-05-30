@@ -124,7 +124,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.125rem;
+  --radius: 0.625rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #000000;
   --sidebar-primary: #000000;
@@ -265,7 +265,7 @@
   }
 
   .admin-utility-card {
-    @apply rounded-lg border border-[#e0e0e0] bg-card text-card-foreground dark:border-border;
+    @apply rounded-2xl border border-[#e0e0e0] bg-card text-card-foreground dark:border-border;
   }
 
   .admin-utility-card-header {

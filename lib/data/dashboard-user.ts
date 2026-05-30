@@ -640,25 +640,30 @@ export async function fetchPendingPaymentOrders(
     }
 
     const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-    return orders.map((o) => {
-      const fi = firstByOrder.get(o.id);
-      const pm = paymentByOrder.get(o.id);
-      const expiryTime = pm?.expiry_time
-        ? pm.expiry_time
-        : new Date(new Date(o.created_at).getTime() + THREE_HOURS_MS).toISOString();
-      return {
-        id: o.id,
-        order_number: o.order_number,
-        total: o.total,
-        created_at: o.created_at,
-        expiryTime,
-        vaNumber: pm?.va_number ?? null,
-        paymentCode: pm?.payment_code ?? null,
-        transactionId: pm?.midtrans_transaction_id ?? null,
-        previewName: fi?.product_name ?? null,
-        previewImage: fi?.image_url ?? null,
-      };
-    });
+    const now = Date.now();
+    return orders
+      .map((o) => {
+        const fi = firstByOrder.get(o.id);
+        const pm = paymentByOrder.get(o.id);
+        const expiryTime = pm?.expiry_time
+          ? pm.expiry_time
+          : new Date(new Date(o.created_at).getTime() + THREE_HOURS_MS).toISOString();
+        return {
+          id: o.id,
+          order_number: o.order_number,
+          total: o.total,
+          created_at: o.created_at,
+          expiryTime,
+          vaNumber: pm?.va_number ?? null,
+          paymentCode: pm?.payment_code ?? null,
+          transactionId: pm?.midtrans_transaction_id ?? null,
+          previewName: fi?.product_name ?? null,
+          previewImage: fi?.image_url ?? null,
+        };
+      })
+      // Hide orders whose payment window has already closed.
+      // The cron /api/cron/expire-orders will cancel them in DB asynchronously.
+      .filter((o) => o.expiryTime != null && new Date(o.expiryTime).getTime() > now);
   } catch {
     return [];
   }

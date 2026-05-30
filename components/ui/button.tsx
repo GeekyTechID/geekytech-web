@@ -30,17 +30,17 @@ const buttonVariants = cva(
         secondary:
           "rounded-full border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
         dark:
-          "rounded-sm border-transparent bg-[#1d1d1f] text-white shadow-none hover:bg-[#333333]",
+          "rounded-md border-transparent bg-[#1d1d1f] text-white shadow-none hover:bg-[#333333]",
         pearl:
-          "rounded-[11px] border-[3px] border-[#f0f0f0] bg-[#fafafc] text-[#333333] shadow-none hover:bg-[#f5f5f7]",
+          "rounded-xl border-[3px] border-[#f0f0f0] bg-[#fafafc] text-[#333333] shadow-none hover:bg-[#f5f5f7]",
         hero:
           "rounded-full border-transparent bg-brand font-light text-brand-foreground shadow-none hover:bg-brand-hover",
         ghost:
-          "rounded-sm border-transparent bg-transparent text-foreground shadow-none hover:bg-muted",
+          "rounded-md border-transparent bg-transparent text-foreground shadow-none hover:bg-muted",
         destructive:
           "rounded-full border-transparent bg-destructive text-destructive-foreground shadow-none hover:bg-destructive/90",
         "destructive-ghost":
-          "rounded-sm border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
+          "rounded-md border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
         link:
           "h-auto min-h-0 rounded-none border-transparent bg-transparent p-0 text-brand shadow-none hover:underline active:scale-100",
         /** Floating control over photography — design: button-icon-circular */
@@ -48,11 +48,11 @@ const buttonVariants = cva(
           "rounded-full border-transparent bg-[rgba(210,210,215,0.64)] text-[#1d1d1f] shadow-none hover:bg-[rgba(210,210,215,0.8)]",
         /** Compact row actions (admin tables) — 14px utility, radius 8px */
         "table-action":
-          "rounded-sm border-[#e0e0e0] bg-transparent text-foreground shadow-none hover:bg-muted dark:border-border",
+          "rounded-md border-[#e0e0e0] bg-transparent text-foreground shadow-none hover:bg-muted dark:border-border",
         "table-action-brand":
-          "rounded-sm border-brand/40 bg-transparent text-brand shadow-none hover:bg-brand/5",
+          "rounded-md border-brand/40 bg-transparent text-brand shadow-none hover:bg-brand/5",
         "table-action-destructive":
-          "rounded-sm border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
+          "rounded-md border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
         /** @deprecated Use `primary` */
         default:
           "rounded-full border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",

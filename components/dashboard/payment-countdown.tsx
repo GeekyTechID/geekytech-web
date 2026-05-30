@@ -27,7 +27,7 @@ export function PaymentCountdown({ expiryTime }: { expiryTime: string }) {
 
   if (secs <= 0) {
     return (
-      <span className="font-mono text-sm font-semibold text-destructive">
+      <span className="font-mono text-[11px] font-semibold text-red-600">
         Kedaluwarsa
       </span>
     );
@@ -35,7 +35,11 @@ export function PaymentCountdown({ expiryTime }: { expiryTime: string }) {
 
   const isUrgent = secs < 30 * 60;
   return (
-    <span className={`font-mono text-sm font-semibold ${isUrgent ? "text-destructive" : "text-destructive/70"}`}>
+    <span
+      className={`font-mono text-[11px] font-semibold tabular-nums ${
+        isUrgent ? "text-red-600" : "text-[#EA5329]"
+      }`}
+    >
       {formatCountdown(secs)}
     </span>
   );

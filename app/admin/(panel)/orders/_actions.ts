@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications/create-notification";
 
 export const ORDER_STATUSES = [
   "pending_payment",
@@ -38,7 +39,7 @@ export async function updateOrderStatus(
 
   const { data: currentOrder } = await supabase
     .from("orders")
-    .select("status")
+    .select("status, user_id, order_number")
     .eq("id", orderId)
     .single();
 
@@ -48,6 +49,48 @@ export async function updateOrderStatus(
     .eq("id", orderId);
 
   if (error) return { error: error.message };
+
+  // Notify customer on relevant status changes
+  if (currentOrder?.user_id && currentOrder?.order_number) {
+    const orderNum = currentOrder.order_number as string;
+    const userId = currentOrder.user_id as string;
+    const notifMap: Partial<Record<OrderStatus, { title: string; body: string }>> = {
+      processing: {
+        title: "Pesanan Diproses",
+        body: `Pesanan ${orderNum} sedang diproses oleh penjual.`,
+      },
+      shipped: {
+        title: "Pesanan Sedang Dikirim",
+        body: `Pesanan ${orderNum} telah dikirim. Cek nomor resi di detail pesanan untuk melacak paket Anda.`,
+      },
+      delivered: {
+        title: "Pesanan Telah Sampai",
+        body: `Pesanan ${orderNum} telah sampai di tujuan.`,
+      },
+      completed: {
+        title: "Pesanan Selesai",
+        body: `Pesanan ${orderNum} telah selesai. Terima kasih telah berbelanja!`,
+      },
+      cancelled: {
+        title: "Pesanan Dibatalkan",
+        body: `Pesanan ${orderNum} telah dibatalkan.`,
+      },
+      refunded: {
+        title: "Pesanan Direfund",
+        body: `Refund untuk pesanan ${orderNum} sedang diproses.`,
+      },
+    };
+    const notif = notifMap[newStatus];
+    if (notif) {
+      await createNotification({
+        userId,
+        title: notif.title,
+        body: notif.body,
+        type: "order_update",
+        data: { order_id: orderId, order_number: orderNum, status: newStatus },
+      });
+    }
+  }
 
   // Jika dibatalkan setelah pembayaran settlement, kembalikan stok & kurangi total_sold
   const prevStatus = currentOrder?.status;
@@ -151,7 +194,7 @@ export async function updateOrderAWB(
   // Auto-advance to shipped if still processing
   const { data: orderData } = await supabase
     .from("orders")
-    .select("status")
+    .select("status, user_id, order_number")
     .eq("id", orderId)
     .single();
 
@@ -166,6 +209,15 @@ export async function updateOrderAWB(
       note: `AWB diinput manual: ${trimmed}`,
       changed_by: null,
     });
+    if (orderData.user_id && orderData.order_number) {
+      await createNotification({
+        userId: orderData.user_id as string,
+        title: "Pesanan Sedang Dikirim",
+        body: `Pesanan ${orderData.order_number} telah dikirim. Lacak paket Anda dengan nomor resi ${trimmed}.`,
+        type: "order_update",
+        data: { order_id: orderId, order_number: orderData.order_number, status: "shipped", awb: trimmed },
+      });
+    }
   }
 
   revalidatePath("/admin/orders");

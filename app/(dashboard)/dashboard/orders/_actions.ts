@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/types/supabase";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
@@ -23,7 +23,7 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
 
     const { data: row, error: fetchErr } = await supabase
       .from("orders")
-      .select("id, status")
+      .select("id, status, order_number")
       .eq("id", orderId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -40,6 +40,88 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
       .eq("id", orderId)
       .eq("user_id", user.id);
     if (upErr) return { success: false, error: upErr.message };
+
+    // Service client diperlukan untuk operasi stok (bypass RLS)
+    const svc = createServiceClient();
+
+    // Release stok sesuai status sebelum dibatalkan
+    const { data: items } = await svc
+      .from("order_items")
+      .select("variant_id, quantity")
+      .eq("order_id", orderId);
+
+    if (items?.length) {
+      const productQtyMap = new Map<string, number>();
+      for (const item of items) {
+        if (!item.variant_id) continue;
+        const { data: v } = await svc
+          .from("product_variants")
+          .select("stock, reserved, product_id")
+          .eq("id", item.variant_id)
+          .single();
+        if (!v) continue;
+
+        if (st === "pending_payment") {
+          // Stok belum dipotong — cukup kurangi reserved
+          await svc
+            .from("product_variants")
+            .update({ reserved: Math.max(0, v.reserved - item.quantity) })
+            .eq("id", item.variant_id);
+        } else {
+          // st === "paid" — stok sudah dipotong saat settlement, kembalikan
+          await svc
+            .from("product_variants")
+            .update({
+              stock: v.stock + item.quantity,
+              reserved: Math.max(0, v.reserved - item.quantity),
+            })
+            .eq("id", item.variant_id);
+          if (v.product_id) {
+            productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
+          }
+        }
+
+        await svc.from("stock_history").insert({
+          variant_id: item.variant_id,
+          order_id: orderId,
+          quantity: st === "pending_payment" ? 0 : item.quantity,
+          type: "return",
+          note: `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan`,
+          changed_by: null,
+        });
+      }
+
+      // Kembalikan total_sold jika stok sudah dipotong
+      for (const [productId, qty] of productQtyMap) {
+        const { data: p } = await svc
+          .from("products")
+          .select("total_sold")
+          .eq("id", productId)
+          .single();
+        if (p) {
+          await svc
+            .from("products")
+            .update({ total_sold: Math.max(0, p.total_sold - qty) })
+            .eq("id", productId);
+        }
+      }
+    }
+
+    // Catat di status history
+    await svc.from("order_status_history").insert({
+      order_id: orderId,
+      status: "cancelled",
+      note: "Dibatalkan oleh pelanggan",
+      changed_by: null,
+    });
+
+    // Notifikasi admin
+    await createAdminNotification({
+      title: "Pesanan Dibatalkan",
+      body: `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan.`,
+      type: "order_cancelled",
+      data: { orderId, orderNumber: row.order_number },
+    });
 
     revalidatePath("/dashboard/orders");
     revalidatePath(`/dashboard/orders/${orderId}`);
