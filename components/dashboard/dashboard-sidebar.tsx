@@ -91,7 +91,7 @@ function ThemeToggle() {
   const isDark = mounted ? theme === "dark" : false;
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="gap-1">
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -146,7 +146,7 @@ function NavUser() {
   };
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="gap-1">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -257,7 +257,7 @@ export function DashboardSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {NAV_PRIMARY.map((item) => {
               const active = isActive(item.href, item.exact);
               const Icon = item.icon;
@@ -287,7 +287,7 @@ export function DashboardSidebar({
 
         <SidebarGroup>
           <SidebarGroupLabel>Pengaturan</SidebarGroupLabel>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {NAV_SECONDARY.map((item) => {
               const active = isActive(item.href);
               const Icon = item.icon;
@@ -307,7 +307,7 @@ export function DashboardSidebar({
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Lainnya</SidebarGroupLabel>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1">
             {NAV_STORE.map((item) => {
               const Icon = item.icon;
               return (

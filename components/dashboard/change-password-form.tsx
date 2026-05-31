@@ -13,7 +13,7 @@ export function ChangePasswordForm() {
 
   return (
     <form
-      className="mx-auto w-full max-w-lg space-y-5 rounded-xl border border-[#e0e0e0] bg-white p-6"
+      className="w-full space-y-5 rounded-xl border border-[#e0e0e0] bg-white p-6"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);

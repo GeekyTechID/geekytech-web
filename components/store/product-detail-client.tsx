@@ -303,13 +303,17 @@ export function ProductDetailClient({
                   ) : null}
 
                   <div className="flex flex-wrap items-center gap-2 text-sm text-[#7a7a7a]">
-                    <span className="inline-flex items-center gap-1 text-[#1d1d1f]">
-                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
-                      <span className="font-semibold">{product.averageRating.toFixed(1)}</span>
-                    </span>
-                    <span className="text-[#d4d4d4]">·</span>
-                    <span>({product.reviewCount} rating)</span>
-                    <span className="text-[#d4d4d4]">·</span>
+                    {product.reviewCount > 0 ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 dark:bg-amber-950/30">
+                          <Star className="h-3.5 w-3.5 shrink-0 fill-[--color-rating] text-[--color-rating]" aria-hidden />
+                          <span className="font-medium text-[--color-rating]">{product.averageRating.toFixed(1)}</span>
+                        </span>
+                        <span className="text-[#d4d4d4]">·</span>
+                        <span>({product.reviewCount} rating)</span>
+                        <span className="text-[#d4d4d4]">·</span>
+                      </>
+                    ) : null}
                     <span>{product.totalSold} terjual</span>
                   </div>
 

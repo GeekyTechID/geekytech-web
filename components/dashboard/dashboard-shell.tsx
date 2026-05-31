@@ -108,7 +108,7 @@ export function DashboardShell({
   sidebarDefaultOpen = true,
 }: DashboardShellProps) {
   return (
-    <SidebarProvider defaultOpen={sidebarDefaultOpen} className="min-h-0">
+    <SidebarProvider defaultOpen={sidebarDefaultOpen}>
       <DashboardSidebar unreadNotifications={unreadNotifications} />
       <SidebarInset className="bg-[#fafafa]">
         <header className="flex h-11 shrink-0 items-center gap-2.5 bg-[#fafafa] px-4">

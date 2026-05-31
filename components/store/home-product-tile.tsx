@@ -64,10 +64,16 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <Star className="h-3.5 w-3.5 shrink-0 fill-[--color-rating] text-[--color-rating]" aria-hidden />
-          <span className="font-medium text-foreground">{product.rating.toFixed(1)}</span>
-          <span className="text-muted-foreground/40">·</span>
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          {product.reviewCount > 0 ? (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-3 w-3 shrink-0 fill-rating text-rating bg-rating" aria-hidden />
+                <span className="font-medium text-[--color-rating]">{product.rating.toFixed(1)}</span>
+              </span>
+              <span className="text-muted-foreground/40">·</span>
+            </>
+          ) : null}
           <span>{product.soldCount} terjual</span>
         </div>
         <AddToCartButton variantId={product.variantId} />
