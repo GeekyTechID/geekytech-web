@@ -16,6 +16,7 @@ import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } fro
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
@@ -544,18 +545,7 @@ export function ProductDetailClient({
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-semibold">{currentReview.authorName}</p>
-                      <div className="mt-1 flex items-center gap-0.5 text-amber-400">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              "h-4 w-4",
-                              i < currentReview.rating ? "fill-amber-400 text-amber-400" : "fill-none text-[#e5e5e5]",
-                            )}
-                            aria-hidden
-                          />
-                        ))}
-                      </div>
+                      <StarRatingDisplay rating={currentReview.rating} size="md" className="mt-1" />
                       <p className="mt-1 text-xs text-[#7a7a7a]">{formatDate(currentReview.createdAt)}</p>
                     </div>
                     <div className="flex gap-1">

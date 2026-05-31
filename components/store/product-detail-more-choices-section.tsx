@@ -20,7 +20,7 @@ export function ProductDetailMoreChoicesSection({ products }: ProductDetailMoreC
               <HomeProductTile
                 product={p}
                 layout="promoRow"
-                className="h-full overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white"
+                className="h-full overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white"
               />
             </div>
           ))}

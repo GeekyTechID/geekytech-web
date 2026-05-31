@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
-import { Clock, MapPin, Package, Star, Truck } from "lucide-react";
+import { Clock, MapPin, Package, Truck } from "lucide-react";
+import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 
 import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 
@@ -507,14 +508,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                       <p className="text-xs text-[#7a7a7a]">{item.variant_name}</p>
                     ) : null}
                     <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex items-center gap-0.5">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <Star
-                            key={n}
-                            className={`h-3.5 w-3.5 ${n <= review.rating ? "fill-amber-400 text-amber-400" : "text-[#d0d0d0]"}`}
-                          />
-                        ))}
-                      </div>
+                      <StarRatingDisplay rating={review.rating} />
                       <span className="text-xs text-[#7a7a7a]">
                         {formatDate(review.created_at, { day: "numeric", month: "short", year: "numeric" })}
                       </span>

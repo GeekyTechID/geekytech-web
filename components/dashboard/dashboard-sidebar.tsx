@@ -1,24 +1,64 @@
 "use client";
 
+import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import {
   Bell,
   Gift,
+  Globe,
   Heart,
   Home,
   KeyRound,
+  LogOut,
   MapPin,
   MessageCircle,
+  Moon,
   Package,
+  Settings,
+  ShoppingCart,
+  Sun,
   User,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/auth-store";
+import {
+  HEADER_DROPDOWN_MENU_CONTENT_CLASS,
+  HEADER_DROPDOWN_MENU_ITEM_CLASS,
+  HeaderDropdownPanelBody,
+  HeaderDropdownPanelHeader,
+} from "@/components/shared/header-dropdown-panel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-type NavItem = { label: string; href: string; icon: typeof Home; exact?: boolean };
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+};
 
 const NAV_PRIMARY: NavItem[] = [
   { label: "Ringkasan", href: "/dashboard", icon: Home, exact: true },
@@ -32,80 +72,52 @@ const NAV_PRIMARY: NavItem[] = [
 const NAV_SECONDARY: NavItem[] = [
   { label: "Profil", href: "/dashboard/profile", icon: User },
   { label: "Voucher", href: "/dashboard/vouchers", icon: Gift },
-  { label: "Ganti password", href: "/dashboard/change-password", icon: KeyRound },
+  { label: "Ganti Password", href: "/dashboard/change-password", icon: KeyRound },
 ];
 
-function NavLink({
-  item,
-  pathname,
-  onNavigate,
-  unreadOverride,
-}: {
-  item: NavItem;
-  pathname: string;
-  onNavigate?: () => void;
-  unreadOverride?: number;
-}) {
-  const active = item.exact
-    ? pathname === item.href
-    : pathname === item.href || pathname.startsWith(`${item.href}/`);
-  const Icon = item.icon;
-  const badge =
-    item.href === "/dashboard/notifications" && unreadOverride !== undefined && unreadOverride > 0
-      ? unreadOverride
-      : undefined;
+const NAV_STORE: NavItem[] = [
+  { label: "Ke Toko", href: "/", icon: Globe },
+  { label: "Keranjang", href: "/cart", icon: ShoppingCart },
+];
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? theme === "dark" : false;
 
   return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      className={cn(
-        "relative flex w-full min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium leading-snug transition",
-        active
-          ? "bg-gradient-to-r from-transparant to-[#EA5329]/25 text-[#1d1d1f]"
-          : "text-[#333333] hover:bg-white/50",
-      )}
-    >
-      {active ? (
-        <span
-          className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-[#EA5329]"
-          aria-hidden
-        />
-      ) : null}
-      <Icon className={cn("h-4 w-4 shrink-0", active ? "text-[#1d1d1f]" : "text-[#7a7a7a]")} strokeWidth={2} />
-      <span className={cn("flex-1 text-left", active && "font-semibold")}>{item.label}</span>
-      {badge !== undefined && badge > 0 ? (
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#e8e8ed] px-1.5 text-[10px] font-bold tabular-nums text-[#1d1d1f]">
-          {badge > 99 ? "99+" : badge}
-        </span>
-      ) : null}
-    </Link>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          tooltip={isDark ? "Mode Terang" : "Mode Gelap"}
+        >
+          {isDark ? <Sun /> : <Moon />}
+          <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
 
-export function DashboardSidebar({
-  onNavigate,
-  className,
-  unreadNotifications = 0,
-}: {
-  onNavigate?: () => void;
-  className?: string;
-  unreadNotifications?: number;
-}) {
-  const pathname = usePathname();
-  const [imgError, setImgError] = useState(false);
+function NavUser() {
   const { profile, user } = useAuth();
+  const { reset } = useAuthStore();
+  const { isMobile } = useSidebar();
+  const [imgError, setImgError] = React.useState(false);
 
-  const displayName = profile?.full_name?.trim() || user?.email?.split("@")[0] || "Pengguna";
+  const displayName =
+    profile?.full_name?.trim() || user?.email?.split("@")[0] || "Pengguna";
   const avatarUrl =
     profile?.avatar_url?.trim() ||
     (user?.user_metadata?.picture as string | undefined)?.trim() ||
     (user?.user_metadata?.avatar_url as string | undefined)?.trim() ||
     "";
-
-  useEffect(() => {
-    setImgError(false);
-  }, [avatarUrl]);
 
   const initials = profile?.full_name
     ? profile.full_name
@@ -115,65 +127,209 @@ export function DashboardSidebar({
         .join("")
         .slice(0, 2)
         .toUpperCase()
-    : user?.email?.[0]?.toUpperCase() ?? "?";
+    : (user?.email?.[0]?.toUpperCase() ?? "?");
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [avatarUrl]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      window.location.href = "/login";
+    }
+  };
 
   return (
-    <aside
-      className={cn(
-        "flex h-auto w-full flex-col bg-gradient-to-r from-transparent to-[#f5f0eb]",
-        className,
-      )}
-    >
-      <div className="mx-2 mt-2 flex min-w-0 items-center gap-3 rounded-2xl px-2 py-3 sm:mx-3 sm:mt-3 sm:px-3">
-        <span className="relative flex h-11 w-11 shrink-0 overflow-hidden rounded-full bg-[#1d1d1f] sm:h-12 sm:w-12">
-          {avatarUrl && !imgError ? (
-            <img
-              key={avatarUrl}
-              src={avatarUrl}
-              alt=""
-              className="h-full w-full object-cover"
-              referrerPolicy="no-referrer"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <span className="flex h-full w-full items-center justify-center text-[13px] font-semibold text-white">
-              {initials}
-            </span>
-          )}
-        </span>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              tooltip={displayName}
+            >
+              <Avatar className="size-8 rounded-lg shrink-0">
+                {avatarUrl && !imgError ? (
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={displayName}
+                    referrerPolicy="no-referrer"
+                    onError={() => setImgError(true)}
+                  />
+                ) : null}
+                <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{displayName}</span>
+                <span className="truncate text-xs text-sidebar-foreground/60">
+                  {user?.email ?? ""}
+                </span>
+              </div>
+              <Settings className="ml-auto size-4 shrink-0 text-sidebar-foreground/50" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
 
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold leading-tight text-[#1d1d1f]">
-            {displayName}
-          </p>
-          {user?.email ? (
-            <p className="mt-0.5 truncate text-[11px] leading-snug text-[#7a7a7a]">{user.email}</p>
-          ) : null}
-        </div>
-      </div>
+          <DropdownMenuContent
+            className={cn("w-56", HEADER_DROPDOWN_MENU_CONTENT_CLASS)}
+            side={isMobile ? "bottom" : "right"}
+            align="end"
+            sideOffset={4}
+          >
+            <HeaderDropdownPanelHeader title={displayName} />
+            <HeaderDropdownPanelBody className="py-1">
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/dashboard/profile">
+                  <User className="size-4" />
+                  Profil saya
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/dashboard/notifications">
+                  <Bell className="size-4" />
+                  Notifikasi
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/dashboard/orders">
+                  <Package className="size-4" />
+                  Pesanan saya
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className={cn(
+                  HEADER_DROPDOWN_MENU_ITEM_CLASS,
+                  "border-t border-[#e0e0e0] text-destructive focus:bg-destructive/10 focus:text-destructive",
+                )}
+              >
+                <LogOut className="size-4" />
+                Keluar
+              </DropdownMenuItem>
+            </HeaderDropdownPanelBody>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
 
-      <nav
-        className="mt-4 w-full flex-1 space-y-0.5 overflow-y-auto overscroll-y-contain px-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:mt-5 sm:space-y-1 sm:px-3 sm:pb-3"
-        aria-label="Menu dashboard"
-      >
-        <p className="px-3 pb-1 text-[10px] font-semibold uppercase text-[#7a7a7a]">Menu</p>
-        {NAV_PRIMARY.map((item) => (
-          <NavLink
-            key={item.href}
-            item={item}
-            pathname={pathname}
-            onNavigate={onNavigate}
-            unreadOverride={unreadNotifications}
-          />
-        ))}
-        <div className="my-3 border-t border-[#e8e4df]" />
-        <p className="px-3 pb-1 text-[10px] font-semibold uppercase text-[#7a7a7a]">
-          Pengaturan
-        </p>
-        {NAV_SECONDARY.map((item) => (
-          <NavLink key={item.href} item={item} pathname={pathname} onNavigate={onNavigate} />
-        ))}
-      </nav>
-    </aside>
+export function DashboardSidebar({
+  unreadNotifications = 0,
+  className,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { unreadNotifications?: number }) {
+  const pathname = usePathname();
+
+  const isActive = (href: string, exact = false) =>
+    exact
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <Sidebar collapsible="icon" {...props} className={cn("border-[#e5e5e5] dark:border-[#2d2d2d]", className)}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/dashboard" aria-label="GeekyTech — Dashboard">
+                <Image
+                  src="/logo.png"
+                  alt="GeekyTech"
+                  width={150}
+                  height={150}
+                  className="shrink-0 object-contain"
+                />
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarMenu>
+            {NAV_PRIMARY.map((item) => {
+              const active = isActive(item.href, item.exact);
+              const Icon = item.icon;
+              const badge =
+                item.href === "/dashboard/notifications" && unreadNotifications > 0
+                  ? unreadNotifications
+                  : null;
+
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
+                    <Link href={item.href} aria-current={active ? "page" : undefined}>
+                      <Icon />
+                      <span>{item.label}</span>
+                      {badge !== null && (
+                        <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-brand text-brand-foreground text-[10px] font-bold tabular-nums leading-none">
+                          {badge > 99 ? "99+" : badge}
+                        </span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Pengaturan</SidebarGroupLabel>
+          <SidebarMenu>
+            {NAV_SECONDARY.map((item) => {
+              const active = isActive(item.href);
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild tooltip={item.label} isActive={active}>
+                    <Link href={item.href} aria-current={active ? "page" : undefined}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel>Lainnya</SidebarGroupLabel>
+          <SidebarMenu>
+            {NAV_STORE.map((item) => {
+              const Icon = item.icon;
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild tooltip={item.label}>
+                    <Link href={item.href}>
+                      <Icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter>
+        <ThemeToggle />
+        <NavUser />
+      </SidebarFooter>
+
+    </Sidebar>
   );
 }

@@ -688,7 +688,7 @@ export async function fetchUserNotifications(userId: string, limit: number) {
 
 export type CouponPublicRow = Pick<
   Database["public"]["Tables"]["coupons"]["Row"],
-  "id" | "code" | "type" | "value" | "min_purchase" | "max_discount" | "valid_from" | "valid_until" | "used_count" | "max_usage"
+  "id" | "code" | "type" | "value" | "min_purchase" | "max_discount" | "valid_from" | "valid_until" | "used_count" | "max_usage" | "image_url" | "title"
 >;
 
 // cache() deduplicates across generateMetadata + page render, and across concurrent requests
@@ -697,7 +697,7 @@ export const fetchActiveCouponsForStore = cache(async function fetchActiveCoupon
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("coupons")
-      .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage")
+      .select("id, code, type, value, min_purchase, max_discount, valid_from, valid_until, used_count, max_usage, image_url, title")
       .eq("is_active", true)
       .order("code", { ascending: true })
       .limit(50);

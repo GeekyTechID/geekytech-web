@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Bell, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
@@ -256,64 +257,60 @@ export default async function DashboardOverviewPage() {
         );
       })()}
 
-      {/* Spending chart */}
-      <SpendingChartLazy data12={spending} />
+      {/* Spending chart + Notifications — side by side 50/50 on xl */}
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+        <SpendingChartLazy data12={spending} />
 
-      {/* Notifications highlights */}
-      {notifications.length > 0 && (
-        <section className="mt-10">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">Notifikasi</h2>
-            <Link
-              href="/dashboard/notifications"
-              className="text-[14px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
-            >
-              Lihat semua
-            </Link>
-          </div>
-          <ul className="mt-4 flex flex-col gap-2">
-            {notifications.map((n) => (
-              <li
-                key={n.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-2xl border px-4 py-3",
-                  n.is_read
-                    ? "border-[#e0e0e0] bg-white"
-                    : "border-[#EA5329]/20 bg-[#FFF8F5]",
-                )}
+        {notifications.length > 0 && (
+          <section className="mt-10">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">Notifikasi</h2>
+              <Link
+                href="/dashboard/notifications"
+                className="text-[14px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
               >
-                <div
+                Lihat semua
+              </Link>
+            </div>
+            <ul className="mt-4 flex flex-col gap-2">
+              {notifications.map((n) => (
+                <li
+                  key={n.id}
                   className={cn(
-                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                    notifIconBg(n.type),
+                    "flex items-start gap-3 rounded-2xl border px-4 py-3",
+                    n.is_read
+                      ? "border-[#e0e0e0] bg-white"
+                      : "border-[#EA5329]/20 bg-[#FFF8F5]",
                   )}
                 >
-                  {notifIcon(n.type)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p
+                  <div
                     className={cn(
-                      "text-[13px] font-semibold leading-snug",
-                      n.is_read ? "text-[#1d1d1f]" : "text-[#1d1d1f]",
+                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                      notifIconBg(n.type),
                     )}
                   >
-                    {n.title}
-                  </p>
-                  {n.body && (
-                    <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-[#5c5c5c]">{n.body}</p>
+                    {notifIcon(n.type)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold leading-snug text-[#1d1d1f]">
+                      {n.title}
+                    </p>
+                    {n.body && (
+                      <p className="mt-0.5 line-clamp-2 text-[12px] leading-relaxed text-[#5c5c5c]">{n.body}</p>
+                    )}
+                    <p className="mt-1 text-[11px] text-[#aaa]">
+                      {formatDate(n.created_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                  {!n.is_read && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#EA5329]" />
                   )}
-                  <p className="mt-1 text-[11px] text-[#aaa]">
-                    {formatDate(n.created_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
-                {!n.is_read && (
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#EA5329]" />
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
 
       {/* Recent orders */}
       <section className="mt-12">
@@ -415,11 +412,28 @@ export default async function DashboardOverviewPage() {
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {coupons.slice(0, 4).map((c) => (
               <li key={c.id} className="flex items-center gap-4 rounded-2xl border border-[#e0e0e0] bg-white p-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FFF0E8]">
-                  <Tag className="h-5 w-5 text-[#EA5329]" />
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#FFF0E8]">
+                  {c.image_url ? (
+                    <Image
+                      src={c.image_url}
+                      alt={c.title ?? c.code}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Tag className="h-6 w-6 text-[#EA5329]" />
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[15px] font-black text-[#EA5329]">{c.code}</p>
+                  {c.title && (
+                    <p className="text-[13px] font-semibold leading-snug text-[#1d1d1f]">{c.title}</p>
+                  )}
+                  <p className={cn("font-mono font-black text-[#EA5329]", c.title ? "mt-0.5 text-[13px]" : "text-[15px]")}>
+                    {c.code}
+                  </p>
                   <p className="mt-0.5 text-[13px] text-[#5c5c5c]">
                     {c.type === "percentage" ? `Diskon ${c.value}%` : `Potongan Rp${c.value.toLocaleString("id-ID")}`}
                     {c.min_purchase > 0 && ` · min. Rp${c.min_purchase.toLocaleString("id-ID")}`}

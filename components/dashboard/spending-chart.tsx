@@ -58,8 +58,8 @@ export function SpendingChart({ data12 }: Props) {
   const maxVal = Math.max(...sliced.map((d) => d.total), 0);
 
   return (
-    <section className="mt-10">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <section className="mt-10 flex flex-col">
+      <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f]">
           Pengeluaran
         </h2>
@@ -83,35 +83,37 @@ export function SpendingChart({ data12 }: Props) {
           Belum ada data pengeluaran untuk periode ini.
         </p>
       ) : (
-        <div className="mt-6 rounded-2xl border border-[#e0e0e0] bg-white p-4 sm:p-5">
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={sliced} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barCategoryGap="30%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: "#7a7a7a", fontWeight: 500 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tickFormatter={formatRupiahShort}
-                tick={{ fontSize: 11, fill: "#7a7a7a" }}
-                axisLine={false}
-                tickLine={false}
-                width={58}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(234,83,41,0.06)" }} />
-              <Bar dataKey="total" radius={[6, 6, 0, 0]}>
-                {sliced.map((entry) => (
-                  <Cell
-                    key={entry.month}
-                    fill={entry.total === maxVal && maxVal > 0 ? "#EA5329" : "#f0ede9"}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <p className="mt-2 text-right text-[11px] text-[#7a7a7a]">
+        <div className="mt-6 flex flex-1 flex-col overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white p-4 sm:p-5">
+          <div className="min-h-[180px] flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sliced} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barCategoryGap="30%">
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: "#7a7a7a", fontWeight: 500 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={formatRupiahShort}
+                  tick={{ fontSize: 11, fill: "#7a7a7a" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={58}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(234,83,41,0.06)" }} />
+                <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                  {sliced.map((entry) => (
+                    <Cell
+                      key={entry.month}
+                      fill={entry.total === maxVal && maxVal > 0 ? "#EA5329" : "#f0ede9"}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-2 shrink-0 text-right text-[11px] text-[#7a7a7a]">
             Total {period} bulan terakhir:{" "}
             <span className="font-semibold text-[#1d1d1f]">
               {formatRupiahFull(sliced.reduce((s, d) => s + d.total, 0))}

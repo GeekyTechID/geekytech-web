@@ -2,11 +2,11 @@
 
 import { useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, MessageSquare, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 import { toast } from "sonner";
 
 import { formatRelativeDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { AdminTableDeleteButton } from "@/components/admin/admin-table-row-actions";
 import { Button } from "@/components/ui/button";
 import { deleteReview } from "../_actions";
@@ -28,21 +28,6 @@ interface ReviewTableProps {
   totalPages: number;
 }
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          size={11}
-          className={cn(
-            i < rating ? "fill-brand/80 text-brand" : "text-foreground/30",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
 
 function ReviewDeleteAction({ review }: { review: ReviewRow }) {
   const [isPending, startTransition] = useTransition();
@@ -124,7 +109,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   </td>
 
                   <td className="px-4 py-3">
-                    <StarRating rating={review.rating} />
+                    <StarRatingDisplay rating={review.rating} size="xs" />
                   </td>
 
                   <td className="hidden px-4 py-3 md:table-cell">

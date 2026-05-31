@@ -41,7 +41,7 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
     const firstSlot = el.firstElementChild as HTMLElement | null;
     if (!firstSlot) return;
     const gap = parseFloat(getComputedStyle(el).gap) || 12;
-    el.scrollTo({ left: el.scrollLeft + dir * (firstSlot.offsetWidth + gap), behavior: "smooth" });
+    el.scrollBy({ left: dir * (firstSlot.offsetWidth + gap), behavior: "smooth" });
   }, []);
 
   if (products.length === 0) return null;
@@ -50,7 +50,7 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
 
   return (
     <div
-      className="relative"
+      className="flex items-center gap-2"
       role="region"
       aria-label={ariaLabel ?? "Deretan produk"}
     >
@@ -60,34 +60,14 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
           surface="surface"
           onClick={() => go(-1)}
           disabled={!canLeft}
-          className={cn(
-            "absolute left-0 top-1/2 z-10 -translate-y-1/2 sm:left-2",
-            !canLeft && "pointer-events-none opacity-40",
-          )}
+          className={cn("shrink-0", !canLeft && "pointer-events-none opacity-40")}
           aria-label="Produk sebelumnya"
-        />
-      ) : null}
-      {showChevrons ? (
-        <CarouselNavButton
-          direction="next"
-          surface="surface"
-          onClick={() => go(1)}
-          disabled={!canRight}
-          className={cn(
-            "absolute right-0 top-1/2 z-10 -translate-y-1/2 sm:right-2",
-            !canRight && "pointer-events-none opacity-40",
-          )}
-          aria-label="Produk berikutnya"
         />
       ) : null}
 
       <div
         ref={scrollRef}
-        className={cn(
-          "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1 gap-3 sm:gap-4",
-          "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          showChevrons && "pl-14 pr-14 sm:pl-16 sm:pr-16 md:pl-[4.5rem] md:pr-[4.5rem] lg:pl-20 lg:pr-20",
-        )}
+        className="flex-1 min-w-0 flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1 gap-3 sm:gap-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {products.map((p) => (
           <div
@@ -98,6 +78,17 @@ export function PromoFiveProductCarousel({ products, "aria-label": ariaLabel }: 
           </div>
         ))}
       </div>
+
+      {showChevrons ? (
+        <CarouselNavButton
+          direction="next"
+          surface="surface"
+          onClick={() => go(1)}
+          disabled={!canRight}
+          className={cn("shrink-0", !canRight && "pointer-events-none opacity-40")}
+          aria-label="Produk berikutnya"
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,16 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { Suspense } from "react";
+import { cookies } from "next/headers";
 
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { HomeMainHero } from "@/components/store/home-main-hero";
-import { StoreFooter } from "@/components/store/store-footer";
-import { StoreHeader } from "@/components/store/store-header";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
 import { ChatWidget } from "@/components/chat/chat-widget";
-import { fetchMainHeroBanners } from "@/lib/data/home-storefront";
-import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
 
 async function getUnreadNotificationsCount(userId: string): Promise<number> {
@@ -34,10 +29,10 @@ export default async function DashboardRootLayout({ children }: { children: Reac
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [categories, initialCartCount, heroBanners, unreadNotifications, profile] = await Promise.all([
-    fetchStoreHeaderCategories(),
-    fetchStoreHeaderCartCount(),
-    fetchMainHeroBanners(),
+  const cookieStore = await cookies();
+  const sidebarDefaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
+  const [unreadNotifications, profile] = await Promise.all([
     user ? getUnreadNotificationsCount(user.id) : Promise.resolve(0),
     user ? fetchUserProfile(user.id) : Promise.resolve(null),
   ]);
@@ -45,30 +40,14 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   return (
     <div className="flex w-full flex-col">
       <InitAuthStore user={user} profile={profile} />
-      <div
-        data-no-print
-        id="dashboard-site-header"
-        className="sticky top-0 z-50 w-full shrink-0 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 dark:bg-background/95"
+      <DashboardShell
+        unreadNotifications={unreadNotifications}
+        sidebarDefaultOpen={sidebarDefaultOpen}
       >
-        <StoreHeader
-          categories={categories}
-          initialCartCount={initialCartCount}
-          sticky={false}
-        />
-      </div>
-      <DashboardShell unreadNotifications={unreadNotifications}>{children}</DashboardShell>
-
+        {children}
+      </DashboardShell>
       <div data-no-print>
         <ChatWidget />
-      </div>
-      <div data-no-print className="mt-10 md:mt-16">
-        {heroBanners.length > 0 ? <HomeMainHero banners={heroBanners} hideNav /> : null}
-      </div>
-
-      <div data-no-print>
-        <Suspense fallback={<div className="min-h-[120px] w-full bg-[#121212]" aria-hidden />}>
-          <StoreFooter />
-        </Suspense>
       </div>
     </div>
   );

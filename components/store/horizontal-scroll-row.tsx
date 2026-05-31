@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,10 @@ type HorizontalScrollRowProps = {
   contentClassName?: string;
   /** Jarak antar item (Tailwind gap) */
   gapClass?: string;
-  /** Isi lebar baris (mis. ≤5 produk agar tidak ada ruang kosong) */
+  /**
+   * @deprecated Lebar baris kini ditangani oleh `flex-1` pada scroll container.
+   * Prop ini masih diterima agar caller tidak perlu diubah.
+   */
   fillRow?: boolean;
 };
 
@@ -20,45 +23,83 @@ export function HorizontalScrollRow({
   className,
   contentClassName,
   gapClass = "gap-4",
-  fillRow = false,
+  fillRow: _fillRow,
 }: HorizontalScrollRowProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [showChevrons, setShowChevrons] = useState(false);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const updateArrows = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const scrollable = el.scrollWidth > el.clientWidth + 2;
+    setShowChevrons(scrollable);
+    setCanLeft(el.scrollLeft > 1);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    updateArrows();
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    const ro = new ResizeObserver(updateArrows);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", updateArrows);
+      ro.disconnect();
+    };
+  }, [updateArrows]);
 
   const scrollByDir = useCallback((dir: -1 | 1) => {
     const el = ref.current;
     if (!el) return;
-    const delta = Math.round(el.clientWidth * 0.85) * dir;
-    el.scrollBy({ left: delta, behavior: "smooth" });
+    const firstSlot = el.firstElementChild as HTMLElement | null;
+    if (firstSlot) {
+      const gap = parseFloat(getComputedStyle(el).gap) || 0;
+      el.scrollBy({ left: dir * (firstSlot.offsetWidth + gap), behavior: "smooth" });
+    } else {
+      el.scrollBy({ left: Math.round(el.clientWidth * 0.85) * dir, behavior: "smooth" });
+    }
   }, []);
 
   return (
-    <div className={cn("relative group/scroll", className)}>
-      <CarouselNavButton
-        direction="prev"
-        surface="surface"
-        aria-label="Geser kiri"
-        onClick={() => scrollByDir(-1)}
-        className="absolute left-0 top-1/2 z-10 -translate-y-1/2 md:hidden"
-      />
-      <CarouselNavButton
-        direction="next"
-        surface="surface"
-        aria-label="Geser kanan"
-        onClick={() => scrollByDir(1)}
-        className="absolute right-0 top-1/2 z-10 -translate-y-1/2 md:hidden"
-      />
+    <div className={cn("flex items-center gap-2", className)}>
+      {showChevrons ? (
+        <CarouselNavButton
+          direction="prev"
+          surface="surface"
+          aria-label="Geser kiri"
+          onClick={() => scrollByDir(-1)}
+          disabled={!canLeft}
+          className={cn("shrink-0", !canLeft && "pointer-events-none opacity-40")}
+        />
+      ) : null}
+
       <div
         ref={ref}
         className={cn(
-          "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] px-8 sm:px-10 md:px-0",
-          fillRow && "min-w-full !w-full",
+          "flex-1 min-w-0",
+          "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1",
+          "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           gapClass,
-          "[&::-webkit-scrollbar]:hidden",
           contentClassName,
         )}
       >
         {children}
       </div>
+
+      {showChevrons ? (
+        <CarouselNavButton
+          direction="next"
+          surface="surface"
+          aria-label="Geser kanan"
+          onClick={() => scrollByDir(1)}
+          disabled={!canRight}
+          className={cn("shrink-0", !canRight && "pointer-events-none opacity-40")}
+        />
+      ) : null}
     </div>
   );
 }
