@@ -1,13 +1,10 @@
-import { Star } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
+const CLASSIC_STAR_PATH = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z";
+
 type StarRatingDisplayProps = {
-  /** Rating score (0–5). Nilai non-integer dibulatkan ke bintang terdekat. */
   rating: number;
-  /** Total bintang yang ditampilkan (default 5). */
   max?: number;
-  /** Ukuran ikon bintang. */
   size?: "xs" | "sm" | "md";
   className?: string;
 };
@@ -18,13 +15,6 @@ const SIZES = {
   md: "h-4 w-4",
 } as const;
 
-/**
- * Menampilkan baris bintang rating.
- *
- * - Bintang terisi: amber-400 fill + stroke.
- * - Bintang kosong: amber-50 background + amber-200 stroke — tetap terlihat
- *   sebagai bintang, bukan hanya outline.
- */
 export function StarRatingDisplay({
   rating,
   max = 5,
@@ -39,16 +29,15 @@ export function StarRatingDisplay({
       aria-label={`${rating} dari ${max} bintang`}
     >
       {Array.from({ length: max }, (_, i) => (
-        <Star
+        <svg
           key={i}
-          className={cn(
-            SIZES[size],
-            i < filled
-              ? "fill-amber-400 text-amber-400"
-              : "fill-amber-50 text-amber-200",
-          )}
+          className={cn(SIZES[size], i < filled ? "text-amber-400" : "text-amber-200")}
+          viewBox="0 0 24 24"
+          fill="currentColor"
           aria-hidden
-        />
+        >
+          <path d={CLASSIC_STAR_PATH} />
+        </svg>
       ))}
     </div>
   );

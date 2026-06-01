@@ -9,7 +9,21 @@ import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
-import { findMockShippingOption } from "@/lib/shipping/checkout-shipping-options";
+import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+
+const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
+
+function parseOriginCoords(): { lat: number; lng: number } | null {
+  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
+  if (combined) {
+    const [lat, lng] = combined.split(",").map(Number);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+  }
+  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
+  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
+  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
+  return null;
+}
 
 const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
 
@@ -17,7 +31,7 @@ const bodySchema = z.object({
   addressId: z.string().uuid(),
   courierCode: z.string().min(1).max(40),
   serviceCode: z.string().min(1).max(40),
-  ratesSource: z.enum(["biteship", "mock"]),
+  ratesSource: z.enum(["biteship"]),
   couponCode: z.string().max(64).optional().nullable(),
   paymentMethod: z.enum(paymentMethods),
   lineIds: z.array(z.string()).min(1).optional().nullable(),
@@ -32,12 +46,15 @@ function postalToNumber(raw: string): number | null {
 }
 
 async function resolveShippingPrice(params: {
-  ratesSource: "biteship" | "mock";
   courierCode: string;
   serviceCode: string;
   originPostal: number;
   destinationPostal: number;
   items: { name: string; value: number; quantity: number; weight: number }[];
+  originLat?: number;
+  originLng?: number;
+  destLat?: number;
+  destLng?: number;
 }): Promise<
   | { ok: true; price: number; courierName: string; serviceName: string; etd: string }
   | { ok: false; error: string }
@@ -45,38 +62,27 @@ async function resolveShippingPrice(params: {
   const c = params.courierCode.toLowerCase();
   const s = params.serviceCode.toLowerCase();
 
-  if (params.ratesSource === "biteship" && process.env.BITESHIP_API_KEY?.trim()) {
-    const res = await fetchBiteshipCourierRates({
-      originPostal: params.originPostal,
-      destinationPostal: params.destinationPostal,
-      items: params.items.map((i) => ({ ...i, length: 12, width: 10, height: 8 })),
-      couriers: `${c}:${s}`,
-    });
-    if (res.ok) {
-      const hit = res.options.find((o) => o.courierCode.toLowerCase() === c && o.serviceCode.toLowerCase() === s);
-      if (hit) {
-        return {
-          ok: true,
-          price: hit.price,
-          courierName: hit.courierName,
-          serviceName: hit.serviceName,
-          etd: hit.etd,
-        };
-      }
+  const res = await fetchBiteshipCourierRates({
+    originPostal: params.originPostal,
+    destinationPostal: params.destinationPostal,
+    items: params.items.map((i) => ({ ...i, length: 12, width: 10, height: 8 })),
+    couriers: c,
+    originLat: params.originLat,
+    originLng: params.originLng,
+    destLat: params.destLat,
+    destLng: params.destLng,
+  });
+
+  if (res.ok) {
+    const hit = res.options.find(
+      (o) => o.courierCode.toLowerCase() === c && o.serviceCode.toLowerCase() === s,
+    );
+    if (hit) {
+      return { ok: true, price: hit.price, courierName: hit.courierName, serviceName: hit.serviceName, etd: hit.etd };
     }
   }
 
-  const mock = findMockShippingOption(c, s);
-  if (!mock) {
-    return { ok: false, error: "Metode pengiriman tidak tersedia." };
-  }
-  return {
-    ok: true,
-    price: mock.price,
-    courierName: mock.courierName,
-    serviceName: mock.serviceName,
-    etd: mock.etd,
-  };
+  return { ok: false, error: "Metode pengiriman tidak tersedia untuk rute ini." };
 }
 
 export async function POST(req: Request) {
@@ -161,13 +167,21 @@ export async function POST(req: Request) {
       weight: line.weightGrams * line.qty,
     }));
 
+    const originCoords = parseOriginCoords();
+    const isOnDemand = ON_DEMAND_COURIERS.has(parsed.data.courierCode.toLowerCase());
+    const destCoords =
+      originCoords && isOnDemand ? await fetchCoordinatesFromPostal(String(destPostal)) : null;
+
     const ship = await resolveShippingPrice({
-      ratesSource: parsed.data.ratesSource,
       courierCode: parsed.data.courierCode,
       serviceCode: parsed.data.serviceCode,
       originPostal,
       destinationPostal: destPostal,
       items: itemsForShip,
+      originLat: originCoords?.lat,
+      originLng: originCoords?.lng,
+      destLat: destCoords?.lat,
+      destLng: destCoords?.lng,
     });
     if (!ship.ok) {
       return Response.json({ success: false, error: ship.error }, { status: 400 });

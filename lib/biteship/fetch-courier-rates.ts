@@ -31,6 +31,10 @@ export async function fetchBiteshipCourierRates(params: {
   destinationPostal: number;
   items: { name: string; value: number; quantity: number; weight: number; length?: number; width?: number; height?: number }[];
   couriers: string;
+  originLat?: number;
+  originLng?: number;
+  destLat?: number;
+  destLng?: number;
 }): Promise<{ ok: true; options: CheckoutShippingOption[] } | { ok: false; error: string }> {
   const key = process.env.BITESHIP_API_KEY?.trim();
   if (!key) {
@@ -40,7 +44,7 @@ export async function fetchBiteshipCourierRates(params: {
   const base = "https://api.biteship.com";
   const couriers = params.couriers;
 
-  const body = {
+  const body: Record<string, unknown> = {
     origin_postal_code: String(params.originPostal),
     destination_postal_code: String(params.destinationPostal),
     couriers,
@@ -54,6 +58,15 @@ export async function fetchBiteshipCourierRates(params: {
       height: i.height && i.height > 0 ? i.height : 10,
     })),
   };
+
+  if (params.originLat !== undefined && params.originLng !== undefined) {
+    body.origin_latitude = params.originLat;
+    body.origin_longitude = params.originLng;
+  }
+  if (params.destLat !== undefined && params.destLng !== undefined) {
+    body.destination_latitude = params.destLat;
+    body.destination_longitude = params.destLng;
+  }
 
   try {
     const res = await fetch(`${base}/v1/rates/couriers`, {
@@ -69,8 +82,16 @@ export async function fetchBiteshipCourierRates(params: {
 
     const json = (await res.json()) as BiteshipRatesResponse;
     if (!res.ok || !json.success || !Array.isArray(json.pricing)) {
-      const errMsg = json.message ?? json.error ?? `Biteship error ${res.status}`;
-      console.error("[Biteship rates]", res.status, errMsg, JSON.stringify(body));
+      const raw = json.message ?? json.error ?? `Biteship error ${res.status}`;
+      console.error("[Biteship rates]", res.status, raw, JSON.stringify(body));
+      // Terjemahkan pesan teknis Biteship menjadi pesan yang actionable untuk admin.
+      const isCoverageError =
+        typeof raw === "string" &&
+        (raw.toLowerCase().includes("no courier available") ||
+          raw.toLowerCase().includes("activate other courier"));
+      const errMsg = isCoverageError
+        ? "Kurir yang dipilih tidak tersedia untuk rute ini. Coba aktifkan kurir lain di Admin → Pengaturan → Kurir."
+        : "Layanan pengiriman tidak dapat dihubungi. Coba beberapa saat lagi.";
       return { ok: false, error: errMsg };
     }
 
@@ -86,7 +107,7 @@ export async function fetchBiteshipCourierRates(params: {
       }));
 
     if (options.length === 0) {
-      return { ok: false, error: "Tidak ada layanan pengiriman untuk rute ini." };
+      return { ok: false, error: "Tidak ada layanan pengiriman untuk rute ini. Coba aktifkan kurir lain di Admin → Pengaturan → Kurir." };
     }
 
     return { ok: true, options };

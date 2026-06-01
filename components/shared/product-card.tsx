@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, Star } from "lucide-react"
+import { Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatRupiah } from "@/lib/format"
 import { Button } from "@/components/ui/button"
@@ -70,7 +70,7 @@ export function ProductCard({ product, onWishlist, isWishlisted = false, classNa
       <div className="flex flex-1 flex-col gap-2 p-3">
         {product.review_count > 0 && (
           <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 fill-brand text-brand" />
+            <svg className="h-3 w-3 text-brand" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <span className="text-xs font-semibold">{product.average_rating.toFixed(1)}</span>
             <span className="text-xs text-muted-foreground">({product.review_count})</span>
           </div>

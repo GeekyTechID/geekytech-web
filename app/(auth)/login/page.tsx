@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <LoginForm
-      redirectTo={params.redirectTo ?? "/dashboard"}
+      redirectTo={params.redirectTo ?? "/"}
       urlError={params.error ?? null}
       urlMessage={params.message ?? null}
     />

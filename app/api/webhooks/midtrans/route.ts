@@ -2,6 +2,34 @@ import { createHash } from "node:crypto";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
+import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+
+const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
+
+function parseOriginCoords(): { lat: number; lng: number } | null {
+  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
+  if (combined) {
+    const [lat, lng] = combined.split(",").map(Number);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+  }
+  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
+  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
+  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
+  return null;
+}
+
+async function resolveOnDemandCoords(courierCompany: string, destPostal: number) {
+  if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
+  const originCoords = parseOriginCoords();
+  if (!originCoords) return {};
+  const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
+  return {
+    originLat: originCoords.lat,
+    originLng: originCoords.lng,
+    destLat: destCoords?.lat,
+    destLng: destCoords?.lng,
+  };
+}
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import type { Json } from "@/types/supabase";
@@ -154,6 +182,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
 
         if (orderItems?.length) {
           const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
+          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum);
           const shipResult = await createBiteshipOrder({
             destinationName: orderFull.recipient_name,
             destinationPhone: orderFull.recipient_phone,
@@ -168,6 +197,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
               weight: Math.round(i.weight / i.quantity),
             })),
             orderNote: `GeekyTech Order ${orderId}`,
+            ...onDemandCoords,
           });
 
           if (shipResult.ok) {

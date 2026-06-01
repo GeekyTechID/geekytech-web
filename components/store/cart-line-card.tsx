@@ -4,7 +4,7 @@ import { memo, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { removeCartItemAction, updateCartItemQuantityAction } from "@/app/(public)/cart/_actions";
@@ -146,7 +146,7 @@ function CartLineCardInner({
         ) : null}
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#5c5c5c]">
           <span className="inline-flex items-center gap-1 font-medium text-[#1d1d1f]">
-            <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+            <svg className="h-3.5 w-3.5 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             {line.rating.toFixed(1)}
           </span>
           <span className="text-[#d4d0c8]">·</span>

@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { addVariantToCart } from "@/app/(public)/products/_actions/product-detail-actions";
@@ -102,7 +101,7 @@ export function WishlistTileCard({ item }: { item: WishlistItemRow }) {
         </div>
         {productHref ? (
           <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-muted-foreground">
-            <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+            <svg className="h-3.5 w-3.5 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <span className="font-medium text-neutral-800 dark:text-foreground">{item.rating.toFixed(1)}</span>
             <span className="text-neutral-300 dark:text-border">·</span>
             <span>{item.reviewCount} ulasan</span>

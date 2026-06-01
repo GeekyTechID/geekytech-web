@@ -4,7 +4,23 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
-import { MOCK_CHECKOUT_SHIPPING } from "@/lib/shipping/checkout-shipping-options";
+import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+
+const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
+
+function parseOriginCoords(): { lat: number; lng: number } | null {
+  // Prioritas 1: combined "lat,lng"
+  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
+  if (combined) {
+    const [lat, lng] = combined.split(",").map(Number);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+  }
+  // Prioritas 2: individual
+  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
+  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
+  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
+  return null;
+}
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -49,9 +65,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const originRaw = process.env.BITESHIP_ORIGIN_POSTAL?.trim() ?? "10110";
-    const originPostal = postalToNumber(originRaw) ?? 10110;
-
     // build items: buy-now mode bypasses cart
     type ShippingItem = { name: string; value: number; quantity: number; weight: number; length: number; width: number; height: number };
     let items: ShippingItem[];
@@ -87,56 +100,65 @@ export async function POST(req: Request) {
       }));
     }
 
-    const { data: courierSetting } = await createServiceClient()
-      .from("settings")
-      .select("value")
-      .eq("key", "active_couriers")
-      .single();
+    const svc = await createServiceClient();
+    const [courierResult, originResult] = await Promise.all([
+      svc.from("settings").select("value").eq("key", "active_courier_codes").single(),
+      svc.from("settings").select("value").eq("key", "store_origin").single(),
+    ]);
 
-    type StoredCourier = { courier_code: string; courier_service_code: string };
-    const activeList = Array.isArray(courierSetting?.value)
-      ? (courierSetting.value as StoredCourier[]).filter((c) => c.courier_code && c.courier_service_code)
+    const activeCodes = Array.isArray(courierResult.data?.value)
+      ? (courierResult.data.value as string[]).filter((c) => typeof c === "string" && c)
       : [];
 
-    // Biteship rates API only accepts plain courier codes (not "code:service" format).
-    // Send unique courier codes, then post-filter to admin-selected services.
-    const hasAdminSelection = activeList.length > 0;
-    const uniqueCourierCodes = hasAdminSelection
-      ? [...new Set(activeList.map((c) => c.courier_code.toLowerCase()))].join(",")
-      : "jne,sicepat,anteraja,tiki";
+    if (activeCodes.length === 0) {
+      return Response.json(
+        { success: false, error: "Belum ada kurir yang diaktifkan. Silakan hubungi admin." },
+        { status: 503 },
+      );
+    }
+
+    // Baca kode pos origin dari store_origin di DB (dikonfigurasi admin di Pengaturan → Pengiriman).
+    // Fallback ke env var, lalu ke default Jakarta Pusat.
+    const storeOrigin = originResult.data?.value as { postal_code?: string } | null;
+    const originRaw =
+      storeOrigin?.postal_code?.trim() ||
+      process.env.BITESHIP_ORIGIN_POSTAL?.trim() ||
+      "10110";
+    const originPostal = postalToNumber(originRaw) ?? 10110;
+
+    // Koordinat origin (dari env) + dest (dari Biteship Area API) untuk on-demand kurir.
+    // Fetch dest coords hanya jika ada on-demand courier di active list.
+    const originCoords = parseOriginCoords();
+    const hasOnDemand = originCoords !== null && activeCodes.some((c) => ON_DEMAND_COURIERS.has(c.toLowerCase()));
+    const destCoords = hasOnDemand
+      ? await fetchCoordinatesFromPostal(String(destPostal))
+      : null;
 
     const biteship = await fetchBiteshipCourierRates({
       originPostal,
       destinationPostal: destPostal,
       items,
-      couriers: uniqueCourierCodes,
+      couriers: activeCodes.join(","),
+      originLat: originCoords?.lat,
+      originLng: originCoords?.lng,
+      destLat: destCoords?.lat,
+      destLng: destCoords?.lng,
     });
 
     if (biteship.ok) {
-      const allowedKeys = hasAdminSelection
-        ? new Set(activeList.map((c) => `${c.courier_code.toLowerCase()}:${c.courier_service_code.toLowerCase()}`))
-        : null;
-      const filtered = allowedKeys
-        ? biteship.options.filter((o) => allowedKeys.has(`${o.courierCode.toLowerCase()}:${o.serviceCode.toLowerCase()}`))
-        : biteship.options;
-
       return Response.json({
         success: true,
         data: {
           source: "biteship" as const,
-          options: filtered.length > 0 ? filtered : biteship.options,
+          options: biteship.options,
         },
       });
     }
 
-    return Response.json({
-      success: true,
-      data: {
-        source: "mock" as const,
-        options: MOCK_CHECKOUT_SHIPPING,
-        message: biteship.error,
-      },
-    });
+    return Response.json(
+      { success: false, error: `Layanan pengiriman tidak tersedia saat ini: ${biteship.error}` },
+      { status: 503 },
+    );
   } catch {
     return Response.json({ success: false, error: "Terjadi kesalahan server." }, { status: 500 });
   }

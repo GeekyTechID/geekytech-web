@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { Star } from "lucide-react";
 
 import { HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS } from "@/lib/constants/home-product-row-slot";
 import { HomeProductTile } from "@/components/store/home-product-tile";
@@ -53,7 +52,7 @@ export function BrandStoreBrandOverview({ brand, aggregate, bestSellers }: Brand
 
           <div className="flex shrink-0 flex-row justify-between items-center gap-3 text-sm text-[#1d1d1f] lg:text-right">
             <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 shrink-0 fill-yellow-500 text-yellow-500" aria-hidden />
+              <svg className="h-4 w-4 shrink-0 text-yellow-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               <span className="font-semibold">{formatRating(aggregate.avgRating)}</span>
               <span className="text-[#1d1d1f]">
                 ({aggregate.totalReviews.toLocaleString("id-ID")} rating)

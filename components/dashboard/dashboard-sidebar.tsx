@@ -58,6 +58,7 @@ type NavItem = {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
+  external?: boolean;
 };
 
 const NAV_PRIMARY: NavItem[] = [
@@ -76,7 +77,7 @@ const NAV_SECONDARY: NavItem[] = [
 ];
 
 const NAV_STORE: NavItem[] = [
-  { label: "Ke Toko", href: "/", icon: Globe },
+  { label: "Ke Web GeekyTech", href: process.env.NEXT_PUBLIC_APP_URL ?? "/", icon: Globe, external: true },
   { label: "Keranjang", href: "/cart", icon: ShoppingCart },
 ];
 
@@ -313,7 +314,10 @@ export function DashboardSidebar({
               return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild tooltip={item.label}>
-                    <Link href={item.href}>
+                    <Link
+                      href={item.href}
+                      {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    >
                       <Icon />
                       <span>{item.label}</span>
                     </Link>

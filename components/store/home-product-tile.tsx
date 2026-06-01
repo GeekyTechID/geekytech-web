@@ -1,7 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
-
 import { HOME_PRODUCT_FIVE_ACROSS_IMAGE_SIZES } from "@/lib/constants/home-product-row-slot";
 import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -68,7 +66,7 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
           {product.reviewCount > 0 ? (
             <>
               <span className="inline-flex items-center gap-1">
-                <Star className="h-3 w-3 shrink-0 fill-rating text-rating bg-rating" aria-hidden />
+                <svg className="h-3 w-3 shrink-0 text-rating" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 <span className="font-medium text-[--color-rating]">{product.rating.toFixed(1)}</span>
               </span>
               <span className="text-muted-foreground/40">·</span>

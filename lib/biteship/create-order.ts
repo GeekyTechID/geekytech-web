@@ -14,6 +14,10 @@ export type CreateBiteshipOrderParams = {
   courierType: string;
   items: BiteshipOrderItem[];
   orderNote?: string;
+  originLat?: number;
+  originLng?: number;
+  destLat?: number;
+  destLng?: number;
 };
 
 export type CreateBiteshipOrderResult =
@@ -47,7 +51,9 @@ export async function createBiteshipOrder(
 
   const base = "https://api.biteship.com";
 
-  const body = {
+  const isInstant = params.courierType.toLowerCase().includes("instant");
+
+  const body: Record<string, unknown> = {
     shipper_contact_name: shipperName,
     shipper_contact_phone: shipperPhone,
     shipper_organization: "GeekyTech",
@@ -61,7 +67,7 @@ export async function createBiteshipOrder(
     destination_postal_code: params.destinationPostalCode,
     courier_company: params.courierCompany.toLowerCase(),
     courier_type: params.courierType,
-    delivery_type: "now",
+    ...(isInstant && { delivery_type: "now" }),
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
       name: i.name.slice(0, 100),
@@ -74,6 +80,15 @@ export async function createBiteshipOrder(
       height: 10,
     })),
   };
+
+  if (params.originLat !== undefined && params.originLng !== undefined) {
+    body.origin_latitude = params.originLat;
+    body.origin_longitude = params.originLng;
+  }
+  if (params.destLat !== undefined && params.destLng !== undefined) {
+    body.destination_latitude = params.destLat;
+    body.destination_longitude = params.destLng;
+  }
 
   try {
     const res = await fetch(`${base}/v1/orders`, {

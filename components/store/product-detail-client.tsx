@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Heart, MessageCircle, Share2, Star } from "lucide-react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { addVariantToCart, toggleWishlistProduct } from "@/app/(public)/products/_actions/product-detail-actions";
@@ -232,18 +232,20 @@ export function ProductDetailClient({
                     )}
                     {images.length > 1 ? (
                       <>
-                        <CarouselNavButton
-                          direction="prev"
-                          surface="on-photo"
-                          className="absolute left-2 top-1/2 -translate-y-1/2 border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm hover:bg-white"
-                          onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                        />
-                        <CarouselNavButton
-                          direction="next"
-                          surface="on-photo"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 border border-[#e0e0e0] bg-white/90 text-[#1d1d1f] shadow-sm hover:bg-white"
-                          onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                        />
+                        <div className="absolute left-2 top-1/2 -translate-y-1/2">
+                          <CarouselNavButton
+                            direction="prev"
+                            surface="on-photo"
+                            onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
+                          />
+                        </div>
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <CarouselNavButton
+                            direction="next"
+                            surface="on-photo"
+                            onClick={() => setImgIndex((i) => (i + 1) % images.length)}
+                          />
+                        </div>
                       </>
                     ) : null}
                   </div>
@@ -305,9 +307,9 @@ export function ProductDetailClient({
                   <div className="flex flex-wrap items-center gap-2 text-sm text-[#7a7a7a]">
                     {product.reviewCount > 0 ? (
                       <>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 dark:bg-amber-950/30">
-                          <Star className="h-3.5 w-3.5 shrink-0 fill-[--color-rating] text-[--color-rating]" aria-hidden />
-                          <span className="font-medium text-[--color-rating]">{product.averageRating.toFixed(1)}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <svg className="h-3.5 w-3.5 shrink-0 text-rating" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                          <span className="font-medium text-foreground">{product.averageRating.toFixed(1)}</span>
                         </span>
                         <span className="text-[#d4d4d4]">·</span>
                         <span>({product.reviewCount} rating)</span>

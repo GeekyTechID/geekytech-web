@@ -80,18 +80,28 @@ export type AvailableCoupon = {
 };
 
 const COURIER_LOGOS: Record<string, string> = {
-  jne: "/couriers/jne.svg",
-  sicepat: "/couriers/sicepat.svg",
-  anteraja: "/couriers/anteraja.svg",
-  tiki: "/couriers/tiki.svg",
-  gosend: "/couriers/gosend.svg",
-  gojek: "/couriers/gosend.svg",
+  jne: "/couriers/jne.png",
+  sicepat: "/couriers/sicepat.png",
+  jnt: "/couriers/j&t.png",
+  anteraja: "/couriers/antaraja.png",
+  tiki: "/couriers/tiki.png",
+  ninja: "/couriers/ninjaexpress.png",
+  ninja_xpress: "/couriers/ninjaexpress.png",
+  lion: "/couriers/lionparcel.png",
   wahana: "/couriers/wahana.png",
-  jnt: "/couriers/jnt.svg",
-  ninja: "/couriers/ninja.svg",
-  ninja_xpress: "/couriers/ninja.svg",
-  pos: "/couriers/pos.svg",
-  sap: "/couriers/sap.svg",
+  sap: "/couriers/sap.png",
+  pos: "/couriers/posindonesia.png",
+  idexpress: "/couriers/idexpress.png",
+  paxel: "/couriers/paxel.png",
+  rpx: "/couriers/rpx.png",
+  gojek: "/couriers/gojek.png",
+  gosend: "/couriers/gojek.png",
+  grab: "/couriers/grab.png",
+  borzo: "/couriers/borzo.png",
+  lalamove: "/couriers/lalamove.png",
+  sentralcargo: "/couriers/sentralcargo.png",
+  dash_express: "/couriers/dash.png",
+  deliveree: "/couriers/deliveree.png",
 };
 
 function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { code: string; name: string; className?: string }) {
@@ -170,7 +180,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [addressId, setAddressId] = useState<string>(initialAddressId ?? addresses[0]?.id ?? "");
   const [shippingOpen, setShippingOpen] = useState(true);
   const [ratesLoading, setRatesLoading] = useState(false);
-  const [ratesSource, setRatesSource] = useState<"biteship" | "mock">("mock");
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [couponInput, setCouponInput] = useState("");
@@ -275,7 +284,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       });
       const json = (await res.json()) as {
         success: boolean;
-        data?: { source: "biteship" | "mock"; options: ShippingOption[]; message?: string };
+        data?: { options: ShippingOption[] };
         error?: string;
       };
       if (!json.success || !json.data) {
@@ -284,7 +293,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         setSelectedShipping(null);
         return;
       }
-      setRatesSource(json.data.source);
       setShippingOptions(json.data.options);
       setSelectedShipping(json.data.options[0] ?? null);
       setShippingOpen(true);
@@ -383,7 +391,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           addressId,
           courierCode: selectedShipping.courierCode,
           serviceCode: selectedShipping.serviceCode,
-          ratesSource,
+          ratesSource: "biteship",
           couponCode: couponInput.trim() || null,
           paymentMethod,
           ...(isBuyNow
@@ -592,15 +600,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                       <Spinner className="size-4" />
                       Menghitung ongkir…
                     </div>
-                  ) : shippingOptions.length === 0 ? (
-                    <p className="text-sm text-[#5c5c5c]">Tidak ada tarif untuk alamat ini.</p>
-                  ) : (
+                  ) : shippingOptions.length === 0 ? null : (
                     <>
-                      {ratesSource === "mock" && (
-                        <p className="mb-2 rounded-lg bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-700">
-                          Tarif estimasi — Biteship belum terhubung. Ongkir final dihitung saat konfirmasi.
-                        </p>
-                      )}
                       {shippingOptions.map((opt) => {
                         const selected =
                           selectedShipping?.courierCode === opt.courierCode &&
