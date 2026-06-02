@@ -7,6 +7,13 @@ import { createClient } from "@/lib/supabase/server";
 
 export type SimpleActionResult = { success: true } | { success: false; error: string };
 
+/** Coerce a coordinate to a number within [min,max], else null (never throws). */
+const coord = (min: number, max: number) =>
+  z.preprocess((val) => {
+    const n = typeof val === "number" ? val : typeof val === "string" ? parseFloat(val) : NaN;
+    return Number.isFinite(n) && (n as number) >= min && (n as number) <= max ? n : null;
+  }, z.number().nullable());
+
 const addressSchema = z.object({
   label: z.string().trim().max(80).optional().nullable(),
   recipient: z.string().trim().min(2).max(120),
@@ -18,6 +25,8 @@ const addressSchema = z.object({
   postal_code: z.coerce.string().trim().min(3).max(10),
   full_address: z.string().trim().min(5).max(500),
   is_default: z.boolean().optional(),
+  lat: coord(-11, 6).optional(),
+  lng: coord(95, 141).optional(),
 });
 
 export async function createAddressAction(values: z.infer<typeof addressSchema>): Promise<SimpleActionResult> {
@@ -48,6 +57,8 @@ export async function createAddressAction(values: z.infer<typeof addressSchema>)
       postal_code: v.postal_code.trim(),
       full_address: v.full_address.trim(),
       is_default: v.is_default ?? false,
+      lat: v.lat ?? null,
+      lng: v.lng ?? null,
     });
     if (error) return { success: false, error: error.message };
     revalidatePath("/dashboard/addresses");
@@ -90,6 +101,8 @@ export async function updateAddressAction(values: z.infer<typeof updateAddressSc
         postal_code: v.postal_code.trim(),
         full_address: v.full_address.trim(),
         is_default: v.is_default ?? false,
+        lat: v.lat ?? null,
+        lng: v.lng ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", v.id)
