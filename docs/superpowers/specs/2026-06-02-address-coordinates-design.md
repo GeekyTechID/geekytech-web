@@ -18,7 +18,7 @@ Fitur ini menyimpan koordinat di level alamat user — dengan **pin peta opsiona
 
 ## Keputusan Desain (disetujui)
 
-- **Peta**: Leaflet + react-leaflet (gratis, tanpa Google Maps Platform / tanpa billing).
+- **Peta**: Leaflet (dipakai imperatif/plain, tanpa react-leaflet — menghindari konflik peer-dependency React 19; gratis, tanpa Google Maps Platform / tanpa billing).
 - **Presisi auto** (jika user tak menggeser pin): centroid area (kecamatan/kota/kode pos); pin hanya untuk koreksi presisi.
 - **Penyimpanan**: kolom di `addresses`, lalu **snapshot** ke `orders` (sesuai aturan CLAUDE.md: alamat order disimpan sebagai snapshot, bukan FK).
 - **Fallback berlapis** di settlement (snapshot order → resolusi kode pos → input manual admin).
@@ -66,7 +66,7 @@ ALTER TABLE orders
 
 ## 2. Komponen `LocationPicker` (`components/dashboard/location-picker.tsx`)
 
-- `"use client"`. Leaflet client-only → dynamic import dengan `ssr: false` (Leaflet butuh `window`).
+- `"use client"`. Leaflet dipakai plain/imperatif via `useEffect` (bukan react-leaflet). Komponen dirender lewat `next/dynamic` dengan `ssr: false` di form (Leaflet butuh `window`).
 - Props:
   ```ts
   type LatLng = { lat: number; lng: number };
@@ -181,7 +181,7 @@ createBiteshipOrder → nested origin_coordinate + destination_coordinate → Bi
 
 ## 10. Dependensi
 
-- Baru: `leaflet`, `react-leaflet`, `@types/leaflet`.
+- Baru: `leaflet`, `@types/leaflet` (plain Leaflet, tanpa react-leaflet).
 - Tanpa API berbayar. Geocode centroid pakai Nominatim (frekuensi rendah — hanya saat isi/simpan alamat).
 
 ---
