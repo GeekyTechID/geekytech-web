@@ -1,5 +1,7 @@
 /** Shared utilities for on-demand courier (GoSend, GrabExpress, etc.) coordinate resolution. */
 
+import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+
 export const ON_DEMAND_COURIERS = new Set([
   "gojek",
   "grab",
@@ -50,4 +52,37 @@ export function parseOriginCoords(
   storeOrigin?: { lat?: string; lng?: string } | null,
 ): OriginCoords | null {
   return parseFromEnv() ?? parseFromSettings(storeOrigin);
+}
+
+export type OnDemandCoordFields = {
+  originLat?: number;
+  originLng?: number;
+  destLat?: number;
+  destLng?: number;
+};
+
+/**
+ * Resolve the origin + destination lat/lng fields Biteship requires for on-demand
+ * couriers (GoSend, GrabExpress, etc.). Returns an empty object for non-on-demand
+ * couriers, or when origin coordinates are not configured (env var nor store_origin
+ * DB setting) — callers then create the order without coordinates.
+ *
+ * Used by BOTH settlement paths (Midtrans webhook and verify-payment) so they
+ * resolve coordinates identically. Keep this the single source of truth.
+ */
+export async function resolveOnDemandCoords(
+  courierCompany: string,
+  destPostal: number,
+  storeOrigin: { lat?: string; lng?: string } | null,
+): Promise<OnDemandCoordFields> {
+  if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
+  const originCoords = parseOriginCoords(storeOrigin);
+  if (!originCoords) return {};
+  const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
+  return {
+    originLat: originCoords.lat,
+    originLng: originCoords.lng,
+    destLat: destCoords?.lat,
+    destLng: destCoords?.lng,
+  };
 }

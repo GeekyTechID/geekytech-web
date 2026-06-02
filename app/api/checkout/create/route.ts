@@ -9,7 +9,7 @@ import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
-import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
 import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 
 const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;

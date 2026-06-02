@@ -2,25 +2,7 @@ import { createHash } from "node:crypto";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
-import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
-import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
-
-async function resolveOnDemandCoords(
-  courierCompany: string,
-  destPostal: number,
-  storeOrigin: { lat?: string; lng?: string } | null,
-) {
-  if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
-  const originCoords = parseOriginCoords(storeOrigin);
-  if (!originCoords) return {};
-  const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
-  return {
-    originLat: originCoords.lat,
-    originLng: originCoords.lng,
-    destLat: destCoords?.lat,
-    destLng: destCoords?.lng,
-  };
-}
+import { ON_DEMAND_COURIERS, parseOriginCoords, resolveOnDemandCoords } from "@/lib/shipping/on-demand-coords";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import type { Json } from "@/types/supabase";

@@ -168,6 +168,12 @@ MIDTRANS_IS_PRODUCTION=false      ← true saat production
 # Biteship
 BITESHIP_API_KEY=                 ← hanya server
 
+# Geocoding (koordinat tujuan kurir on-demand: GoSend/Gojek, Grab, dll)
+# Sumber utama = Geoapify; pakai LocationIQ jika tidak ada GEOAPIFY_API_KEY.
+# Tanpa salah satu key ini, sistem fallback ke Nominatim (rate-limited, last-resort).
+GEOAPIFY_API_KEY=                 ← hanya server (free tier ~3rb/hari, tanpa kartu)
+LOCATIONIQ_API_KEY=               ← hanya server (alternatif, free tier ~5rb/hari)
+
 # Resend
 RESEND_API_KEY=                   ← hanya server
 RESEND_FROM_EMAIL=noreply@geekytech.com

@@ -4,7 +4,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
-import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
 import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 
 const bodySchema = z.object({

@@ -1,33 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
-import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
-
-const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
-
-function parseOriginCoords(): { lat: number; lng: number } | null {
-  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
-  if (combined) {
-    const [lat, lng] = combined.split(",").map(Number);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
-  }
-  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
-  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
-  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
-  return null;
-}
-
-async function resolveOnDemandCoords(courierCompany: string, destPostal: number) {
-  if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
-  const originCoords = parseOriginCoords();
-  if (!originCoords) return {};
-  const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
-  return {
-    originLat: originCoords.lat,
-    originLng: originCoords.lng,
-    destLat: destCoords?.lat,
-    destLng: destCoords?.lng,
-  };
-}
+import { ON_DEMAND_COURIERS, parseOriginCoords, resolveOnDemandCoords } from "@/lib/shipping/on-demand-coords";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 
@@ -233,7 +206,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         if (orderItems?.length) {
           const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
-          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum);
+          const { data: originSetting } = await svc
+            .from("settings")
+            .select("value")
+            .eq("key", "store_origin")
+            .maybeSingle();
+          const storeOrigin = (originSetting?.value ?? null) as { lat?: string; lng?: string } | null;
+          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin);
           const shipResult = await createBiteshipOrder({
             destinationName: orderFull.recipient_name,
             destinationPhone: orderFull.recipient_phone,
@@ -262,10 +241,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               status: "pending",
             });
           } else {
+            const isOnDemand = ON_DEMAND_COURIERS.has(orderFull.courier_company.toLowerCase());
+            const hasOriginCoords = parseOriginCoords(storeOrigin) !== null;
+            const coordHint = isOnDemand && !hasOriginCoords
+              ? " (Koordinat origin belum dikonfigurasi — isi Latitude & Longitude di Admin → Pengaturan → Pengiriman)"
+              : "";
             await svc.from("order_status_history").insert({
               order_id: order.id,
               status: "paid",
-              note: `Biteship gagal: ${shipResult.error}`,
+              note: `Biteship gagal: ${shipResult.error}${coordHint}. Admin dapat input AWB manual di halaman pesanan.`,
               changed_by: null,
             });
           }

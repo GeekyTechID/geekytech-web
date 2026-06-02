@@ -81,13 +81,15 @@ export async function createBiteshipOrder(
     })),
   };
 
+  // Biteship's Create Order API requires coordinates as NESTED objects
+  // (origin_coordinate / destination_coordinate), NOT the flat origin_latitude/
+  // origin_longitude fields used by the rates endpoint. Instant/on-demand couriers
+  // (GoSend, GrabExpress, etc.) are rejected without these.
   if (params.originLat !== undefined && params.originLng !== undefined) {
-    body.origin_latitude = params.originLat;
-    body.origin_longitude = params.originLng;
+    body.origin_coordinate = { latitude: params.originLat, longitude: params.originLng };
   }
   if (params.destLat !== undefined && params.destLng !== undefined) {
-    body.destination_latitude = params.destLat;
-    body.destination_longitude = params.destLng;
+    body.destination_coordinate = { latitude: params.destLat, longitude: params.destLng };
   }
 
   try {
