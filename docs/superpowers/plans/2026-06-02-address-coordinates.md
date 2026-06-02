@@ -2,13 +2,15 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Capture lat/lng on user addresses (optional Leaflet map pin + auto area-centroid), snapshot it onto orders, and feed it to Biteship as the destination coordinate so GoSend/Grab (on-demand) orders are created reliably and accurately.
+**Goal:** Capture lat/lng on user addresses (optional Leaflet map pin + auto centering), snapshot it onto orders, and feed it to Biteship as the destination coordinate so GoSend/Grab (on-demand) orders are created reliably and accurately.
 
-**Architecture:** Add nullable `lat`/`lng` columns to `addresses` and `shipping_lat`/`shipping_lng` to `orders`. The address form gets a plain-Leaflet `LocationPicker` (draggable pin + GPS button); when the user picks an area, the map centers on a Nominatim-geocoded centroid. Coordinates are snapshotted to the order at checkout. At settlement, the shared `resolveOnDemandCoords` prefers the order's snapshot coordinates and falls back to the existing postal→coordinate resolution, so old addresses still work.
+**Architecture:** Add nullable `lat`/`lng` columns to `addresses` and `shipping_lat`/`shipping_lng` to `orders`. The address form gets a plain-Leaflet `LocationPicker` (draggable pin + GPS button); when the user picks an area, the map centers on coordinates resolved by the existing cached geocoder. Coordinates are snapshotted to the order at checkout. At settlement, the shared `resolveOnDemandCoords` prefers the order's snapshot coordinates and falls back to the existing postal→coordinate resolution, so old addresses still work.
 
-**Tech Stack:** Next.js 15 (App Router) + TypeScript, Supabase (Postgres), Leaflet (plain, no react-leaflet — avoids React peer-dep/SSR issues), OpenStreetMap Nominatim for geocoding, Zod validation.
+**Reuses existing work (committed in `5f74338`):** `lib/geo/geocode-destination.ts` already resolves postal→coordinate via cache (`geocode_cache`) → Geoapify → LocationIQ → Nominatim. This plan REUSES `fetchCoordinatesFromPostal` for the form's map centering and for the settlement fallback — it does NOT add a second geocoder.
 
-**Testing note:** This repo has **no test runner**. Per the approved spec, each task is verified with `npx tsc --noEmit` + `npx eslint <files>` (real automated gates), a one-off `node` assertion script for the single pure function, and explicit manual/DB verification for UI and integration. Spec: `docs/superpowers/specs/2026-06-02-address-coordinates-design.md`.
+**Tech Stack:** Next.js 15 (App Router) + TypeScript, Supabase (Postgres), Leaflet (plain, no react-leaflet — avoids React peer-dep/SSR issues), Zod validation.
+
+**Testing note:** This repo has **no test runner**. Per the approved spec, each task is verified with `npx tsc --noEmit` + `npx eslint <files>` (real automated gates) plus explicit manual/DB verification. Spec: `docs/superpowers/specs/2026-06-02-address-coordinates-design.md`.
 
 ---
 
@@ -16,13 +18,12 @@
 
 | File | Responsibility |
 |------|----------------|
-| `supabase/migrations/021_address_coordinates.sql` (create) | Add coordinate columns |
+| `supabase/migrations/022_address_coordinates.sql` (create) | Add coordinate columns (021 is already taken by `021_geocode_cache.sql`) |
 | `types/supabase.ts` (regenerate) | Pick up new columns for TS |
-| `lib/geo/geocode-area.ts` (create) | Geocode area centroid + Indonesia bounds check |
-| `app/api/geo/area-centroid/route.ts` (create) | POST endpoint wrapping the geocoder |
+| `app/api/geo/postal-coords/route.ts` (create) | POST endpoint wrapping the existing `fetchCoordinatesFromPostal` |
 | `app/(dashboard)/dashboard/addresses/_actions.ts` (modify) | Accept/validate/persist lat/lng |
 | `components/dashboard/location-picker.tsx` (create) | Leaflet map + draggable pin + GPS button |
-| `components/dashboard/address-form.tsx` (modify) | Integrate picker, centroid fetch, submit lat/lng |
+| `components/dashboard/address-form.tsx` (modify) | Integrate picker, fetch postal coords for centering, submit lat/lng |
 | `app/api/checkout/create/route.ts` (modify) | Snapshot address coords → order |
 | `lib/shipping/on-demand-coords.ts` (modify) | `resolveOnDemandCoords` prefers snapshot dest coords |
 | `app/api/webhooks/midtrans/route.ts` (modify) | Pass order snapshot coords to resolver |
@@ -34,15 +35,15 @@
 ## Task 1: Database migration + types
 
 **Files:**
-- Create: `supabase/migrations/021_address_coordinates.sql`
+- Create: `supabase/migrations/022_address_coordinates.sql`
 - Regenerate: `types/supabase.ts`
 
 - [ ] **Step 1: Write the migration SQL**
 
-Create `supabase/migrations/021_address_coordinates.sql`:
+Create `supabase/migrations/022_address_coordinates.sql`:
 
 ```sql
--- 021: koordinat alamat untuk kurir on-demand (GoSend/Grab/Borzo/dll)
+-- 022: koordinat alamat untuk kurir on-demand (GoSend/Grab/Borzo/dll)
 -- Semua nullable agar alamat & order lama tidak terpengaruh.
 ALTER TABLE addresses
   ADD COLUMN IF NOT EXISTS lat double precision,
@@ -53,171 +54,63 @@ ALTER TABLE orders
   ADD COLUMN IF NOT EXISTS shipping_lng double precision;
 ```
 
-- [ ] **Step 2: Apply the migration to Supabase**
+- [ ] **Step 2: Ensure migration 021 (geocode_cache) is applied, then apply 022**
 
-Apply via the Supabase MCP `apply_migration` tool (project `xvgcmqpnrloqbneacdpx`, name `address_coordinates`, body = the SQL above), or paste into Supabase Dashboard → SQL Editor and run.
+The cached geocoder needs the `geocode_cache` table. First confirm/apply `021_geocode_cache.sql`, then apply `022`. Use Supabase MCP `apply_migration` (project `xvgcmqpnrloqbneacdpx`) for each, or paste into Supabase Dashboard → SQL Editor. `CREATE TABLE IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS` make both idempotent.
 
-- [ ] **Step 3: Verify columns exist**
+- [ ] **Step 3: Verify all columns/tables exist**
 
-Run this query (Supabase MCP `execute_sql`, project `xvgcmqpnrloqbneacdpx`):
+Run (Supabase MCP `execute_sql`, project `xvgcmqpnrloqbneacdpx`):
 
 ```sql
-SELECT table_name, column_name, data_type
-FROM information_schema.columns
-WHERE table_schema='public'
-  AND ((table_name='addresses' AND column_name IN ('lat','lng'))
-    OR (table_name='orders' AND column_name IN ('shipping_lat','shipping_lng')))
-ORDER BY table_name, column_name;
+SELECT 'geocode_cache' AS obj, to_regclass('public.geocode_cache') IS NOT NULL AS exists
+UNION ALL
+SELECT 'addresses.lat', EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='addresses' AND column_name='lat')
+UNION ALL
+SELECT 'addresses.lng', EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='addresses' AND column_name='lng')
+UNION ALL
+SELECT 'orders.shipping_lat', EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='orders' AND column_name='shipping_lat')
+UNION ALL
+SELECT 'orders.shipping_lng', EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='orders' AND column_name='shipping_lng');
 ```
-Expected: 4 rows, all `double precision`.
+Expected: all rows `exists = true`.
 
 - [ ] **Step 4: Regenerate Supabase types**
 
 Regenerate `types/supabase.ts` (Supabase MCP `generate_typescript_types` for project `xvgcmqpnrloqbneacdpx`, overwrite the file; or `npx supabase gen types typescript --project-id xvgcmqpnrloqbneacdpx > types/supabase.ts`).
-Confirm the file now contains `lat`, `lng` under `addresses` and `shipping_lat`, `shipping_lng` under `orders`.
+Confirm the file now contains `lat`, `lng` under `addresses` and `shipping_lat`, `shipping_lng` under `orders`. (`geocode_cache` may also appear — harmless.)
 
 - [ ] **Step 5: Typecheck**
 
 Run: `npx tsc --noEmit`
-Expected: exit 0 (no errors introduced by the regenerated types).
+Expected: exit 0.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add supabase/migrations/021_address_coordinates.sql types/supabase.ts
+git add supabase/migrations/022_address_coordinates.sql types/supabase.ts
 git commit -m "feat(db): add lat/lng to addresses and shipping_lat/lng to orders"
 ```
 
 ---
 
-## Task 2: Geocode-area utility
+## Task 2: Postal-coordinate endpoint (reuses existing geocoder)
 
 **Files:**
-- Create: `lib/geo/geocode-area.ts`
-- Test (one-off): `/tmp/test-geocode-area.mjs`
+- Create: `app/api/geo/postal-coords/route.ts`
 
-- [ ] **Step 1: Write the utility**
-
-Create `lib/geo/geocode-area.ts`:
-
-```ts
-/** Geocode the centroid of an Indonesian administrative area via OpenStreetMap Nominatim. */
-
-export type LatLng = { lat: number; lng: number };
-
-/** Rough bounding box of Indonesia. Rejects obviously-wrong coordinates. */
-export function isWithinIndonesia(lat: number, lng: number): boolean {
-  return lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141;
-}
-
-async function nominatimSearch(query: string): Promise<LatLng | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=id`,
-      {
-        headers: { "User-Agent": "GeekyTech/1.0 (geekytech.com)", Accept: "application/json" },
-        cache: "no-store",
-      },
-    );
-    if (!res.ok) return null;
-    const json = (await res.json()) as { lat?: string; lon?: string }[];
-    const first = json[0];
-    if (!first?.lat || !first?.lon) return null;
-    const lat = parseFloat(first.lat);
-    const lng = parseFloat(first.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !isWithinIndonesia(lat, lng)) return null;
-    return { lat, lng };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Resolve an approximate centroid for an area. Tries the full
- * "district, city, province" string first, then the postal code.
- */
-export async function geocodeAreaCentroid(input: {
-  district?: string;
-  city?: string;
-  province?: string;
-  postalCode?: string;
-}): Promise<LatLng | null> {
-  const parts = [input.district, input.city, input.province].map((p) => p?.trim()).filter(Boolean);
-  const queries: string[] = [];
-  if (parts.length) queries.push(`${parts.join(", ")}, Indonesia`);
-  if (input.postalCode?.trim()) queries.push(`${input.postalCode.trim()}, Indonesia`);
-
-  for (const q of queries) {
-    const hit = await nominatimSearch(q);
-    if (hit) return hit;
-  }
-  return null;
-}
-```
-
-- [ ] **Step 2: Write a one-off assertion script for the pure function**
-
-Create `/tmp/test-geocode-area.mjs` (mirrors the `isWithinIndonesia` logic — the repo has no TS test runner, so this validates the bounds logic directly):
-
-```js
-function isWithinIndonesia(lat, lng) {
-  return lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141;
-}
-const cases = [
-  [-6.2, 106.8, true],   // Jakarta
-  [-7.25, 112.75, true], // Surabaya
-  [40.7, -74.0, false],  // New York
-  [0, 0, false],         // null island
-];
-let ok = true;
-for (const [lat, lng, want] of cases) {
-  const got = isWithinIndonesia(lat, lng);
-  if (got !== want) { console.error(`FAIL ${lat},${lng} => ${got} (want ${want})`); ok = false; }
-}
-console.log(ok ? "PASS all bounds cases" : "FAIL");
-process.exit(ok ? 0 : 1);
-```
-
-- [ ] **Step 3: Run the assertion script**
-
-Run: `node /tmp/test-geocode-area.mjs`
-Expected: `PASS all bounds cases`, exit 0.
-
-- [ ] **Step 4: Typecheck + lint**
-
-Run: `npx tsc --noEmit && npx eslint lib/geo/geocode-area.ts`
-Expected: exit 0.
-
-- [ ] **Step 5: Commit**
-
-```bash
-rm -f /tmp/test-geocode-area.mjs
-git add lib/geo/geocode-area.ts
-git commit -m "feat(geo): add geocodeAreaCentroid + Indonesia bounds check"
-```
-
----
-
-## Task 3: Geocode endpoint
-
-**Files:**
-- Create: `app/api/geo/area-centroid/route.ts`
+Context: `lib/geo/geocode-destination.ts` already exports `fetchCoordinatesFromPostal(postalCode: string): Promise<{ lat: number; lng: number } | null>` (server-only, cached, robust). The address form needs coordinates to center the map when the user picks an area; the area carries a postal code, so we reuse that function via a thin endpoint. Do NOT create a second geocoder.
 
 - [ ] **Step 1: Write the route**
 
-Create `app/api/geo/area-centroid/route.ts`:
+Create `app/api/geo/postal-coords/route.ts`:
 
 ```ts
 import { z } from "zod";
 
-import { geocodeAreaCentroid } from "@/lib/geo/geocode-area";
+import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
 
-const schema = z.object({
-  district: z.string().trim().max(80).optional(),
-  city: z.string().trim().max(80).optional(),
-  province: z.string().trim().max(80).optional(),
-  postalCode: z.string().trim().max(10).optional(),
-});
+const schema = z.object({ postalCode: z.string().trim().min(3).max(10) });
 
 export async function POST(req: Request) {
   try {
@@ -226,7 +119,7 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return Response.json({ success: false, error: "Permintaan tidak valid." }, { status: 400 });
     }
-    const coords = await geocodeAreaCentroid(parsed.data);
+    const coords = await fetchCoordinatesFromPostal(parsed.data.postalCode);
     return Response.json({ success: true, data: coords });
   } catch {
     return Response.json({ success: false, error: "Gagal mencari koordinat." }, { status: 500 });
@@ -236,29 +129,28 @@ export async function POST(req: Request) {
 
 - [ ] **Step 2: Typecheck + lint**
 
-Run: `npx tsc --noEmit && npx eslint app/api/geo/area-centroid/route.ts`
+Run: `npx tsc --noEmit && npx eslint app/api/geo/postal-coords/route.ts`
 Expected: exit 0.
 
 - [ ] **Step 3: Manual smoke test (dev server running)**
 
-With `npm run dev` running, run:
+With `npm run dev`, run:
 ```bash
-curl -s -X POST http://localhost:3000/api/geo/area-centroid \
-  -H 'Content-Type: application/json' \
-  -d '{"district":"Pancoran","city":"Jakarta Selatan","province":"DKI Jakarta","postalCode":"12740"}'
+curl -s -X POST http://localhost:3000/api/geo/postal-coords \
+  -H 'Content-Type: application/json' -d '{"postalCode":"12740"}'
 ```
-Expected: `{"success":true,"data":{"lat":-6.2...,"lng":106.8...}}` (coordinates inside Indonesia). `data` may be `null` if Nominatim has no hit — that is acceptable (fallback handles it downstream).
+Expected: `{"success":true,"data":{"lat":-6.x,"lng":106.x}}` (coords inside Indonesia). `data` may be `null` if no geocoder key is set AND Nominatim has no hit — acceptable (the form just won't auto-center).
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add app/api/geo/area-centroid/route.ts
-git commit -m "feat(api): add area-centroid geocoding endpoint"
+git add app/api/geo/postal-coords/route.ts
+git commit -m "feat(api): add postal-coords endpoint reusing cached geocoder"
 ```
 
 ---
 
-## Task 4: Address actions accept lat/lng
+## Task 3: Address actions accept lat/lng
 
 **Files:**
 - Modify: `app/(dashboard)/dashboard/addresses/_actions.ts`
@@ -323,7 +215,7 @@ git commit -m "feat(addresses): accept and persist optional lat/lng"
 
 ---
 
-## Task 5: Install Leaflet + LocationPicker component
+## Task 4: Install Leaflet + LocationPicker component
 
 **Files:**
 - Modify: `package.json` (+ `package-lock.json`)
@@ -461,7 +353,7 @@ git commit -m "feat(addresses): add Leaflet LocationPicker component"
 
 ---
 
-## Task 6: Integrate LocationPicker into the address form
+## Task 5: Integrate LocationPicker into the address form
 
 **Files:**
 - Modify: `components/dashboard/address-form.tsx`
@@ -491,9 +383,9 @@ Inside the `AddressForm` component, after the existing `useState` hooks (after `
   const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
 ```
 
-- [ ] **Step 3: Fetch the centroid when an area is selected**
+- [ ] **Step 3: Fetch coordinates when an area is selected**
 
-Replace the existing `handleAreaSelect` function with this version (it keeps the field-fill behavior and adds a centroid lookup to recenter the map):
+Replace the existing `handleAreaSelect` function with this version (keeps the field-fill behavior, adds a postal-coords lookup to recenter the map):
 
 ```tsx
   const handleAreaSelect = (area: BiteshipArea) => {
@@ -504,20 +396,15 @@ Replace the existing `handleAreaSelect` function with this version (it keeps the
 
     void (async () => {
       try {
-        const res = await fetch("/api/geo/area-centroid", {
+        const res = await fetch("/api/geo/postal-coords", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            district: area.administrative_division_level_3_name,
-            city: area.administrative_division_level_2_name,
-            province: area.administrative_division_level_1_name,
-            postalCode: String(area.postal_code),
-          }),
+          body: JSON.stringify({ postalCode: String(area.postal_code) }),
         });
         const json = (await res.json()) as { success: boolean; data: LatLng | null };
         if (json.success && json.data) setMapCenter(json.data);
       } catch {
-        // centroid optional — pin tetap bisa digeser manual
+        // centering optional — pin tetap bisa digeser manual
       }
     })();
   };
@@ -543,7 +430,7 @@ Immediately after the closing `</div>` of the "Cari area otomatis" block (the `r
         </p>
         <LocationPicker value={coords} onChange={setCoords} center={mapCenter} />
         <p className="mt-2 text-[11px] text-[#9a9a9a]">
-          Opsional. Jika tidak diisi, sistem memakai titik area otomatis.
+          Opsional. Jika tidak diisi, sistem memakai titik dari kode pos otomatis.
         </p>
       </div>
 ```
@@ -563,7 +450,7 @@ Run (Supabase MCP `execute_sql`, project `xvgcmqpnrloqbneacdpx`):
 ```sql
 SELECT id, recipient, lat, lng, created_at FROM addresses ORDER BY created_at DESC LIMIT 3;
 ```
-Expected: the address you just created has non-null `lat`/`lng` (from pin or centroid).
+Expected: the address you just created has non-null `lat`/`lng` (from pin or postal centering).
 
 - [ ] **Step 9: Commit**
 
@@ -574,14 +461,14 @@ git commit -m "feat(addresses): capture coordinates in address form via map pick
 
 ---
 
-## Task 7: Snapshot coordinates onto the order at checkout
+## Task 6: Snapshot coordinates onto the order at checkout
 
 **Files:**
 - Modify: `app/api/checkout/create/route.ts`
 
 - [ ] **Step 1: Add the snapshot fields to the order insert**
 
-In `app/api/checkout/create/route.ts`, the `svc.from("orders").insert({ ... })` call (around line 242) builds the order from `address`. `address` comes from `fetchAddressForUser`, which selects `*`, so `address.lat` / `address.lng` are available. Add these two properties to the insert object, right after `shipping_address: address.full_address,`:
+In `app/api/checkout/create/route.ts`, the `svc.from("orders").insert({ ... })` call builds the order from `address` (returned by `fetchAddressForUser`, which selects `*`, so `address.lat`/`address.lng` are available). Add these two properties to the insert object, right after `shipping_address: address.full_address,`:
 
 ```ts
         shipping_lat: address.lat ?? null,
@@ -611,7 +498,7 @@ git commit -m "feat(checkout): snapshot address coordinates onto order"
 
 ---
 
-## Task 8: Prefer snapshot coordinates at settlement
+## Task 7: Prefer snapshot coordinates at settlement
 
 **Files:**
 - Modify: `lib/shipping/on-demand-coords.ts`
@@ -636,7 +523,7 @@ export async function resolveOnDemandCoords(
   let destLat: number | undefined;
   let destLng: number | undefined;
   if (preferredDest && preferredDest.lat != null && preferredDest.lng != null) {
-    // Snapshot from the order (most accurate — user pin / area centroid).
+    // Snapshot from the order (most accurate — user pin / map centering).
     destLat = preferredDest.lat;
     destLng = preferredDest.lng;
   } else {
@@ -659,12 +546,20 @@ export async function resolveOnDemandCoords(
 
 In `app/api/webhooks/midtrans/route.ts`:
 
-(a) In the `orderFull` select (around line 164), add `shipping_lat, shipping_lng`:
+(a) In the `orderFull` select, add `shipping_lat, shipping_lng`. Change:
+```ts
+        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal")
+```
+to:
 ```ts
         .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal, shipping_lat, shipping_lng")
 ```
 
-(b) Update the `resolveOnDemandCoords` call (around line 176) to pass the snapshot:
+(b) Update the `resolveOnDemandCoords` call. Change:
+```ts
+          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin);
+```
+to:
 ```ts
           const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin, {
             lat: orderFull.shipping_lat,
@@ -676,18 +571,9 @@ In `app/api/webhooks/midtrans/route.ts`:
 
 In `app/api/orders/[id]/verify-payment/route.ts`:
 
-(a) In the `orderFull` select (around line 197), add `shipping_lat, shipping_lng`:
-```ts
-        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal, shipping_lat, shipping_lng")
-```
+(a) In the `orderFull` select, add `shipping_lat, shipping_lng` (same change as Step 2a — change the same select string).
 
-(b) Update the `resolveOnDemandCoords` call (around line 215) to pass the snapshot:
-```ts
-          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin, {
-            lat: orderFull.shipping_lat,
-            lng: orderFull.shipping_lng,
-          });
-```
+(b) Update the `resolveOnDemandCoords` call (same change as Step 2b).
 
 - [ ] **Step 4: Typecheck + lint**
 
@@ -720,12 +606,12 @@ git commit -m "feat(shipping): prefer order snapshot coordinates for on-demand d
 
 ## Done criteria
 
-- New/edited addresses can store a precise pin or an auto area-centroid; coordinates persist in `addresses.lat/lng`.
+- New/edited addresses can store a precise pin or auto coordinates from the postal code; coordinates persist in `addresses.lat/lng`.
 - Orders snapshot the address coordinates into `orders.shipping_lat/lng` at checkout.
-- On-demand (Gojek/Grab) orders are created in Biteship using the snapshot coordinate, with a postal-code fallback for addresses that have none — no on-demand order is blocked solely by missing coordinates.
+- On-demand (Gojek/Grab) orders are created in Biteship using the snapshot coordinate, with the cached postal-code geocoder as fallback for addresses that have none — no on-demand order is blocked solely by missing coordinates.
 - `npx tsc --noEmit` and `npx eslint` pass across all changed files.
 
-## Out of scope (tracked separately)
+## Out of scope
 
-- Hardening the destination-coordinate source for production (Biteship `destination_area_id` / a reliable geocoder) — already flagged as a separate task.
-- Backfilling coordinates for existing addresses.
+- Backfilling coordinates for existing addresses (the postal fallback covers them).
+- Reverse-geocoding a human-readable address from a dropped pin.

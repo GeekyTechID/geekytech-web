@@ -5,10 +5,9 @@ Date: 2026-06-02
 
 Kurir on-demand/instant di Biteship (Gojek/GoSend, GrabExpress, Borzo, dll.) **wajib** menyertakan koordinat lat/lng untuk origin DAN destination saat membuat order (`POST /v1/orders`, field nested `origin_coordinate` / `destination_coordinate`). Kurir reguler (JNE, SiCepat, dll.) cukup kode pos.
 
-Saat ini koordinat destination di-resolve **saat order Biteship dibuat (tahap settlement, setelah pembayaran)** dari kode pos via `lib/biteship/fetch-area-coordinates.ts`. Biteship Areas API tidak mengembalikan koordinat untuk input kode pos, sehingga selalu jatuh ke fallback OpenStreetMap Nominatim. Dua kelemahan:
+Saat ini koordinat destination di-resolve **saat order Biteship dibuat (tahap settlement, setelah pembayaran)** dari kode pos via `lib/geo/geocode-destination.ts` (cache `geocode_cache` → Geoapify → LocationIQ → Nominatim). Itu sudah **andal**, tapi tetap satu kelemahan:
 
-- **Kurang presisi** — titik = centroid area kode pos, bukan rumah/gedung; driver on-demand bisa diarahkan meleset.
-- **Rapuh** — Nominatim rate-limited (~1 req/detik) & tidak ideal untuk produksi.
+- **Kurang presisi** — titik = area kode pos (centroid), bukan rumah/gedung; driver on-demand bisa diarahkan meleset.
 
 Tabel `addresses` belum punya kolom koordinat, dan form alamat (`components/dashboard/address-form.tsx`) belum menangkap koordinat sama sekali.
 
@@ -37,7 +36,7 @@ Fitur ini menyimpan koordinat di level alamat user — dengan **pin peta opsiona
 |------|-----------|
 | DB | Tambah `lat`/`lng` ke `addresses`; `shipping_lat`/`shipping_lng` ke `orders` (semua nullable) |
 | Komponen baru | `LocationPicker` (peta Leaflet + marker draggable + tombol GPS) |
-| Geocode util | `lib/geo/geocode-area.ts` + endpoint `app/api/geo/area-centroid` untuk centroid area |
+| Endpoint koordinat | `app/api/geo/postal-coords` membungkus `fetchCoordinatesFromPostal` yang sudah ada (tanpa geocoder baru) |
 | Form alamat | Integrasi `LocationPicker`, kirim `lat`/`lng` saat submit |
 | Server action alamat | Terima & validasi `lat`/`lng` (range Indonesia atau null) |
 | Checkout API | Snapshot `address.lat/lng` → `order.shipping_lat/lng` |
@@ -86,28 +85,21 @@ ALTER TABLE orders
 
 ---
 
-## 3. Geocode Centroid Area
+## 3. Endpoint Koordinat dari Kode Pos (REUSE geocoder yang sudah ada)
 
-**`lib/geo/geocode-area.ts`**
-```ts
-export async function geocodeAreaCentroid(input: {
-  district?: string; city?: string; province?: string; postalCode?: string;
-}): Promise<{ lat: number; lng: number } | null>;
-```
-- Query Nominatim (`format=json&limit=1&country=Indonesia`) dgn string "`<kecamatan>, <kota>, <provinsi>`" → fallback ke kode pos.
-- Kirim header `User-Agent` (server-side).
+**Tidak membuat geocoder baru.** Pakai `fetchCoordinatesFromPostal` dari `lib/geo/geocode-destination.ts` (sudah ada di commit `5f74338`: cache `geocode_cache` → Geoapify → LocationIQ → Nominatim last-resort).
 
-**`app/api/geo/area-centroid/route.ts`** (POST, validasi Zod)
-- Body: `{ district?, city?, province?, postalCode? }`. Return `{ success, data: {lat,lng} | null }`.
-- Form memanggil endpoint ini (bukan Nominatim langsung) untuk kontrol User-Agent & hindari CORS.
-- Catatan: logika ini bersinggungan dengan `fetch-area-coordinates.ts`; refactor minor agar sumber koordinat tidak terduplikasi (selaras dengan hardening task terpisah).
+**`app/api/geo/postal-coords/route.ts`** (POST, validasi Zod)
+- Body: `{ postalCode }`. Return `{ success, data: {lat,lng} | null }`.
+- Memanggil `fetchCoordinatesFromPostal(postalCode)`. Form memanggil endpoint ini saat user pilih area (area membawa kode pos) untuk men-center peta.
+- `fetchCoordinatesFromPostal` server-only, jadi tak bisa dipanggil langsung dari client → lewat endpoint ini.
 
 ---
 
 ## 4. Form Alamat (`components/dashboard/address-form.tsx`)
 
 - Tambah state `lat`, `lng` (number | null), inisialisasi dari `initial?.lat/lng`.
-- `handleAreaSelect`: setelah set province/city/district/postal, panggil `/api/geo/area-centroid` → set `center` untuk `LocationPicker` (jika user belum pin manual).
+- `handleAreaSelect`: setelah set province/city/district/postal, panggil `/api/geo/postal-coords` (kirim kode pos) → set `center` untuk `LocationPicker` (jika user belum pin manual).
 - Render `LocationPicker` di blok tersendiri di bawah field alamat; `onChange` → set lat/lng.
 - Payload submit menyertakan `lat`, `lng`.
 
