@@ -22,6 +22,8 @@ export type Database = {
           is_default: boolean
           kelurahan: string
           label: string | null
+          lat: number | null
+          lng: number | null
           phone: string
           postal_code: string
           province: string
@@ -38,6 +40,8 @@ export type Database = {
           is_default?: boolean
           kelurahan?: string
           label?: string | null
+          lat?: number | null
+          lng?: number | null
           phone: string
           postal_code: string
           province: string
@@ -54,6 +58,8 @@ export type Database = {
           is_default?: boolean
           kelurahan?: string
           label?: string | null
+          lat?: number | null
+          lng?: number | null
           phone?: string
           postal_code?: string
           province?: string
@@ -881,6 +887,8 @@ export type Database = {
           shipping_cost: number
           shipping_district: string
           shipping_insurance: number
+          shipping_lat: number | null
+          shipping_lng: number | null
           shipping_postal: string
           shipping_province: string
           status: Database["public"]["Enums"]["order_status"]
@@ -908,6 +916,8 @@ export type Database = {
           shipping_cost?: number
           shipping_district: string
           shipping_insurance?: number
+          shipping_lat?: number | null
+          shipping_lng?: number | null
           shipping_postal: string
           shipping_province: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -935,6 +945,8 @@ export type Database = {
           shipping_cost?: number
           shipping_district?: string
           shipping_insurance?: number
+          shipping_lat?: number | null
+          shipping_lng?: number | null
           shipping_postal?: string
           shipping_province?: string
           status?: Database["public"]["Enums"]["order_status"]
