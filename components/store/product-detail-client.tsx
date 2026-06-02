@@ -16,6 +16,7 @@ import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } fro
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
+import { useChatStore } from "@/store/chat-store";
 import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -23,9 +24,9 @@ import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { ChoiceChip } from "@/components/ui/choice-chip";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductShareDialog } from "@/components/store/product-share-dialog";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
 export type ProductDetailClientProps = {
   product: ProductDetailPublic;
@@ -43,12 +44,6 @@ function buildProductUrl(siteBaseUrl: string, slug: string): string {
   return `/products/${slug}`;
 }
 
-function buildWhatsAppHref(productName: string, slug: string): string {
-  if (!WA_NUMBER) return "#";
-  const text = encodeURIComponent(`Halo GeekyTech, saya tertarik dengan produk: ${productName} (/products/${slug})`);
-  return `https://wa.me/${WA_NUMBER}?text=${text}`;
-}
-
 export function ProductDetailClient({
   product,
   reviews,
@@ -61,6 +56,8 @@ export function ProductDetailClient({
   const { isAuthenticated } = useAuth();
   const [isPending, startTransition] = useTransition();
   const incrementCart = useCartStore((s) => s.incrementCart);
+  const setOpenChat = useChatStore((s) => s.setOpen);
+  const setProductContext = useChatStore((s) => s.setProductContext);
   const defaultId = useMemo(
     () => pickDefaultVariantId(product.variants, product.basePrice, product.salePrice),
     [product.variants, product.basePrice, product.salePrice],
@@ -72,6 +69,7 @@ export function ProductDetailClient({
   const [detailTab, setDetailTab] = useState<"detail" | "extra">("detail");
   const [inWishlist, setInWishlist] = useState(initialInWishlist ?? false);
   const [reviewIndex, setReviewIndex] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Fetch wishlist state client-side so the product page can be ISR-cached
   useEffect(() => {
@@ -173,24 +171,7 @@ export function ProductDetailClient({
     });
   };
 
-  const handleShare = async () => {
-    const url = buildProductUrl(siteBaseUrl, product.slug);
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: product.name, url });
-        return;
-      }
-      await navigator.clipboard.writeText(url);
-      toast.success("Link produk disalin.");
-    } catch {
-      try {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link produk disalin.");
-      } catch {
-        toast.error("Tidak dapat membagikan atau menyalin link.");
-      }
-    }
-  };
+  const productUrl = buildProductUrl(siteBaseUrl, product.slug);
 
   const currentReview = reviews[reviewIndex] ?? null;
 
@@ -392,21 +373,27 @@ export function ProductDetailClient({
                 </div>
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 border-t border-[#eadfd8] pt-6 text-[14px] font-medium">
-                  <a
-                    href={WA_NUMBER ? buildWhatsAppHref(product.name, product.slug) : "#"}
-                    onClick={(e) => {
-                      if (!WA_NUMBER) {
-                        e.preventDefault();
-                        toast.error("Chat WhatsApp belum dikonfigurasi.");
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
+                        return;
                       }
+                      setProductContext({
+                        name: product.name,
+                        imageUrl: images[0]?.url ?? null,
+                        slug: product.slug,
+                      });
+                      setOpenChat(true);
                     }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[#EA5329] hover:underline"
+                    className="gap-1.5 text-[#EA5329]"
                   >
                     <MessageCircle className="h-4 w-4" aria-hidden />
                     Chat
-                  </a>
+                  </Button>
                   <span className="text-[#e0e0e0]" aria-hidden>
                     |
                   </span>
@@ -428,12 +415,18 @@ export function ProductDetailClient({
                     type="button"
                     variant="link"
                     size="sm"
-                    onClick={() => void handleShare()}
+                    onClick={() => setShareOpen(true)}
                     className="gap-1.5 text-[#1d1d1f]"
                   >
                     <Share2 className="h-4 w-4" aria-hidden />
                     Share
                   </Button>
+                  <ProductShareDialog
+                    open={shareOpen}
+                    onOpenChange={setShareOpen}
+                    productName={product.name}
+                    productUrl={productUrl}
+                  />
                 </div>
               </div>
             </aside>

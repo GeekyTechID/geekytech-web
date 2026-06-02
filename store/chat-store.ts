@@ -1,7 +1,7 @@
 // store/chat-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { ChatSession, ChatMessage } from "@/types/chat";
+import type { ChatSession, ChatMessage, ProductContext } from "@/types/chat";
 
 type ChatState = {
   isOpen: boolean;
@@ -9,6 +9,7 @@ type ChatState = {
   messages: ChatMessage[];
   unreadCount: number;
   isRemoteTyping: boolean;
+  productContext: ProductContext | null;
 };
 
 type ChatActions = {
@@ -20,6 +21,7 @@ type ChatActions = {
   setUnreadCount: (count: number) => void;
   incrementUnread: (by?: number) => void;
   setRemoteTyping: (typing: boolean) => void;
+  setProductContext: (ctx: ProductContext | null) => void;
   reset: () => void;
 };
 
@@ -31,6 +33,7 @@ const initialState: ChatState = {
   messages: [],
   unreadCount: 0,
   isRemoteTyping: false,
+  productContext: null,
 };
 
 export const useChatStore = create<ChatStore>()(
@@ -52,6 +55,7 @@ export const useChatStore = create<ChatStore>()(
       incrementUnread: (by = 1) =>
         set((s) => ({ unreadCount: s.unreadCount + by }), false, "incrementUnread"),
       setRemoteTyping: (isRemoteTyping) => set({ isRemoteTyping }, false, "setRemoteTyping"),
+      setProductContext: (productContext) => set({ productContext }, false, "setProductContext"),
       reset: () => set(initialState, false, "reset"),
     }),
     { name: "chat-store" },

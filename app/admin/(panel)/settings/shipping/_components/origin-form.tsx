@@ -72,6 +72,22 @@ export function OriginForm({ initialValue }: OriginFormProps) {
           <label className={settingsLabelClass}>Alamat Lengkap</label>
           <Input value={form.address} onChange={set("address")} placeholder="Jl. Raya No. 1" className={inputClass} />
         </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <p className="text-[11px] font-semibold uppercase text-muted-foreground">
+            Koordinat Origin (Kurir On-Demand)
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Wajib diisi untuk kurir GoSend, GrabExpress, Borzo, dll. Gunakan Google Maps → klik lokasi toko → salin koordinat.
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <label className={settingsLabelClass}>Latitude</label>
+          <Input value={form.lat ?? ""} onChange={set("lat")} placeholder="-6.208763" className={inputClass} />
+        </div>
+        <div className="space-y-1.5">
+          <label className={settingsLabelClass}>Longitude</label>
+          <Input value={form.lng ?? ""} onChange={set("lng")} placeholder="106.845599" className={inputClass} />
+        </div>
       </div>
       <Button type="button" variant="primary" size="sm" onClick={handleSave}  loading={isPending}>
           Simpan

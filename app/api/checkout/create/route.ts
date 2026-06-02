@@ -10,20 +10,7 @@ import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
-
-const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
-
-function parseOriginCoords(): { lat: number; lng: number } | null {
-  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
-  if (combined) {
-    const [lat, lng] = combined.split(",").map(Number);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
-  }
-  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
-  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
-  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
-  return null;
-}
+import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 
 const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
 
@@ -158,7 +145,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const originPostal = postalToNumber((process.env.BITESHIP_ORIGIN_POSTAL ?? process.env.BITESHIP_ORIGIN_POSTAL_CODE)?.trim() ?? "10110") ?? 10110;
+    const svcForSettings = createServiceClient();
+    const [originSettingsResult] = await Promise.all([
+      svcForSettings.from("settings").select("value").eq("key", "store_origin").maybeSingle(),
+    ]);
+    const storeOriginSettings = (originSettingsResult.data?.value ?? null) as { postal_code?: string; lat?: string; lng?: string } | null;
+
+    const originPostal =
+      postalToNumber(storeOriginSettings?.postal_code?.trim() ?? "") ??
+      postalToNumber((process.env.BITESHIP_ORIGIN_POSTAL ?? process.env.BITESHIP_ORIGIN_POSTAL_CODE)?.trim() ?? "10110") ??
+      10110;
 
     const itemsForShip = orderLines.map((line) => ({
       name: `${line.productName} (${line.variantName})`.slice(0, 80),
@@ -167,7 +163,7 @@ export async function POST(req: Request) {
       weight: line.weightGrams * line.qty,
     }));
 
-    const originCoords = parseOriginCoords();
+    const originCoords = parseOriginCoords(storeOriginSettings);
     const isOnDemand = ON_DEMAND_COURIERS.has(parsed.data.courierCode.toLowerCase());
     const destCoords =
       originCoords && isOnDemand ? await fetchCoordinatesFromPostal(String(destPostal)) : null;

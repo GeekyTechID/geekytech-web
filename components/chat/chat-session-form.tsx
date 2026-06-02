@@ -1,18 +1,23 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   HeaderDropdownPanelBody,
   HeaderDropdownPanelHeader,
 } from "@/components/shared/header-dropdown-panel";
+import { useChatStore } from "@/store/chat-store";
 
 type Props = {
   onCreated: (sessionId: string) => void;
 };
 
 export function ChatSessionForm({ onCreated }: Props) {
-  const [subject, setSubject] = useState("");
+  const productContext = useChatStore((s) => s.productContext);
+  const [subject, setSubject] = useState(
+    productContext ? `Pertanyaan produk: ${productContext.name}` : "",
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,6 +52,26 @@ export function ChatSessionForm({ onCreated }: Props) {
     <div className="flex flex-col">
       <HeaderDropdownPanelHeader title="Chat dengan Admin" />
       <HeaderDropdownPanelBody className="flex flex-col gap-4 p-5">
+        {productContext && (
+          <div className="flex items-center gap-2 rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] p-2.5">
+            {productContext.imageUrl && (
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white">
+                <Image
+                  src={productContext.imageUrl}
+                  alt={productContext.name}
+                  fill
+                  className="object-contain p-0.5"
+                  sizes="40px"
+                />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-[#1d1d1f]">{productContext.name}</p>
+              <p className="truncate text-[10px] text-[#7a7a7a]">/products/{productContext.slug}</p>
+            </div>
+          </div>
+        )}
+
         <p className="text-[14px] leading-[1.43] text-[#7a7a7a]">
           Ceritakan topik yang ingin kamu tanyakan. Admin kami akan segera membalas.
         </p>

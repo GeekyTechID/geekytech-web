@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
-import { Paperclip, Send } from "lucide-react";
+import Image from "next/image";
+import { Paperclip, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ChatAttachmentPreview } from "./chat-attachment-preview";
@@ -9,6 +10,7 @@ import {
   CHAT_SIZE_LIMITS,
   type PendingAttachment,
 } from "@/types/chat";
+import { useChatStore } from "@/store/chat-store";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -23,6 +25,9 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
   const [sending, setSending] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
+
+  const productContext = useChatStore((s) => s.productContext);
+  const setProductContext = useChatStore((s) => s.setProductContext);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -49,15 +54,20 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
     if ((!content.trim() && !pending) || sending || disabled) return;
     setSending(true);
     try {
-      await onSend(content.trim(), pending ?? undefined);
+      let text = content.trim();
+      if (productContext) {
+        const ref = `\n\n— Produk: ${productContext.name}\n/products/${productContext.slug}`;
+        text = text + ref;
+      }
+      await onSend(text, pending ?? undefined);
       setContent("");
+      if (productContext) setProductContext(null);
       setPending((prev) => {
         if (prev?.preview_url) URL.revokeObjectURL(prev.preview_url);
         return null;
       });
     } finally {
       setSending(false);
-      // Always reset height and restore focus, even on error
       if (textRef.current) {
         textRef.current.style.height = "auto";
         textRef.current.focus();
@@ -81,6 +91,35 @@ export function ChatInput({ onSend, onTyping, disabled }: Props) {
 
   return (
     <div className="shrink-0 border-t border-[#e0e0e0] bg-[#f5f5f7] p-3">
+      {/* Product context card */}
+      {productContext && (
+        <div className="mb-2 flex items-center gap-2 rounded-xl border border-[#e0e0e0] bg-white p-2">
+          {productContext.imageUrl && (
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#f5f5f7]">
+              <Image
+                src={productContext.imageUrl}
+                alt={productContext.name}
+                fill
+                className="object-contain p-0.5"
+                sizes="40px"
+              />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-[#1d1d1f]">{productContext.name}</p>
+            <p className="truncate text-[10px] text-[#7a7a7a]">/products/{productContext.slug}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setProductContext(null)}
+            className="shrink-0 rounded-full p-1 text-[#7a7a7a] transition-colors hover:bg-[#f0f0f0] hover:text-[#1d1d1f]"
+            aria-label="Hapus konteks produk"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       {pending && (
         <div className="mb-2">
           <ChatAttachmentPreview attachment={pending} onRemove={handleRemovePending} />

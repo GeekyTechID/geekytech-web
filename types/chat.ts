@@ -63,3 +63,9 @@ export const CHAT_SIZE_LIMITS = {
   image: 500 * 1024,       // 500 KB
   document: 1024 * 1024,   // 1 MB
 } satisfies Record<string, number>;
+
+export type ProductContext = {
+  name: string;
+  imageUrl: string | null;
+  slug: string;
+};

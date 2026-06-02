@@ -3,24 +3,15 @@ import { createHash } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
 import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
+import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 
-const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
-
-function parseOriginCoords(): { lat: number; lng: number } | null {
-  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
-  if (combined) {
-    const [lat, lng] = combined.split(",").map(Number);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
-  }
-  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
-  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
-  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
-  return null;
-}
-
-async function resolveOnDemandCoords(courierCompany: string, destPostal: number) {
+async function resolveOnDemandCoords(
+  courierCompany: string,
+  destPostal: number,
+  storeOrigin: { lat?: string; lng?: string } | null,
+) {
   if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
-  const originCoords = parseOriginCoords();
+  const originCoords = parseOriginCoords(storeOrigin);
   if (!originCoords) return {};
   const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
   return {
@@ -65,11 +56,11 @@ function verifySignature(
 async function applySettlement(orderId: string, notification: MidtransNotification) {
   const svc = createServiceClient();
 
-  const { data: order } = await svc
-    .from("orders")
-    .select("id, status, user_id")
-    .eq("order_number", orderId)
-    .maybeSingle();
+  const [{ data: order }, { data: settingsRow }] = await Promise.all([
+    svc.from("orders").select("id, status, user_id").eq("order_number", orderId).maybeSingle(),
+    svc.from("settings").select("value").eq("key", "store_origin").maybeSingle(),
+  ]);
+  const storeOrigin = (settingsRow?.value ?? null) as { lat?: string; lng?: string } | null;
 
   if (!order) return;
 
@@ -182,7 +173,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
 
         if (orderItems?.length) {
           const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
-          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum);
+          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin);
           const shipResult = await createBiteshipOrder({
             destinationName: orderFull.recipient_name,
             destinationPhone: orderFull.recipient_phone,
@@ -211,11 +202,15 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
               status: "pending",
             });
           } else {
-            // Log failure so admin can retry manually
+            const isOnDemand = ON_DEMAND_COURIERS.has(orderFull.courier_company.toLowerCase());
+            const hasOriginCoords = parseOriginCoords(storeOrigin) !== null;
+            const coordHint = isOnDemand && !hasOriginCoords
+              ? " (Koordinat origin belum dikonfigurasi — isi Latitude & Longitude di Admin → Pengaturan → Pengiriman)"
+              : "";
             await svc.from("order_status_history").insert({
               order_id: order.id,
               status: "paid",
-              note: `Biteship gagal: ${shipResult.error}`,
+              note: `Biteship gagal: ${shipResult.error}${coordHint}. Admin dapat input AWB manual di halaman pesanan.`,
               changed_by: null,
             });
           }

@@ -7,6 +7,10 @@ export type StoreOrigin = {
   subdistrict: string;
   postal_code: string;
   address: string;
+  /** Origin latitude — required for on-demand couriers (GoSend, Grab, etc.) */
+  lat?: string;
+  /** Origin longitude — required for on-demand couriers (GoSend, Grab, etc.) */
+  lng?: string;
 };
 
 export const DEFAULT_STORE_ORIGIN: StoreOrigin = {
@@ -18,6 +22,8 @@ export const DEFAULT_STORE_ORIGIN: StoreOrigin = {
   subdistrict: "",
   postal_code: "",
   address: "",
+  lat: "",
+  lng: "",
 };
 
 export function parseStoreOrigin(raw: unknown): StoreOrigin {
@@ -26,5 +32,7 @@ export function parseStoreOrigin(raw: unknown): StoreOrigin {
     ...DEFAULT_STORE_ORIGIN,
     ...partial,
     subdistrict: partial.subdistrict ?? "",
+    lat: partial.lat ?? "",
+    lng: partial.lng ?? "",
   };
 }

@@ -5,22 +5,7 @@ import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/use
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { fetchCoordinatesFromPostal } from "@/lib/biteship/fetch-area-coordinates";
-
-const ON_DEMAND_COURIERS = new Set(["gojek", "grab", "gosend", "borzo", "lalamove", "deliveree", "rara"]);
-
-function parseOriginCoords(): { lat: number; lng: number } | null {
-  // Prioritas 1: combined "lat,lng"
-  const combined = process.env.GOJEK_GOSEND_LAT_LANG?.trim();
-  if (combined) {
-    const [lat, lng] = combined.split(",").map(Number);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
-  }
-  // Prioritas 2: individual
-  const lat = Number(process.env.GOJEK_GOSEND_LAT?.trim());
-  const lng = Number(process.env.GOJEK_GOSEND_LANG?.trim() ?? process.env.GOJEK_GOSEN_LANG?.trim());
-  if (Number.isFinite(lat) && lat !== 0 && Number.isFinite(lng) && lng !== 0) return { lat, lng };
-  return null;
-}
+import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -119,16 +104,16 @@ export async function POST(req: Request) {
 
     // Baca kode pos origin dari store_origin di DB (dikonfigurasi admin di Pengaturan → Pengiriman).
     // Fallback ke env var, lalu ke default Jakarta Pusat.
-    const storeOrigin = originResult.data?.value as { postal_code?: string } | null;
+    const storeOrigin = originResult.data?.value as { postal_code?: string; lat?: string; lng?: string } | null;
     const originRaw =
       storeOrigin?.postal_code?.trim() ||
       process.env.BITESHIP_ORIGIN_POSTAL?.trim() ||
       "10110";
     const originPostal = postalToNumber(originRaw) ?? 10110;
 
-    // Koordinat origin (dari env) + dest (dari Biteship Area API) untuk on-demand kurir.
-    // Fetch dest coords hanya jika ada on-demand courier di active list.
-    const originCoords = parseOriginCoords();
+    // Koordinat origin (dari env atau store_origin DB) + dest untuk on-demand kurir.
+    // Fetch dest coords hanya jika ada on-demand courier di active list dan origin coords tersedia.
+    const originCoords = parseOriginCoords(storeOrigin);
     const hasOnDemand = originCoords !== null && activeCodes.some((c) => ON_DEMAND_COURIERS.has(c.toLowerCase()));
     const destCoords = hasOnDemand
       ? await fetchCoordinatesFromPostal(String(destPostal))
