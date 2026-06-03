@@ -167,6 +167,7 @@ MIDTRANS_IS_PRODUCTION=false      ← true saat production
 
 # Biteship
 BITESHIP_API_KEY=                 ← hanya server
+BITESHIP_WEBHOOK_SECRET=          ← hanya server; token di URL webhook (?token=...) utk verifikasi callback
 
 # Geocoding (koordinat tujuan kurir on-demand: GoSend/Gojek, Grab, dll)
 # Sumber utama = Geoapify; pakai LocationIQ jika tidak ada GEOAPIFY_API_KEY.

@@ -1,35 +1,50 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
-import type { Database } from "@/types/supabase";
+import type { Database, Json } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
+/**
+ * Biteship webhook payload — FLAT shape (verified dari event live):
+ *   { event, order_id, status, courier_waybill_id, courier_company, courier_type,
+ *     courier_tracking_id, courier_link, courier_driver_name, courier_driver_phone,
+ *     courier_driver_plate_number, updated_at, ... }
+ * Varian nested lama (courier.*) didukung sebagai fallback.
+ */
 type BiteshipWebhookBody = {
   event?: string;
   order_id?: string;
+  status?: string;
+  updated_at?: string;
+  courier_waybill_id?: string;
+  courier_company?: string;
+  courier_tracking_id?: string;
+  courier_link?: string;
+  courier_driver_name?: string;
+  courier_driver_phone?: string;
   courier?: {
     waybill_id?: string;
-    company?: string;
     name?: string;
-    type?: string;
     tracking_id?: string;
-  };
-  status?: string;
-  destination?: {
-    name?: string;
-  };
-  origin?: {
-    name?: string;
+    link?: string;
   };
 };
 
-// Map Biteship statuses to our shipment_status enum
+/** 1 entri timeline yang disimpan ke shipments.tracking_history (oldest → newest). */
+type TrackingHistoryEntry = {
+  status: string; // status mentah Biteship (lowercase) — granular utk tampilan
+  note: string; // detail kurir/driver bila ada
+  at: string; // ISO timestamp
+};
+
+// Map status Biteship → enum shipment_status kita (1:1 bila ada).
 function mapShipmentStatus(biteshipStatus: string): ShipmentStatus {
   switch (biteshipStatus.toLowerCase()) {
     case "confirmed":
-    case "allocated":
       return "confirmed";
+    case "allocated":
+      return "allocated";
     case "picking_up":
       return "picking_up";
     case "picked":
@@ -41,6 +56,7 @@ function mapShipmentStatus(biteshipStatus: string): ShipmentStatus {
     case "rejected":
       return "rejected";
     case "cancelled":
+    case "canceled":
       return "cancelled";
     case "return":
     case "returned":
@@ -50,13 +66,13 @@ function mapShipmentStatus(biteshipStatus: string): ShipmentStatus {
   }
 }
 
-// Map shipment status to order status
+// Map shipment status → order status.
 function orderStatusFromShipment(shipmentStatus: ShipmentStatus): OrderStatus | null {
   switch (shipmentStatus) {
-    case "picking_up":
-    case "picked":
     case "confirmed":
     case "allocated":
+    case "picking_up":
+    case "picked":
     case "dropping_off":
       return "shipped";
     case "delivered":
@@ -68,27 +84,37 @@ function orderStatusFromShipment(shipmentStatus: ShipmentStatus): OrderStatus | 
 
 export async function POST(req: Request) {
   try {
+    // ── Verifikasi secret (bila dikonfigurasi) ──
+    // Daftarkan URL webhook di Biteship sebagai:
+    //   https://<domain>/api/webhooks/biteship?token=<BITESHIP_WEBHOOK_SECRET>
+    const secret = process.env.BITESHIP_WEBHOOK_SECRET?.trim();
+    if (secret) {
+      const token = new URL(req.url).searchParams.get("token");
+      if (token !== secret) {
+        return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     let body: BiteshipWebhookBody;
     try {
       body = (await req.json()) as BiteshipWebhookBody;
     } catch {
-      // Empty body — Biteship installation ping
+      // Body kosong — installation ping dari Biteship, wajib 200 ok.
       return Response.json({ ok: true });
     }
 
-    // Biteship identifies the order by order_id (which is our biteship_order_id)
+    // Biteship mengidentifikasi order via order_id (= biteship_order_id kita).
     const biteshipOrderId = body.order_id;
-
-    if (!biteshipOrderId) {
-      // Installation ping dari Biteship — body kosong, wajib return 200 ok
-      return Response.json({ ok: true });
+    const rawStatus = (body.status ?? "").toLowerCase();
+    if (!biteshipOrderId || !rawStatus) {
+      return Response.json({ ok: true }); // installation ping / payload non-status
     }
 
     const svc = createServiceClient();
 
     const { data: shipment } = await svc
       .from("shipments")
-      .select("id, order_id, status")
+      .select("id, order_id, status, tracking_history")
       .eq("biteship_order_id", biteshipOrderId)
       .maybeSingle();
 
@@ -96,48 +122,61 @@ export async function POST(req: Request) {
       return Response.json({ ok: true }); // unknown order, silently accept
     }
 
-    const newShipStatus = mapShipmentStatus(body.status ?? "");
-    const awb = body.courier?.waybill_id ?? null;
-    const courierName = body.courier?.name ?? null;
+    const newShipStatus = mapShipmentStatus(rawStatus);
+    const awb = body.courier_waybill_id ?? body.courier?.waybill_id ?? null;
+    const courierName = body.courier_driver_name ?? body.courier?.name ?? null;
+    const at = body.updated_at ?? new Date().toISOString();
+
+    // ── Append ke tracking_history (dedup entri identik terakhir) ──
+    const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
+      ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
+      : [];
+    const note = [body.courier_driver_name, body.courier_driver_phone].filter(Boolean).join(" · ");
+    const entry: TrackingHistoryEntry = { status: rawStatus, note, at };
+    const last = history.at(-1);
+    const newHistory =
+      last && last.status === entry.status && last.at === entry.at
+        ? history
+        : [...history, entry];
 
     const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
-      status: newShipStatus,
+      tracking_history: newHistory as unknown as Json,
       updated_at: new Date().toISOString(),
     };
+    // Hanya ubah status kalau dikenali (jangan downgrade ke pending utk status tak dikenal).
+    if (newShipStatus !== "pending") updatePayload.status = newShipStatus;
     if (awb) updatePayload.awb = awb;
     if (courierName) updatePayload.courier_name = courierName;
-    if (newShipStatus === "delivered") {
-      updatePayload.delivered_at = new Date().toISOString();
-    }
+    if (newShipStatus === "picked") updatePayload.picked_up_at = at;
+    if (newShipStatus === "delivered") updatePayload.delivered_at = at;
 
     await svc.from("shipments").update(updatePayload).eq("id", shipment.id);
 
     const { data: orderRow } = await svc
       .from("orders")
-      .select("user_id, order_number")
+      .select("id, user_id, order_number, status")
       .eq("id", shipment.order_id)
       .maybeSingle();
 
-    // Sync order status
+    // ── Sync order status + riwayat ──
     const newOrderStatus = orderStatusFromShipment(newShipStatus);
-    if (newOrderStatus) {
-      const { data: order } = await svc
-        .from("orders")
-        .select("id, status")
-        .eq("id", shipment.order_id)
-        .maybeSingle();
-
-      if (order && order.status !== newOrderStatus && order.status !== "completed" && order.status !== "cancelled") {
-        await svc.from("orders").update({ status: newOrderStatus }).eq("id", order.id);
-        await svc.from("order_status_history").insert({
-          order_id: order.id,
-          status: newOrderStatus,
-          note: `Status diperbarui otomatis dari Biteship: ${body.status ?? ""}`,
-          changed_by: null,
-        });
-      }
+    if (
+      orderRow &&
+      newOrderStatus &&
+      orderRow.status !== newOrderStatus &&
+      orderRow.status !== "completed" &&
+      orderRow.status !== "cancelled"
+    ) {
+      await svc.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+      await svc.from("order_status_history").insert({
+        order_id: orderRow.id,
+        status: newOrderStatus,
+        note: `Status diperbarui otomatis dari Biteship: ${rawStatus}`,
+        changed_by: null,
+      });
     }
 
+    // ── Notifikasi user ──
     if (orderRow?.user_id && orderRow.order_number) {
       if (newShipStatus === "picking_up" || newShipStatus === "picked") {
         await createNotification({

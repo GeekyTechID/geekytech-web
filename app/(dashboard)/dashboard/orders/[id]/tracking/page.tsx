@@ -17,7 +17,7 @@ import {
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
-import { fetchBiteshipTracking, type TrackingResult, type TrackingStep } from "@/lib/biteship/fetch-tracking";
+import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult, type TrackingStep } from "@/lib/biteship/fetch-tracking";
 import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
 import type { Database } from "@/types/supabase";
 
@@ -263,9 +263,16 @@ export default async function OrderTrackingPage({
   const shipmentsWithAwb = shipments.filter((s) => s.awb);
 
   const trackingResults = await Promise.all(
-    shipmentsWithAwb.map((s) =>
-      fetchBiteshipTracking(s.awb!, s.courier_company ?? ""),
-    ),
+    shipmentsWithAwb.map(async (s): Promise<TrackingResult> => {
+      // Primary: timeline dari DB (diisi webhook Biteship) — selalu tersedia,
+      // jalan juga utk kurir instant (gojek/grab) & test mode.
+      const dbSteps = trackingStepsFromHistory(s.tracking_history);
+      if (dbSteps.length > 0) {
+        return { ok: true, waybillId: s.awb!, status: dbSteps[0]?.status ?? "", steps: dbSteps, link: null };
+      }
+      // Fallback: tracking live by-waybill (kurir reguler di produksi).
+      return fetchBiteshipTracking(s.awb!, s.courier_company ?? "");
+    }),
   );
 
   return (

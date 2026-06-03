@@ -100,3 +100,28 @@ export async function fetchBiteshipTracking(
     return { ok: false, error: "Jaringan ke Biteship gagal." };
   }
 }
+
+/** Entri yang disimpan webhook Biteship ke shipments.tracking_history (oldest → newest). */
+export type DbTrackingEntry = { status?: string; note?: string; at?: string | null };
+
+/**
+ * Konversi shipments.tracking_history (DB, urutan oldest → newest) menjadi
+ * TrackingStep[] dalam urutan newest-first — sama seperti output Biteship live —
+ * supaya komponen timeline (yang me-reverse) tetap konsisten apa pun sumbernya.
+ */
+export function trackingStepsFromHistory(history: unknown): TrackingStep[] {
+  if (!Array.isArray(history)) return [];
+  const steps = history
+    .map((h): TrackingStep => {
+      const e = (h ?? {}) as DbTrackingEntry;
+      const status = (e.status ?? "").toLowerCase();
+      return {
+        status,
+        description: e.note || status,
+        note: e.note ?? "",
+        at: e.at ?? null,
+      };
+    })
+    .filter((s) => s.status);
+  return steps.reverse();
+}
