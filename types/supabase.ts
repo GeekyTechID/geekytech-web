@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -265,147 +267,6 @@ export type Database = {
           },
         ]
       }
-      chat_attachments: {
-        Row: {
-          created_at: string
-          file_name: string
-          file_size: number
-          file_type: string
-          file_url: string
-          id: string
-          message_id: string
-        }
-        Insert: {
-          created_at?: string
-          file_name: string
-          file_size: number
-          file_type: string
-          file_url: string
-          id?: string
-          message_id: string
-        }
-        Update: {
-          created_at?: string
-          file_name?: string
-          file_size?: number
-          file_type?: string
-          file_url?: string
-          id?: string
-          message_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_attachments_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "chat_messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_messages: {
-        Row: {
-          content: string | null
-          created_at: string
-          id: string
-          is_read: boolean
-          message_type: string
-          reactions: Json | null
-          sender_id: string
-          sender_role: string
-          session_id: string
-        }
-        Insert: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message_type?: string
-          reactions?: Json | null
-          sender_id: string
-          sender_role: string
-          session_id: string
-        }
-        Update: {
-          content?: string | null
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message_type?: string
-          reactions?: Json | null
-          sender_id?: string
-          sender_role?: string
-          session_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_messages_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "chat_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_quick_replies: {
-        Row: {
-          id: string
-          shortcut: string
-          content: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          shortcut: string
-          content: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          shortcut?: string
-          content?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      chat_sessions: {
-        Row: {
-          closed_at: string | null
-          created_at: string
-          id: string
-          status: string
-          subject: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          closed_at?: string | null
-          created_at?: string
-          id?: string
-          status?: string
-          subject: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          closed_at?: string | null
-          created_at?: string
-          id?: string
-          status?: string
-          subject?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       categories: {
         Row: {
           created_at: string
@@ -446,6 +307,151 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_attachments: {
+        Row: {
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          message_id: string
+        }
+        Insert: {
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+          message_id: string
+        }
+        Update: {
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message_type: string
+          reactions: Json
+          sender_id: string
+          sender_role: string
+          session_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          reactions?: Json
+          sender_id: string
+          sender_role: string
+          session_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          reactions?: Json
+          sender_id?: string
+          sender_role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_quick_replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          shortcut: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          shortcut: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          shortcut?: string
+        }
+        Relationships: []
+      }
+      chat_sessions: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          id: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -723,6 +729,33 @@ export type Database = {
           name?: string
           starts_at?: string
           subtitle?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      geocode_cache: {
+        Row: {
+          created_at: string
+          lat: number
+          lng: number
+          postal_code: string
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          lat: number
+          lng: number
+          postal_code: string
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          lat?: number
+          lng?: number
+          postal_code?: string
+          source?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1668,6 +1701,10 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      toggle_chat_reaction: {
+        Args: { p_emoji: string; p_message_id: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       order_status:

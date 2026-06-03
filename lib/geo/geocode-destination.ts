@@ -1,7 +1,5 @@
 import "server-only";
 
-import { type SupabaseClient } from "@supabase/supabase-js";
-
 import { createServiceClient } from "@/lib/supabase/server";
 
 /**
@@ -47,26 +45,19 @@ function normalizePostal(postalCode: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Cache (Supabase) — best-effort. Kalau tabel belum ada / error, di-skip diam-diam.
-// `geocode_cache` belum ada di types/supabase.ts (generated) sampai migrasi 021
-// di-apply & types di-regenerate, jadi pakai client untyped khusus cache.
+// Cache (Supabase, tabel geocode_cache) — best-effort. Error → di-skip diam-diam.
 // ---------------------------------------------------------------------------
-
-function cacheClient(): SupabaseClient {
-  return createServiceClient() as unknown as SupabaseClient;
-}
 
 async function readCache(postal: string): Promise<LatLng | null> {
   try {
-    const { data } = await cacheClient()
+    const { data } = await createServiceClient()
       .from(CACHE_TABLE)
       .select("lat, lng")
       .eq("postal_code", postal)
       .maybeSingle();
-    const row = data as { lat: number; lng: number } | null;
-    if (!row) return null;
-    const lat = Number(row.lat);
-    const lng = Number(row.lng);
+    if (!data) return null;
+    const lat = Number(data.lat);
+    const lng = Number(data.lng);
     return isValidCoord(lat, lng) ? { lat, lng } : null;
   } catch {
     return null;
@@ -75,7 +66,7 @@ async function readCache(postal: string): Promise<LatLng | null> {
 
 async function writeCache(postal: string, coord: LatLng, source: string): Promise<void> {
   try {
-    await cacheClient()
+    await createServiceClient()
       .from(CACHE_TABLE)
       .upsert(
         {
