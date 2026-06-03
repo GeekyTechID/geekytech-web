@@ -249,6 +249,8 @@ export async function POST(req: Request) {
         shipping_district: address.district,
         shipping_postal: address.postal_code,
         shipping_address: address.full_address,
+        shipping_lat: address.lat ?? null,
+        shipping_lng: address.lng ?? null,
         subtotal: subtotalRounded,
         shipping_cost: shippingCost,
         shipping_insurance: 0,
