@@ -74,15 +74,29 @@ export async function resolveOnDemandCoords(
   courierCompany: string,
   destPostal: number,
   storeOrigin: { lat?: string; lng?: string } | null,
+  preferredDest?: { lat: number | null; lng: number | null } | null,
 ): Promise<OnDemandCoordFields> {
   if (!ON_DEMAND_COURIERS.has(courierCompany.toLowerCase())) return {};
   const originCoords = parseOriginCoords(storeOrigin);
   if (!originCoords) return {};
-  const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
+
+  let destLat: number | undefined;
+  let destLng: number | undefined;
+  if (preferredDest && preferredDest.lat != null && preferredDest.lng != null) {
+    // Snapshot from the order (most accurate — user pin / map centering).
+    destLat = preferredDest.lat;
+    destLng = preferredDest.lng;
+  } else {
+    // Fallback for orders/addresses without stored coordinates.
+    const destCoords = await fetchCoordinatesFromPostal(String(destPostal));
+    destLat = destCoords?.lat;
+    destLng = destCoords?.lng;
+  }
+
   return {
     originLat: originCoords.lat,
     originLng: originCoords.lng,
-    destLat: destCoords?.lat,
-    destLng: destCoords?.lng,
+    destLat,
+    destLng,
   };
 }

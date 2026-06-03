@@ -143,7 +143,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
     if (!existingShipment) {
       const { data: orderFull } = await svc
         .from("orders")
-        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal")
+        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal, shipping_lat, shipping_lng")
         .eq("id", order.id)
         .single();
 
@@ -155,7 +155,10 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
 
         if (orderItems?.length) {
           const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
-          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin);
+          const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin, {
+            lat: orderFull.shipping_lat,
+            lng: orderFull.shipping_lng,
+          });
           const shipResult = await createBiteshipOrder({
             destinationName: orderFull.recipient_name,
             destinationPhone: orderFull.recipient_phone,
