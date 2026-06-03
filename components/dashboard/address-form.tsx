@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Database } from "@/types/supabase";
+import dynamic from "next/dynamic";
+import type { LatLng } from "@/components/dashboard/location-picker";
+
+const LocationPicker = dynamic(
+  () => import("@/components/dashboard/location-picker").then((m) => m.LocationPicker),
+  { ssr: false, loading: () => <div className="h-64 w-full animate-pulse rounded-lg bg-[#f0f0f0]" /> },
+);
 
 type AddressRow = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -22,12 +29,30 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
   const [district, setDistrict] = useState(initial?.district ?? "");
   const [kelurahan, setKelurahan] = useState(initial?.kelurahan ?? "");
   const [postalCode, setPostalCode] = useState(initial?.postal_code ?? "");
+  const [coords, setCoords] = useState<LatLng | null>(
+    initial?.lat != null && initial?.lng != null ? { lat: initial.lat, lng: initial.lng } : null,
+  );
+  const [mapCenter, setMapCenter] = useState<LatLng | null>(null);
 
   const handleAreaSelect = (area: BiteshipArea) => {
     setProvince(area.administrative_division_level_1_name);
     setCity(area.administrative_division_level_2_name);
     setDistrict(area.administrative_division_level_3_name);
     setPostalCode(String(area.postal_code));
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/geo/postal-coords", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postalCode: String(area.postal_code) }),
+        });
+        const json = (await res.json()) as { success: boolean; data: LatLng | null };
+        if (json.success && json.data) setMapCenter(json.data);
+      } catch {
+        // centering optional — pin tetap bisa digeser manual
+      }
+    })();
   };
 
   return (
@@ -47,6 +72,8 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
           postal_code: postalCode,
           full_address: String(fd.get("full_address") ?? ""),
           is_default: fd.get("is_default") != null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
         };
         startTransition(async () => {
           const res =
@@ -103,6 +130,16 @@ export function AddressForm({ mode, initial }: { mode: "create" | "edit"; initia
         <AreaAutocomplete onSelect={handleAreaSelect} />
         <p className="mt-2 text-[11px] text-[#9a9a9a]">
           Ketik nama kelurahan atau kecamatan — provinsi, kota, dan kode pos akan terisi otomatis.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-[#e8e4dc] bg-[#fafaf8] p-4">
+        <p className="mb-2 text-xs font-semibold uppercase text-[#7a7a7a]">
+          Titik lokasi (untuk kurir instan: GoSend/Grab)
+        </p>
+        <LocationPicker value={coords} onChange={setCoords} center={mapCenter} />
+        <p className="mt-2 text-[11px] text-[#9a9a9a]">
+          Opsional. Jika tidak diisi, sistem memakai titik dari kode pos otomatis.
         </p>
       </div>
 
