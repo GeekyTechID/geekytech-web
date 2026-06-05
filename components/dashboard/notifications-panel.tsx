@@ -8,6 +8,7 @@ import { markAllNotificationsReadAction, markNotificationReadAction } from "@/ap
 import { useNotificationStore } from "@/store/notification-store";
 import { Button } from "@/components/ui/button";
 import { formatRelativeDate } from "@/lib/format";
+import type { Json } from "@/types/supabase";
 
 type Row = {
   id: string;
@@ -16,11 +17,11 @@ type Row = {
   type: string;
   is_read: boolean;
   created_at: string;
-  data: Record<string, unknown> | null;
+  data: Json;
 };
 
-function getNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
-  if (!data) return null;
+function getNotificationUrl(type: string, data: Json): string | null {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
   const orderId = (data.orderId ?? data.order_id) as string | undefined;
   if (!orderId) return null;
   const status = data.status as string | undefined;
