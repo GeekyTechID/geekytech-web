@@ -18,6 +18,7 @@ type Row = {
   type: string;
   is_read: boolean;
   created_at: string;
+  data: Record<string, unknown> | null;
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -31,9 +32,37 @@ const TYPE_LABEL: Record<string, string> = {
   new_review: "Ulasan",
 };
 
+function getAdminNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
+  const orderId = data?.orderId as string | undefined;
+  switch (type) {
+    case "new_order":
+    case "payment_confirmed":
+    case "payment_issue":
+    case "payment_expired":
+    case "order_cancelled":
+      return orderId ? `/admin/orders/${orderId}` : "/admin/orders";
+    case "new_complaint":
+      return orderId ? `/admin/orders/${orderId}` : "/admin/complaints";
+    case "new_review":
+      return "/admin/reviews";
+    case "low_stock":
+      return "/admin/stock";
+    default:
+      return orderId ? `/admin/orders/${orderId}` : null;
+  }
+}
+
 export function AdminNotificationsPanel({ items }: { items: Row[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+
+  const handleRowClick = (n: Row) => {
+    const url = getAdminNotificationUrl(n.type, n.data);
+    if (!n.is_read) {
+      markAdminNotificationReadAction(n.id).catch(() => {});
+    }
+    if (url) router.push(url);
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -60,45 +89,53 @@ export function AdminNotificationsPanel({ items }: { items: Row[] }) {
         </Button>
       </div>
       <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-        {items.map((n) => (
-          <li key={n.id} className={`px-4 py-4 ${n.is_read ? "" : "bg-[#EA5329]/5"}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                {TYPE_LABEL[n.type] && (
-                  <span className="mb-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
-                    {TYPE_LABEL[n.type]}
-                  </span>
+        {items.map((n) => {
+          const url = getAdminNotificationUrl(n.type, n.data);
+          return (
+            <li
+              key={n.id}
+              onClick={() => handleRowClick(n)}
+              className={`px-4 py-4 transition-colors ${n.is_read ? "hover:bg-muted/40" : "bg-[#EA5329]/5 hover:bg-[#EA5329]/10"} ${url ? "cursor-pointer" : ""}`}
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  {TYPE_LABEL[n.type] && (
+                    <span className="mb-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+                      {TYPE_LABEL[n.type]}
+                    </span>
+                  )}
+                  <p className="font-semibold text-foreground">{n.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{n.body}</p>
+                  <p className="mt-2 text-xs text-muted-foreground/70">
+                    {formatRelativeDate(n.created_at)}
+                  </p>
+                </div>
+                {!n.is_read && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={pending}
+                    className="shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startTransition(async () => {
+                        const res = await markAdminNotificationReadAction(n.id);
+                        if (res.success) {
+                          router.refresh();
+                        } else {
+                          toast.error(res.error);
+                        }
+                      });
+                    }}
+                  >
+                    Tandai dibaca
+                  </Button>
                 )}
-                <p className="font-semibold text-foreground">{n.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{n.body}</p>
-                <p className="mt-2 text-xs text-muted-foreground/70">
-                  {formatRelativeDate(n.created_at)}
-                </p>
               </div>
-              {!n.is_read ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={pending}
-                  className="shrink-0"
-                  onClick={() => {
-                    startTransition(async () => {
-                      const res = await markAdminNotificationReadAction(n.id);
-                      if (res.success) {
-                        router.refresh();
-                      } else {
-                        toast.error(res.error);
-                      }
-                    });
-                  }}
-                >
-                  Tandai dibaca
-                </Button>
-              ) : null}
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

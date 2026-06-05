@@ -21,7 +21,7 @@ export async function GET() {
     const [itemsRes, countRes] = await Promise.all([
       supabase
         .from("admin_notifications")
-        .select("id, title, body, type, is_read, created_at")
+        .select("id, title, body, type, is_read, created_at, data")
         .order("created_at", { ascending: false })
         .limit(6),
       supabase

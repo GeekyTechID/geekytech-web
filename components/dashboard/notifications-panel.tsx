@@ -16,7 +16,20 @@ type Row = {
   type: string;
   is_read: boolean;
   created_at: string;
+  data: Record<string, unknown> | null;
 };
+
+function getNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
+  if (!data) return null;
+  const orderId = (data.orderId ?? data.order_id) as string | undefined;
+  if (!orderId) return null;
+  const status = data.status as string | undefined;
+  const trackingTypes = ["order_shipped", "order_in_transit"];
+  if (trackingTypes.includes(type) || status === "shipped") {
+    return `/dashboard/orders/${orderId}/tracking`;
+  }
+  return `/dashboard/orders/${orderId}`;
+}
 
 export function NotificationsPanel({ items }: { items: Row[] }) {
   const router = useRouter();
@@ -53,42 +66,61 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
         </Button>
       </div>
       <ul className="divide-y divide-[#e0e0e0] rounded-xl border border-[#e0e0e0] bg-white">
-        {items.map((n) => (
-          <li key={n.id} className={`px-4 py-4 ${n.is_read ? "bg-white" : "bg-[#fafafa]"}`}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="font-semibold text-[#1d1d1f]">{n.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-[#5c5c5c]">{n.body}</p>
-                <p className="mt-2 text-xs text-[#7a7a7a]">
-                  {formatRelativeDate(n.created_at)} · {n.type}
-                </p>
+        {items.map((n) => {
+          const url = getNotificationUrl(n.type, n.data);
+          return (
+            <li key={n.id} className={`px-4 py-4 ${n.is_read ? "bg-white" : "bg-[#fafafa]"}`}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-[#1d1d1f]">{n.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[#5c5c5c]">{n.body}</p>
+                  <p className="mt-2 text-xs text-[#7a7a7a]">
+                    {formatRelativeDate(n.created_at)} · {n.type}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  {url && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        if (!n.is_read) {
+                          storeMarkRead(n.id);
+                          markNotificationReadAction(n.id).catch(() => {});
+                        }
+                        router.push(url);
+                      }}
+                    >
+                      Lihat
+                    </Button>
+                  )}
+                  {!n.is_read && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={pending}
+                      onClick={() => {
+                        startTransition(async () => {
+                          storeMarkRead(n.id);
+                          const res = await markNotificationReadAction(n.id);
+                          if (res.success) {
+                            router.refresh();
+                          } else {
+                            toast.error(res.error);
+                          }
+                        });
+                      }}
+                    >
+                      Tandai dibaca
+                    </Button>
+                  )}
+                </div>
               </div>
-              {!n.is_read ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  disabled={pending}
-                  className="shrink-0"
-                  onClick={() => {
-                    startTransition(async () => {
-                      // Optimistic update ke bell header langsung
-                      storeMarkRead(n.id);
-                      const res = await markNotificationReadAction(n.id);
-                      if (res.success) {
-                        router.refresh();
-                      } else {
-                        toast.error(res.error);
-                      }
-                    });
-                  }}
-                >
-                  Tandai dibaca
-                </Button>
-              ) : null}
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

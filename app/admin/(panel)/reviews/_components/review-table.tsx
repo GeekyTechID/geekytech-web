@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import { StarRatingDisplay } from "@/components/shared/star-rating-display";
@@ -9,7 +9,15 @@ import { toast } from "sonner";
 import { formatRelativeDate } from "@/lib/format";
 import { AdminTableDeleteButton } from "@/components/admin/admin-table-row-actions";
 import { Button } from "@/components/ui/button";
-import { deleteReview } from "../_actions";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { deleteReview, updateReview } from "../_actions";
 
 export type ReviewRow = {
   id: string;
@@ -28,7 +36,6 @@ interface ReviewTableProps {
   totalPages: number;
 }
 
-
 function ReviewDeleteAction({ review }: { review: ReviewRow }) {
   const [isPending, startTransition] = useTransition();
 
@@ -45,6 +52,99 @@ function ReviewDeleteAction({ review }: { review: ReviewRow }) {
     <AdminTableDeleteButton onClick={handleDelete} disabled={isPending}>
       Hapus
     </AdminTableDeleteButton>
+  );
+}
+
+function ReviewEditDialog({ review, open, onClose }: { review: ReviewRow; open: boolean; onClose: () => void }) {
+  const [rating, setRating] = useState(review.rating);
+  const [comment, setComment] = useState(review.comment ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startTransition(async () => {
+      const { error } = await updateReview({
+        reviewId: review.id,
+        rating,
+        comment: comment.trim() || null,
+      });
+      if (error) {
+        toast.error(error);
+      } else {
+        toast.success("Ulasan diperbarui.");
+        onClose();
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Ulasan</DialogTitle>
+        </DialogHeader>
+        <div className="mb-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{review.profiles?.full_name ?? "—"}</span>
+          {" · "}
+          {review.products?.name ?? "—"}
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase text-muted-foreground">Rating</Label>
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
+            >
+              {[5, 4, 3, 2, 1].map((n) => (
+                <option key={n} value={n}>{n} bintang</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold uppercase text-muted-foreground">Komentar</Label>
+            <Textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              placeholder="Tidak ada komentar"
+              maxLength={4000}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={isPending}>
+              Batal
+            </Button>
+            <Button type="submit" variant="primary" size="sm" loading={isPending}>
+              Simpan
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReviewRowActions({ review }: { review: ReviewRow }) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center gap-1.5">
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          onClick={() => setEditOpen(true)}
+        >
+          Edit
+        </Button>
+        <ReviewDeleteAction review={review} />
+      </div>
+      {editOpen && (
+        <ReviewEditDialog review={review} open={editOpen} onClose={() => setEditOpen(false)} />
+      )}
+    </>
   );
 }
 
@@ -125,7 +225,7 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                   </td>
 
                   <td className="px-4 py-3">
-                    <ReviewDeleteAction review={review} />
+                    <ReviewRowActions review={review} />
                   </td>
                 </tr>
               ))}

@@ -12,7 +12,7 @@ async function fetchAdminNotifications(limit = 80) {
   const svc = createServiceClient();
   const { data } = await svc
     .from("admin_notifications")
-    .select("id, title, body, type, is_read, created_at")
+    .select("id, title, body, type, is_read, created_at, data")
     .order("created_at", { ascending: false })
     .limit(Math.min(100, Math.max(1, limit)));
   return data ?? [];

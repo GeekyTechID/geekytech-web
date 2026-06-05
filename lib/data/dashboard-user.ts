@@ -675,7 +675,7 @@ export async function fetchUserNotifications(userId: string, limit: number) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, title, body, type, is_read, created_at")
+      .select("id, title, body, type, is_read, created_at, data")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(cap);

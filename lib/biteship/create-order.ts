@@ -1,3 +1,5 @@
+import { ON_DEMAND_COURIERS } from "@/lib/shipping/on-demand-coords";
+
 type BiteshipOrderItem = {
   name: string;
   value: number;
@@ -51,7 +53,11 @@ export async function createBiteshipOrder(
 
   const base = "https://api.biteship.com";
 
-  const isInstant = params.courierType.toLowerCase().includes("instant");
+  // Biteship requires `delivery_type: "now"` for all on-demand couriers
+  // (Gojek Instant/Sameday, GrabExpress Instant/SameDay/InstantCar, Borzo, Lalamove, etc.)
+  // Detect by courier_company — service-code string matching ("instant") misses
+  // sameday/same_day variants.
+  const isOnDemand = ON_DEMAND_COURIERS.has(params.courierCompany.toLowerCase());
 
   const body: Record<string, unknown> = {
     shipper_contact_name: shipperName,
@@ -67,7 +73,7 @@ export async function createBiteshipOrder(
     destination_postal_code: params.destinationPostalCode,
     courier_company: params.courierCompany.toLowerCase(),
     courier_type: params.courierType,
-    ...(isInstant && { delivery_type: "now" }),
+    ...(isOnDemand && { delivery_type: "now" }),
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
       name: i.name.slice(0, 100),

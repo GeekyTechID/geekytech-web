@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 
-import { markAllAdminNotificationsReadAction } from "@/app/admin/(panel)/notifications/_actions";
+import { markAllAdminNotificationsReadAction, markAdminNotificationReadAction } from "@/app/admin/(panel)/notifications/_actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,7 +21,28 @@ type NotifItem = {
   type: string;
   is_read: boolean;
   created_at: string;
+  data: Record<string, unknown> | null;
 };
+
+function getAdminNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
+  const orderId = data?.orderId as string | undefined;
+  switch (type) {
+    case "new_order":
+    case "payment_confirmed":
+    case "payment_issue":
+    case "payment_expired":
+    case "order_cancelled":
+      return orderId ? `/admin/orders/${orderId}` : "/admin/orders";
+    case "new_complaint":
+      return orderId ? `/admin/orders/${orderId}` : "/admin/complaints";
+    case "new_review":
+      return "/admin/reviews";
+    case "low_stock":
+      return "/admin/stock";
+    default:
+      return orderId ? `/admin/orders/${orderId}` : null;
+  }
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -100,6 +122,19 @@ export function AdminNotificationBell() {
     [fetchNotifs],
   );
 
+  const router = useRouter();
+
+  const handleItemClick = (notif: NotifItem) => {
+    const url = getAdminNotificationUrl(notif.type, notif.data);
+    if (!notif.is_read) {
+      setItems((prev) => prev.map((n) => n.id === notif.id ? { ...n, is_read: true } : n));
+      setUnread((prev) => Math.max(0, prev - 1));
+      markAdminNotificationReadAction(notif.id).catch(() => {});
+    }
+    setOpen(false);
+    if (url) router.push(url);
+  };
+
   const handleMarkAllRead = () => {
     startTransition(async () => {
       const res = await markAllAdminNotificationsReadAction();
@@ -160,12 +195,16 @@ export function AdminNotificationBell() {
                 <p className="text-[14px] leading-[1.43] text-muted-foreground">Belum ada notifikasi</p>
               </div>
             ) : (
-              items.map((notif) => (
+              items.map((notif) => {
+                const url = getAdminNotificationUrl(notif.type, notif.data);
+                return (
                 <div
                   key={notif.id}
+                  onClick={() => handleItemClick(notif)}
                   className={cn(
                     "border-b border-border px-4 py-3 transition-colors last:border-b-0",
-                    !notif.is_read ? "bg-[#EA5329]/5 hover:bg-muted/60" : "hover:bg-muted/40",
+                    !notif.is_read ? "bg-[#EA5329]/5 hover:bg-[#EA5329]/10" : "hover:bg-muted/40",
+                    url && "cursor-pointer",
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -190,7 +229,7 @@ export function AdminNotificationBell() {
                     </div>
                   </div>
                 </div>
-              ))
+              );})
             )}
           </div>
 

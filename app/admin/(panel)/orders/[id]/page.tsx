@@ -9,8 +9,10 @@ import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { formatRupiah, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
+import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
+import { ShipmentTrackingCard } from "./_components/tracking-timeline";
 import type { OrderStatus } from "../_actions";
 
 export const metadata: Metadata = { title: "Detail Pesanan — Admin GeekyTech" };
@@ -58,6 +60,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
+
+  let trackingResult: TrackingResult | null = null;
+  if (shipment?.awb) {
+    const dbSteps = trackingStepsFromHistory(shipment.tracking_history);
+    if (dbSteps.length > 0) {
+      trackingResult = { ok: true, waybillId: shipment.awb, status: dbSteps[0]?.status ?? "", steps: dbSteps, link: null };
+    } else {
+      trackingResult = await fetchBiteshipTracking(shipment.awb, shipment.courier_company ?? "");
+    }
+  }
 
   // Expiry: dari payment record, fallback ke created_at + 3 jam
   const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
@@ -278,6 +290,26 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     </li>
                   ))}
                 </ol>
+              </div>
+            </section>
+          )}
+          {/* Tracking History */}
+          {shipment?.awb && trackingResult && (
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Riwayat Pengiriman</h2>
+              </div>
+              <div className="px-4 py-4">
+                <ShipmentTrackingCard
+                  courierName={shipment.courier_name}
+                  courierCompany={shipment.courier_company}
+                  courierService={shipment.courier_service}
+                  awb={shipment.awb}
+                  externalLink={trackingResult.ok ? trackingResult.link : null}
+                  status={shipment.status}
+                  updatedAt={shipment.updated_at}
+                  trackingResult={trackingResult}
+                />
               </div>
             </section>
           )}

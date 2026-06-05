@@ -33,11 +33,18 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
 
   return (
     <>
-      {/* Print CSS */}
+      {/* Print CSS — only #invoice-print-area visible */}
       <style>{`
         @media print {
           [data-no-print] { display: none !important; }
-          body { background: white !important; }
+          body > * { visibility: hidden; }
+          #invoice-print-area, #invoice-print-area * { visibility: visible; }
+          #invoice-print-area {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            background: white;
+          }
           @page { margin: 1.5cm; }
         }
       `}</style>
@@ -48,7 +55,7 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
           onClick={() => window.print()}
           className="rounded-lg bg-[#1d1d1f] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
         >
-          Cetak / Unduh PDF
+          Cetak Invoice
         </button>
       </div>
 
