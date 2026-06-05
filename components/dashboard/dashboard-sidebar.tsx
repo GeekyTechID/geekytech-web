@@ -77,7 +77,7 @@ const NAV_SECONDARY: NavItem[] = [
 ];
 
 const NAV_STORE: NavItem[] = [
-  { label: "Ke Web GeekyTech", href: process.env.NEXT_PUBLIC_APP_URL ?? "/", icon: Globe, external: true },
+  { label: "Ke Web GeekyTech", href: "/", icon: Globe },
   { label: "Keranjang", href: "/cart", icon: ShoppingCart },
 ];
 

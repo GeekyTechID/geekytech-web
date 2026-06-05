@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "sonner/dist/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -133,6 +134,8 @@
   --sidebar-accent-foreground: #ea5329;
   --sidebar-border: transparent;
   --sidebar-ring: #ea5329;
+  --toast-border: #e0e0e0;
+  --toast-description: #7a7a7a;
 }
 
 .dark {
@@ -168,6 +171,8 @@
   --sidebar-accent-foreground: #ea5329;
   --sidebar-border: transparent;
   --sidebar-ring: #ea5329;
+  --toast-border: oklch(1 0 0 / 14%);
+  --toast-description: oklch(0.72 0 0);
 }
 
 @layer base {
@@ -278,6 +283,34 @@
 
   .admin-text-link {
     @apply text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-brand transition-colors hover:text-brand-hover;
+  }
+
+  /* Sonner — shadcn cn-toast, soft hairline (bukan border Swiss hitam) */
+  [data-sonner-toaster] {
+    --normal-bg: var(--popover);
+    --normal-text: var(--popover-foreground);
+    --normal-border: var(--toast-border);
+    --border-radius: var(--radius-lg);
+  }
+
+  .cn-toast {
+    border-color: var(--toast-border) !important;
+    background: var(--popover) !important;
+    color: var(--popover-foreground) !important;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.08) !important;
+  }
+
+  .cn-toast-description {
+    color: var(--toast-description) !important;
+    opacity: 1 !important;
+  }
+
+  .cn-toast-action {
+    @apply rounded-md bg-primary text-primary-foreground;
+  }
+
+  .cn-toast-cancel {
+    @apply rounded-md bg-muted text-muted-foreground;
   }
 }
 

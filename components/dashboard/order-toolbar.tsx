@@ -88,9 +88,9 @@ export function OrderToolbar({
         <Button
           type="button"
           variant="destructive-ghost"
+          size="sm"
           disabled={pending}
           onClick={onCancel}
-          className="w-full sm:w-auto"
         >
           Batalkan pesanan
         </Button>
@@ -99,15 +99,15 @@ export function OrderToolbar({
         <Button
           type="button"
           variant="primary"
+          size="sm"
           disabled={pending}
           onClick={onConfirm}
-          className="w-full sm:w-auto"
         >
           Selesai &amp; Beri Ulasan
         </Button>
       ) : null}
       {canReview ? (
-        <Button asChild variant="primary" className="w-full sm:w-auto">
+        <Button asChild variant="primary" size="sm">
           <Link href={`/dashboard/orders/${orderId}/review`}>Beri Ulasan</Link>
         </Button>
       ) : null}
