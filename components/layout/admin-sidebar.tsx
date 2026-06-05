@@ -1,0 +1,388 @@
+"use client";
+
+import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import {
+  BarChart3,
+  Bell,
+  Building2,
+  ChevronRight,
+  ExternalLink,
+  FileBarChart,
+  FileText,
+  Grid2X2,
+  ImageIcon,
+  LayoutList,
+  Layers,
+  LogOut,
+  MessageSquare,
+  Moon,
+  Package,
+  PackageSearch,
+  Settings,
+  ShoppingBag,
+  Star,
+  Sun,
+  Tag,
+  Ticket,
+  Users,
+  User,
+  Zap,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/auth-store";
+import {
+  HEADER_DROPDOWN_MENU_CONTENT_CLASS,
+  HEADER_DROPDOWN_MENU_ITEM_CLASS,
+  HeaderDropdownPanelBody,
+  HeaderDropdownPanelHeader,
+} from "@/components/shared/header-dropdown-panel";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+};
+
+type NavGroup = {
+  label: string;
+  collapsible?: boolean;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { label: "Dashboard", href: "/admin", icon: BarChart3, exact: true },
+    ],
+  },
+  {
+    label: "Katalog",
+    items: [
+      { label: "Produk", href: "/admin/products", icon: Package },
+      { label: "Merek", href: "/admin/brands", icon: Building2 },
+      { label: "Kategori", href: "/admin/categories", icon: Grid2X2 },
+    ],
+  },
+  {
+    label: "Transaksi",
+    items: [
+      { label: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
+      { label: "Pelanggan", href: "/admin/customers", icon: Users },
+    ],
+  },
+  {
+    label: "Konten",
+    items: [
+      { label: "Chat", href: "/admin/chat", icon: MessageSquare },
+      { label: "Ulasan", href: "/admin/reviews", icon: Star },
+      { label: "Komplain", href: "/admin/complaints", icon: FileText },
+      { label: "Kupon", href: "/admin/coupons", icon: Ticket },
+    ],
+  },
+  {
+    label: "Promosi",
+    collapsible: true,
+    items: [
+      { label: "Main Banner", href: "/admin/promotions/main-banner", icon: ImageIcon },
+      { label: "Flash Sale", href: "/admin/promotions/flash-sale", icon: Zap },
+      { label: "Produk Second", href: "/admin/promotions/second-products", icon: PackageSearch },
+      { label: "Rekomendasi", href: "/admin/promotions/featured-products", icon: Star },
+      { label: "Tampilan Beranda", href: "/admin/promotions/home-sections", icon: LayoutList },
+    ],
+  },
+  {
+    label: "Laporan & Stok",
+    items: [
+      { label: "Laporan", href: "/admin/reports", icon: FileBarChart },
+      { label: "Stok", href: "/admin/stock", icon: Layers },
+    ],
+  },
+  {
+    label: "Sistem",
+    items: [
+      { label: "Notifikasi", href: "/admin/notifications", icon: Bell },
+      { label: "Pengaturan", href: "/admin/settings", icon: Settings },
+    ],
+  },
+];
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? theme === "dark" : false;
+
+  return (
+    <SidebarMenu className="gap-1">
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          tooltip={isDark ? "Mode Terang" : "Mode Gelap"}
+        >
+          {isDark ? <Sun /> : <Moon />}
+          <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+function NavAdmin() {
+  const { profile, user } = useAuth();
+  const { reset } = useAuthStore();
+  const { isMobile } = useSidebar();
+
+  const displayName =
+    profile?.full_name?.trim() || user?.email?.split("@")[0] || "Admin";
+
+  const initials = profile?.full_name
+    ? profile.full_name
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : (user?.email?.[0]?.toUpperCase() ?? "A");
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      reset();
+      toast.success("Berhasil keluar.");
+    } catch {
+      toast.error("Gagal keluar. Coba lagi.");
+    } finally {
+      window.location.href = "/admin/login";
+    }
+  };
+
+  return (
+    <SidebarMenu className="gap-1">
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              tooltip={displayName}
+            >
+              <Avatar className="size-8 rounded-lg shrink-0">
+                <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{displayName}</span>
+                <span className="truncate text-xs text-sidebar-foreground/60">
+                  {user?.email ?? ""}
+                </span>
+              </div>
+              <Settings className="ml-auto size-4 shrink-0 text-sidebar-foreground/50" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            className={cn("w-56", HEADER_DROPDOWN_MENU_CONTENT_CLASS)}
+            side={isMobile ? "bottom" : "right"}
+            align="end"
+            sideOffset={4}
+          >
+            <HeaderDropdownPanelHeader title={displayName} />
+            <HeaderDropdownPanelBody className="py-1">
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/admin/settings">
+                  <User className="size-4" />
+                  Profil Saya
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/admin/settings">
+                  <Settings className="size-4" />
+                  Pengaturan
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
+                <Link href="/" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
+                  Lihat Website
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className={cn(
+                  HEADER_DROPDOWN_MENU_ITEM_CLASS,
+                  "border-t border-[#e0e0e0] text-destructive focus:bg-destructive/10 focus:text-destructive",
+                )}
+              >
+                <LogOut className="size-4" />
+                Keluar
+              </DropdownMenuItem>
+            </HeaderDropdownPanelBody>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+export function AdminSidebar({
+  className,
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
+  const isActive = (href: string, exact = false) =>
+    exact
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      className={cn("border-[#e5e5e5] dark:border-[#2d2d2d]", className)}
+    >
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild tooltip="GeekyTech Admin">
+              <Link href="/admin" aria-label="GeekyTech Admin — Dashboard">
+                <Image
+                  src="/logo.png"
+                  alt="GeekyTech"
+                  width={130}
+                  height={32}
+                  className="shrink-0 object-contain object-left"
+                />
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      <SidebarContent>
+        {NAV_GROUPS.map((group) =>
+          group.collapsible ? (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarMenu className="gap-1">
+                <Collapsible
+                  asChild
+                  defaultOpen={group.items.some((i) => isActive(i.href, i.exact))}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip={group.label}>
+                        <Tag />
+                        <span>{group.label}</span>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {group.items.map((item) => {
+                          const active = isActive(item.href, item.exact);
+                          const Icon = item.icon;
+                          return (
+                            <SidebarMenuSubItem key={item.href}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={active}
+                              >
+                                <Link
+                                  href={item.href}
+                                  aria-current={active ? "page" : undefined}
+                                >
+                                  <Icon />
+                                  <span>{item.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              </SidebarMenu>
+            </SidebarGroup>
+          ) : (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarMenu className="gap-1">
+                {group.items.map((item) => {
+                  const active = isActive(item.href, item.exact);
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        tooltip={item.label}
+                        isActive={active}
+                      >
+                        <Link
+                          href={item.href}
+                          aria-current={active ? "page" : undefined}
+                        >
+                          <Icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          )
+        )}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <ThemeToggle />
+        <NavAdmin />
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
