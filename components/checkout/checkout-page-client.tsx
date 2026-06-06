@@ -118,16 +118,16 @@ function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { co
 }
 
 const PAYMENT_LOGOS: Record<string, string> = {
-  gopay: "/logo/gopay_horizontal.svg",
-  shopeepay: "/logo/shopeepay_rectangle_orange.svg",
-  qris: "/logo/qris.png",
-  bca_va: "/logo/bca.png",
-  bni_va: "/logo/bni.png",
-  bri_va: "/logo/bri.png",
-  permata_va: "/logo/permata_bank.png",
-  echannel: "/logo/mandiri.png",
-  indomaret: "/logo/indomaret.png",
-  alfamart: "/logo/alfamart.png",
+  gopay: "/payments/gopay_horizontal.svg",
+  shopeepay: "/payments/shopeepay_rectangle_orange.svg",
+  qris: "/payments/qris.png",
+  bca_va: "/payments/bca.png",
+  bni_va: "/payments/bni.png",
+  bri_va: "/payments/bri.png",
+  permata_va: "/payments/permata_bank.png",
+  echannel: "/payments/mandiri.png",
+  indomaret: "/payments/indomaret.png",
+  alfamart: "/payments/alfamart.png",
 };
 
 function PaymentLogo({ id, label, className = "h-8 w-auto max-w-[80px]" }: { id: string; label: string; className?: string }) {
