@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 type NotifItem = {
   id: string;
@@ -97,6 +98,28 @@ export function AdminNotificationBell() {
   useEffect(() => {
     void fetchNotifs();
   }, [fetchNotifs]);
+
+  // Realtime subscription — listen for new notifications without polling
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("admin-notifications-bell")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "admin_notifications" },
+        (payload) => {
+          const notif = payload.new as NotifItem;
+          setItems((prev) => [notif, ...prev].slice(0, 6));
+          setUnread((prev) => prev + 1);
+          fetchedRef.current = false;
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleMouseEnter = useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
