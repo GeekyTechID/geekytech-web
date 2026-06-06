@@ -14,12 +14,14 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { cache } from "react";
+import React, { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { DashboardRevenueChart, DashboardOrdersChart } from "@/components/admin/dashboard-charts";
+import { AdminNewOrdersSection } from "@/components/admin/admin-new-orders-section";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Dashboard Admin" };
 export const revalidate = 60; // ISR: refresh data setiap 60 detik
@@ -68,6 +70,26 @@ const ALL_STATUSES: OrderStatus[] = [
 ];
 
 const TABLE_HEADERS = ["No. Order", "Pembeli", "Status", "Total", "Tanggal"] as const;
+
+type StatusCardCfg = {
+  label: string;
+  icon: React.ElementType;
+  accent: string;   // border-l color
+  iconBg: string;
+  iconColor: string;
+  bar: string;
+};
+
+const STATUS_CARD_CONFIG: Record<OrderStatus, StatusCardCfg> = {
+  pending_payment: { label: "Menunggu Bayar", icon: Clock,        accent: "border-l-amber-400",   iconBg: "bg-amber-50 dark:bg-amber-900/20",    iconColor: "text-amber-500",   bar: "bg-amber-400" },
+  paid:            { label: "Dibayar",        icon: CheckCircle2, accent: "border-l-emerald-400", iconBg: "bg-emerald-50 dark:bg-emerald-900/20", iconColor: "text-emerald-500", bar: "bg-emerald-400" },
+  processing:      { label: "Diproses",       icon: Package,      accent: "border-l-purple-400",  iconBg: "bg-purple-50 dark:bg-purple-900/20",   iconColor: "text-purple-500",  bar: "bg-purple-400" },
+  shipped:         { label: "Dikirim",        icon: Truck,        accent: "border-l-indigo-400",  iconBg: "bg-indigo-50 dark:bg-indigo-900/20",   iconColor: "text-indigo-500",  bar: "bg-indigo-400" },
+  delivered:       { label: "Terkirim",       icon: CheckCircle2, accent: "border-l-teal-400",    iconBg: "bg-teal-50 dark:bg-teal-900/20",      iconColor: "text-teal-500",    bar: "bg-teal-400" },
+  completed:       { label: "Selesai",        icon: Star,         accent: "border-l-green-500",   iconBg: "bg-green-50 dark:bg-green-900/20",    iconColor: "text-green-600",   bar: "bg-green-500" },
+  cancelled:       { label: "Dibatalkan",     icon: XCircle,      accent: "border-l-red-400",     iconBg: "bg-red-50 dark:bg-red-900/20",        iconColor: "text-red-500",     bar: "bg-red-400" },
+  refunded:        { label: "Refund",         icon: AlertTriangle,accent: "border-l-zinc-400",    iconBg: "bg-zinc-100 dark:bg-zinc-800",        iconColor: "text-zinc-500",    bar: "bg-zinc-400" },
+};
 
 // ----------------------------------------------------------------
 // Data fetching — wrapped in cache() for per-request deduplication
@@ -252,6 +274,9 @@ export default async function AdminDashboardPage() {
         </h1>
       </div>
 
+      {/* ── New Orders (real-time, client) ─────────────────────── */}
+      <AdminNewOrdersSection />
+
       {/* ── Stat Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -282,28 +307,43 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ── Order Status Breakdown ──────────────────────────────── */}
-      <div className="admin-utility-card p-5">
+      <div>
         <h2 className="admin-section-title mb-4">Status Pesanan</h2>
-        <div className="flex flex-wrap gap-2">
-          {(Object.entries(ORDER_STATUS_CONFIG) as [OrderStatus, typeof ORDER_STATUS_CONFIG[OrderStatus]][]).map(
-            ([status, cfg]) => {
-              const count = statusCounts[status] ?? 0;
-              const Icon = cfg.icon;
-              return (
-                <div
-                  key={status}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold",
-                    cfg.color,
-                  )}
-                >
-                  <Icon size={12} />
-                  {cfg.label}
-                  <span className="font-black ml-0.5">{count}</span>
-                </div>
-              );
-            },
-          )}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(Object.entries(STATUS_CARD_CONFIG) as [OrderStatus, StatusCardCfg][]).map(([status, cfg]) => {
+            const count = statusCounts[status] ?? 0;
+            const pct = stats.totalOrders > 0 ? (count / stats.totalOrders) * 100 : 0;
+            const pctDisplay = pct < 1 && pct > 0 ? "<1" : Math.round(pct).toString();
+            const Icon = cfg.icon;
+            return (
+              <Link key={status} href={`/admin/orders?status=${status}`} className="group">
+                <Card className="relative overflow-hidden py-0 transition-all duration-200 hover:bg-[#EA5329]/15 cursor-pointer">
+                  <CardContent className="px-4 py-4">
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {cfg.label}
+                      </p>
+                      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", cfg.iconBg)}>
+                        <Icon size={14} className={cfg.iconColor} />
+                      </div>
+                    </div>
+                    {/* Count */}
+                    <p className="mt-2 text-[32px] font-black tabular-nums leading-none tracking-tight text-foreground">
+                      {count.toLocaleString("id-ID")}
+                    </p>
+                    {/* Progress bar */}
+                    <div className="mt-3 space-y-1">
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                        <div className={cn("h-full rounded-full transition-all", cfg.bar)} style={{ width: `${Math.min(100, pct)}%` }} />
+                      </div>
+                      <p className="text-[10px] font-medium text-muted-foreground">{pctDisplay}% dari total</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
 

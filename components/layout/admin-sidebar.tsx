@@ -37,6 +37,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
+import { useAdminOrdersStore } from "@/store/admin-orders-store";
+import { createClient } from "@/lib/supabase/client";
 import {
   HEADER_DROPDOWN_MENU_CONTENT_CLASS,
   HEADER_DROPDOWN_MENU_ITEM_CLASS,
@@ -266,11 +268,60 @@ function NavAdmin() {
   );
 }
 
+function useUnviewedOrdersCount() {
+  const count = useAdminOrdersStore((s) => s.count);
+  const setCount = useAdminOrdersStore((s) => s.setCount);
+  const increment = useAdminOrdersStore((s) => s.increment);
+  const decrement = useAdminOrdersStore((s) => s.decrement);
+  // Track IDs we know are unviewed — prevents double-decrement on repeated UPDATE events
+  const trackedIds = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    fetch("/api/admin/orders/unviewed")
+      .then((r) => r.json())
+      .then((json: { items: { id: string }[]; count: number }) => {
+        setCount(json.count ?? 0);
+        trackedIds.current = new Set((json.items ?? []).map((o) => o.id));
+      })
+      .catch(() => {});
+  }, [setCount]);
+
+  // Stable refs so the realtime effect never needs to re-subscribe
+  const incrementRef = React.useRef(increment);
+  const decrementRef = React.useRef(decrement);
+  React.useEffect(() => { incrementRef.current = increment; });
+  React.useEffect(() => { decrementRef.current = decrement; });
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("admin-sidebar-orders")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+        const o = payload.new as { id: string };
+        trackedIds.current.add(o.id);
+        incrementRef.current();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
+        const updated = payload.new as { id: string; admin_viewed_at: string | null };
+        if (updated.admin_viewed_at !== null && trackedIds.current.has(updated.id)) {
+          trackedIds.current.delete(updated.id);
+          decrementRef.current();
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []); // stable — callbacks accessed via refs
+
+  return count;
+}
+
 export function AdminSidebar({
   className,
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const unviewedCount = useUnviewedOrdersCount();
 
   const isActive = (href: string, exact = false) =>
     exact
@@ -355,6 +406,8 @@ export function AdminSidebar({
                 {group.items.map((item) => {
                   const active = isActive(item.href, item.exact);
                   const Icon = item.icon;
+                  const isOrders = item.href === "/admin/orders";
+                  const badge = isOrders && unviewedCount > 0 ? unviewedCount : null;
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
@@ -368,6 +421,11 @@ export function AdminSidebar({
                         >
                           <Icon />
                           <span>{item.label}</span>
+                          {badge !== null && (
+                            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EA5329] px-1 text-[10px] font-bold leading-none text-white tabular-nums">
+                              {badge > 99 ? "99+" : badge}
+                            </span>
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

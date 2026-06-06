@@ -58,6 +58,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   if (!order) notFound();
 
+  // Mark as viewed (fire-and-forget, non-blocking)
+  if (!(order as Record<string, unknown>).admin_viewed_at) {
+    supabase.from("orders").update({ admin_viewed_at: new Date().toISOString() } as never).eq("id", id).then(() => {});
+  }
+
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
 
