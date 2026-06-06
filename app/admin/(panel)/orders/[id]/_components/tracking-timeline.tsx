@@ -58,7 +58,7 @@ function fmt(iso: string | null): string | null {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "Asia/Jakarta",
-  });
+  }) + " WIB";
 }
 
 export function TrackingTimeline({ result }: { result: TrackingResult }) {
@@ -244,7 +244,7 @@ export function ShipmentTrackingCard({
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "Asia/Jakarta",
-    });
+    }) + " WIB";
   }
 
   return (
