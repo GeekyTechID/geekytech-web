@@ -188,7 +188,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [couponApplying, setCouponApplying] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
-  const [paymentOpen, setPaymentOpen] = useState(true);
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [countdown, setCountdown] = useState(5);
@@ -311,6 +311,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
 
   useEffect(() => {
     if (!doneState) return;
+    window.scrollTo({ top: 0, behavior: "instant" });
     if (countdown <= 0) {
       router.push(`/dashboard/orders/${doneState.orderId}`);
       return;
@@ -382,6 +383,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       toast.error("Pilih alamat dan metode pengiriman.");
       return;
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setSubmitting(true);
     try {
       const res = await fetch("/api/checkout/create", {
@@ -457,7 +459,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       <div className="px-4 py-20 text-[#1d1d1f]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="py-2 sm:py-3">
-            <CartCheckoutStepper current={3} />
+            <CartCheckoutStepper current={4} />
           </div>
         </div>
         <div className="flex min-h-[50vh] items-center justify-center">

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Bell, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -27,6 +28,19 @@ import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 export const metadata: Metadata = {
   title: "Ringkasan akun",
   description: "Ringkasan pesanan, notifikasi, dan aktivitas akun GeekyTech Anda.",
+};
+
+const PAYMENT_LOGOS: Record<string, string> = {
+  gopay: "/payments/gopay_horizontal.svg",
+  shopeepay: "/payments/shopeepay_rectangle_orange.svg",
+  qris: "/payments/qris.png",
+  bca_va: "/payments/bca.png",
+  bni_va: "/payments/bni.png",
+  bri_va: "/payments/bri.png",
+  permata_va: "/payments/permata_bank.png",
+  echannel: "/payments/mandiri.png",
+  indomaret: "/payments/indomaret.png",
+  alfamart: "/payments/alfamart.png",
 };
 
 function statusBadgeClasses(status: OrderStatus): string {
@@ -150,14 +164,14 @@ export default async function DashboardOverviewPage() {
           {/* Order cards */}
           <ul className="flex flex-col gap-3 px-4 py-4 sm:px-5">
             {pendingOrders.map((o) => {
-              const ref = o.vaNumber ?? o.paymentCode ?? o.transactionId;
-              const label = o.vaNumber
-                ? "No. VA"
+              const ref = o.vaNumber ?? o.paymentCode ?? null;
+              const refLabel = o.vaNumber
+                ? "No. Virtual Account"
                 : o.paymentCode
-                  ? "Kode bayar"
-                  : o.transactionId
-                    ? "No. transaksi"
-                    : null;
+                  ? "Kode pembayaran"
+                  : null;
+              const methodLabel = o.paymentType ? (PAYMENT_METHOD_LABELS[o.paymentType] ?? o.paymentType) : null;
+              const logoSrc = o.paymentType ? (PAYMENT_LOGOS[o.paymentType] ?? null) : null;
               return (
                 <li
                   key={o.id}
@@ -178,12 +192,25 @@ export default async function DashboardOverviewPage() {
                         {o.previewName}
                       </p>
                     )}
-                    {ref && label && (
-                      <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[#f5f5f7] px-3 py-2">
-                        <span className="shrink-0 text-[11px] text-[#7a7a7a]">{label}</span>
-                        <span className="min-w-0 select-all truncate font-mono text-[12px] font-semibold text-[#1d1d1f]">
-                          {ref}
-                        </span>
+                    {(methodLabel ?? ref) && (
+                      <div className="mt-2.5 rounded-lg bg-[#f5f5f7] px-3 py-2">
+                        {methodLabel && (
+                          <div className="flex items-center gap-2">
+                            {logoSrc && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={logoSrc} alt={methodLabel} className="h-4 w-auto max-w-[36px] shrink-0 object-contain" />
+                            )}
+                            <span className="text-[11px] font-semibold text-[#5c5c5c]">{methodLabel}</span>
+                          </div>
+                        )}
+                        {ref && refLabel && (
+                          <div className={`flex items-center gap-2 ${methodLabel ? "mt-1" : ""}`}>
+                            <span className="shrink-0 text-[10px] text-[#7a7a7a]">{refLabel}:</span>
+                            <span className="min-w-0 select-all truncate font-mono text-[12px] font-semibold text-[#1d1d1f]">
+                              {ref}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="mt-3 flex items-center justify-between gap-3">

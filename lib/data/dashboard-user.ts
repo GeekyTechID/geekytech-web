@@ -580,6 +580,7 @@ export type PendingOrderPreview = {
   vaNumber: string | null;
   paymentCode: string | null;
   transactionId: string | null;
+  paymentType: string | null;
   previewName: string | null;
   previewImage: string | null;
 };
@@ -609,7 +610,7 @@ export async function fetchPendingPaymentOrders(
         .order("id", { ascending: true }),
       supabase
         .from("payments")
-        .select("order_id, expiry_time, va_number, payment_code, midtrans_transaction_id")
+        .select("order_id, expiry_time, va_number, payment_code, midtrans_transaction_id, payment_type")
         .in("order_id", orderIds)
         .order("created_at", { ascending: false }),
     ]);
@@ -626,6 +627,7 @@ export async function fetchPendingPaymentOrders(
       va_number: string | null;
       payment_code: string | null;
       midtrans_transaction_id: string | null;
+      payment_type: string | null;
     };
     const paymentByOrder = new Map<string, PaymentMeta>();
     for (const p of paymentsRaw ?? []) {
@@ -635,11 +637,12 @@ export async function fetchPendingPaymentOrders(
           va_number: p.va_number ?? null,
           payment_code: p.payment_code ?? null,
           midtrans_transaction_id: p.midtrans_transaction_id ?? null,
+          payment_type: p.payment_type ?? null,
         });
       }
     }
 
-    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+    const TWENTYFOUR_HOURS_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
     return orders
       .map((o) => {
@@ -647,7 +650,7 @@ export async function fetchPendingPaymentOrders(
         const pm = paymentByOrder.get(o.id);
         const expiryTime = pm?.expiry_time
           ? pm.expiry_time
-          : new Date(new Date(o.created_at).getTime() + THREE_HOURS_MS).toISOString();
+          : new Date(new Date(o.created_at).getTime() + TWENTYFOUR_HOURS_MS).toISOString();
         return {
           id: o.id,
           order_number: o.order_number,
@@ -657,6 +660,7 @@ export async function fetchPendingPaymentOrders(
           vaNumber: pm?.va_number ?? null,
           paymentCode: pm?.payment_code ?? null,
           transactionId: pm?.midtrans_transaction_id ?? null,
+          paymentType: pm?.payment_type ?? null,
           previewName: fi?.product_name ?? null,
           previewImage: fi?.image_url ?? null,
         };
