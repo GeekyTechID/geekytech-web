@@ -37,9 +37,11 @@ const BESTSELLERS_HEADERS = ["#", "Produk", "Qty Terjual", "Share"] as const;
 async function fetchReportsData() {
   const supabase = await createClient();
 
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString();
+  const WIB = 7 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const nowWIB = new Date(nowMs + WIB);
+  const thirtyDaysAgo = new Date(nowMs - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const twelveMonthsAgo = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth() - 11, 1) - WIB).toISOString();
 
   const [
     allTimeRevenue,
@@ -83,15 +85,15 @@ async function fetchReportsData() {
   const totalCompleted = completedOrders.count ?? 0;
   const paidCount = paidOrdersResult.count ?? 0;
 
+  const wibKey = (ms: number) => { const d = new Date(ms + WIB); return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`; };
+
   const dailyMap: Record<string, DailyData> = {};
   for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(nowMs - i * 24 * 60 * 60 * 1000);
     dailyMap[key] = { date: key, revenue: 0, orders: 0 };
   }
   for (const row of dailyRevenue.data ?? []) {
-    const d = new Date(row.created_at);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(new Date(row.created_at).getTime());
     if (dailyMap[key]) {
       dailyMap[key].revenue += row.total;
       dailyMap[key].orders += 1;
@@ -101,13 +103,14 @@ async function fetchReportsData() {
 
   const monthlyMap: Record<string, MonthlyData> = {};
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = d.toLocaleString("id-ID", { month: "short", year: "2-digit" });
+    const d = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth() - i, 1));
+    const key = d.toLocaleString("id-ID", { month: "short", year: "2-digit", timeZone: "UTC" });
     monthlyMap[key] = { month: key, revenue: 0, orders: 0 };
   }
   for (const row of monthlyRevenue.data ?? []) {
-    const d = new Date(row.created_at);
-    const key = d.toLocaleString("id-ID", { month: "short", year: "2-digit" });
+    const dWIB = new Date(new Date(row.created_at).getTime() + WIB);
+    const key = new Date(Date.UTC(dWIB.getUTCFullYear(), dWIB.getUTCMonth(), 1))
+      .toLocaleString("id-ID", { month: "short", year: "2-digit", timeZone: "UTC" });
     if (monthlyMap[key]) {
       monthlyMap[key].revenue += row.total;
       monthlyMap[key].orders += 1;

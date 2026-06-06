@@ -908,6 +908,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                                   day: "numeric",
                                   month: "short",
                                   year: "numeric",
+                                  timeZone: "Asia/Jakarta",
                                 })}
                               </span>
                             )}

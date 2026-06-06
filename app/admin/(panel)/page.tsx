@@ -75,11 +75,14 @@ const TABLE_HEADERS = ["No. Order", "Pembeli", "Status", "Total", "Tanggal"] as 
 const fetchDashboardData = cache(async function fetchDashboardData() {
   const supabase = await createClient();
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  // All boundaries computed in WIB (UTC+7) so "today" / "this month" match Jakarta time
+  const WIB = 7 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const nowWIB = new Date(nowMs + WIB);
+  const todayStart = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth(), nowWIB.getUTCDate()) - WIB).toISOString();
+  const weekStart = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const monthStart = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth(), 1) - WIB).toISOString();
+  const thirtyDaysAgo = new Date(nowMs - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     revenueToday,
@@ -180,15 +183,14 @@ const fetchDashboardData = cache(async function fetchDashboardData() {
     (rows ?? []).reduce((sum, r) => sum + r.total, 0);
 
   // Aggregate daily data
+  const wibKey = (ms: number) => { const d = new Date(ms + WIB); return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`; };
   const dailyMap: Record<string, { revenue: number; orders: number }> = {};
   for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(nowMs - i * 24 * 60 * 60 * 1000);
     dailyMap[key] = { revenue: 0, orders: 0 };
   }
   for (const row of dailyRevenue.data ?? []) {
-    const d = new Date(row.created_at);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(new Date(row.created_at).getTime());
     if (dailyMap[key]) {
       dailyMap[key].revenue += row.total;
       dailyMap[key].orders += 1;

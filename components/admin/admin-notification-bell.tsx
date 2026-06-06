@@ -53,7 +53,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours} jam lalu`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days} hari lalu`;
-  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 }
 
 const TYPE_LABEL: Record<string, string> = {

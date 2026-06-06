@@ -118,7 +118,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         va_number: vaNumber,
         payment_code: mtStatus.payment_code ?? null,
         pdf_url: mtStatus.pdf_url ?? null,
-        expiry_time: mtStatus.expiry_time ?? null,
+        expiry_time: mtStatus.expiry_time ? mtStatus.expiry_time.replace(" ", "T") + "+07:00" : null,
       })
       .eq("midtrans_order_id", order.order_number)
       .neq("status", "paid");

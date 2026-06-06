@@ -7,7 +7,7 @@ import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 
 import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
   fetchOrderDetailForUser,
   fetchReviewedProductIdsForOrder,
@@ -63,6 +63,41 @@ const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
   refunded:        "bg-[#f5f5f7] text-[#5c5c5c] ring-1 ring-[#e0e0e0]",
 };
 
+async function fetchMidtransVA(orderNumber: string): Promise<{
+  va_number: string | null;
+  payment_code: string | null;
+  expiry_time: string | null;
+  midtrans_transaction_id: string | null;
+} | null> {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY?.trim();
+  if (!serverKey) return null;
+  const isProd = process.env.MIDTRANS_IS_PRODUCTION === "true";
+  const base = isProd ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
+  const creds = Buffer.from(`${serverKey}:`).toString("base64");
+  try {
+    const res = await fetch(`${base}/v2/${encodeURIComponent(orderNumber)}/status`, {
+      headers: { Authorization: `Basic ${creds}`, Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      va_numbers?: { bank: string; va_number: string }[];
+      payment_code?: string;
+      expiry_time?: string;
+      transaction_id?: string;
+    };
+    const rawExpiry = data.expiry_time ?? null;
+    return {
+      va_number: data.va_numbers?.[0]?.va_number ?? null,
+      payment_code: data.payment_code ?? null,
+      expiry_time: rawExpiry ? rawExpiry.replace(" ", "T") + "+07:00" : null,
+      midtrans_transaction_id: data.transaction_id ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function DashboardOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -78,7 +113,38 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   ]);
   if (!detail) notFound();
 
-  const { order, items, payments, shipments } = detail;
+  const { order, items, shipments } = detail;
+  const payments = [...detail.payments];
+
+  // Sync VA/payment code from Midtrans if still pending and not yet stored
+  if (order.status === "pending_payment") {
+    const ppIdx = payments.findIndex((p) => p.status === "pending");
+    if (ppIdx !== -1) {
+      const pp = payments[ppIdx]!;
+      if (!pp.va_number && !pp.payment_code) {
+        const synced = await fetchMidtransVA(order.order_number);
+        if (synced && (synced.va_number ?? synced.payment_code ?? synced.midtrans_transaction_id)) {
+          const svc = createServiceClient();
+          await svc
+            .from("payments")
+            .update({
+              va_number: synced.va_number,
+              payment_code: synced.payment_code,
+              expiry_time: synced.expiry_time ?? pp.expiry_time,
+              midtrans_transaction_id: synced.midtrans_transaction_id,
+            })
+            .eq("id", pp.id);
+          payments[ppIdx] = {
+            ...pp,
+            va_number: synced.va_number,
+            payment_code: synced.payment_code,
+            expiry_time: synced.expiry_time ?? pp.expiry_time,
+            midtrans_transaction_id: synced.midtrans_transaction_id,
+          };
+        }
+      }
+    }
+  }
 
   const reviewableItems = items.filter((it) => it.product_id);
   const allReviewed = reviewableItems.length > 0 && reviewableItems.every((it) => reviewedIds.includes(it.product_id!));
@@ -93,8 +159,8 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
 
   // Most recent pending payment, fallback to any payment record
   const pendingPayment = payments.find((p) => p.status === "pending") ?? payments[0] ?? null;
-  // Expiry fallback: created_at + 3 hours if no payment record expiry
-  const expiryFallback = new Date(new Date(order.created_at).getTime() + 3 * 60 * 60 * 1000).toISOString();
+  // Expiry fallback: created_at + 24 hours to match Midtrans default window
+  const expiryFallback = new Date(new Date(order.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString();
   const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
   // Payment window already closed — hide the "Menunggu pembayaran" block.
   // The cron /api/cron/expire-orders will cancel the order asynchronously.

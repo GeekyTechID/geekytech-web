@@ -214,11 +214,34 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       pdf_url: notification.pdf_url ?? null,
-      expiry_time: notification.expiry_time ?? null,
+      expiry_time: midtransExpiryToISO(notification.expiry_time),
       raw_response: notification as unknown as Json,
     })
     .eq("midtrans_order_id", orderId)
     .neq("status", "paid");
+}
+
+// Midtrans expiry_time is "YYYY-MM-DD HH:MM:SS" in WIB (UTC+7).
+// Append "+07:00" so PostgreSQL timestamptz stores the correct UTC value.
+function midtransExpiryToISO(t: string | undefined | null): string | null {
+  if (!t) return null;
+  return t.replace(" ", "T") + "+07:00";
+}
+
+async function applyPending(orderId: string, notification: MidtransNotification) {
+  const svc = createServiceClient();
+  const vaNumber = notification.va_numbers?.[0]?.va_number ?? null;
+  await svc
+    .from("payments")
+    .update({
+      midtrans_transaction_id: notification.transaction_id ?? null,
+      va_number: vaNumber,
+      payment_code: notification.payment_code ?? null,
+      expiry_time: midtransExpiryToISO(notification.expiry_time),
+      raw_response: notification as unknown as Json,
+    })
+    .eq("midtrans_order_id", orderId)
+    .eq("status", "pending");
 }
 
 async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled" | "expired" | "failed") {
@@ -318,6 +341,8 @@ export async function POST(req: Request) {
       fraudStatus !== "deny"
     ) {
       await applySettlement(body.order_id, body);
+    } else if (txStatus === "pending") {
+      await applyPending(body.order_id, body);
     } else if (txStatus === "expire") {
       await applyCancelOrExpire(body.order_id, "expired");
     } else if (txStatus === "cancel") {

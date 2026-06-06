@@ -36,7 +36,7 @@ export function formatDate(
     year: "numeric",
   },
 ): string {
-  return new Intl.DateTimeFormat("id-ID", options).format(new Date(dateStr));
+  return new Intl.DateTimeFormat("id-ID", { ...options, timeZone: "Asia/Jakarta" }).format(new Date(dateStr));
 }
 
 /**

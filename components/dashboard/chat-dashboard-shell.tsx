@@ -32,7 +32,7 @@ function relativeTime(iso: string): string {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h} jam lalu`;
   if (h < 48) return "Kemarin";
-  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 }
 
 const STATUS = {
