@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -294,23 +295,34 @@ function useUnviewedOrdersCount() {
 
   React.useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
-      .channel("admin-sidebar-orders")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
-        const o = payload.new as { id: string };
-        trackedIds.current.add(o.id);
-        incrementRef.current();
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
-        const updated = payload.new as { id: string; admin_viewed_at: string | null };
-        if (updated.admin_viewed_at !== null && trackedIds.current.has(updated.id)) {
-          trackedIds.current.delete(updated.id);
-          decrementRef.current();
-        }
-      })
-      .subscribe();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
 
-    return () => { supabase.removeChannel(channel); };
+    // getSession() waits for session cookie load → realtime auth token set with
+    // admin JWT before subscribe, so is_admin() RLS passes and events are received.
+    void supabase.auth.getSession().then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel("admin-sidebar-orders")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+          const o = payload.new as { id: string };
+          trackedIds.current.add(o.id);
+          incrementRef.current();
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
+          const updated = payload.new as { id: string; admin_viewed_at: string | null };
+          if (updated.admin_viewed_at !== null && trackedIds.current.has(updated.id)) {
+            trackedIds.current.delete(updated.id);
+            decrementRef.current();
+          }
+        })
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, []); // stable — callbacks accessed via refs
 
   return count;

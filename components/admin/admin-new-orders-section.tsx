@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 
@@ -69,37 +70,48 @@ export function AdminNewOrdersSection() {
       .finally(() => setLoading(false));
   }, [setCount]);
 
-  // Realtime: new order INSERT → prepend; admin views order UPDATE → remove
+  // Realtime: new order INSERT → prepend; admin views order UPDATE → remove.
+  // getSession() waits for session cookie load so realtime connects with the
+  // admin JWT (not anon) and passes the is_admin() RLS check.
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
-      .channel("admin-new-orders-section")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "orders" },
-        (payload) => {
-          const o = payload.new as UnviewedOrder;
-          setOrders((prev) => [o, ...prev].slice(0, 10));
-          increment();
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "orders" },
-        (payload) => {
-          const updated = payload.new as UnviewedOrder & { admin_viewed_at: string | null };
-          if (updated.admin_viewed_at !== null) {
-            setOrders((prev) => {
-              const existed = prev.some((o) => o.id === updated.id);
-              if (existed) decrement();
-              return prev.filter((o) => o.id !== updated.id);
-            });
-          }
-        },
-      )
-      .subscribe();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
 
-    return () => { supabase.removeChannel(channel); };
+    void supabase.auth.getSession().then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel("admin-new-orders-section")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "orders" },
+          (payload) => {
+            const o = payload.new as UnviewedOrder;
+            setOrders((prev) => [o, ...prev].slice(0, 10));
+            increment();
+          },
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders" },
+          (payload) => {
+            const updated = payload.new as UnviewedOrder & { admin_viewed_at: string | null };
+            if (updated.admin_viewed_at !== null) {
+              setOrders((prev) => {
+                const existed = prev.some((o) => o.id === updated.id);
+                if (existed) decrement();
+                return prev.filter((o) => o.id !== updated.id);
+              });
+            }
+          },
+        )
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [increment, decrement]);
 
   if (loading || orders.length === 0) return null;

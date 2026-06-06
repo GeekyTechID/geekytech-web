@@ -1,16 +1,15 @@
 /** Shared utilities for on-demand courier (GoSend, GrabExpress, etc.) coordinate resolution. */
 
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
 
-export const ON_DEMAND_COURIERS = new Set([
-  "gojek",
-  "grab",
-  "gosend",
-  "borzo",
-  "lalamove",
-  "deliveree",
-  "rara",
-]);
+// Single source of truth — derived from BITESHIP_COURIER_BRANDS onDemand flag.
+// On-demand: gojek, gosend, grab, borzo, lalamove, deliveree, rara
+// Standard (later): all others (jne, sicepat, jnt, anteraja, tiki, ninja, lion,
+//   wahana, sap, pos, idexpress, paxel, rpx, jdl, sentralcargo, dash_express)
+export const ON_DEMAND_COURIERS = new Set(
+  BITESHIP_COURIER_BRANDS.filter((b) => b.onDemand).map((b) => b.code),
+);
 
 /**
  * Check if current Asia/Jakarta (WIB) time is inside Gojek/Grab Same Day pickup window.

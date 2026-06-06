@@ -73,7 +73,7 @@ export async function createBiteshipOrder(
     destination_postal_code: params.destinationPostalCode,
     courier_company: params.courierCompany.toLowerCase(),
     courier_type: params.courierType,
-    ...(isOnDemand && { delivery_type: "now" }),
+    delivery_type: isOnDemand ? "now" : "later",
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
       name: i.name.slice(0, 100),
