@@ -220,10 +220,14 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         .map((l) => l.lineId),
     );
   }, [appliedCoupon, lines]);
-  const flashSaleDiscount = lines
-    .filter((l) => l.isFlashSale)
-    .reduce((s, l) => s + Math.max(0, l.listPrice - l.unitPrice) * l.qty, 0);
-  const regularDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet) - flashSaleDiscount);
+  const flashSaleDiscount = useMemo(
+    () => lines.filter((l) => l.isFlashSale).reduce((s, l) => s + Math.max(0, l.listPrice - l.unitPrice) * l.qty, 0),
+    [lines],
+  );
+  const regularDiscount = useMemo(
+    () => Math.max(0, Math.round(subtotalGross - subtotalNet) - flashSaleDiscount),
+    [subtotalGross, subtotalNet, flashSaleDiscount],
+  );
   const serviceFee = 1000;
   const shippingFee = selectedShipping?.price ?? 0;
   const grandTotal = Math.max(0, Math.round(subtotalNet) - couponDiscount + shippingFee + serviceFee);

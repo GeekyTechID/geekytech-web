@@ -40,7 +40,7 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
     [selectedLines],
   );
   const regularDiscount = useMemo(
-    () => Math.max(0, subtotalGross - subtotal) - flashSaleDiscount,
+    () => Math.max(0, Math.max(0, subtotalGross - subtotal) - flashSaleDiscount),
     [subtotalGross, subtotal, flashSaleDiscount],
   );
   const serviceFee = SERVICE_FEE;
