@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { computeVariantUnitPrice } from "@/lib/utils/product-detail-pricing";
 
@@ -103,7 +103,8 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
   // Fetch active flash sale prices for all variants in cart
   const variantIds = items.map((r) => r.product_variants?.id).filter(Boolean) as string[];
   const now = new Date();
-  const { data: flashRows } = await supabase
+  const serviceSupabase = createServiceClient();
+  const { data: flashRows } = await serviceSupabase
     .from("flash_sale_products")
     .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
     .in("variant_id", variantIds);
@@ -223,7 +224,8 @@ export async function fetchVariantAsBuyNowLine(
   };
 
   const now = new Date();
-  const { data: flashRows } = await supabase
+  const serviceSupabase = createServiceClient();
+  const { data: flashRows } = await serviceSupabase
     .from("flash_sale_products")
     .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
     .eq("variant_id", variantId);
