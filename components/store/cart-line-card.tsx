@@ -34,6 +34,7 @@ export type CartLineView = {
   listPrice: number;
   unitPrice: number;
   discountPercent: number | null;
+  isFlashSale: boolean;
   images: { url: string; alt: string | null }[];
   sku: string;
   weightGrams: number;
