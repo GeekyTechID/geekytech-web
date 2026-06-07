@@ -72,8 +72,13 @@ export async function createBiteshipOrder(
     destination_address: params.destinationAddress,
     destination_postal_code: params.destinationPostalCode,
     courier_company: params.courierCompany.toLowerCase(),
-    courier_type: params.courierType,
+    courier_type: params.courierType.toLowerCase(),
     delivery_type: isOnDemand ? "now" : "later",
+    // Required by Biteship for standard couriers (delivery_type "later").
+    // Use today's date in WIB (UTC+7); on-demand couriers pick up immediately so omit.
+    ...(!isOnDemand && {
+      delivery_date: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date()),
+    }),
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
       name: i.name.slice(0, 100),
@@ -116,6 +121,14 @@ export async function createBiteshipOrder(
         (json.error as string) ??
         (json.message as string) ??
         `Biteship error ${res.status}`;
+      console.error("[Biteship createOrder] failed", {
+        status: res.status,
+        error: errMsg,
+        courier_company: body.courier_company,
+        courier_type: body.courier_type,
+        delivery_type: body.delivery_type,
+        destination_postal_code: body.destination_postal_code,
+      });
       return { ok: false, error: errMsg };
     }
 
@@ -129,7 +142,8 @@ export async function createBiteshipOrder(
       status: (json.status as string) ?? "pending",
       courierName: (courier?.name as string | null) ?? null,
     };
-  } catch {
+  } catch (err) {
+    console.error("[Biteship createOrder] network error", { courier_company: params.courierCompany, err });
     return { ok: false, error: "Jaringan ke Biteship gagal." };
   }
 }
