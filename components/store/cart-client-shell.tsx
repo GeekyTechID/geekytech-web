@@ -8,7 +8,6 @@ import type { CartLineView } from "@/components/store/cart-line-card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { formatRupiah } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 const SERVICE_FEE = 1000;
 
@@ -33,7 +32,17 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
     () => selectedLines.reduce((s, l) => s + l.unitPrice * l.qty, 0),
     [selectedLines],
   );
-  const discountTotal = useMemo(() => Math.max(0, subtotalGross - subtotal), [subtotalGross, subtotal]);
+  const flashSaleDiscount = useMemo(
+    () =>
+      selectedLines
+        .filter((l) => l.isFlashSale)
+        .reduce((s, l) => s + Math.max(0, l.listPrice - l.unitPrice) * l.qty, 0),
+    [selectedLines],
+  );
+  const regularDiscount = useMemo(
+    () => Math.max(0, subtotalGross - subtotal) - flashSaleDiscount,
+    [subtotalGross, subtotal, flashSaleDiscount],
+  );
   const serviceFee = SERVICE_FEE;
 
   const toggleAll = useCallback(() => {
@@ -92,12 +101,22 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
               </dt>
               <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(subtotalGross)}</dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-white/75">Diskon produk</dt>
-              <dd className={cn("shrink-0 font-semibold tabular-nums", discountTotal > 0 && "text-[#EA5329]")}>
-                {discountTotal > 0 ? `−${formatRupiah(discountTotal)}` : formatRupiah(0)}
-              </dd>
-            </div>
+            {regularDiscount > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-white/75">Diskon produk</dt>
+                <dd className="shrink-0 font-semibold tabular-nums text-[#EA5329]">
+                  −{formatRupiah(regularDiscount)}
+                </dd>
+              </div>
+            )}
+            {flashSaleDiscount > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-white/75">Diskon flash sale</dt>
+                <dd className="shrink-0 font-semibold tabular-nums text-[#EA5329]">
+                  −{formatRupiah(flashSaleDiscount)}
+                </dd>
+              </div>
+            )}
             <div className="flex justify-between gap-4">
               <dt className="text-white/75">Biaya jasa aplikasi</dt>
               <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(serviceFee)}</dd>
