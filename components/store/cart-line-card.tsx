@@ -142,6 +142,11 @@ function CartLineCardInner({
         </Link>
         <p className="mt-0.5 text-xs font-semibold uppercase text-[#9a9590]">{line.categoryLabel}</p>
         <p className="mt-1 text-sm font-medium text-[#5c5c5c]">{line.variantName}</p>
+        {line.isFlashSale && (
+          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#EA5329]/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#EA5329]">
+            ⚡ Flash Sale
+          </span>
+        )}
         {line.descriptionExcerpt ? (
           <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#5c5c5c]">{line.descriptionExcerpt}</p>
         ) : null}
