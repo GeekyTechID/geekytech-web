@@ -67,6 +67,14 @@ const SECTION_META: Record<HomeSectionKey, {
 // ── Small helpers ─────────────────────────────────────────────────────────
 const labelClass = "text-[10px] font-semibold uppercase text-muted-foreground";
 
+function isExpiredSale(f: FlashSaleItem): boolean {
+  return !!f.ends_at && new Date(f.ends_at) < new Date();
+}
+
+function isUpcomingSale(f: FlashSaleItem): boolean {
+  return !!f.starts_at && new Date(f.starts_at) > new Date();
+}
+
 function StatusBadge({ active }: { active: boolean }) {
   return <AdminStatusBadge active={active} />;
 }
@@ -120,17 +128,24 @@ export function HomeSectionsEditor({
 
   const activeBannerCount = banners.filter((b) => b.is_active).length;
 
-  // Lookup selected item label for bottom table
-  const getSelectedLabel = (section: HomeSection): string => {
-    if (section.key === "main_banner") return `${activeBannerCount} banner aktif`;
-    if (!section.selected_id) return "Belum dipilih";
-    if (section.key === "flash_sale")
-      return flashSales.find((f) => f.id === section.selected_id)?.name ?? "—";
+  // Lookup selected item info for bottom table
+  const getSelectedInfo = (section: HomeSection): { label: string; inactive: boolean; expired: boolean; upcoming: boolean } => {
+    if (section.key === "main_banner") return { label: `${activeBannerCount} banner aktif`, inactive: false, expired: false, upcoming: false };
+    if (!section.selected_id) return { label: "Belum dipilih", inactive: false, expired: false, upcoming: false };
+    if (section.key === "flash_sale") {
+      const f = flashSales.find((f) => f.id === section.selected_id);
+      return {
+        label: f?.name ?? "—",
+        inactive: f ? !f.is_active : false,
+        expired: f ? isExpiredSale(f) : false,
+        upcoming: f ? isUpcomingSale(f) : false,
+      };
+    }
     if (section.key === "second_products")
-      return secondPromos.find((p) => p.id === section.selected_id)?.title ?? "—";
+      return { label: secondPromos.find((p) => p.id === section.selected_id)?.title ?? "—", inactive: false, expired: false, upcoming: false };
     if (section.key === "featured_products")
-      return featuredPromos.find((p) => p.id === section.selected_id)?.title ?? "—";
-    return "—";
+      return { label: featuredPromos.find((p) => p.id === section.selected_id)?.title ?? "—", inactive: false, expired: false, upcoming: false };
+    return { label: "—", inactive: false, expired: false, upcoming: false };
   };
 
   const isSelected = (sectionKey: HomeSectionKey, itemId: string) =>
@@ -293,12 +308,16 @@ export function HomeSectionsEditor({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-                {flashSales.map((f) => (
+                {flashSales.map((f) => {
+                  const expired = isExpiredSale(f);
+                  const upcoming = isUpcomingSale(f);
+                  return (
                   <tr
                     key={f.id}
                     className={cn(
                       "transition-colors hover:bg-muted/30",
                       isSelected("flash_sale", f.id) && "bg-brand/[0.04]",
+                      expired && "opacity-60",
                     )}
                   >
                     <TdCell>
@@ -312,7 +331,21 @@ export function HomeSectionsEditor({
                     <TdCell>
                       <span className="text-xs text-muted-foreground">{f.product_count} varian</span>
                     </TdCell>
-                    <TdCell><StatusBadge active={f.is_active} /></TdCell>
+                    <TdCell>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <StatusBadge active={f.is_active} />
+                        {expired && (
+                          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                            Expired
+                          </span>
+                        )}
+                        {upcoming && (
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            Belum mulai
+                          </span>
+                        )}
+                      </div>
+                    </TdCell>
                     <TdCell>
                       <span className="text-xs text-muted-foreground">{formatDate(f.created_at)}</span>
                     </TdCell>
@@ -320,7 +353,8 @@ export function HomeSectionsEditor({
                       <SelectButton sectionKey="flash_sale" itemId={f.id} />
                     </TdCell>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -482,7 +516,7 @@ export function HomeSectionsEditor({
             <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
               {sections.map((section, index) => {
                 const { label, icon: Icon } = SECTION_META[section.key];
-                const selectedLabel = getSelectedLabel(section);
+                const selectedInfo = getSelectedInfo(section);
                 const isNoContent = !section.selected_id && section.key !== "main_banner";
                 return (
                   <tr
@@ -533,12 +567,29 @@ export function HomeSectionsEditor({
 
                     {/* Selected content */}
                     <TdCell>
-                      <span className={cn(
-                        "text-sm",
-                        isNoContent ? "italic text-muted-foreground" : "text-foreground",
-                      )}>
-                        {selectedLabel}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={cn(
+                          "text-sm",
+                          isNoContent ? "italic text-muted-foreground" : "text-foreground",
+                        )}>
+                          {selectedInfo.label}
+                        </span>
+                        {selectedInfo.inactive && (
+                          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            Nonaktif — tidak tampil di beranda
+                          </span>
+                        )}
+                        {selectedInfo.expired && (
+                          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                            Expired — tidak tampil di beranda
+                          </span>
+                        )}
+                        {selectedInfo.upcoming && (
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            Belum mulai
+                          </span>
+                        )}
+                      </div>
                     </TdCell>
 
                     {/* Active toggle */}

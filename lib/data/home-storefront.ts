@@ -443,10 +443,13 @@ async function loadFlashSaleShelfProductsForSaleId(saleId: string): Promise<Home
 /** Flash sale aktif pertama (urut `starts_at`) yang punya minimal satu produk siap tampil di rak. */
 async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBlockData | null> {
   const supabase = createServiceClient();
+  const now = new Date().toISOString();
   const { data: sales, error } = await supabase
     .from("flash_sales")
     .select("id, name, subtitle")
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .order("starts_at", { ascending: false });
   if (error || !sales?.length) return null;
 
@@ -469,11 +472,14 @@ async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBl
 
 async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlockData | null> {
   const supabase = createServiceClient();
+  const now = new Date().toISOString();
   const { data: sale, error } = await supabase
     .from("flash_sales")
     .select("id, name, subtitle")
     .eq("id", saleId)
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .maybeSingle();
   if (error || !sale) return null;
   const products = await loadFlashSaleShelfProductsForSaleId(sale.id);
@@ -611,11 +617,14 @@ async function fetchFlashSaleStorefrontById(saleId: string): Promise<{
 } | null> {
   try {
     const supabase = createServiceClient();
+    const now = new Date().toISOString();
     const { data: sale, error: saleErr } = await supabase
       .from("flash_sales")
       .select("id, name, subtitle")
       .eq("id", saleId)
       .eq("is_active", true)
+      .lte("starts_at", now)
+      .gte("ends_at", now)
       .single();
     if (saleErr || !sale) return null;
 
@@ -672,10 +681,13 @@ async function pickFirstFlashSaleIdWithContent(
   supabase: ServiceSupabase,
   exclude: Set<string>,
 ): Promise<string | null> {
+  const now = new Date().toISOString();
   const { data: sales } = await supabase
     .from("flash_sales")
     .select("id")
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .order("starts_at", { ascending: false });
   const candidates = (sales ?? []).filter((r) => !exclude.has(r.id));
   if (candidates.length === 0) return null;
