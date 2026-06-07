@@ -393,6 +393,7 @@ export function AdminSidebar({
                               <SidebarMenuSubButton
                                 asChild
                                 isActive={active}
+                                className="[&>svg]:text-current"
                               >
                                 <Link
                                   href={item.href}
