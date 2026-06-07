@@ -220,7 +220,10 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         .map((l) => l.lineId),
     );
   }, [appliedCoupon, lines]);
-  const catalogDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet));
+  const flashSaleDiscount = lines
+    .filter((l) => l.isFlashSale)
+    .reduce((s, l) => s + Math.max(0, l.listPrice - l.unitPrice) * l.qty, 0);
+  const regularDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet) - flashSaleDiscount);
   const serviceFee = 1000;
   const shippingFee = selectedShipping?.price ?? 0;
   const grandTotal = Math.max(0, Math.round(subtotalNet) - couponDiscount + shippingFee + serviceFee);
@@ -656,12 +659,22 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                     <dt className="text-white/75">Sub total ({itemCount} item)</dt>
                     <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(subtotalGross)}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-white/75">Diskon katalog</dt>
-                    <dd className={cn("shrink-0 font-semibold tabular-nums", catalogDiscount > 0 && "text-[#ffb4a1]")}>
-                      {catalogDiscount > 0 ? `−${formatRupiah(catalogDiscount)}` : formatRupiah(0)}
-                    </dd>
-                  </div>
+                  {regularDiscount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-white/75">Diskon produk</dt>
+                      <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
+                        −{formatRupiah(regularDiscount)}
+                      </dd>
+                    </div>
+                  )}
+                  {flashSaleDiscount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-white/75">Diskon flash sale</dt>
+                      <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
+                        −{formatRupiah(flashSaleDiscount)}
+                      </dd>
+                    </div>
+                  )}
                   {couponDiscount > 0 ? (
                     <div className="flex flex-col gap-0.5">
                       <div className="flex justify-between gap-4">
