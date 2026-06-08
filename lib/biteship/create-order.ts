@@ -74,10 +74,22 @@ export async function createBiteshipOrder(
     courier_company: params.courierCompany.toLowerCase(),
     courier_type: params.courierType.toLowerCase(),
     delivery_type: isOnDemand ? "now" : "later",
-    // Required by Biteship for standard couriers (delivery_type "later").
-    // Use today's date in WIB (UTC+7); on-demand couriers pick up immediately so omit.
+    // delivery_date = scheduled courier PICKUP date, always the next working day.
+    // Standard e-commerce flow: customer pays → store packs → courier picks up NEXT day.
+    // Never use today — cutoffs vary per courier/area and we can't predict them.
+    // Skip Sunday (Indonesian couriers don't pick up on Sundays).
     ...(!isOnDemand && {
-      delivery_date: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date()),
+      delivery_date: (() => {
+        const wibFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" });
+        let pickup = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow
+        const wibStr = wibFmt.format(pickup); // "YYYY-MM-DD"
+        const [y, m, d] = wibStr.split("-").map(Number);
+        if (new Date(y, m - 1, d).getDay() === 0) {
+          // Sunday → Monday
+          pickup = new Date(pickup.getTime() + 24 * 60 * 60 * 1000);
+        }
+        return wibFmt.format(pickup);
+      })(),
     }),
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
@@ -127,6 +139,7 @@ export async function createBiteshipOrder(
         courier_company: body.courier_company,
         courier_type: body.courier_type,
         delivery_type: body.delivery_type,
+        delivery_date: body.delivery_date,
         destination_postal_code: body.destination_postal_code,
       });
       return { ok: false, error: errMsg };
