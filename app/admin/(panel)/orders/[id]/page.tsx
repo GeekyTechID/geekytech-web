@@ -14,6 +14,7 @@ import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import { SyncBiteshipButton } from "./_components/sync-biteship-button";
 import { ConfirmPickupButton } from "./_components/confirm-pickup-button";
+import { StartPackingButton } from "./_components/start-packing-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
 import type { OrderStatus } from "../_constants";
 
@@ -379,10 +380,17 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 )}
                 {shipment && !shipment.awb && shipment.biteship_order_id && (
                   <div className="space-y-2 pt-1">
-                    {shipment.status === "pending" && order.status === "processing" ? (
+                    {order.status === "paid" && shipment.status === "pending" ? (
                       <>
                         <p className="text-[11px] text-muted-foreground">
-                          Paket terdaftar di Biteship. Setelah dikemas, konfirmasi siap pickup agar kurir dijadwalkan.
+                          Pembayaran diterima. Kemas paket lalu lanjut ke konfirmasi pickup.
+                        </p>
+                        <StartPackingButton orderId={order.id} />
+                      </>
+                    ) : order.status === "processing" && shipment.status === "pending" ? (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          Paket terdaftar di Biteship. Konfirmasi siap pickup setelah selesai dikemas.
                         </p>
                         <ConfirmPickupButton orderId={order.id} />
                       </>
