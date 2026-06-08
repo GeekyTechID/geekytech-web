@@ -5,6 +5,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
+import type { Database } from "@/types/supabase";
 
 export async function updateOrderStatus(
   orderId: string,
@@ -154,10 +155,12 @@ export async function syncBiteshipAWB(
   const { order } = result;
   const awb = order.courier?.waybill_id ?? null;
 
-  const updatePayload: Record<string, unknown> = {
+  const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
     updated_at: new Date().toISOString(),
   };
-  if (order.status && order.status !== "pending") updatePayload.status = order.status;
+  if (order.status && order.status !== "pending") {
+    updatePayload.status = order.status as Database["public"]["Enums"]["shipment_status"];
+  }
   if (awb) updatePayload.awb = awb;
   if (order.courier?.name) updatePayload.courier_name = order.courier.name;
 
