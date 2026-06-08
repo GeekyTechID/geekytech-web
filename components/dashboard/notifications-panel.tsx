@@ -17,10 +17,10 @@ type Row = {
   type: string;
   is_read: boolean;
   created_at: string;
-  data: Json;
+  data: Json | null;
 };
 
-function getNotificationUrl(type: string, data: Json): string | null {
+function getNotificationUrl(type: string, data: Json | null): string | null {
   if (!data || typeof data !== "object" || Array.isArray(data)) return null;
   const orderId = (data.orderId ?? data.order_id) as string | undefined;
   if (!orderId) return null;
