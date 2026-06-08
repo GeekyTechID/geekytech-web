@@ -4,8 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/supabase";
 
 export async function proxy(request: NextRequest) {
-  // Biteship webhook only accepts base URL — rewrite POST "/" to our handler
-  if (request.method === "POST" && request.nextUrl.pathname === "/") {
+  // Biteship webhook only accepts base URL — rewrite POST "/" to our handler.
+  // Skip if Next-Action header is present (Next.js server action, not a Biteship webhook).
+  if (
+    request.method === "POST" &&
+    request.nextUrl.pathname === "/" &&
+    !request.headers.get("Next-Action")
+  ) {
     return NextResponse.rewrite(new URL("/api/webhooks/biteship", request.url));
   }
 
