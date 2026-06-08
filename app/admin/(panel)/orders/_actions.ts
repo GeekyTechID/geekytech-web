@@ -5,7 +5,34 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
-import type { Database } from "@/types/supabase";
+import type { Database, Json } from "@/types/supabase";
+
+type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
+type TrackingHistoryEntry = { status: string; note: string; at: string };
+
+function mapShipmentStatus(s: string): ShipmentStatus {
+  switch (s.toLowerCase()) {
+    case "confirmed": return "confirmed";
+    case "allocated": return "allocated";
+    case "picking_up": return "picking_up";
+    case "picked": return "picked";
+    case "dropping_off": return "dropping_off";
+    case "delivered": return "delivered";
+    case "rejected": return "rejected";
+    case "cancelled": case "canceled": return "cancelled";
+    case "return": case "returned": return "returned";
+    default: return "pending";
+  }
+}
+
+function orderStatusFromShipment(s: ShipmentStatus): Database["public"]["Enums"]["order_status"] | null {
+  switch (s) {
+    case "confirmed": case "allocated": case "picking_up": case "picked": case "dropping_off":
+      return "shipped";
+    case "delivered": return "delivered";
+    default: return null;
+  }
+}
 
 export async function updateOrderStatus(
   orderId: string,
@@ -136,12 +163,12 @@ export async function updateOrderStatus(
 
 export async function syncBiteshipAWB(
   orderId: string,
-): Promise<{ error?: string; awb?: string | null }> {
+): Promise<{ error?: string; awb?: string | null; status?: string }> {
   const supabase = await createServiceClient();
 
   const { data: shipment } = await supabase
     .from("shipments")
-    .select("id, biteship_order_id, awb")
+    .select("id, biteship_order_id, awb, status, tracking_history, picked_up_at, delivered_at")
     .eq("order_id", orderId)
     .maybeSingle();
 
@@ -154,20 +181,89 @@ export async function syncBiteshipAWB(
 
   const { order } = result;
   const awb = order.courier?.waybill_id ?? null;
+  const rawStatus = (order.status ?? "").toLowerCase();
+  const now = new Date().toISOString();
+
+  const newShipStatus = mapShipmentStatus(rawStatus);
+
+  // Append tracking history entry
+  const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
+    ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
+    : [];
+  const entry: TrackingHistoryEntry = { status: rawStatus, note: "Sinkronisasi manual", at: now };
+  const last = history.at(-1);
+  const newHistory = last && last.status === entry.status ? history : [...history, entry];
 
   const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
-    updated_at: new Date().toISOString(),
+    tracking_history: newHistory as unknown as Json,
+    updated_at: now,
   };
-  if (order.status && order.status !== "pending") {
-    updatePayload.status = order.status as Database["public"]["Enums"]["shipment_status"];
-  }
+  if (newShipStatus !== "pending") updatePayload.status = newShipStatus;
   if (awb) updatePayload.awb = awb;
   if (order.courier?.name) updatePayload.courier_name = order.courier.name;
+  if (newShipStatus === "picked" && !shipment.picked_up_at) updatePayload.picked_up_at = now;
+  if (newShipStatus === "delivered" && !shipment.delivered_at) updatePayload.delivered_at = now;
 
   await supabase.from("shipments").update(updatePayload).eq("id", shipment.id);
 
+  // Sync orders.status + history
+  const { data: orderRow } = await supabase
+    .from("orders")
+    .select("id, user_id, order_number, status")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  const newOrderStatus = orderStatusFromShipment(newShipStatus);
+  if (
+    orderRow &&
+    newOrderStatus &&
+    orderRow.status !== newOrderStatus &&
+    orderRow.status !== "completed" &&
+    orderRow.status !== "cancelled"
+  ) {
+    await supabase.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+    await supabase.from("order_status_history").insert({
+      order_id: orderRow.id,
+      status: newOrderStatus,
+      note: `Status diperbarui dari sinkronisasi manual Biteship: ${rawStatus}`,
+      changed_by: null,
+    });
+  }
+
+  // User notification
+  if (orderRow?.user_id && orderRow.order_number) {
+    if (newShipStatus === "picking_up" || newShipStatus === "picked") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Sedang Dikemas",
+        body: `Pesanan ${orderRow.order_number} sedang dikemas dan siap dikirim.`,
+        type: "order_shipped",
+        data: { orderId, awb: awb ?? undefined },
+      });
+    } else if (newShipStatus === "dropping_off") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Dalam Perjalanan",
+        body: `Pesanan ${orderRow.order_number} sedang dalam perjalanan ke alamatmu.`,
+        type: "order_in_transit",
+        data: { orderId, awb: awb ?? undefined },
+      });
+    } else if (newShipStatus === "delivered") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Telah Sampai",
+        body: `Pesanan ${orderRow.order_number} telah sampai di tujuan. Jangan lupa beri ulasan!`,
+        type: "order_delivered",
+        data: { orderId },
+      });
+    }
+  }
+
   revalidatePath(`/admin/orders/${orderId}`);
-  return { awb };
+  revalidatePath(`/dashboard/orders/${orderId}`);
+  revalidatePath(`/dashboard/orders`);
+
+  return { awb, status: newShipStatus };
 }
 
 export async function updateOrderAWB(

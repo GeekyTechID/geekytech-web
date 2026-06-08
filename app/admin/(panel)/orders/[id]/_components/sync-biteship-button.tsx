@@ -18,10 +18,12 @@ export function SyncBiteshipButton({ orderId }: SyncBiteshipButtonProps) {
       const result = await syncBiteshipAWB(orderId);
       if (result.error) {
         toast.error(`Sync gagal: ${result.error}`);
-      } else if (result.awb) {
-        toast.success(`AWB berhasil disinkronisasi: ${result.awb}`);
       } else {
-        toast.info("Status diperbarui. AWB belum tersedia di Biteship.");
+        toast.success(
+          result.awb
+            ? `Disinkronisasi. AWB: ${result.awb}. Status: ${result.status ?? "-"}`
+            : `Disinkronisasi. Status: ${result.status ?? "-"}. AWB belum tersedia.`
+        );
       }
     });
   };

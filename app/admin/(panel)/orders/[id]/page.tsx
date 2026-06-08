@@ -378,6 +378,14 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     value={<span className="font-mono text-[11px]">{shipment.biteship_order_id}</span>}
                   />
                 )}
+                {shipment?.awb && shipment.biteship_order_id && !["delivered", "cancelled", "returned"].includes(shipment.status ?? "") && (
+                  <div className="space-y-1 pt-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Tarik status terbaru dari Biteship secara manual.
+                    </p>
+                    <SyncBiteshipButton orderId={order.id} />
+                  </div>
+                )}
                 {shipment && !shipment.awb && shipment.biteship_order_id && (
                   <div className="space-y-2 pt-1">
                     {order.status === "paid" && shipment.status === "pending" ? (
