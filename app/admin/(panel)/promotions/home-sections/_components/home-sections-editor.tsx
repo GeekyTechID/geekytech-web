@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ChevronUp, ChevronDown,
-  ImageIcon, Zap, PackageSearch, Star,
+  ImageIcon, Zap, PackageSearch, Star, LayoutGrid,
   ExternalLink, AlertCircle, Clock, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -63,11 +63,15 @@ interface Props {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────
+const GENERIC_KEYS = new Set<HomeSectionKey>([
+  "promo_5", "promo_6", "promo_7", "promo_8",
+]);
+
 const SECTION_META: Record<HomeSectionKey, {
   label: string;
   description: string;
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
-  manageHref: string;
+  manageHref: string | null;
 }> = {
   main_banner: {
     label: "Main Banner",
@@ -93,6 +97,30 @@ const SECTION_META: Record<HomeSectionKey, {
     icon: Star,
     manageHref: "/admin/promotions/featured-products",
   },
+  promo_5: {
+    label: "Slot Promosi 5",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_6: {
+    label: "Slot Promosi 6",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_7: {
+    label: "Slot Promosi 7",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_8: {
+    label: "Slot Promosi 8",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
 };
 
 const CLEAR_VALUE = "__clear__";
@@ -106,7 +134,6 @@ function isUpcoming(startsAt: string | null | undefined): boolean {
   return !!startsAt && new Date(startsAt) > new Date();
 }
 
-// ── Selected item status badge ────────────────────────────────────────────
 function StatusBadge({ className, children }: { className: string; children: React.ReactNode }) {
   return (
     <span className={cn(
@@ -124,7 +151,6 @@ function SectionCard({
   index,
   totalCount,
   availableOptions,
-  selectedLabel,
   warningBadge,
   onSelect,
   onToggle,
@@ -134,9 +160,11 @@ function SectionCard({
   section: HomeSection;
   index: number;
   totalCount: number;
-  // null = main_banner (no dropdown)
-  availableOptions: null | { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
-  selectedLabel: string | null;
+  availableOptions: null | {
+    flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+    second: { value: string; label: string; sub: string; inactive: boolean }[];
+    featured: { value: string; label: string; sub: string; inactive: boolean }[];
+  } | { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
   warningBadge: React.ReactNode;
   onSelect: (value: string) => void;
   onToggle: () => void;
@@ -144,6 +172,27 @@ function SectionCard({
   onMoveDown: () => void;
 }) {
   const { label, description, icon: Icon, manageHref } = SECTION_META[section.key];
+  const isGeneric = GENERIC_KEYS.has(section.key);
+
+  // Typed options (flash_sale / second / featured — single flat array)
+  const typedOptions = !isGeneric && availableOptions !== null
+    ? availableOptions as { value: string; label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean }[]
+    : null;
+
+  // Generic options (grouped)
+  const groupedOptions = isGeneric && availableOptions !== null
+    ? availableOptions as {
+        flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+        second: { value: string; label: string; sub: string; inactive: boolean }[];
+        featured: { value: string; label: string; sub: string; inactive: boolean }[];
+      }
+    : null;
+
+  const hasAnyOptions = typedOptions
+    ? typedOptions.length > 0
+    : groupedOptions
+      ? groupedOptions.flash.length + groupedOptions.second.length + groupedOptions.featured.length > 0
+      : false;
 
   return (
     <div className={cn(
@@ -186,31 +235,33 @@ function SectionCard({
             <p className="text-[11px] text-muted-foreground">{description}</p>
           </div>
 
-          {/* Main banner: no selection — shows all active banners automatically */}
+          {/* Main banner: no dropdown */}
           {availableOptions === null ? (
             <div className="flex items-center gap-3">
               <span className="text-[12px] text-muted-foreground">
                 Semua banner aktif tampil otomatis di carousel
               </span>
-              <Link
-                href={manageHref}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
-              >
-                Kelola <ExternalLink size={10} />
-              </Link>
+              {manageHref && (
+                <Link
+                  href={manageHref}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
+                >
+                  Kelola <ExternalLink size={10} />
+                </Link>
+              )}
             </div>
           ) : (
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <Select
                   value={section.selected_id ?? ""}
-                  onValueChange={(val) => onSelect(val)}
+                  onValueChange={onSelect}
                 >
                   <SelectTrigger className="h-8 w-full max-w-xs text-sm">
                     <SelectValue placeholder="Pilih promosi..." />
                   </SelectTrigger>
-                  <SelectContent position="popper" align="start" className="min-w-[280px]">
-                    {/* Clear option */}
+                  <SelectContent position="popper" align="start" className="min-w-[300px]">
+                    {/* Clear */}
                     <SelectGroup>
                       <SelectItem value={CLEAR_VALUE} className="text-muted-foreground">
                         <span className="flex items-center gap-1.5">
@@ -220,54 +271,85 @@ function SectionCard({
                       </SelectItem>
                     </SelectGroup>
 
-                    {availableOptions.length > 0 && <SelectSeparator />}
+                    {hasAnyOptions && <SelectSeparator />}
 
-                    {availableOptions.length === 0 ? (
-                      <div className="px-3 py-3 text-center text-[11px] text-muted-foreground">
-                        Semua item sudah dipakai di seksi lain
-                      </div>
-                    ) : (
+                    {/* Typed (flash / second / featured — flat) */}
+                    {typedOptions && typedOptions.length > 0 && (
                       <SelectGroup>
                         <SelectLabel>Tersedia</SelectLabel>
-                        {availableOptions.map((opt) => (
+                        {typedOptions.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
-                            <span className="flex flex-col gap-0.5">
-                              <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                                {opt.label}
-                                {opt.expired && (
-                                  <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                    Expired
-                                  </span>
-                                )}
-                                {opt.upcoming && (
-                                  <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                    Belum mulai
-                                  </span>
-                                )}
-                                {opt.inactive && (
-                                  <span className="rounded-full bg-zinc-100 px-1.5 py-px text-[9px] font-semibold uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                                    Nonaktif
-                                  </span>
-                                )}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">{opt.sub}</span>
-                            </span>
+                            <ItemLabel opt={opt} />
                           </SelectItem>
                         ))}
                       </SelectGroup>
                     )}
+
+                    {/* Generic — grouped by type */}
+                    {groupedOptions && (
+                      <>
+                        {groupedOptions.flash.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>Flash Sale</SelectLabel>
+                            {groupedOptions.flash.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <ItemLabel opt={opt} />
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        )}
+                        {groupedOptions.second.length > 0 && (
+                          <>
+                            {groupedOptions.flash.length > 0 && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>Produk Second</SelectLabel>
+                              {groupedOptions.second.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <ItemLabel opt={opt} />
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        )}
+                        {groupedOptions.featured.length > 0 && (
+                          <>
+                            {(groupedOptions.flash.length > 0 || groupedOptions.second.length > 0) && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>Rekomendasi Produk</SelectLabel>
+                              {groupedOptions.featured.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <ItemLabel opt={opt} />
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        )}
+                        {!hasAnyOptions && (
+                          <div className="px-3 py-3 text-center text-[11px] text-muted-foreground">
+                            Semua promosi sudah dipakai di seksi lain
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {!isGeneric && !hasAnyOptions && (
+                      <div className="px-3 py-3 text-center text-[11px] text-muted-foreground">
+                        Semua item sudah dipakai di seksi lain
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
 
-                <Link
-                  href={manageHref}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-brand hover:underline"
-                >
-                  Kelola <ExternalLink size={10} />
-                </Link>
+                {manageHref && (
+                  <Link
+                    href={manageHref}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-brand hover:underline"
+                  >
+                    Kelola <ExternalLink size={10} />
+                  </Link>
+                )}
               </div>
 
-              {/* Warning badge under select */}
               {warningBadge}
             </div>
           )}
@@ -288,9 +370,37 @@ function SectionCard({
   );
 }
 
+function ItemLabel({ opt }: {
+  opt: { label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean };
+}) {
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+        {opt.label}
+        {opt.expired && (
+          <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            Expired
+          </span>
+        )}
+        {opt.upcoming && (
+          <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            Belum mulai
+          </span>
+        )}
+        {opt.inactive && (
+          <span className="rounded-full bg-zinc-100 px-1.5 py-px text-[9px] font-semibold uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+            Nonaktif
+          </span>
+        )}
+      </span>
+      <span className="text-[10px] text-muted-foreground">{opt.sub}</span>
+    </span>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────
 export function HomeSectionsEditor({
-  banners,
+  banners: _banners,
   flashSales,
   secondPromos,
   featuredPromos,
@@ -299,23 +409,23 @@ export function HomeSectionsEditor({
   const [sections, setSections] = useState<HomeSection[]>(initialSections);
   const [isPending, startTransition] = useTransition();
 
-  // Set of selected IDs per type (to enforce exclusive assignment)
-  const selectedFlashSaleIds = new Set(
-    sections.filter((s) => s.key === "flash_sale" && s.selected_id).map((s) => s.selected_id!),
-  );
-  const selectedSecondIds = new Set(
-    sections.filter((s) => s.key === "second_products" && s.selected_id).map((s) => s.selected_id!),
-  );
-  const selectedFeaturedIds = new Set(
-    sections.filter((s) => s.key === "featured_products" && s.selected_id).map((s) => s.selected_id!),
-  );
+  // ── Collect ALL selected IDs (for exclusive assignment) ───────────────
+  const getAllUsedIds = (excludeKey: HomeSectionKey): Set<string> =>
+    new Set(
+      sections
+        .filter((s) => s.key !== excludeKey && s.selected_id)
+        .map((s) => s.selected_id!),
+    );
 
+  // ── Build dropdown options per section ────────────────────────────────
   const getOptionsForSection = (section: HomeSection) => {
     if (section.key === "main_banner") return null;
 
+    const usedElsewhere = getAllUsedIds(section.key);
+
     if (section.key === "flash_sale") {
       return flashSales
-        .filter((f) => f.id === section.selected_id || !selectedFlashSaleIds.has(f.id))
+        .filter((f) => f.id === section.selected_id || !usedElsewhere.has(f.id))
         .map((f) => ({
           value: f.id,
           label: f.name,
@@ -328,7 +438,7 @@ export function HomeSectionsEditor({
 
     if (section.key === "second_products") {
       return secondPromos
-        .filter((p) => p.id === section.selected_id || !selectedSecondIds.has(p.id))
+        .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
         .map((p) => ({
           value: p.id,
           label: p.title,
@@ -343,7 +453,7 @@ export function HomeSectionsEditor({
 
     if (section.key === "featured_products") {
       return featuredPromos
-        .filter((p) => p.id === section.selected_id || !selectedFeaturedIds.has(p.id))
+        .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
         .map((p) => ({
           value: p.id,
           label: p.title,
@@ -356,15 +466,52 @@ export function HomeSectionsEditor({
         }));
     }
 
+    // Generic slots (promo_5…promo_8)
+    if (GENERIC_KEYS.has(section.key)) {
+      return {
+        flash: flashSales
+          .filter((f) => f.id === section.selected_id || !usedElsewhere.has(f.id))
+          .map((f) => ({
+            value: f.id,
+            label: f.name,
+            sub: `${f.product_count} varian · ${formatDate(f.starts_at)} – ${formatDate(f.ends_at)}`,
+            expired: isExpired(f.ends_at),
+            upcoming: isUpcoming(f.starts_at),
+            inactive: !f.is_active,
+          })),
+        second: secondPromos
+          .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+          .map((p) => ({
+            value: p.id,
+            label: p.title,
+            sub: p.selection_mode === "manual"
+              ? `Per Produk · ${p.product_count} produk`
+              : `Per Brand · ${p.brand_count} brand`,
+            inactive: !p.is_active,
+          })),
+        featured: featuredPromos
+          .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+          .map((p) => ({
+            value: p.id,
+            label: p.title,
+            sub: p.selection_mode === "manual"
+              ? `Per Produk · ${p.product_count} produk`
+              : `Per Brand · ${p.brand_count} brand`,
+            inactive: !p.is_active,
+          })),
+      };
+    }
+
     return [];
   };
 
+  // ── Warning badge ─────────────────────────────────────────────────────
   const getWarningBadge = (section: HomeSection): React.ReactNode => {
     if (!section.selected_id) return null;
 
-    if (section.key === "flash_sale") {
-      const f = flashSales.find((f) => f.id === section.selected_id);
-      if (!f) return null;
+    // Try flash_sale (applies to flash_sale typed AND generic slots)
+    const f = flashSales.find((f) => f.id === section.selected_id);
+    if (f) {
       if (isExpired(f.ends_at)) {
         return (
           <StatusBadge className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
@@ -389,46 +536,23 @@ export function HomeSectionsEditor({
           </StatusBadge>
         );
       }
+      return null;
     }
 
-    if (section.key === "second_products") {
-      const p = secondPromos.find((p) => p.id === section.selected_id);
-      if (p && !p.is_active) {
-        return (
-          <StatusBadge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-            <AlertCircle size={10} />
-            Nonaktif — tidak akan tampil di beranda
-          </StatusBadge>
-        );
-      }
-    }
-
-    if (section.key === "featured_products") {
-      const p = featuredPromos.find((p) => p.id === section.selected_id);
-      if (p && !p.is_active) {
-        return (
-          <StatusBadge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-            <AlertCircle size={10} />
-            Nonaktif — tidak akan tampil di beranda
-          </StatusBadge>
-        );
-      }
+    const promo = [...secondPromos, ...featuredPromos].find((p) => p.id === section.selected_id);
+    if (promo && !promo.is_active) {
+      return (
+        <StatusBadge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          <AlertCircle size={10} />
+          Nonaktif — tidak akan tampil di beranda
+        </StatusBadge>
+      );
     }
 
     return null;
   };
 
-  const getSelectedLabel = (section: HomeSection): string | null => {
-    if (!section.selected_id) return null;
-    if (section.key === "flash_sale")
-      return flashSales.find((f) => f.id === section.selected_id)?.name ?? null;
-    if (section.key === "second_products")
-      return secondPromos.find((p) => p.id === section.selected_id)?.title ?? null;
-    if (section.key === "featured_products")
-      return featuredPromos.find((p) => p.id === section.selected_id)?.title ?? null;
-    return null;
-  };
-
+  // ── Event handlers ────────────────────────────────────────────────────
   const handleSelect = (sectionKey: HomeSectionKey, value: string) => {
     const newId = value === CLEAR_VALUE || value === "" ? null : value;
     setSections((prev) =>
@@ -470,7 +594,6 @@ export function HomeSectionsEditor({
 
   return (
     <div className="space-y-4">
-      {/* Section cards */}
       {sections.map((section, index) => (
         <SectionCard
           key={section.key}
@@ -478,7 +601,6 @@ export function HomeSectionsEditor({
           index={index}
           totalCount={sections.length}
           availableOptions={getOptionsForSection(section)}
-          selectedLabel={getSelectedLabel(section)}
           warningBadge={getWarningBadge(section)}
           onSelect={(val) => handleSelect(section.key, val)}
           onToggle={() => toggleActive(section.key)}

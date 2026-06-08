@@ -4,7 +4,15 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/supabase";
 
-export type HomeSectionKey = "main_banner" | "flash_sale" | "second_products" | "featured_products";
+export type HomeSectionKey =
+  | "main_banner"
+  | "flash_sale"
+  | "second_products"
+  | "featured_products"
+  | "promo_5"
+  | "promo_6"
+  | "promo_7"
+  | "promo_8";
 
 export type HomeSection = {
   key: HomeSectionKey;

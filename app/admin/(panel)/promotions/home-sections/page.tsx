@@ -7,10 +7,14 @@ export const metadata: Metadata = { title: "Tampilan Beranda — Admin GeekyTech
 export const dynamic = "force-dynamic";
 
 const DEFAULT_SECTIONS: HomeSection[] = [
-  { key: "main_banner",       selected_id: null, is_active: true, order: 1 },
-  { key: "flash_sale",        selected_id: null, is_active: true, order: 2 },
-  { key: "second_products",   selected_id: null, is_active: true, order: 3 },
-  { key: "featured_products", selected_id: null, is_active: true, order: 4 },
+  { key: "main_banner",       selected_id: null, is_active: true,  order: 1 },
+  { key: "flash_sale",        selected_id: null, is_active: true,  order: 2 },
+  { key: "second_products",   selected_id: null, is_active: true,  order: 3 },
+  { key: "featured_products", selected_id: null, is_active: true,  order: 4 },
+  { key: "promo_5",           selected_id: null, is_active: false, order: 5 },
+  { key: "promo_6",           selected_id: null, is_active: false, order: 6 },
+  { key: "promo_7",           selected_id: null, is_active: false, order: 7 },
+  { key: "promo_8",           selected_id: null, is_active: false, order: 8 },
 ];
 
 export default async function HomeSectionsPage() {
@@ -129,6 +133,9 @@ export default async function HomeSectionsPage() {
     const saved = stored?.find((s) => s.key === def.key);
     return saved ?? def;
   }).sort((a, b) => a.order - b.order);
+
+  // For generic promo slots (promo_5…promo_8) all promotions + flash sales are needed.
+  // We reuse the same arrays already fetched above — no extra queries required.
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">

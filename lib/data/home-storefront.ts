@@ -13,11 +13,17 @@ type BannerRow = Pick<
 >;
 
 const DEFAULT_HOME_SECTIONS: HomeSection[] = [
-  { key: "main_banner", selected_id: null, is_active: true, order: 1 },
-  { key: "flash_sale", selected_id: null, is_active: true, order: 2 },
-  { key: "second_products", selected_id: null, is_active: true, order: 3 },
-  { key: "featured_products", selected_id: null, is_active: true, order: 4 },
+  { key: "main_banner",       selected_id: null, is_active: true,  order: 1 },
+  { key: "flash_sale",        selected_id: null, is_active: true,  order: 2 },
+  { key: "second_products",   selected_id: null, is_active: true,  order: 3 },
+  { key: "featured_products", selected_id: null, is_active: true,  order: 4 },
+  { key: "promo_5",           selected_id: null, is_active: false, order: 5 },
+  { key: "promo_6",           selected_id: null, is_active: false, order: 6 },
+  { key: "promo_7",           selected_id: null, is_active: false, order: 7 },
+  { key: "promo_8",           selected_id: null, is_active: false, order: 8 },
 ];
+
+const GENERIC_SECTION_KEYS = new Set<HomeSectionKey>(["promo_5", "promo_6", "promo_7", "promo_8"]);
 
 function nowMs(): number {
   return Date.now();
@@ -42,6 +48,10 @@ function parseHomeSections(value: unknown): HomeSection[] {
     "flash_sale",
     "second_products",
     "featured_products",
+    "promo_5",
+    "promo_6",
+    "promo_7",
+    "promo_8",
   ]);
   const parsed: HomeSection[] = [];
   if (Array.isArray(value)) {
@@ -570,7 +580,6 @@ export type DynamicPromoBlock = {
   products: HomeShelfProduct[];
 };
 
-const MAIN_BANNER_SECTION_TITLE = "Banner utama";
 const FALLBACK_HOME_PROMO_TITLE = "Produk terbaru";
 const FALLBACK_HOME_PROMO_SUBTITLE =
   "Kurasi dari katalog aktif GeekyTech — buka halaman produk untuk varian lengkap.";
@@ -740,34 +749,8 @@ export async function fetchDynamicHomePromoBlocks(
       sections.map(async (s): Promise<DynamicPromoBlock | null> => {
         if (!s.is_active) return null;
 
-        if (s.key === "main_banner") {
-          const banners = await fetchTemplateBanners("main_banner");
-          if (banners.length === 0) return null;
-          return {
-            sectionKey: "main_banner",
-            title: MAIN_BANNER_SECTION_TITLE,
-            subtitle: null,
-            banners,
-            products: [],
-          };
-        }
-
-        if (s.key === "flash_sale") {
-          let saleId = s.selected_id;
-          if (!saleId) {
-            saleId = await pickFirstFlashSaleIdWithContent(supabase, excludeFlash);
-          }
-          if (!saleId) return null;
-          const fs = await fetchFlashSaleStorefrontById(saleId);
-          if (!fs || (fs.banners.length === 0 && fs.products.length === 0)) return null;
-          return {
-            sectionKey: "flash_sale",
-            title: fs.saleName,
-            subtitle: fs.subtitle,
-            banners: fs.banners,
-            products: fs.products,
-          };
-        }
+        // main_banner and flash_sale are rendered by dedicated components above brands
+        if (s.key === "main_banner" || s.key === "flash_sale") return null;
 
         if (s.key === "second_products" || s.key === "featured_products") {
           let promoId = s.selected_id;
@@ -795,6 +778,50 @@ export async function fetchDynamicHomePromoBlocks(
             sectionKey: s.key,
             title: promo.title,
             subtitle: promo.subtitle,
+            banners,
+            products,
+          };
+        }
+
+        // Generic slots promo_5…promo_8: auto-detect type from selected_id
+        if (GENERIC_SECTION_KEYS.has(s.key)) {
+          if (!s.selected_id) return null; // no auto-fallback for generic slots
+
+          // Try flash sale first
+          const flashData = await fetchFlashSaleStorefrontById(s.selected_id);
+          if (flashData) {
+            if (flashData.banners.length === 0 && flashData.products.length === 0) return null;
+            return {
+              sectionKey: s.key,
+              title: flashData.saleName,
+              subtitle: flashData.subtitle,
+              banners: flashData.banners,
+              products: flashData.products,
+            };
+          }
+
+          // Try promotion (second_products or featured_products)
+          const { data: promo } = await supabase
+            .from("promotions")
+            .select("id, type, title, subtitle, is_active")
+            .eq("id", s.selected_id)
+            .maybeSingle();
+
+          if (!promo || promo.is_active !== true) return null;
+          const promoType = promo.type as "second_products" | "featured_products";
+          if (promoType !== "second_products" && promoType !== "featured_products") return null;
+
+          const [banners, products] = await Promise.all([
+            fetchTemplateBanners(promoType),
+            resolvePromotionShelfProducts(promo.id, promoType),
+          ]);
+
+          if (banners.length === 0 && products.length === 0) return null;
+
+          return {
+            sectionKey: s.key,
+            title: promo.title,
+            subtitle: promo.subtitle ?? null,
             banners,
             products,
           };

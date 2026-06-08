@@ -5,10 +5,9 @@ import { HomeDynamicPromoBlocksFetcher } from "@/components/store/home-dynamic-p
 import { HomeFlashSaleBlock } from "@/components/store/home-flash-sale-block";
 import { HomeMainHero } from "@/components/store/home-main-hero";
 import { ShopByBrandSection } from "@/components/store/shop-by-brand-section";
-import { HOME_HERO_FLASH_SALE_CAMPAIGN_NAME } from "@/lib/constants/home-flash-sale";
 import {
-  fetchFlashSaleBlockByCampaignName,
   fetchMainHeroBanners,
+  fetchPrimaryHomeFlashSaleBlock,
   fetchShopBrands,
 } from "@/lib/data/home-storefront";
 
@@ -23,7 +22,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const loaded = await Promise.all([
     fetchMainHeroBanners(),
-    fetchFlashSaleBlockByCampaignName(HOME_HERO_FLASH_SALE_CAMPAIGN_NAME),
+    fetchPrimaryHomeFlashSaleBlock(),
     fetchShopBrands(),
   ]).catch(() => null);
 
