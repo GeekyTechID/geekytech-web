@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
+import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
@@ -354,6 +355,12 @@ export async function confirmReadyForPickup(
   }
   if (shipment.status !== "pending") {
     return { error: "Pesanan sudah dikonfirmasi atau sedang diproses kurir." };
+  }
+
+  // Konfirmasi ke Biteship API agar kurir dijadwalkan untuk pickup
+  const confirmResult = await confirmBiteshipOrder(shipment.biteship_order_id);
+  if (!confirmResult.ok) {
+    return { error: `Gagal konfirmasi ke Biteship: ${confirmResult.error}` };
   }
 
   await supabase
