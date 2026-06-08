@@ -238,3 +238,37 @@ export async function updateOrderAWB(
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
 }
+
+export async function confirmReadyForPickup(
+  orderId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data: shipment } = await supabase
+    .from("shipments")
+    .select("id, status, biteship_order_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  if (!shipment?.biteship_order_id) {
+    return { error: "Tidak ada Biteship Order ID untuk pesanan ini." };
+  }
+  if (shipment.status !== "pending") {
+    return { error: "Pesanan sudah dikonfirmasi atau sedang diproses kurir." };
+  }
+
+  await supabase
+    .from("shipments")
+    .update({ status: "confirmed", updated_at: new Date().toISOString() })
+    .eq("id", shipment.id);
+
+  await supabase.from("order_status_history").insert({
+    order_id: orderId,
+    status: "processing",
+    note: "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
+    changed_by: null,
+  });
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  return {};
+}

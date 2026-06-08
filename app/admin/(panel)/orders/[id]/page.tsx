@@ -13,6 +13,7 @@ import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } 
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import { SyncBiteshipButton } from "./_components/sync-biteship-button";
+import { ConfirmPickupButton } from "./_components/confirm-pickup-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
 import type { OrderStatus } from "../_constants";
 
@@ -378,10 +379,23 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 )}
                 {shipment && !shipment.awb && shipment.biteship_order_id && (
                   <div className="space-y-2 pt-1">
-                    <p className="text-[11px] text-muted-foreground">
-                      Pesanan tercatat di Biteship. AWB dikirim otomatis via webhook, atau klik sync untuk tarik sekarang.
-                    </p>
-                    <SyncBiteshipButton orderId={order.id} />
+                    {shipment.status === "pending" && order.status === "processing" ? (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          Paket terdaftar di Biteship. Setelah dikemas, konfirmasi siap pickup agar kurir dijadwalkan.
+                        </p>
+                        <ConfirmPickupButton orderId={order.id} />
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          {shipment.status === "confirmed"
+                            ? "Paket siap pickup. Kurir akan datang sesuai jadwal. AWB akan muncul otomatis."
+                            : "AWB dikirim otomatis via webhook, atau klik sync untuk tarik sekarang."}
+                        </p>
+                        <SyncBiteshipButton orderId={order.id} />
+                      </>
+                    )}
                   </div>
                 )}
               </div>
