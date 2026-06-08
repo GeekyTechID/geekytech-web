@@ -12,6 +12,7 @@ import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admi
 import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
+import { SyncBiteshipButton } from "./_components/sync-biteship-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
 import type { OrderStatus } from "../_actions";
 
@@ -368,6 +369,20 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 )}
                 {shipment?.status && (
                   <InfoRow label="Status Kurir" value={shipment.status.replace(/_/g, " ").toUpperCase()} />
+                )}
+                {shipment?.biteship_order_id && (
+                  <InfoRow
+                    label="Biteship ID"
+                    value={<span className="font-mono text-[11px]">{shipment.biteship_order_id}</span>}
+                  />
+                )}
+                {shipment && !shipment.awb && shipment.biteship_order_id && (
+                  <div className="space-y-2 pt-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Pesanan tercatat di Biteship. AWB dikirim otomatis via webhook, atau klik sync untuk tarik sekarang.
+                    </p>
+                    <SyncBiteshipButton orderId={order.id} />
+                  </div>
                 )}
               </div>
             </section>

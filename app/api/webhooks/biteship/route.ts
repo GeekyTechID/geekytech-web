@@ -84,30 +84,28 @@ function orderStatusFromShipment(shipmentStatus: ShipmentStatus): OrderStatus | 
 
 export async function POST(req: Request) {
   try {
-    // ── Verifikasi secret (bila dikonfigurasi) ──
-    // Daftarkan URL webhook di Biteship sebagai:
-    //   https://<domain>/api/webhooks/biteship?token=<BITESHIP_WEBHOOK_SECRET>
+    // ── Parse body dulu — installation ping Biteship harus 200 sebelum validasi apapun ──
+    let body: BiteshipWebhookBody;
+    try {
+      body = (await req.json()) as BiteshipWebhookBody;
+    } catch {
+      return Response.json({ ok: true });
+    }
+
+    // Installation ping: body kosong atau tidak ada order_id/status
+    const biteshipOrderId = body.order_id;
+    const rawStatus = (body.status ?? "").toLowerCase();
+    if (!biteshipOrderId || !rawStatus) {
+      return Response.json({ ok: true });
+    }
+
+    // ── Verifikasi secret (hanya untuk payload aktual, bukan ping) ──
     const secret = process.env.BITESHIP_WEBHOOK_SECRET?.trim();
     if (secret) {
       const token = new URL(req.url).searchParams.get("token");
       if (token !== secret) {
         return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
       }
-    }
-
-    let body: BiteshipWebhookBody;
-    try {
-      body = (await req.json()) as BiteshipWebhookBody;
-    } catch {
-      // Body kosong — installation ping dari Biteship, wajib 200 ok.
-      return Response.json({ ok: true });
-    }
-
-    // Biteship mengidentifikasi order via order_id (= biteship_order_id kita).
-    const biteshipOrderId = body.order_id;
-    const rawStatus = (body.status ?? "").toLowerCase();
-    if (!biteshipOrderId || !rawStatus) {
-      return Response.json({ ok: true }); // installation ping / payload non-status
     }
 
     const svc = createServiceClient();

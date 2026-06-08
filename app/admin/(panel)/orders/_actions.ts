@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
+import { getBiteshipOrder } from "@/lib/biteship/get-order";
 
 export const ORDER_STATUSES = [
   "pending_payment",
@@ -151,6 +152,40 @@ export async function updateOrderStatus(
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
+}
+
+export async function syncBiteshipAWB(
+  orderId: string,
+): Promise<{ error?: string; awb?: string | null }> {
+  const supabase = await createServiceClient();
+
+  const { data: shipment } = await supabase
+    .from("shipments")
+    .select("id, biteship_order_id, awb")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  if (!shipment?.biteship_order_id) {
+    return { error: "Tidak ada Biteship Order ID untuk pesanan ini." };
+  }
+
+  const result = await getBiteshipOrder(shipment.biteship_order_id);
+  if (!result.ok) return { error: result.error };
+
+  const { order } = result;
+  const awb = order.courier?.waybill_id ?? null;
+
+  const updatePayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (order.status && order.status !== "pending") updatePayload.status = order.status;
+  if (awb) updatePayload.awb = awb;
+  if (order.courier?.name) updatePayload.courier_name = order.courier.name;
+
+  await supabase.from("shipments").update(updatePayload).eq("id", shipment.id);
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  return { awb };
 }
 
 export async function updateOrderAWB(
