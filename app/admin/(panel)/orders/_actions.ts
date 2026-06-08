@@ -4,28 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
-
-export const ORDER_STATUSES = [
-  "pending_payment",
-  "paid",
-  "processing",
-  "shipped",
-  "delivered",
-  "completed",
-  "cancelled",
-  "refunded",
-] as const;
-
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
-
-// Valid next statuses for each current status
-export const VALID_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
-  pending_payment: ["paid", "cancelled"],
-  paid: ["processing", "cancelled"],
-  processing: ["shipped", "cancelled"],
-  shipped: ["delivered"],
-  delivered: ["completed"],
-};
+import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 
 export async function updateOrderStatus(
   orderId: string,

@@ -15,11 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
-import {
-  updateOrderStatus,
-  VALID_TRANSITIONS,
-  type OrderStatus,
-} from "../../_actions";
+import { updateOrderStatus } from "../../_actions";
+import { VALID_TRANSITIONS, type OrderStatus } from "../../_constants";
 
 const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 

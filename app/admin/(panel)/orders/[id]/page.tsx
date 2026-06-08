@@ -14,7 +14,7 @@ import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import { SyncBiteshipButton } from "./_components/sync-biteship-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
-import type { OrderStatus } from "../_actions";
+import type { OrderStatus } from "../_constants";
 
 export const metadata: Metadata = { title: "Detail Pesanan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
