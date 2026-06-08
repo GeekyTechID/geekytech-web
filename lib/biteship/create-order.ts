@@ -78,19 +78,20 @@ export async function createBiteshipOrder(
     // Standard e-commerce flow: customer pays → store packs → courier picks up NEXT day.
     // Never use today — cutoffs vary per courier/area and we can't predict them.
     // Skip Sunday (Indonesian couriers don't pick up on Sundays).
-    ...(!isOnDemand && {
-      delivery_date: (() => {
-        const wibFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" });
-        let pickup = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow
-        const wibStr = wibFmt.format(pickup); // "YYYY-MM-DD"
-        const [y, m, d] = wibStr.split("-").map(Number);
-        if (new Date(y, m - 1, d).getDay() === 0) {
-          // Sunday → Monday
-          pickup = new Date(pickup.getTime() + 24 * 60 * 60 * 1000);
-        }
-        return wibFmt.format(pickup);
-      })(),
-    }),
+    ...(!isOnDemand && (() => {
+      const wibFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" });
+      let pickup = new Date(Date.now() + 24 * 60 * 60 * 1000); // tomorrow
+      const wibStr = wibFmt.format(pickup); // "YYYY-MM-DD"
+      const [y, m, d] = wibStr.split("-").map(Number);
+      if (new Date(y, m - 1, d).getDay() === 0) {
+        // Sunday → Monday
+        pickup = new Date(pickup.getTime() + 24 * 60 * 60 * 1000);
+      }
+      return {
+        delivery_date: wibFmt.format(pickup),
+        delivery_time: "09:00",
+      };
+    })()),
     order_note: params.orderNote ?? null,
     items: params.items.map((i) => ({
       name: i.name.slice(0, 100),
@@ -140,6 +141,7 @@ export async function createBiteshipOrder(
         courier_type: body.courier_type,
         delivery_type: body.delivery_type,
         delivery_date: body.delivery_date,
+        delivery_time: body.delivery_time,
         destination_postal_code: body.destination_postal_code,
       });
       return { ok: false, error: errMsg };
