@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -325,7 +324,6 @@ export function StoreHeader({
                 </TooltipTrigger>
                 <TooltipContent>Keranjang</TooltipContent>
               </Tooltip>
-              <ThemeToggle className="hidden sm:flex" />
               {isAuthenticated ? <NotificationBell /> : null}
 
               {isAuthenticated ? (
@@ -534,12 +532,6 @@ export function StoreHeader({
               </div>
             )}
           </nav>
-          <div className="border-t border-neutral-100 p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">Tema</span>
-              <ThemeToggle variant="full" />
-            </div>
-          </div>
         </SheetContent>
       </Sheet>
     </>
