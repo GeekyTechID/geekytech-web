@@ -11,7 +11,7 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
   const filteredBrands = brands.filter((b) => b.name.toLowerCase() !== "lainnya");
 
   return (
-    <section className="bg-background py-12 dark:border-border">
+    <section className="bg-background py-12">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <h2 className="text-xl font-black text-foreground md:text-2xl">
           Belanja Berdasarkan Brand
@@ -29,7 +29,7 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
               <Link
                 key={b.id}
                 href={`/brands/${encodeURIComponent(b.slug)}`}
-                className="cursor-pointer group flex items-center justify-center overflow-hidden transition hover:border-brand/40 dark:border-border dark:bg-muted"
+                className="cursor-pointer group flex items-center justify-center overflow-hidden transition hover:border-brand/40"
               >
                 {b.logo_url ? (
                   <div className="relative h-12 w-full sm:h-15 transition group-hover:grayscale-0">

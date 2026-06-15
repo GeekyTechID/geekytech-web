@@ -47,7 +47,7 @@ export function OrderReviewForms({
                 comment: comment.trim() || null,
               });
               if (res.success) {
-                toast.success("Ulasan terkirim — menunggu moderasi.");
+                toast.success("Terima kasih sudah memberikan ulasan.");
                 router.push(`/dashboard/orders/${orderId}`);
               } else {
                 toast.error(res.error);

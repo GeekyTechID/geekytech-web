@@ -91,7 +91,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Nama
                 </th>
@@ -109,13 +109,13 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {brands.map((brand) => (
                 <tr key={brand.id} className="transition-colors hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {brand.logo_url ? (
-                        <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white dark:border-border">
+                        <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white">
                           <Image
                             src={brand.logo_url}
                             alt={brand.name}
@@ -125,7 +125,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                           />
                         </div>
                       ) : (
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted">
                           <Building2 size={12} className="text-foreground" />
                         </div>
                       )}
@@ -185,7 +185,7 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
             >
               <ChevronLeft size={14} />
             </Button>
-            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase">
               {page} / {totalPages}
             </span>
             <Button

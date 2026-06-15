@@ -151,11 +151,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 Item Pesanan ({items.length})
               </h2>
             </div>
-            <div className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <div className="divide-y divide-[#e0e0e0]">
               {items.map((item) => (
                 <div key={item.id} className="flex gap-3 px-4 py-3">
                   {/* Image */}
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted">
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
@@ -192,16 +192,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </div>
 
             {/* Totals */}
-            <div className="space-y-1.5 border-t border-[#e0e0e0] bg-muted/30 px-4 py-3 dark:border-border">
+            <div className="space-y-1.5 border-t border-[#e0e0e0] bg-muted/30 px-4 py-3">
               <Row label="Subtotal" value={formatRupiah(order.subtotal)} />
               <Row label={`Ongkir (${order.courier_company ?? "—"} ${order.courier_service ?? ""})`} value={formatRupiah(order.shipping_cost)} />
               {order.shipping_insurance > 0 && (
                 <Row label="Asuransi Pengiriman" value={formatRupiah(order.shipping_insurance)} />
               )}
               {order.discount_amount > 0 && (
-                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-emerald-600 dark:text-emerald-400" />
+                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-emerald-600" />
               )}
-              <div className="border-t border-[#e0e0e0] pt-1.5 dark:border-border">
+              <div className="border-t border-[#e0e0e0] pt-1.5">
                 <Row label="Total" value={formatRupiah(order.total)} bold />
               </div>
             </div>
@@ -218,12 +218,12 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <span className={cn(
                     "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                     payment.status === "paid"
-                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                      ? "bg-emerald-500/15 text-emerald-800"
                       : paymentIsExpiredPending
-                        ? "bg-destructive/10 text-destructive dark:text-destructive"
+                        ? "bg-destructive/10 text-destructive"
                         : payment.status === "pending"
                           ? "bg-brand/10 text-brand"
-                          : "bg-destructive/10 text-destructive dark:text-destructive"
+                          : "bg-destructive/10 text-destructive"
                   )}>
                     {paymentIsExpiredPending
                       ? "Kedaluwarsa (menunggu cron)"

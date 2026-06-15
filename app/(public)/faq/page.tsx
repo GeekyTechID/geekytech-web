@@ -229,17 +229,17 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-white">
       {/* Hero — light tile */}
-      <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white dark:bg-background">
+      <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white">
         <div className="mx-auto max-w-[980px]">
           <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Bantuan & Dukungan
           </p>
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6">
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] mb-6">
             Pertanyaan yang<br className="hidden sm:block" /> sering diajukan
           </h1>
-          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto">
+          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto">
             Temukan jawaban cepat untuk pertanyaanmu. Jika tidak ketemu, hubungi tim support kami.
           </p>
         </div>
@@ -251,13 +251,13 @@ export default function FAQPage() {
           key={cat.category}
           className={`w-full px-6 py-[80px] ${
             catIdx % 2 === 0
-              ? "bg-white dark:bg-background"
-              : "bg-[#f5f5f7] dark:bg-[#1a1a1a]"
+              ? "bg-white"
+              : "bg-[#f5f5f7][#1a1a1a]"
           }`}
         >
           <div className="mx-auto max-w-[980px]">
             <div className="text-center mb-12">
-              <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white">
+              <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f]">
                 {cat.category}
               </h2>
             </div>

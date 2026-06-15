@@ -221,7 +221,7 @@ export default async function AdminReportsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
+              <tr className="border-b border-[#e0e0e0] text-left">
                 {BESTSELLERS_HEADERS.map((h) => (
                   <th
                     key={h}
@@ -232,7 +232,7 @@ export default async function AdminReportsPage() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {bestSellerList.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-8 text-center text-[17px] text-foreground">

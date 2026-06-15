@@ -233,6 +233,17 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
       data: { orderId, productId, rating },
     });
 
+    // Bust ISR cache produk agar ulasan & rating tampil langsung
+    const svcForSlug = createServiceClient();
+    const { data: productRow } = await svcForSlug
+      .from("products")
+      .select("slug")
+      .eq("id", productId)
+      .maybeSingle();
+    if (productRow?.slug) {
+      revalidatePath(`/products/${productRow.slug}`);
+    }
+
     revalidatePath("/dashboard/orders");
     revalidatePath(`/dashboard/orders/${orderId}`);
     revalidatePath(`/dashboard/orders/${orderId}/review`);

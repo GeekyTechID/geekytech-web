@@ -33,7 +33,7 @@ export default async function AdminSettingsShippingPage() {
       <SettingsNav />
 
       <div className="admin-utility-card overflow-hidden p-0">
-        <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+        <div className="border-b border-[#e0e0e0] px-5 py-4">
           <h2 className="admin-section-title">Alamat Origin Toko</h2>
           <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             Alamat pengirim yang digunakan saat kalkulasi ongkos kirim dan pembuatan pengiriman.

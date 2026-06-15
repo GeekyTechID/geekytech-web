@@ -196,7 +196,7 @@ function SectionCard({
 
   return (
     <div className={cn(
-      "rounded-xl border border-[#e0e0e0] bg-card dark:border-border",
+      "rounded-xl border border-[#e0e0e0] bg-card",
       !section.is_active && "opacity-60",
     )}>
       <div className="flex items-start gap-4 p-4">
@@ -224,7 +224,7 @@ function SectionCard({
         </div>
 
         {/* Icon */}
-        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted">
           <Icon size={15} strokeWidth={1.5} className="text-foreground" />
         </div>
 
@@ -378,17 +378,17 @@ function ItemLabel({ opt }: {
       <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
         {opt.label}
         {opt.expired && (
-          <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700 dark:bg-red-900/30 dark:text-red-400">
+          <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700">
             Expired
           </span>
         )}
         {opt.upcoming && (
-          <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+          <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase text-amber-700">
             Belum mulai
           </span>
         )}
         {opt.inactive && (
-          <span className="rounded-full bg-zinc-100 px-1.5 py-px text-[9px] font-semibold uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          <span className="rounded-full bg-zinc-100 px-1.5 py-px text-[9px] font-semibold uppercase text-zinc-600">
             Nonaktif
           </span>
         )}
@@ -514,7 +514,7 @@ export function HomeSectionsEditor({
     if (f) {
       if (isExpired(f.ends_at)) {
         return (
-          <StatusBadge className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          <StatusBadge className="bg-red-50 text-red-700">
             <AlertCircle size={10} />
             Flash sale telah expired — tidak akan tampil di beranda
           </StatusBadge>
@@ -522,7 +522,7 @@ export function HomeSectionsEditor({
       }
       if (isUpcoming(f.starts_at)) {
         return (
-          <StatusBadge className="bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+          <StatusBadge className="bg-amber-50 text-amber-700">
             <Clock size={10} />
             Belum mulai — akan tampil saat {formatDate(f.starts_at)}
           </StatusBadge>
@@ -530,7 +530,7 @@ export function HomeSectionsEditor({
       }
       if (!f.is_active) {
         return (
-          <StatusBadge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          <StatusBadge className="bg-zinc-100 text-zinc-600">
             <AlertCircle size={10} />
             Nonaktif — tidak akan tampil di beranda
           </StatusBadge>
@@ -542,7 +542,7 @@ export function HomeSectionsEditor({
     const promo = [...secondPromos, ...featuredPromos].find((p) => p.id === section.selected_id);
     if (promo && !promo.is_active) {
       return (
-        <StatusBadge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+        <StatusBadge className="bg-zinc-100 text-zinc-600">
           <AlertCircle size={10} />
           Nonaktif — tidak akan tampil di beranda
         </StatusBadge>

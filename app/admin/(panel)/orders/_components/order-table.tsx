@@ -52,7 +52,7 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   No. Order
                 </th>
@@ -76,7 +76,7 @@ export function OrderTable({ orders, page, totalPages }: OrderTableProps) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {orders.map((order) => (
                 <tr key={order.id} className="transition-colors hover:bg-muted/30">
                   <td className="px-4 py-3">

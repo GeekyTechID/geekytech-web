@@ -43,7 +43,7 @@ export default async function PublicLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white dark:bg-background">
+    <div className="flex min-h-screen flex-col bg-white">
       <InitAuthStore user={user} profile={profile} />
       <AnnouncementBarServer />
       <StoreHeader categories={categories} initialCartCount={initialCartCount} />

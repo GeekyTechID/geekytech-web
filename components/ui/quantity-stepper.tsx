@@ -33,7 +33,7 @@ export function QuantityStepper({
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full border border-[#e0e0e0] bg-white p-0.5 dark:border-border dark:bg-card",
+        "inline-flex items-center rounded-full border border-[#e0e0e0] bg-white p-0.5",
         className,
       )}
     >

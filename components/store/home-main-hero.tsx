@@ -73,7 +73,7 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
 
   if (n === 0) {
     return (
-      <section className="border-b border-neutral-200 bg-neutral-900 py-16 text-center text-white dark:border-border">
+      <section className="border-b border-neutral-200 bg-neutral-900 py-16 text-center text-white">
         <h1 className="sr-only">GeekyTech</h1>
         <p className="text-sm font-medium text-white/70">Belum ada banner utama. Atur di Admin → Promosi → Main Banner.</p>
       </section>
@@ -82,7 +82,7 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
 
   return (
     <section
-      className="group/hero relative shadow-[0_12px_24px_-18px_rgba(0,0,0,0.35)] dark:border-border"
+      className="group/hero relative shadow-[0_12px_24px_-18px_rgba(0,0,0,0.35)]"
       aria-roledescription="carousel"
       aria-label="Banner utama"
       onMouseEnter={() => setIsPaused(true)}

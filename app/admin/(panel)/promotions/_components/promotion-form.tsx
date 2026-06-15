@@ -152,7 +152,7 @@ export function PromotionForm({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={`Contoh: ${getPlaceholderTitle(type)}`}
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47]"
               required
             />
           </div>
@@ -162,7 +162,7 @@ export function PromotionForm({
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="Contoh: Temukan produk terbaik dengan harga spesial"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47]"
             />
           </div>
           <div className="space-y-1.5">
@@ -171,7 +171,7 @@ export function PromotionForm({
               type="number"
               value={maxItems}
               onChange={(e) => setMaxItems(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
               min={1}
               max={50}
             />
@@ -211,7 +211,7 @@ export function PromotionForm({
 
         {/* Selected items detail panel */}
         {selectionMode === "manual" && selectedProductIds.length > 0 && (
-          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03] dark:bg-brand/[0.06]">
+          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03][0.06]">
             <div className="border-b border-brand/20 px-4 py-2.5">
               <p className="text-[11px] font-semibold uppercase text-brand">
                 {selectedProductIds.length} produk dipilih
@@ -227,7 +227,7 @@ export function PromotionForm({
                       <div className="flex items-center gap-1.5">
                         <p className="truncate text-sm font-medium text-foreground">{product.name}</p>
                         {product.condition === "second" && (
-                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-700 dark:text-amber-400">
+                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-700">
                             second
                           </span>
                         )}
@@ -244,7 +244,7 @@ export function PromotionForm({
         )}
 
         {selectionMode === "brand" && selectedBrandIds.length > 0 && (
-          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03] dark:bg-brand/[0.06]">
+          <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03][0.06]">
             <div className="border-b border-brand/20 px-4 py-2.5">
               <p className="text-[11px] font-semibold uppercase text-brand">
                 {selectedBrandIds.length} brand dipilih
@@ -292,7 +292,7 @@ export function PromotionForm({
           />
 
           {bannerPreviewUrl ? (
-            <div className="relative overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+            <div className="relative overflow-hidden rounded-lg border border-[#e0e0e0]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={bannerPreviewUrl} alt="Preview banner" className="max-h-48 w-full object-cover" />
               <div className="absolute right-2 top-2 flex gap-1.5">
@@ -316,7 +316,7 @@ export function PromotionForm({
             <button
               type="button"
               onClick={() => bannerFileRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
             >
               <ImagePlus size={22} strokeWidth={1.5} />
               <span className="text-xs font-semibold uppercase">Pilih gambar banner</span>

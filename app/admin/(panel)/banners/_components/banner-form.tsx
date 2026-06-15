@@ -141,7 +141,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
       <FormSection title="Gambar Banner *">
         <div className="space-y-3 p-5">
           {imageUrl ? (
-            <div className="relative aspect-[3/1] max-h-48 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
+            <div className="relative aspect-[3/1] max-h-48 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30">
               <Image src={imageUrl} alt="Preview banner" fill className="object-cover" />
               <Button
                 type="button"
@@ -160,7 +160,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
               className={cn(
-                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-12 text-muted-foreground transition-colors dark:border-border",
+                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-12 text-muted-foreground transition-colors",
                 "hover:border-brand/50 hover:text-brand",
                 uploading && "cursor-not-allowed opacity-50",
               )}

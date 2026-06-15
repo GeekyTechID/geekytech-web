@@ -19,10 +19,10 @@ import { ImageUploader, type ImageItem } from "./image-uploader";
 import { createProduct, updateProduct } from "../_actions";
 import { cn } from "@/lib/utils";
 
-const inputClass = "h-10 rounded-lg border-[#e0e0e0] dark:border-border";
-const textareaClass = "resize-none rounded-lg border-[#e0e0e0] dark:border-border";
-const selectTriggerClass = "h-10 rounded-lg border-[#e0e0e0] dark:border-border";
-const variantInputClass = "h-9 rounded-lg border-[#e0e0e0] text-sm dark:border-border";
+const inputClass = "h-10 rounded-lg border-[#e0e0e0]";
+const textareaClass = "resize-none rounded-lg border-[#e0e0e0]";
+const selectTriggerClass = "h-10 rounded-lg border-[#e0e0e0]";
+const variantInputClass = "h-9 rounded-lg border-[#e0e0e0] text-sm";
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
@@ -555,7 +555,7 @@ export function ProductForm({
                 const variantErrors = errors.variants?.[i];
 
                 return (
-                  <div key={field._key} className="overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+                  <div key={field._key} className="overflow-hidden rounded-lg border border-[#e0e0e0]">
                     <input type="hidden" {...register(`variants.${i}.id`)} />
 
                     <div
@@ -591,7 +591,7 @@ export function ProductForm({
 
                     {/* Variant body */}
                     {isExpanded && (
-                      <div className="grid grid-cols-1 gap-3 border-t border-[#e0e0e0] px-4 pb-4 pt-2 sm:grid-cols-2 lg:grid-cols-3 dark:border-border">
+                      <div className="grid grid-cols-1 gap-3 border-t border-[#e0e0e0] px-4 pb-4 pt-2 sm:grid-cols-2 lg:grid-cols-3">
                         <Field label="Nama Varian" error={variantErrors?.name?.message} required>
                           <Input
                             {...register(`variants.${i}.name`)}
@@ -690,7 +690,7 @@ export function ProductForm({
           {/* Tags */}
           <Section title="Tags">
             <div className="space-y-2">
-              <div className="flex min-h-9 flex-wrap gap-1.5 rounded-lg border border-[#e0e0e0] bg-transparent p-2 dark:border-border">
+              <div className="flex min-h-9 flex-wrap gap-1.5 rounded-lg border border-[#e0e0e0] bg-transparent p-2">
                 {tags.map((tag) => (
                   <span
                     key={tag}

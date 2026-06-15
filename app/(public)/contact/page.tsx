@@ -45,17 +45,17 @@ const contactChannels = [
 
 export default function ContactPage() {
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-white">
       {/* Hero — light tile */}
-      <section className="w-full px-6 py-20 md:py-[80px] text-center bg-white dark:bg-background">
+      <section className="w-full px-6 py-20 md:py-[80px] text-center bg-white">
         <div className="mx-auto max-w-[980px]">
           <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Hubungi Kami
           </p>
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6">
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] mb-6">
             Ada yang bisa<br className="hidden sm:block" /> kami bantu?
           </h1>
-          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto">
+          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto">
             Tim kami siap membantu dengan konsultasi produk, pertanyaan pesanan, atau keluhan apapun. Hubungi kami melalui channel favoritmu.
           </p>
         </div>
@@ -105,16 +105,16 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form — light tile */}
-      <section className="w-full px-6 py-[80px] bg-white dark:bg-background">
+      <section className="w-full px-6 py-[80px] bg-white">
         <div className="mx-auto max-w-[600px]">
           <div className="text-center mb-12">
             <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
               Formulir Kontak
             </p>
-            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white mb-3">
+            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] mb-3">
               Kirim pesan ke kami
             </h2>
-            <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc]">
+            <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a][#cccccc]">
               Isi form di bawah dan kami akan membalas dalam waktu singkat.
             </p>
           </div>
@@ -124,13 +124,13 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Preview — parchment tile */}
-      <section className="w-full px-6 py-20 md:py-[80px] bg-[#f5f5f7] dark:bg-[#1a1a1a]">
+      <section className="w-full px-6 py-20 md:py-[80px] bg-[#f5f5f7][#1a1a1a]">
         <div className="mx-auto max-w-[980px]">
           <div className="text-center mb-12">
             <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
               Pertanyaan Umum
             </p>
-            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white">
+            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f]">
               Jawaban cepat untuk pertanyaanmu
             </h2>
           </div>
@@ -156,12 +156,12 @@ export default function ContactPage() {
             ].map((faq, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#272729] rounded-[18px] border border-[#e0e0e0] dark:border-[#3a3a3a] p-6"
+                className="bg-white[#272729] rounded-[18px] border border-[#e0e0e0][#3a3a3a] p-6"
               >
-                <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-2">
                   {faq.q}
                 </h3>
-                <p className="text-[14px] font-normal text-[#7a7a7a] dark:text-[#cccccc]">
+                <p className="text-[14px] font-normal text-[#7a7a7a][#cccccc]">
                   {faq.a}
                 </p>
               </div>

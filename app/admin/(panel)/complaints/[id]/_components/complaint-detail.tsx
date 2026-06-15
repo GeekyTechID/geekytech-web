@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
   resolved: {
     label: "Selesai",
-    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+    className: "bg-emerald-500/15 text-emerald-800",
   },
   rejected: {
     label: "Ditolak",
@@ -153,7 +153,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative aspect-square overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 transition-opacity hover:opacity-80 dark:border-border"
+                        className="relative aspect-square overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 transition-opacity hover:opacity-80"
                       >
                         <Image src={url} alt={`Bukti ${i + 1}`} fill sizes="120px" className="object-cover" />
                       </a>
@@ -174,7 +174,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Tambahkan catatan internal untuk komplain ini..."
                 rows={4}
-                className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-[17px] leading-[1.47] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
+                className="w-full resize-none rounded-lg border border-[#e0e0e0] bg-background px-3 py-2 text-[17px] leading-[1.47] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <Button type="button" variant="primary" size="sm" onClick={handleSaveNote} loading={isPending}>
                 Simpan Catatan

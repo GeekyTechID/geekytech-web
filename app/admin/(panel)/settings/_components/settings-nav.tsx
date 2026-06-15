@@ -22,7 +22,7 @@ export function SettingsNav() {
   };
 
   return (
-    <div className="flex flex-wrap gap-0 border-b border-[#e0e0e0] dark:border-border">
+    <div className="flex flex-wrap gap-0 border-b border-[#e0e0e0]">
       {TABS.map(({ label, href }) => (
         <Link
           key={href}

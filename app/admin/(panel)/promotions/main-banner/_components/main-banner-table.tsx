@@ -129,7 +129,7 @@ function BannerEditDialog({
       <div className="space-y-1.5">
         <p className={labelClass}>Gambar Banner *</p>
         {imageUrl ? (
-          <div className="relative aspect-[3/1] w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
+          <div className="relative aspect-[3/1] w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30">
             <Image src={imageUrl} alt="Preview" fill className="object-cover" />
             <Button
               type="button"
@@ -148,7 +148,7 @@ function BannerEditDialog({
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
             className={cn(
-              "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-foreground transition-colors dark:border-border",
+              "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-foreground transition-colors",
               "hover:border-brand/50 hover:text-brand",
               uploading && "cursor-not-allowed opacity-50",
             )}
@@ -267,7 +267,7 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Banner
                 </th>
@@ -282,13 +282,13 @@ export function MainBannerTable({ banners }: { banners: BannerRow[] }) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {banners.map((banner) => (
                 <tr key={banner.id} className="transition-colors hover:bg-muted/30">
                   {/* Thumbnail + title */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-[72px] shrink-0 overflow-hidden rounded-md border border-[#e0e0e0] bg-muted/40 dark:border-border">
+                      <div className="relative h-12 w-[72px] shrink-0 overflow-hidden rounded-md border border-[#e0e0e0] bg-muted/40">
                         {banner.image_url ? (
                           <Image
                             src={banner.image_url}

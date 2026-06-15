@@ -197,7 +197,7 @@ export function Navbar() {
               {/* Cart */}
               <Link
                 href="/cart"
-                className="relative inline-flex items-center justify-center rounded-full p-2 text-muted-foreground outline-none transition-colors hover:bg-black/[0.04] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 dark:hover:bg-white/10"
+                className="relative inline-flex items-center justify-center rounded-full p-2 text-muted-foreground outline-none transition-colors hover:bg-black/[0.04] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2"
                 aria-label="Keranjang belanja"
               >
                 <ShoppingCart size={18} />

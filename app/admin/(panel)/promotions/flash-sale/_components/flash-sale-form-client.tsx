@@ -14,7 +14,7 @@ import { createFlashSale, updateFlashSale, bulkAddFlashSaleProducts, createFlash
 const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
 const selectClass =
-  "h-9 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand dark:border-border";
+  "h-9 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
 
 export type Product = {
   id: string;
@@ -223,7 +223,7 @@ export function FlashSaleForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Flash Sale 12.12"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47]"
               required
             />
           </div>
@@ -233,7 +233,7 @@ export function FlashSaleForm({
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
               placeholder="Penawaran terbaik hari ini — stok terbatas!"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[15px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[15px] leading-[1.47]"
             />
           </div>
           <div className="space-y-1.5">
@@ -242,7 +242,7 @@ export function FlashSaleForm({
               type="datetime-local"
               value={startsAt}
               onChange={(e) => setStartsAt(e.target.value)}
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
               required
             />
           </div>
@@ -252,7 +252,7 @@ export function FlashSaleForm({
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
               required
             />
           </div>
@@ -271,7 +271,7 @@ export function FlashSaleForm({
 
       {/* ── Product selector (only for create, when products provided) ── */}
       {!initialData && products && products.length > 0 && (
-        <div className="space-y-3 border-t border-[#e0e0e0] pt-6 dark:border-border">
+        <div className="space-y-3 border-t border-[#e0e0e0] pt-6">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="admin-section-title">Pilih Produk</h2>
@@ -319,9 +319,9 @@ export function FlashSaleForm({
           </div>
 
           {/* Product list */}
-          <div className="overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+          <div className="overflow-hidden rounded-lg border border-[#e0e0e0]">
             {/* Header row */}
-            <div className="flex items-center gap-3 border-b border-[#e0e0e0] bg-muted/30 px-4 py-2.5 dark:border-border">
+            <div className="flex items-center gap-3 border-b border-[#e0e0e0] bg-muted/30 px-4 py-2.5">
               <input
                 type="checkbox"
                 checked={allFilteredSelected}
@@ -343,7 +343,7 @@ export function FlashSaleForm({
                 Tidak ada produk yang sesuai filter.
               </p>
             ) : (
-              <div className="max-h-64 divide-y divide-[#e0e0e0] overflow-y-auto dark:divide-border">
+              <div className="max-h-64 divide-y divide-[#e0e0e0] overflow-y-auto">
                 {filteredProducts.map((product) => (
                   <label
                     key={product.id}
@@ -361,7 +361,7 @@ export function FlashSaleForm({
                           {product.name}
                         </p>
                         {product.condition === "second" && (
-                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-700 dark:text-amber-400">
+                          <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-amber-700">
                             second
                           </span>
                         )}
@@ -383,7 +383,7 @@ export function FlashSaleForm({
 
           {/* ── Discount config panel ── */}
           {selectedProductIds.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03] dark:bg-brand/[0.06]">
+            <div className="overflow-hidden rounded-lg border border-brand/30 bg-brand/[0.03][0.06]">
               {/* Header + global apply */}
               <div className="flex flex-col gap-3 border-b border-brand/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -398,7 +398,7 @@ export function FlashSaleForm({
                   <span className="text-[11px] font-semibold uppercase text-muted-foreground">
                     Terapkan ke semua
                   </span>
-                  <div className="flex items-center rounded-lg border border-[#e0e0e0] bg-background dark:border-border overflow-hidden">
+                  <div className="flex items-center rounded-lg border border-[#e0e0e0] bg-background overflow-hidden">
                     <input
                       type="number"
                       min={0}
@@ -409,7 +409,7 @@ export function FlashSaleForm({
                       placeholder="0"
                       className="w-12 bg-transparent px-2 py-1.5 text-center text-sm text-foreground focus:outline-none"
                     />
-                    <span className="border-l border-[#e0e0e0] px-2 py-1.5 text-xs text-muted-foreground dark:border-border">%</span>
+                    <span className="border-l border-[#e0e0e0] px-2 py-1.5 text-xs text-muted-foreground">%</span>
                   </div>
                   <Button type="button" variant="primary" size="xs" onClick={applyGlobalDiscount}>
                     Terapkan
@@ -446,10 +446,10 @@ export function FlashSaleForm({
                                     {fmtPrice(v.price)}
                                   </p>
                                 )}
-                                <p className={pct > 0 ? "text-xs font-semibold text-emerald-700 dark:text-emerald-400" : "text-xs text-muted-foreground"}>
+                                <p className={pct > 0 ? "text-xs font-semibold text-emerald-700" : "text-xs text-muted-foreground"}>
                                   {pct > 0 ? fmtPrice(salePrice) : fmtPrice(v.price)}
                                 </p>
-                                <div className="flex items-center overflow-hidden rounded-md border border-[#e0e0e0] bg-background dark:border-border">
+                                <div className="flex items-center overflow-hidden rounded-md border border-[#e0e0e0] bg-background">
                                   <input
                                     type="number"
                                     min={0}
@@ -461,7 +461,7 @@ export function FlashSaleForm({
                                     placeholder="0"
                                     className="w-10 bg-transparent px-1.5 py-1 text-center text-xs text-foreground focus:outline-none"
                                   />
-                                  <span className="border-l border-[#e0e0e0] px-1.5 py-1 text-[10px] text-muted-foreground dark:border-border">
+                                  <span className="border-l border-[#e0e0e0] px-1.5 py-1 text-[10px] text-muted-foreground">
                                     %
                                   </span>
                                 </div>
@@ -481,7 +481,7 @@ export function FlashSaleForm({
 
       {/* ── Banner section ── */}
       {bannerSection ?? (
-        <div className="space-y-3 border-t border-[#e0e0e0] pt-6 dark:border-border">
+        <div className="space-y-3 border-t border-[#e0e0e0] pt-6">
           <div className="flex items-center gap-2">
             <h2 className="admin-section-title">Banner Flash Sale</h2>
             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
@@ -506,7 +506,7 @@ export function FlashSaleForm({
           />
 
           {bannerPreviewUrl ? (
-            <div className="relative overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+            <div className="relative overflow-hidden rounded-lg border border-[#e0e0e0]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={bannerPreviewUrl}
@@ -538,7 +538,7 @@ export function FlashSaleForm({
             <button
               type="button"
               onClick={() => bannerFileRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
             >
               <ImagePlus size={22} strokeWidth={1.5} />
               <span className="text-xs font-semibold uppercase">Pilih gambar banner</span>

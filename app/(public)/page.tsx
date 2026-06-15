@@ -38,7 +38,7 @@ export default async function HomePage() {
   const excludeFlashSaleIds = flashSaleBlock?.saleId ? [flashSaleBlock.saleId] : [];
 
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-white">
       <HomeMainHero banners={heroBanners} />
       <HomeFlashSaleBlock block={flashSaleBlock} />
       <ShopByBrandSection brands={brands} />

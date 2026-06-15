@@ -126,39 +126,39 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-white">
       {/* Hero — light tile */}
-      <section className="w-full px-6 py-20 md:py-[80px] text-center bg-white dark:bg-background">
+      <section className="w-full px-6 py-20 md:py-[80px] text-center bg-white">
         <div className="mx-auto max-w-[980px]">
           <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Legal
           </p>
-          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6">
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] mb-6">
             Kebijakan Privasi
           </h1>
-          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto mb-8">
+          <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto mb-8">
             Kami menghormati privasi Anda. Baca bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda.
           </p>
-          <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
+          <p className="text-[14px] text-[#7a7a7a][#cccccc]">
             Terakhir diperbarui: 13 Mei 2026
           </p>
         </div>
       </section>
 
       {/* Content — light tile */}
-      <section className="w-full px-6 pb-[80px] bg-white dark:bg-background">
+      <section className="w-full px-6 pb-[80px] bg-white">
         <div className="mx-auto max-w-[980px]">
-          <div className="prose prose-invert dark:prose-invert max-w-none">
+          <div className="prose prose-invert max-w-none">
             {sections.map((section, idx) => (
               <div key={idx} className="mb-12 last:mb-0">
-                <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] dark:text-white mb-4">
+                <h2 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] mb-4">
                   {section.title}
                 </h2>
                 <div className="space-y-4">
                   {section.content.map((text, contentIdx) => (
                     <p
                       key={contentIdx}
-                      className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f] dark:text-[#cccccc]"
+                      className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f][#cccccc]"
                     >
                       {text}
                     </p>
@@ -168,11 +168,11 @@ export default function PrivacyPage() {
             ))}
 
             {/* Final CTA */}
-            <div className="mt-[80px] pt-[80px] border-t border-[#e0e0e0] dark:border-[#3a3a3a] text-center">
-              <h3 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] dark:text-white mb-4">
+            <div className="mt-[80px] pt-[80px] border-t border-[#e0e0e0][#3a3a3a] text-center">
+              <h3 className="text-[21px] font-semibold leading-[1.19] text-[#1d1d1f] mb-4">
                 Ada pertanyaan tentang kebijakan privasi kami?
               </h3>
-              <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc] mb-6">
+              <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a][#cccccc] mb-6">
                 Hubungi tim customer service kami dan kami akan membantu menjawab pertanyaanmu.
               </p>
               <Button asChild variant="primary">
@@ -184,10 +184,10 @@ export default function PrivacyPage() {
       </section>
 
       {/* Related Links — parchment tile */}
-      <section className="w-full px-6 py-[80px] bg-[#f5f5f7] dark:bg-[#1a1a1a]">
+      <section className="w-full px-6 py-[80px] bg-[#f5f5f7][#1a1a1a]">
         <div className="mx-auto max-w-[980px]">
           <div className="text-center mb-12">
-            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white">
+            <h2 className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f]">
               Dokumen Legal Lainnya
             </h2>
           </div>
@@ -213,12 +213,12 @@ export default function PrivacyPage() {
               <a
                 key={idx}
                 href={link.href}
-                className="bg-white dark:bg-[#272729] rounded-[18px] border border-[#e0e0e0] dark:border-[#3a3a3a] p-6 hover:border-[#EA5329] dark:hover:border-[#FFAD88] transition-colors"
+                className="bg-white[#272729] rounded-[18px] border border-[#e0e0e0][#3a3a3a] p-6 hover:border-[#EA5329][#FFAD88] transition-colors"
               >
-                <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+                <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-2">
                   {link.title}
                 </h3>
-                <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
+                <p className="text-[14px] text-[#7a7a7a][#cccccc]">
                   {link.desc}
                 </p>
               </a>

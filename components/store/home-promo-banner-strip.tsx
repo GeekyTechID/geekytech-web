@@ -14,7 +14,7 @@ export function HomePromoBannerStrip({ banners, className }: HomePromoBannerStri
     <div className={cn("mb-6 w-full max-w-none space-y-3", className)}>
       {banners.map((b) => {
         const img = (
-          <div className="relative aspect-[21/9] w-full max-w-none overflow-hidden bg-neutral-100 md:aspect-[24/7] dark:bg-muted">
+          <div className="relative aspect-[21/9] w-full max-w-none overflow-hidden bg-neutral-100 md:aspect-[24/7]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={b.image_url}
@@ -26,7 +26,7 @@ export function HomePromoBannerStrip({ banners, className }: HomePromoBannerStri
           </div>
         );
         return (
-          <div key={b.id} className="w-full max-w-none overflow-hidden border border-neutral-200 dark:border-border">
+          <div key={b.id} className="w-full max-w-none overflow-hidden border border-neutral-200">
             {b.link_url ? (
               <Link href={b.link_url} className="block">
                 {img}

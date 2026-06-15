@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { useAdminOrdersStore } from "@/store/admin-orders-store";
+import { useAdminReviewsStore } from "@/store/admin-reviews-store";
 import { createClient } from "@/lib/supabase/client";
 import {
   HEADER_DROPDOWN_MENU_CONTENT_CLASS,
@@ -328,12 +329,68 @@ function useUnviewedOrdersCount() {
   return count;
 }
 
+function useUnviewedReviewsCount() {
+  const count = useAdminReviewsStore((s) => s.count);
+  const setCount = useAdminReviewsStore((s) => s.setCount);
+  const increment = useAdminReviewsStore((s) => s.increment);
+  const decrement = useAdminReviewsStore((s) => s.decrement);
+  const trackedIds = React.useRef<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    fetch("/api/admin/reviews/unread")
+      .then((r) => r.json())
+      .then((json: { count: number }) => {
+        setCount(json.count ?? 0);
+      })
+      .catch(() => {});
+  }, [setCount]);
+
+  const incrementRef = React.useRef(increment);
+  const decrementRef = React.useRef(decrement);
+  React.useEffect(() => { incrementRef.current = increment; });
+  React.useEffect(() => { decrementRef.current = decrement; });
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
+
+    void supabase.auth.getSession().then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel("admin-sidebar-reviews")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_notifications" }, (payload) => {
+          const n = payload.new as { id: string; type: string };
+          if (n.type !== "new_review") return;
+          trackedIds.current.add(n.id);
+          incrementRef.current();
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "admin_notifications" }, (payload) => {
+          const n = payload.new as { id: string; type: string; is_read: boolean };
+          if (n.type === "new_review" && n.is_read && trackedIds.current.has(n.id)) {
+            trackedIds.current.delete(n.id);
+            decrementRef.current();
+          }
+        })
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
+
+  return count;
+}
+
 export function AdminSidebar({
   className,
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const unviewedCount = useUnviewedOrdersCount();
+  const unreadReviewsCount = useUnviewedReviewsCount();
 
   const isActive = (href: string, exact = false) =>
     exact
@@ -344,7 +401,7 @@ export function AdminSidebar({
     <Sidebar
       collapsible="icon"
       {...props}
-      className={cn("border-[#e5e5e5] dark:border-[#2d2d2d]", className)}
+      className={cn("border-[#e5e5e5][#2d2d2d]", className)}
     >
       <SidebarHeader>
         <SidebarMenu>
@@ -420,7 +477,10 @@ export function AdminSidebar({
                   const active = isActive(item.href, item.exact);
                   const Icon = item.icon;
                   const isOrders = item.href === "/admin/orders";
-                  const badge = isOrders && unviewedCount > 0 ? unviewedCount : null;
+                  const isReviews = item.href === "/admin/reviews";
+                  const badge =
+                    (isOrders && unviewedCount > 0 ? unviewedCount : null) ??
+                    (isReviews && unreadReviewsCount > 0 ? unreadReviewsCount : null);
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton

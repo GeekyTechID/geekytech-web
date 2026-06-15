@@ -43,14 +43,14 @@ const ORDER_STATUS_CONFIG: Record<
   OrderStatus,
   { label: string; color: string; icon: React.ElementType }
 > = {
-  pending_payment: { label: "Menunggu Bayar", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock },
-  paid: { label: "Dibayar", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle2 },
-  processing: { label: "Diproses", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400", icon: Package },
-  shipped: { label: "Dikirim", color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400", icon: Truck },
-  delivered: { label: "Terkirim", color: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400", icon: CheckCircle2 },
-  completed: { label: "Selesai", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
-  cancelled: { label: "Dibatalkan", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400", icon: XCircle },
-  refunded: { label: "Refund", color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400", icon: AlertTriangle },
+  pending_payment: { label: "Menunggu Bayar", color: "bg-yellow-100 text-yellow-800", icon: Clock },
+  paid: { label: "Dibayar", color: "bg-emerald-100 text-emerald-800", icon: CheckCircle2 },
+  processing: { label: "Diproses", color: "bg-purple-100 text-purple-800", icon: Package },
+  shipped: { label: "Dikirim", color: "bg-indigo-100 text-indigo-800", icon: Truck },
+  delivered: { label: "Terkirim", color: "bg-teal-100 text-teal-800", icon: CheckCircle2 },
+  completed: { label: "Selesai", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
+  cancelled: { label: "Dibatalkan", color: "bg-red-100 text-red-800", icon: XCircle },
+  refunded: { label: "Refund", color: "bg-gray-100 text-gray-700", icon: AlertTriangle },
 };
 
 // ----------------------------------------------------------------
@@ -81,14 +81,14 @@ type StatusCardCfg = {
 };
 
 const STATUS_CARD_CONFIG: Record<OrderStatus, StatusCardCfg> = {
-  pending_payment: { label: "Menunggu Bayar", icon: Clock,        accent: "border-l-amber-400",   iconBg: "bg-amber-50 dark:bg-amber-900/20",    iconColor: "text-amber-500",   bar: "bg-amber-400" },
-  paid:            { label: "Dibayar",        icon: CheckCircle2, accent: "border-l-emerald-400", iconBg: "bg-emerald-50 dark:bg-emerald-900/20", iconColor: "text-emerald-500", bar: "bg-emerald-400" },
-  processing:      { label: "Diproses",       icon: Package,      accent: "border-l-purple-400",  iconBg: "bg-purple-50 dark:bg-purple-900/20",   iconColor: "text-purple-500",  bar: "bg-purple-400" },
-  shipped:         { label: "Dikirim",        icon: Truck,        accent: "border-l-indigo-400",  iconBg: "bg-indigo-50 dark:bg-indigo-900/20",   iconColor: "text-indigo-500",  bar: "bg-indigo-400" },
-  delivered:       { label: "Terkirim",       icon: CheckCircle2, accent: "border-l-teal-400",    iconBg: "bg-teal-50 dark:bg-teal-900/20",      iconColor: "text-teal-500",    bar: "bg-teal-400" },
-  completed:       { label: "Selesai",        icon: Star,         accent: "border-l-green-500",   iconBg: "bg-green-50 dark:bg-green-900/20",    iconColor: "text-green-600",   bar: "bg-green-500" },
-  cancelled:       { label: "Dibatalkan",     icon: XCircle,      accent: "border-l-red-400",     iconBg: "bg-red-50 dark:bg-red-900/20",        iconColor: "text-red-500",     bar: "bg-red-400" },
-  refunded:        { label: "Refund",         icon: AlertTriangle,accent: "border-l-zinc-400",    iconBg: "bg-zinc-100 dark:bg-zinc-800",        iconColor: "text-zinc-500",    bar: "bg-zinc-400" },
+  pending_payment: { label: "Menunggu Bayar", icon: Clock,        accent: "border-l-amber-400",   iconBg: "bg-amber-50",    iconColor: "text-amber-500",   bar: "bg-amber-400" },
+  paid:            { label: "Dibayar",        icon: CheckCircle2, accent: "border-l-emerald-400", iconBg: "bg-emerald-50", iconColor: "text-emerald-500", bar: "bg-emerald-400" },
+  processing:      { label: "Diproses",       icon: Package,      accent: "border-l-purple-400",  iconBg: "bg-purple-50",   iconColor: "text-purple-500",  bar: "bg-purple-400" },
+  shipped:         { label: "Dikirim",        icon: Truck,        accent: "border-l-indigo-400",  iconBg: "bg-indigo-50",   iconColor: "text-indigo-500",  bar: "bg-indigo-400" },
+  delivered:       { label: "Terkirim",       icon: CheckCircle2, accent: "border-l-teal-400",    iconBg: "bg-teal-50",      iconColor: "text-teal-500",    bar: "bg-teal-400" },
+  completed:       { label: "Selesai",        icon: Star,         accent: "border-l-green-500",   iconBg: "bg-green-50",    iconColor: "text-green-600",   bar: "bg-green-500" },
+  cancelled:       { label: "Dibatalkan",     icon: XCircle,      accent: "border-l-red-400",     iconBg: "bg-red-50",        iconColor: "text-red-500",     bar: "bg-red-400" },
+  refunded:        { label: "Refund",         icon: AlertTriangle,accent: "border-l-zinc-400",    iconBg: "bg-zinc-100",        iconColor: "text-zinc-500",    bar: "bg-zinc-400" },
 };
 
 // ----------------------------------------------------------------
@@ -393,7 +393,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <div className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <div className="divide-y divide-[#e0e0e0]">
             {lowStockVariants.map((v: {
               id: string;
               sku: string;
@@ -415,8 +415,8 @@ export default async function AdminDashboardPage() {
                     className={cn(
                       "text-xs font-black px-2 py-0.5 shrink-0 ml-4",
                       v.stock === 0
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700",
                     )}
                   >
                     {v.stock === 0 ? "Habis" : `${v.stock} sisa`}
@@ -442,7 +442,7 @@ export default async function AdminDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
+              <tr className="border-b border-[#e0e0e0] text-left">
                 {TABLE_HEADERS.map((h) => (
                   <th
                     key={h}
@@ -453,7 +453,7 @@ export default async function AdminDashboardPage() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {recentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-8 text-center text-sm text-foreground">
@@ -525,7 +525,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <ul className="divide-y divide-[#e0e0e0]">
             {recentCustomers.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada pelanggan
@@ -566,7 +566,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <ul className="divide-y divide-[#e0e0e0]">
             {recentReviews.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada ulasan

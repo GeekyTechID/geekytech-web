@@ -42,7 +42,7 @@ function getStatusInfo(sale: { is_active: boolean; starts_at: string; ends_at: s
   if (now >= starts && now <= ends) {
     return {
       label: "Berlangsung",
-      className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+      className: "bg-emerald-500/15 text-emerald-800",
     };
   }
   return { label: "Berakhir", className: "bg-muted text-foreground" };

@@ -33,8 +33,8 @@ type SearchParams = Promise<{
 type StockHistoryType = "in" | "out" | "reserved" | "released" | "adjustment";
 
 const HISTORY_TYPE_BADGE: Record<StockHistoryType, string> = {
-  in: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
-  out: "bg-destructive/10 text-destructive dark:text-destructive",
+  in: "bg-emerald-500/15 text-emerald-800",
+  out: "bg-destructive/10 text-destructive",
   reserved: "bg-brand/10 text-brand",
   released: "bg-muted text-foreground",
   adjustment: "bg-muted text-foreground",
@@ -209,9 +209,9 @@ export default async function AdminStockPage({
       </Suspense>
 
       {outOfStockCount > 0 ? (
-        <div className="admin-utility-card flex items-center gap-3 border-destructive/20 bg-destructive/5 px-4 py-3 dark:border-destructive/30">
+        <div className="admin-utility-card flex items-center gap-3 border-destructive/20 bg-destructive/5 px-4 py-3">
           <AlertTriangle size={16} className="shrink-0 text-destructive" />
-          <p className="text-sm font-semibold text-destructive dark:text-destructive">
+          <p className="text-sm font-semibold text-destructive">
             {outOfStockCount} varian habis stok di halaman ini
           </p>
         </div>
@@ -234,7 +234,7 @@ export default async function AdminStockPage({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
+              <tr className="border-b border-[#e0e0e0] text-left">
                 {STOCK_HISTORY_HEADERS.map((h) => (
                   <th
                     key={h}
@@ -245,7 +245,7 @@ export default async function AdminStockPage({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {history.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-8 text-center text-sm text-foreground">

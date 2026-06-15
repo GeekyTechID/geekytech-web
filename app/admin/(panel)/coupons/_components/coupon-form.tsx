@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createCoupon, updateCoupon, type CouponFormData } from "../_actions";
 
 const labelClass = "text-[11px] font-semibold text-foreground";
-const inputClass = "h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border";
+const inputClass = "h-10 rounded-lg border-[#e0e0e0] text-[17px]";
 
 type InitialData = {
   id: string;
@@ -195,7 +195,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Contoh: Diskon 10% untuk semua produk, berlaku s.d. 31 Desember."
               rows={3}
-              className="resize-none rounded-lg border-[#e0e0e0] text-[15px] leading-relaxed dark:border-border"
+              className="resize-none rounded-lg border-[#e0e0e0] text-[15px] leading-relaxed"
             />
             <p className="text-[11px] text-muted-foreground">Keterangan singkat syarat dan ketentuan kupon.</p>
           </div>
@@ -291,7 +291,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                 setFilterBrandId("all");
               }}
             >
-              <SelectTrigger className="h-10 rounded-lg border-[#e0e0e0] dark:border-border">
+              <SelectTrigger className="h-10 rounded-lg border-[#e0e0e0]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -331,12 +331,12 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                     placeholder={`Cari ${label}...`}
                     value={itemSearch}
                     onChange={(e) => setItemSearch(e.target.value)}
-                    className="h-9 flex-1 rounded-lg border-[#e0e0e0] text-sm dark:border-border"
+                    className="h-9 flex-1 rounded-lg border-[#e0e0e0] text-sm"
                   />
                   {isProduct && (
                     <>
                       <Select value={filterCategoryId} onValueChange={setFilterCategoryId}>
-                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-44 dark:border-border">
+                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-44">
                           <SelectValue placeholder="Semua Kategori" />
                         </SelectTrigger>
                         <SelectContent>
@@ -347,7 +347,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                         </SelectContent>
                       </Select>
                       <Select value={filterBrandId} onValueChange={setFilterBrandId}>
-                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-40 dark:border-border">
+                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-40">
                           <SelectValue placeholder="Semua Merek" />
                         </SelectTrigger>
                         <SelectContent>
@@ -362,7 +362,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                 </div>
 
                 {/* Item list */}
-                <div className="max-h-52 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
+                <div className="max-h-52 overflow-y-auto rounded-lg border border-[#e0e0e0]">
                   {filteredGeneric.length === 0 ? (
                     <p className="px-3 py-4 text-center text-xs text-muted-foreground">
                       Tidak ada {label} ditemukan.
@@ -372,7 +372,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                       {filteredGeneric.map((item, idx) => (
                         <li
                           key={item.id}
-                          className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 ${idx !== 0 ? "border-t border-[#e0e0e0] dark:border-border" : ""}`}
+                          className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 ${idx !== 0 ? "border-t border-[#e0e0e0]" : ""}`}
                           onClick={() => toggleId(item.id)}
                         >
                           <Checkbox
@@ -466,7 +466,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
           <input type="hidden" value={imageUrl} readOnly />
 
           {imageUrl ? (
-            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border" style={{ aspectRatio: "2/1" }}>
+            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted" style={{ aspectRatio: "2/1" }}>
               <Image src={imageUrl} alt="Gambar kupon" fill sizes="(max-width: 768px) 100vw, 672px" className="object-cover" />
               <button
                 type="button"
@@ -482,7 +482,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
               type="button"
               onClick={() => imageRef.current?.click()}
               disabled={uploading}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold">{uploading ? "Mengupload..." : "Klik untuk upload gambar"}</span>

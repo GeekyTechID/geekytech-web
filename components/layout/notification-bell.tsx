@@ -208,7 +208,7 @@ export function NotificationBell() {
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="relative text-neutral-600 dark:text-muted-foreground"
+            className="relative text-neutral-600"
             aria-label="Notifikasi"
           >
             <Bell size={18} />
