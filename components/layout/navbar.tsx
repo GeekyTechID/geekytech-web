@@ -18,7 +18,6 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -202,9 +201,6 @@ export function Navbar() {
               >
                 <ShoppingCart size={18} />
               </Link>
-
-              {/* Theme toggle */}
-              <ThemeToggle className="hidden sm:flex" />
 
               {/* User menu / Auth buttons */}
               {isAuthenticated ? (
@@ -417,15 +413,6 @@ export function Navbar() {
               )}
             </nav>
 
-            {/* Theme toggle di drawer */}
-            <div className="border-t border-border p-4 shrink-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-muted-foreground">
-                  Tema
-                </span>
-                <ThemeToggle variant="full" />
-              </div>
-            </div>
           </aside>
         </>
       )}
