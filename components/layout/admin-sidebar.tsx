@@ -401,7 +401,7 @@ export function AdminSidebar({
     <Sidebar
       collapsible="icon"
       {...props}
-      className={cn("border-[#e5e5e5][#2d2d2d]", className)}
+      className={className}
     >
       <SidebarHeader>
         <SidebarMenu>

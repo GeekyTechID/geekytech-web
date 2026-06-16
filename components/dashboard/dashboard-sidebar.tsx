@@ -236,7 +236,7 @@ export function DashboardSidebar({
       : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <Sidebar collapsible="icon" {...props} className={cn("border-[#e5e5e5][#2d2d2d]", className)}>
+    <Sidebar collapsible="icon" {...props} className={className}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

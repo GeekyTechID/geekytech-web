@@ -130,7 +130,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(234, 83, 41, 0.25);
   --sidebar-accent-foreground: #ea5329;
-  --sidebar-border: transparent;
+  --sidebar-border: #e0e0e0;
   --sidebar-ring: #ea5329;
   --toast-border: #e0e0e0;
   --toast-description: #7a7a7a;
