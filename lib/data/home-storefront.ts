@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { getFlashSaleLink, getPromoLink } from "@/lib/promo-links";
 import type { HomeSection, HomeSectionKey } from "@/app/admin/(panel)/promotions/home-sections/_actions";
 import { flashSaleBannerTemplate } from "@/app/admin/(panel)/promotions/flash-sale/_lib/flash-sale-banner-template";
 import type { Database } from "@/types/supabase";
@@ -256,7 +257,7 @@ async function fetchProductsForBrandPromotion(
   return scored.slice(0, maxItems).map((s) => s.shelf);
 }
 
-async function resolvePromotionShelfProducts(
+export async function resolvePromotionShelfProducts(
   promotionId: string,
   type: "second_products" | "featured_products",
 ): Promise<HomeShelfProduct[]> {
@@ -341,21 +342,22 @@ export type FlashSaleBlockData = {
   saleName: string;
   /** Subtitle dari tabel `flash_sales` (admin flash sale) */
   subtitle: string | null;
+  endsAt: string | null;
   products: HomeShelfProduct[];
 };
 
 async function fetchFlashSaleByExactName(
   name: string,
-): Promise<{ id: string; name: string; subtitle: string | null } | null> {
+): Promise<{ id: string; name: string; subtitle: string | null; endsAt: string | null } | null> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("is_active", true)
     .eq("name", name)
     .maybeSingle();
   if (error || !data) return null;
-  return { id: data.id, name: data.name, subtitle: data.subtitle ?? null };
+  return { id: data.id, name: data.name, subtitle: data.subtitle ?? null, endsAt: data.ends_at ?? null };
 }
 
 /** Urutan nama yang dicoba agar cocok dengan DB (mis. dengan / tanpa `!`). */
@@ -456,7 +458,7 @@ async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBl
   const now = new Date().toISOString();
   const { data: sales, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("is_active", true)
     .lte("starts_at", now)
     .gte("ends_at", now)
@@ -476,6 +478,7 @@ async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBl
     saleId: first.row.id,
     saleName: first.row.name,
     subtitle: first.row.subtitle ?? null,
+    endsAt: first.row.ends_at ?? null,
     products: first.products,
   };
 }
@@ -485,7 +488,7 @@ async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlo
   const now = new Date().toISOString();
   const { data: sale, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("id", saleId)
     .eq("is_active", true)
     .lte("starts_at", now)
@@ -497,6 +500,7 @@ async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlo
     saleId: sale.id,
     saleName: sale.name,
     subtitle: sale.subtitle ?? null,
+    endsAt: sale.ends_at ?? null,
     products,
   };
 }
@@ -539,6 +543,7 @@ export async function fetchFlashSaleBlockByCampaignName(name: string): Promise<F
         saleId: sale.id,
         saleName: sale.name,
         subtitle: sale.subtitle,
+        endsAt: sale.endsAt,
         products,
       };
     }
@@ -578,6 +583,7 @@ export type DynamicPromoBlock = {
   subtitle: string | null;
   banners: StoreBanner[];
   products: HomeShelfProduct[];
+  linkUrl: string | null;
 };
 
 const FALLBACK_HOME_PROMO_TITLE = "Produk terbaru";
@@ -774,12 +780,14 @@ export async function fetchDynamicHomePromoBlocks(
 
           if (banners.length === 0 && products.length === 0) return null;
 
+          const linkUrl = getPromoLink(promo.id);
           return {
             sectionKey: s.key,
             title: promo.title,
             subtitle: promo.subtitle,
-            banners,
+            banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
             products,
+            linkUrl,
           };
         }
 
@@ -791,12 +799,14 @@ export async function fetchDynamicHomePromoBlocks(
           const flashData = await fetchFlashSaleStorefrontById(s.selected_id);
           if (flashData) {
             if (flashData.banners.length === 0 && flashData.products.length === 0) return null;
+            const linkUrl = getFlashSaleLink(s.selected_id);
             return {
               sectionKey: s.key,
               title: flashData.saleName,
               subtitle: flashData.subtitle,
-              banners: flashData.banners,
+              banners: flashData.banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
               products: flashData.products,
+              linkUrl,
             };
           }
 
@@ -818,12 +828,14 @@ export async function fetchDynamicHomePromoBlocks(
 
           if (banners.length === 0 && products.length === 0) return null;
 
+          const linkUrl = getPromoLink(promo.id);
           return {
             sectionKey: s.key,
             title: promo.title,
             subtitle: promo.subtitle ?? null,
-            banners,
+            banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
             products,
+            linkUrl,
           };
         }
 
@@ -842,6 +854,7 @@ export async function fetchDynamicHomePromoBlocks(
           subtitle: FALLBACK_HOME_PROMO_SUBTITLE,
           banners: [],
           products,
+          linkUrl: null,
         });
       }
     }

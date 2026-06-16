@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import { HorizontalScrollRow } from "@/components/store/horizontal-scroll-row";
 
@@ -7,6 +9,7 @@ import {
   HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS,
 } from "@/lib/constants/home-product-row-slot";
 import type { FlashSaleBlockData } from "@/lib/data/home-storefront";
+import { getFlashSaleLink } from "@/lib/promo-links";
 
 type HomeFlashSaleBlockProps = {
   /** Data kampanye; beranda memuat kampanye `HOME_HERO_FLASH_SALE_CAMPAIGN_NAME` via `fetchFlashSaleBlockByCampaignName`. */
@@ -36,9 +39,14 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
     <section className="bg-background py-8 sm:py-10">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between">
-          <h3 className="text-lg font-black leading-tight text-foreground sm:text-xl md:text-2xl">
-            {block.saleName}
-          </h3>
+          <Link
+            href={getFlashSaleLink(block.saleId)}
+            className="group inline-block"
+          >
+            <h3 className="text-lg font-black leading-tight text-foreground transition-colors group-hover:text-brand sm:text-xl md:text-2xl">
+              {block.saleName}
+            </h3>
+          </Link>
         </div>
 
         {block.subtitle ? (

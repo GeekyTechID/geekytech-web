@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { HomePromoBannerStrip } from "@/components/store/home-promo-banner-strip";
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import { HorizontalScrollRow } from "@/components/store/horizontal-scroll-row";
@@ -39,9 +41,17 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
 
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
             <div className={block.banners.length > 0 ? "mb-6 mt-8 space-y-2 sm:mt-10" : "mb-6 space-y-2"}>
-              <h3 className="text-lg font-bold leading-tight text-foreground sm:text-xl">
-                {block.title}
-              </h3>
+              {block.linkUrl ? (
+                <Link href={block.linkUrl} className="group inline-block">
+                  <h3 className="text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-xl">
+                    {block.title}
+                  </h3>
+                </Link>
+              ) : (
+                <h3 className="text-lg font-bold leading-tight text-foreground sm:text-xl">
+                  {block.title}
+                </h3>
+              )}
               {block.subtitle ? (
                 <p className="max-w-2xl text-base font-normal leading-relaxed text-muted-foreground sm:text-lg">
                   {block.subtitle}
