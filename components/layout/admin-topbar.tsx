@@ -14,7 +14,6 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,7 +113,6 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           <span className="hidden text-sm font-medium lg:inline">Website</span>
         </Link>
 
-        <ThemeToggle />
         <AdminNotificationBell />
 
         <DropdownMenu>
