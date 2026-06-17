@@ -86,7 +86,7 @@ export default async function BrandProductListPage({
 
   return (
     <div className="bg-white text-[#1d1d1f]">
-      <div className="mx-auto">
+      <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 lg:px-8">
         <BrandStoreHeroBanners banners={heroBanners} />
       </div>
 

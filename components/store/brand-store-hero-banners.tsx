@@ -1,25 +1,27 @@
 import Link from "next/link";
 
+import {
+  STORE_BANNER_IMAGE_CLASS,
+  STORE_BANNER_MEDIA_CLASS,
+  STORE_BANNER_SURFACE_CLASS,
+} from "@/lib/constants/store-banner";
 import type { StoreBanner } from "@/lib/data/home-storefront";
 
 function BannerFigure({ banner }: { banner: StoreBanner }) {
-  /** Tinggi mengikuti `HomeMainHero` / `HeroSlide` (min-h responsif, gambar object-cover). */
   const inner = (
-    <div className="relative grid min-h-[220px] overflow-hidden md:min-h-[320px] lg:min-h-[400px]">
-      <div className="relative min-h-[220px] md:min-h-0">
-        {/* eslint-disable-next-line @next/next/no-img-element -- URL dari admin */}
-        <img
-          src={banner.image_url}
-          alt={banner.title ?? "Banner promosi"}
-          className="absolute inset-0 h-full w-full object-cover object-center"
-          loading="eager"
-          decoding="async"
-        />
-      </div>
+    <div className={STORE_BANNER_MEDIA_CLASS}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- URL dari admin */}
+      <img
+        src={banner.image_url}
+        alt={banner.title ?? "Banner promosi"}
+        className={STORE_BANNER_IMAGE_CLASS}
+        loading="eager"
+        decoding="async"
+      />
     </div>
   );
   return (
-    <div className="overflow-hidden border border-[#e0e0e0] bg-white">
+    <div className={`border border-[#e0e0e0] bg-white ${STORE_BANNER_SURFACE_CLASS}`}>
       {banner.link_url ? (
         <Link href={banner.link_url} className="block">
           {inner}

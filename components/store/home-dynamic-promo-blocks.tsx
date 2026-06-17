@@ -33,14 +33,12 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
           key={`${block.sectionKey}-${blockIndex}`}
           className="bg-background py-8 sm:py-10 [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
         >
-          {block.banners.length > 0 ? (
-            <div className="relative left-1/2 w-screen max-w-none -translate-x-1/2">
-              <HomePromoBannerStrip banners={block.banners} className="mb-0 w-full max-w-none" />
-            </div>
-          ) : null}
-
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-            <div className={block.banners.length > 0 ? "mb-6 mt-8 space-y-2 sm:mt-10" : "mb-6 space-y-2"}>
+            {block.banners.length > 0 ? (
+              <HomePromoBannerStrip banners={block.banners} className="mb-6 sm:mb-8" />
+            ) : null}
+
+            <div className="mb-6 space-y-2">
               {block.linkUrl ? (
                 <Link href={block.linkUrl} className="group inline-block">
                   <h3 className="text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-xl">

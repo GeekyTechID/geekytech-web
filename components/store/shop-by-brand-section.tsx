@@ -5,16 +5,17 @@ import type { ShopBrand } from "@/lib/data/home-storefront";
 
 type ShopByBrandSectionProps = {
   brands: ShopBrand[];
+  showSeeAllLink?: boolean;
 };
 
-export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
+export function ShopByBrandSection({ brands, showSeeAllLink = true }: ShopByBrandSectionProps) {
   const filteredBrands = brands.filter((b) => b.name.toLowerCase() !== "lainnya");
 
   return (
     <section className="bg-background py-12">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <h2 className="text-xl font-black text-foreground md:text-2xl">
-          Belanja Berdasarkan Brand
+          Authorized Brand
         </h2>
 
         <p className="mt-3 max-w-md text-lg leading-relaxed text-muted-foreground">
@@ -42,6 +43,14 @@ export function ShopByBrandSection({ brands }: ShopByBrandSectionProps) {
                 )}
               </Link>
             ))}
+            {showSeeAllLink ? (
+              <Link
+                href="/brands"
+                className="flex h-12 items-center justify-center text-sm font-semibold text-brand transition hover:text-[#d44820] sm:h-15"
+              >
+                Lihat Semua
+              </Link>
+            ) : null}
           </div>
         )}
       </div>
