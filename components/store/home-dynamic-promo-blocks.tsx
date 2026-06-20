@@ -3,10 +3,7 @@ import Link from "next/link";
 import { HomePromoBannerStrip } from "@/components/store/home-promo-banner-strip";
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import { HorizontalScrollRow } from "@/components/store/horizontal-scroll-row";
-import {
-  HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS,
-  HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS,
-} from "@/lib/constants/home-product-row-slot";
+import { HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS } from "@/lib/constants/home-product-row-slot";
 
 import { fetchDynamicHomePromoBlocks } from "@/lib/data/home-storefront";
 import type { DynamicPromoBlock, FetchDynamicHomePromoBlocksOptions } from "@/lib/data/home-storefront";
@@ -38,18 +35,28 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
               <HomePromoBannerStrip banners={block.banners} className="mb-6 sm:mb-8" />
             ) : null}
 
-            <div className="mb-6 space-y-2">
-              {block.linkUrl ? (
-                <Link href={block.linkUrl} className="group inline-block">
-                  <h3 className="text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-xl">
+            <div className="mb-6 mt-4 space-y-2 sm:mt-5">
+              <div className="flex items-start justify-between gap-3">
+                {block.linkUrl ? (
+                  <Link href={block.linkUrl} className="group inline-block">
+                    <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
+                      {block.title}
+                    </h3>
+                  </Link>
+                ) : (
+                  <h3 className="text-base font-bold leading-snug text-foreground sm:text-lg">
                     {block.title}
                   </h3>
-                </Link>
-              ) : (
-                <h3 className="text-lg font-bold leading-tight text-foreground sm:text-xl">
-                  {block.title}
-                </h3>
-              )}
+                )}
+                {block.linkUrl ? (
+                  <Link
+                    href={block.linkUrl}
+                    className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+                  >
+                    Lihat Semua
+                  </Link>
+                ) : null}
+              </div>
               {block.subtitle ? (
                 <p className="max-w-2xl text-base font-normal leading-relaxed text-muted-foreground sm:text-lg">
                   {block.subtitle}
@@ -61,6 +68,7 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
               <HorizontalScrollRow
                 gapClass="gap-3 sm:gap-4"
                 fillRow={block.products.length <= 5}
+                itemsPerSlide={5}
               >
                 {block.products.length <= 5 ? (
                   <>
@@ -75,7 +83,7 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
                   </>
                 ) : (
                   block.products.map((p) => (
-                    <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS}>
+                    <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
                       <HomeProductTile product={p} layout="promoRow" className="h-full" />
                     </div>
                   ))

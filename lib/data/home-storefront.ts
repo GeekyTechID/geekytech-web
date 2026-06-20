@@ -586,12 +586,8 @@ export type DynamicPromoBlock = {
   linkUrl: string | null;
 };
 
-const FALLBACK_HOME_PROMO_TITLE = "Produk terbaru";
-const FALLBACK_HOME_PROMO_SUBTITLE =
-  "Kurasi dari katalog aktif GeekyTech — buka halaman produk untuk varian lengkap.";
-
-/** Rak cadangan bila tidak ada banner/promo/flash lain yang lolos filter (mis. flash sudah dipakai di blok atas). */
-async function fetchDefaultHomeShelfProducts(limit: number): Promise<HomeShelfProduct[]> {
+/** Rak "Produk Terbaru" — selalu tampil di beranda, lepas dari section promo lain. */
+export async function fetchLatestHomeProducts(limit: number): Promise<HomeShelfProduct[]> {
   if (limit <= 0) return [];
   try {
     const supabase = createServiceClient();
@@ -606,7 +602,6 @@ async function fetchDefaultHomeShelfProducts(limit: number): Promise<HomeShelfPr
       )
       .eq("is_active", true)
       .is("deleted_at", null)
-      .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(Math.min(48, limit * 4));
 
@@ -844,20 +839,6 @@ export async function fetchDynamicHomePromoBlocks(
     );
 
     const blocks = results.filter((b): b is DynamicPromoBlock => b !== null);
-
-    if (blocks.length === 0) {
-      const products = await fetchDefaultHomeShelfProducts(12);
-      if (products.length > 0) {
-        blocks.push({
-          sectionKey: "featured_products",
-          title: FALLBACK_HOME_PROMO_TITLE,
-          subtitle: FALLBACK_HOME_PROMO_SUBTITLE,
-          banners: [],
-          products,
-          linkUrl: null,
-        });
-      }
-    }
 
     return blocks;
   } catch {

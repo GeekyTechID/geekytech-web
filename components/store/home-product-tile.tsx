@@ -5,7 +5,6 @@ import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import type { HomeShelfProduct } from "@/lib/data/home-storefront";
-import { AddToCartButton } from "@/components/store/add-to-cart-button";
 
 type HomeProductTileProps = {
   product: HomeShelfProduct;
@@ -80,7 +79,6 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
           ) : null}
           <span>{product.soldCount} terjual</span>
         </div>
-        <AddToCartButton variantId={product.variantId} />
       </div>
     </article>
   );

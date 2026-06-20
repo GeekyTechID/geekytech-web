@@ -16,6 +16,8 @@ type HorizontalScrollRowProps = {
    * Prop ini masih diterima agar caller tidak perlu diubah.
    */
   fillRow?: boolean;
+  /** Jumlah item yang digeser sekaligus per klik panah (1 slide = N item). Default 1. */
+  itemsPerSlide?: number;
 };
 
 export function HorizontalScrollRow({
@@ -24,6 +26,7 @@ export function HorizontalScrollRow({
   contentClassName,
   gapClass = "gap-4",
   fillRow: _fillRow,
+  itemsPerSlide = 1,
 }: HorizontalScrollRowProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [showChevrons, setShowChevrons] = useState(false);
@@ -58,11 +61,12 @@ export function HorizontalScrollRow({
     const firstSlot = el.firstElementChild as HTMLElement | null;
     if (firstSlot) {
       const gap = parseFloat(getComputedStyle(el).gap) || 0;
-      el.scrollBy({ left: dir * (firstSlot.offsetWidth + gap), behavior: "smooth" });
+      const slotWidth = firstSlot.offsetWidth + gap;
+      el.scrollBy({ left: dir * slotWidth * itemsPerSlide, behavior: "smooth" });
     } else {
       el.scrollBy({ left: Math.round(el.clientWidth * 0.85) * dir, behavior: "smooth" });
     }
-  }, []);
+  }, [itemsPerSlide]);
 
   return (
     <div className={cn("flex items-center gap-2", className)}>

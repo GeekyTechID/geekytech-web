@@ -26,7 +26,7 @@ export default async function PromoPage({ params }: Props) {
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 space-y-3">
-        <h1 className="text-2xl font-black leading-tight text-foreground sm:text-3xl md:text-4xl">
+        <h1 className="text-lg font-black leading-snug text-foreground sm:text-xl md:text-2xl">
           {data.title}
         </h1>
         {data.subtitle ? (
