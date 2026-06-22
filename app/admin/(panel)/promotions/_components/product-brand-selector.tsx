@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/format";
 
 const selectClass =
-  "h-10 w-full rounded-full border border-[#e0e0e0] bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand dark:border-border";
+  "h-10 w-full rounded-full border border-[#e0e0e0] bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
 
 type ProductSort = "name_asc" | "name_desc" | "price_asc" | "price_desc" | "rating_desc" | "reviews_desc" | "sold_desc";
 type BrandSort = "name_asc" | "name_desc" | "count_desc" | "count_asc";
@@ -186,7 +186,7 @@ export function ProductBrandSelector({
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
                 placeholder="Cari produk..."
-                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
+                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
               />
             </div>
             {categories.length > 0 && (
@@ -212,7 +212,7 @@ export function ProductBrandSelector({
             </select>
           </div>
 
-          <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
+          <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0]">
             {sortedProducts.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">Tidak ada produk</p>
             ) : (
@@ -224,14 +224,14 @@ export function ProductBrandSelector({
                     type="button"
                     onClick={() => toggleProduct(p.id)}
                     className={cn(
-                      "flex w-full items-start gap-2 border-b border-[#e0e0e0] px-3 py-2.5 text-left transition-colors last:border-b-0 dark:border-border",
+                      "flex w-full items-start gap-2 border-b border-[#e0e0e0] px-3 py-2.5 text-left transition-colors last:border-b-0",
                       selected ? "bg-brand/5" : "hover:bg-muted/50",
                     )}
                   >
                     <div
                       className={cn(
                         "mt-0.5 h-3.5 w-3.5 shrink-0 rounded border transition-colors",
-                        selected ? "border-brand bg-brand" : "border-[#e0e0e0] dark:border-border",
+                        selected ? "border-brand bg-brand" : "border-[#e0e0e0]",
                       )}
                     />
                     <div className="min-w-0">
@@ -239,7 +239,7 @@ export function ProductBrandSelector({
                       <p className="text-[11px] text-muted-foreground">
                         {p.brand_name ?? "—"} · {formatRupiah(p.price)}
                         {p.condition === "second" && (
-                          <span className="ml-1 font-semibold text-amber-700 dark:text-amber-500">SECOND</span>
+                          <span className="ml-1 font-semibold text-amber-700">SECOND</span>
                         )}
                       </p>
                     </div>
@@ -259,7 +259,7 @@ export function ProductBrandSelector({
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
                 placeholder="Cari brand..."
-                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47] dark:border-border"
+                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
               />
             </div>
             {categories.length > 0 && (
@@ -305,7 +305,7 @@ export function ProductBrandSelector({
             </div>
           )}
 
-          <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0] dark:border-border">
+          <div className="max-h-48 overflow-y-auto rounded-lg border border-[#e0e0e0]">
             {sortedBrands.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">Tidak ada brand</p>
             ) : (
@@ -317,14 +317,14 @@ export function ProductBrandSelector({
                     type="button"
                     onClick={() => toggleBrand(b.id)}
                     className={cn(
-                      "flex w-full items-center gap-2 border-b border-[#e0e0e0] px-3 py-2.5 text-left transition-colors last:border-b-0 dark:border-border",
+                      "flex w-full items-center gap-2 border-b border-[#e0e0e0] px-3 py-2.5 text-left transition-colors last:border-b-0",
                       selected ? "bg-brand/5" : "hover:bg-muted/50",
                     )}
                   >
                     <div
                       className={cn(
                         "h-3.5 w-3.5 shrink-0 rounded border transition-colors",
-                        selected ? "border-brand bg-brand" : "border-[#e0e0e0] dark:border-border",
+                        selected ? "border-brand bg-brand" : "border-[#e0e0e0]",
                       )}
                     />
                     <div>

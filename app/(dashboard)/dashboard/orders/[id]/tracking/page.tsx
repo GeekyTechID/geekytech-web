@@ -77,7 +77,8 @@ function fmt(iso: string | null): string | null {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    timeZone: "Asia/Jakarta",
+  }) + " WIB";
 }
 
 // ─── TrackingTimeline ──────────────────────────────────────────────────────

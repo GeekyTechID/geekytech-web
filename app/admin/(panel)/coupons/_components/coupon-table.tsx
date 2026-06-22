@@ -43,7 +43,7 @@ function getCouponStatus(coupon: CouponRow): { label: string; className: string 
   }
   return {
     label: "Aktif",
-    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+    className: "bg-emerald-500/15 text-emerald-800",
   };
 }
 
@@ -111,7 +111,7 @@ export function CouponTable({ coupons }: CouponTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+            <tr className="border-b border-[#e0e0e0] bg-muted/30">
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Kode
               </th>
@@ -135,7 +135,7 @@ export function CouponTable({ coupons }: CouponTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <tbody className="divide-y divide-[#e0e0e0]">
             {coupons.map((coupon) => {
               const status = getCouponStatus(coupon);
               const discountLabel =

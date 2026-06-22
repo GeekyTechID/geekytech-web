@@ -63,12 +63,12 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="bg-[#f5f5f7] dark:bg-[#2a2a2c] rounded-[18px] p-8 text-center">
+      <div className="bg-[#f5f5f7][#2a2a2c] rounded-[18px] p-8 text-center">
         <div className="mb-4 text-4xl">✓</div>
-        <h3 className="text-[17px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-2">
           Pesan terkirim!
         </h3>
-        <p className="text-[14px] text-[#7a7a7a] dark:text-[#cccccc]">
+        <p className="text-[14px] text-[#7a7a7a][#cccccc]">
           Terima kasih telah menghubungi kami. Tim kami akan merespon dalam waktu singkat.
         </p>
       </div>
@@ -79,7 +79,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Name */}
       <div>
-        <label htmlFor="name" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="name" className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
           Nama Lengkap
         </label>
         <input
@@ -87,7 +87,7 @@ export function ContactForm() {
           type="text"
           placeholder="John Doe"
           {...register("name")}
-          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#1d1d1f] dark:text-white text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
+          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0][#3a3a3a] bg-white[#1a1a1a] text-[#1d1d1f] text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
         />
         {errors.name && (
           <p className="text-[12px] text-[#d32f2f] mt-1">{errors.name.message}</p>
@@ -96,7 +96,7 @@ export function ContactForm() {
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="email" className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
           Email
         </label>
         <input
@@ -104,7 +104,7 @@ export function ContactForm() {
           type="email"
           placeholder="john@example.com"
           {...register("email")}
-          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#1d1d1f] dark:text-white text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
+          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0][#3a3a3a] bg-white[#1a1a1a] text-[#1d1d1f] text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
         />
         {errors.email && (
           <p className="text-[12px] text-[#d32f2f] mt-1">{errors.email.message}</p>
@@ -113,7 +113,7 @@ export function ContactForm() {
 
       {/* Phone */}
       <div>
-        <label htmlFor="phone" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="phone" className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
           Nomor Telepon
         </label>
         <input
@@ -121,7 +121,7 @@ export function ContactForm() {
           type="tel"
           placeholder="08123456789 atau +62123456789"
           {...register("phone")}
-          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#1d1d1f] dark:text-white text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
+          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0][#3a3a3a] bg-white[#1a1a1a] text-[#1d1d1f] text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
         />
         {errors.phone && (
           <p className="text-[12px] text-[#d32f2f] mt-1">{errors.phone.message}</p>
@@ -130,7 +130,7 @@ export function ContactForm() {
 
       {/* Subject */}
       <div>
-        <label htmlFor="subject" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="subject" className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
           Subjek
         </label>
         <input
@@ -138,7 +138,7 @@ export function ContactForm() {
           type="text"
           placeholder="Konsultasi produk, pertanyaan pesanan, dll"
           {...register("subject")}
-          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#1d1d1f] dark:text-white text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
+          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0][#3a3a3a] bg-white[#1a1a1a] text-[#1d1d1f] text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors"
         />
         {errors.subject && (
           <p className="text-[12px] text-[#d32f2f] mt-1">{errors.subject.message}</p>
@@ -147,7 +147,7 @@ export function ContactForm() {
 
       {/* Message */}
       <div>
-        <label htmlFor="message" className="block text-[14px] font-semibold text-[#1d1d1f] dark:text-white mb-2">
+        <label htmlFor="message" className="block text-[14px] font-semibold text-[#1d1d1f] mb-2">
           Pesan
         </label>
         <textarea
@@ -155,7 +155,7 @@ export function ContactForm() {
           placeholder="Tulis pesan detailmu di sini..."
           rows={5}
           {...register("message")}
-          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1a1a] text-[#1d1d1f] dark:text-white text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors resize-none"
+          className="w-full px-4 py-3 rounded-[11px] border border-[#e0e0e0][#3a3a3a] bg-white[#1a1a1a] text-[#1d1d1f] text-[14px] focus:outline-none focus:border-[#EA5329] transition-colors resize-none"
         />
         {errors.message && (
           <p className="text-[12px] text-[#d32f2f] mt-1">{errors.message.message}</p>
@@ -167,7 +167,7 @@ export function ContactForm() {
         Kirim Pesan
       </Button>
 
-      <p className="text-[12px] text-[#7a7a7a] dark:text-[#cccccc] text-center">
+      <p className="text-[12px] text-[#7a7a7a][#cccccc] text-center">
         Kami akan merespon dalam waktu 1-24 jam kerja.
       </p>
     </form>

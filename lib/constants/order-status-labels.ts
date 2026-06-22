@@ -3,14 +3,14 @@ import type { Database } from "@/types/supabase";
 export type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 const LABELS: Record<OrderStatus, string> = {
-  pending_payment: "Menunggu pembayaran",
-  paid: "Dibayar",
-  processing: "Diproses",
-  shipped: "Dikirim",
-  delivered: "Tiba di tujuan",
-  completed: "Selesai",
-  cancelled: "Dibatalkan",
-  refunded: "Dikembalikan",
+  pending_payment: "Menunggu Pembayaran",
+  paid: "Pembayaran Dikonfirmasi",
+  processing: "Pesanan Diproses",
+  shipped: "Paket Dikirim",
+  delivered: "Paket Tiba",
+  completed: "Pesanan Selesai",
+  cancelled: "Pesanan Dibatalkan",
+  refunded: "Dana Dikembalikan",
 };
 
 export function orderStatusLabel(status: OrderStatus): string {

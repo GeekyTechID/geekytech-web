@@ -42,7 +42,7 @@ export default async function AdminSettingsPage() {
 
       <div className="space-y-6">
         <div className="admin-utility-card overflow-hidden p-0">
-          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+          <div className="border-b border-[#e0e0e0] px-5 py-4">
             <h2 className="admin-section-title">Maintenance Mode</h2>
             <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Aktifkan untuk menonaktifkan akses publik sementara.
@@ -54,7 +54,7 @@ export default async function AdminSettingsPage() {
         </div>
 
         <div className="admin-utility-card overflow-hidden p-0">
-          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+          <div className="border-b border-[#e0e0e0] px-5 py-4">
             <h2 className="admin-section-title">Announcement Bar</h2>
             <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Banner informasi di bagian atas halaman.
@@ -66,7 +66,7 @@ export default async function AdminSettingsPage() {
         </div>
 
         <div className="admin-utility-card overflow-hidden p-0">
-          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+          <div className="border-b border-[#e0e0e0] px-5 py-4">
             <h2 className="admin-section-title">WhatsApp CS</h2>
             <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Nomor WhatsApp customer service yang ditampilkan di tombol floating.
@@ -78,7 +78,7 @@ export default async function AdminSettingsPage() {
         </div>
 
         <div className="admin-utility-card overflow-hidden p-0">
-          <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+          <div className="border-b border-[#e0e0e0] px-5 py-4">
             <h2 className="admin-section-title">Auto Complete Order</h2>
             <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
               Order otomatis selesai setelah X hari konfirmasi pengiriman.

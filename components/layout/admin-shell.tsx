@@ -118,10 +118,10 @@ export function AdminShell({
   return (
     <SidebarProvider defaultOpen={sidebarDefaultOpen}>
       <AdminSidebar />
-      <SidebarInset className="bg-[#fafafa] dark:bg-background">
-        <header className="flex h-11 shrink-0 items-center gap-2.5 bg-[#fafafa] dark:bg-background px-4">
-          <SidebarTrigger className="-ml-1 text-[#5c5c5c] hover:text-[#1d1d1f] dark:text-muted-foreground dark:hover:text-foreground" />
-          <span className="select-none text-[#d4d4d4] dark:text-border text-sm">|</span>
+      <SidebarInset className="bg-[#fafafa]">
+        <header className="flex h-11 shrink-0 items-center gap-2.5 bg-[#fafafa] px-4">
+          <SidebarTrigger className="-ml-1 text-[#5c5c5c] hover:text-[#1d1d1f]" />
+          <span className="select-none text-[#d4d4d4] text-sm">|</span>
           <AdminBreadcrumb />
           <div className="ml-auto flex items-center gap-1">
             <Link

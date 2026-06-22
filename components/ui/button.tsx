@@ -48,7 +48,7 @@ const buttonVariants = cva(
           "rounded-full border-transparent bg-[rgba(210,210,215,0.64)] text-[#1d1d1f] shadow-none hover:bg-[rgba(210,210,215,0.8)]",
         /** Compact row actions (admin tables) — 14px utility, radius 8px */
         "table-action":
-          "rounded-md border-[#e0e0e0] bg-transparent text-foreground shadow-none hover:bg-muted dark:border-border",
+          "rounded-md border-[#e0e0e0] bg-transparent text-foreground shadow-none hover:bg-muted",
         "table-action-brand":
           "rounded-md border-brand/40 bg-transparent text-brand shadow-none hover:bg-brand/5",
         "table-action-destructive":

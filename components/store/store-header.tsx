@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -94,7 +93,7 @@ type StoreHeaderProps = {
 };
 
 const searchInputClass =
-  "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0 dark:bg-transparent";
+  "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0";
 
 export function StoreHeader({
   categories,
@@ -174,7 +173,7 @@ export function StoreHeader({
   const closeDropdown = () => setTimeout(() => setShowDropdown(false), 150);
 
   const searchDropdown = showDropdown && searchResults.length > 0 ? (
-    <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg dark:border-border dark:bg-background">
+    <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg">
       {searchResults.map((r) => (
         <Link
           key={r.id}
@@ -185,15 +184,15 @@ export function StoreHeader({
             setSearchQuery("");
             setSearchResults([]);
           }}
-          className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-muted"
+          className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-neutral-50"
         >
           {r.image ? (
             <Image src={r.image} alt={r.name} width={40} height={40} className="h-10 w-10 shrink-0 rounded-lg object-cover" />
           ) : (
-            <div className="h-10 w-10 shrink-0 rounded-lg bg-neutral-100 dark:bg-muted" />
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-neutral-100" />
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-neutral-900 dark:text-foreground">{r.name}</p>
+            <p className="truncate text-sm font-medium text-neutral-900">{r.name}</p>
             <p className="text-xs text-neutral-500">
               {r.sale_price
                 ? `Rp${r.sale_price.toLocaleString("id-ID")}`
@@ -210,7 +209,7 @@ export function StoreHeader({
           setSearchQuery("");
           setSearchResults([]);
         }}
-        className="flex items-center justify-center border-t border-neutral-100 px-3 py-2 text-xs font-medium text-brand transition-colors hover:bg-neutral-50 dark:border-border dark:hover:bg-muted"
+        className="flex items-center justify-center border-t border-neutral-100 px-3 py-2 text-xs font-medium text-brand transition-colors hover:bg-neutral-50"
       >
         Lihat semua hasil untuk &ldquo;{searchQuery.trim()}&rdquo; →
       </Link>
@@ -247,8 +246,8 @@ export function StoreHeader({
     <>
       <header
         className={cn(
-          "w-full border-b border-neutral-200 bg-white dark:border-border dark:bg-background",
-          sticky && "sticky top-0 z-40 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90 dark:bg-background/95",
+          "w-full border-b border-neutral-200 bg-white",
+          sticky && "sticky top-0 z-40 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90",
           className,
         )}
       >
@@ -259,7 +258,7 @@ export function StoreHeader({
               variant="ghost"
               size="icon-sm"
               onClick={() => setMobileMenuOpen(true)}
-              className="shrink-0 text-neutral-600 md:hidden dark:text-muted-foreground"
+              className="shrink-0 text-neutral-600 md:hidden"
               aria-label="Buka menu"
             >
               <Menu size={22} />
@@ -280,7 +279,7 @@ export function StoreHeader({
               onSubmit={handleSearchSubmit}
               className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 sm:block"
             >
-              <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3 dark:border-border dark:bg-muted">
+              <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3">
                 <Search size={14} className="mr-2 shrink-0 text-neutral-400" aria-hidden />
                 <Input
                   ref={searchInputRef}
@@ -325,7 +324,6 @@ export function StoreHeader({
                 </TooltipTrigger>
                 <TooltipContent>Keranjang</TooltipContent>
               </Tooltip>
-              <ThemeToggle className="hidden sm:flex" />
               {isAuthenticated ? <NotificationBell /> : null}
 
               {isAuthenticated ? (
@@ -342,7 +340,7 @@ export function StoreHeader({
                         {avatarUrl ? (
                           <AvatarImage src={avatarUrl} alt="" referrerPolicy="no-referrer" />
                         ) : null}
-                        <AvatarFallback className="bg-[#1d1d1f] text-[10px] font-black text-white dark:bg-foreground dark:text-background">
+                        <AvatarFallback className="bg-[#1d1d1f] text-[10px] font-black text-white">
                           {userInitials}
                         </AvatarFallback>
                       </Avatar>
@@ -414,7 +412,7 @@ export function StoreHeader({
           </div>
 
           <form onSubmit={handleSearchSubmit} className="relative pb-3 sm:hidden">
-            <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3 dark:border-border dark:bg-muted">
+            <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3">
               <Search size={15} className="shrink-0 text-neutral-500" aria-hidden />
               <Input
                 type="search"
@@ -434,7 +432,7 @@ export function StoreHeader({
 
           <nav
             aria-label="Kategori produk"
-            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6 dark:text-foreground"
+            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6"
           >
             {categories.length === 0 ? (
               <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>
@@ -455,7 +453,7 @@ export function StoreHeader({
 
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" showCloseButton={false} className="w-[min(100%,20rem)] gap-0 p-0">
-          <SheetHeader className="flex-row items-center justify-between border-b border-neutral-100 px-4 py-3 dark:border-border">
+          <SheetHeader className="flex-row items-center justify-between border-b border-neutral-100 px-4 py-3">
             <SheetTitle className="text-sm font-black uppercase">Menu</SheetTitle>
             <Button
               type="button"
@@ -483,7 +481,7 @@ export function StoreHeader({
                 </li>
               ))}
             </ul>
-            <div className="my-4 border-t border-neutral-100 dark:border-border" />
+            <div className="my-4 border-t border-neutral-100" />
             {!isAuthenticated ? (
               <div className="space-y-2 px-2">
                 <Button asChild variant="pearl" className="w-full font-bold uppercase">
@@ -534,12 +532,6 @@ export function StoreHeader({
               </div>
             )}
           </nav>
-          <div className="border-t border-neutral-100 p-4 dark:border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-muted-foreground">Tema</span>
-              <ThemeToggle variant="full" />
-            </div>
-          </div>
         </SheetContent>
       </Sheet>
     </>

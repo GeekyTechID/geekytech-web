@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { getFlashSaleLink, getPromoLink } from "@/lib/promo-links";
 import type { HomeSection, HomeSectionKey } from "@/app/admin/(panel)/promotions/home-sections/_actions";
 import { flashSaleBannerTemplate } from "@/app/admin/(panel)/promotions/flash-sale/_lib/flash-sale-banner-template";
 import type { Database } from "@/types/supabase";
@@ -13,11 +14,17 @@ type BannerRow = Pick<
 >;
 
 const DEFAULT_HOME_SECTIONS: HomeSection[] = [
-  { key: "main_banner", selected_id: null, is_active: true, order: 1 },
-  { key: "flash_sale", selected_id: null, is_active: true, order: 2 },
-  { key: "second_products", selected_id: null, is_active: true, order: 3 },
-  { key: "featured_products", selected_id: null, is_active: true, order: 4 },
+  { key: "main_banner",       selected_id: null, is_active: true,  order: 1 },
+  { key: "flash_sale",        selected_id: null, is_active: true,  order: 2 },
+  { key: "second_products",   selected_id: null, is_active: true,  order: 3 },
+  { key: "featured_products", selected_id: null, is_active: true,  order: 4 },
+  { key: "promo_5",           selected_id: null, is_active: false, order: 5 },
+  { key: "promo_6",           selected_id: null, is_active: false, order: 6 },
+  { key: "promo_7",           selected_id: null, is_active: false, order: 7 },
+  { key: "promo_8",           selected_id: null, is_active: false, order: 8 },
 ];
+
+const GENERIC_SECTION_KEYS = new Set<HomeSectionKey>(["promo_5", "promo_6", "promo_7", "promo_8"]);
 
 function nowMs(): number {
   return Date.now();
@@ -42,6 +49,10 @@ function parseHomeSections(value: unknown): HomeSection[] {
     "flash_sale",
     "second_products",
     "featured_products",
+    "promo_5",
+    "promo_6",
+    "promo_7",
+    "promo_8",
   ]);
   const parsed: HomeSection[] = [];
   if (Array.isArray(value)) {
@@ -246,7 +257,7 @@ async function fetchProductsForBrandPromotion(
   return scored.slice(0, maxItems).map((s) => s.shelf);
 }
 
-async function resolvePromotionShelfProducts(
+export async function resolvePromotionShelfProducts(
   promotionId: string,
   type: "second_products" | "featured_products",
 ): Promise<HomeShelfProduct[]> {
@@ -331,21 +342,22 @@ export type FlashSaleBlockData = {
   saleName: string;
   /** Subtitle dari tabel `flash_sales` (admin flash sale) */
   subtitle: string | null;
+  endsAt: string | null;
   products: HomeShelfProduct[];
 };
 
 async function fetchFlashSaleByExactName(
   name: string,
-): Promise<{ id: string; name: string; subtitle: string | null } | null> {
+): Promise<{ id: string; name: string; subtitle: string | null; endsAt: string | null } | null> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("is_active", true)
     .eq("name", name)
     .maybeSingle();
   if (error || !data) return null;
-  return { id: data.id, name: data.name, subtitle: data.subtitle ?? null };
+  return { id: data.id, name: data.name, subtitle: data.subtitle ?? null, endsAt: data.ends_at ?? null };
 }
 
 /** Urutan nama yang dicoba agar cocok dengan DB (mis. dengan / tanpa `!`). */
@@ -443,10 +455,13 @@ async function loadFlashSaleShelfProductsForSaleId(saleId: string): Promise<Home
 /** Flash sale aktif pertama (urut `starts_at`) yang punya minimal satu produk siap tampil di rak. */
 async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBlockData | null> {
   const supabase = createServiceClient();
+  const now = new Date().toISOString();
   const { data: sales, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .order("starts_at", { ascending: false });
   if (error || !sales?.length) return null;
 
@@ -463,17 +478,21 @@ async function fetchFirstActiveFlashSaleBlockWithProducts(): Promise<FlashSaleBl
     saleId: first.row.id,
     saleName: first.row.name,
     subtitle: first.row.subtitle ?? null,
+    endsAt: first.row.ends_at ?? null,
     products: first.products,
   };
 }
 
 async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlockData | null> {
   const supabase = createServiceClient();
+  const now = new Date().toISOString();
   const { data: sale, error } = await supabase
     .from("flash_sales")
-    .select("id, name, subtitle")
+    .select("id, name, subtitle, ends_at")
     .eq("id", saleId)
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .maybeSingle();
   if (error || !sale) return null;
   const products = await loadFlashSaleShelfProductsForSaleId(sale.id);
@@ -481,6 +500,7 @@ async function fetchFlashSaleBlockBySaleId(saleId: string): Promise<FlashSaleBlo
     saleId: sale.id,
     saleName: sale.name,
     subtitle: sale.subtitle ?? null,
+    endsAt: sale.ends_at ?? null,
     products,
   };
 }
@@ -523,6 +543,7 @@ export async function fetchFlashSaleBlockByCampaignName(name: string): Promise<F
         saleId: sale.id,
         saleName: sale.name,
         subtitle: sale.subtitle,
+        endsAt: sale.endsAt,
         products,
       };
     }
@@ -562,15 +583,11 @@ export type DynamicPromoBlock = {
   subtitle: string | null;
   banners: StoreBanner[];
   products: HomeShelfProduct[];
+  linkUrl: string | null;
 };
 
-const MAIN_BANNER_SECTION_TITLE = "Banner utama";
-const FALLBACK_HOME_PROMO_TITLE = "Produk terbaru";
-const FALLBACK_HOME_PROMO_SUBTITLE =
-  "Kurasi dari katalog aktif GeekyTech — buka halaman produk untuk varian lengkap.";
-
-/** Rak cadangan bila tidak ada banner/promo/flash lain yang lolos filter (mis. flash sudah dipakai di blok atas). */
-async function fetchDefaultHomeShelfProducts(limit: number): Promise<HomeShelfProduct[]> {
+/** Rak "Produk Terbaru" — selalu tampil di beranda, lepas dari section promo lain. */
+export async function fetchLatestHomeProducts(limit: number): Promise<HomeShelfProduct[]> {
   if (limit <= 0) return [];
   try {
     const supabase = createServiceClient();
@@ -585,7 +602,6 @@ async function fetchDefaultHomeShelfProducts(limit: number): Promise<HomeShelfPr
       )
       .eq("is_active", true)
       .is("deleted_at", null)
-      .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(Math.min(48, limit * 4));
 
@@ -611,11 +627,14 @@ async function fetchFlashSaleStorefrontById(saleId: string): Promise<{
 } | null> {
   try {
     const supabase = createServiceClient();
+    const now = new Date().toISOString();
     const { data: sale, error: saleErr } = await supabase
       .from("flash_sales")
       .select("id, name, subtitle")
       .eq("id", saleId)
       .eq("is_active", true)
+      .lte("starts_at", now)
+      .gte("ends_at", now)
       .single();
     if (saleErr || !sale) return null;
 
@@ -672,10 +691,13 @@ async function pickFirstFlashSaleIdWithContent(
   supabase: ServiceSupabase,
   exclude: Set<string>,
 ): Promise<string | null> {
+  const now = new Date().toISOString();
   const { data: sales } = await supabase
     .from("flash_sales")
     .select("id")
     .eq("is_active", true)
+    .lte("starts_at", now)
+    .gte("ends_at", now)
     .order("starts_at", { ascending: false });
   const candidates = (sales ?? []).filter((r) => !exclude.has(r.id));
   if (candidates.length === 0) return null;
@@ -728,34 +750,8 @@ export async function fetchDynamicHomePromoBlocks(
       sections.map(async (s): Promise<DynamicPromoBlock | null> => {
         if (!s.is_active) return null;
 
-        if (s.key === "main_banner") {
-          const banners = await fetchTemplateBanners("main_banner");
-          if (banners.length === 0) return null;
-          return {
-            sectionKey: "main_banner",
-            title: MAIN_BANNER_SECTION_TITLE,
-            subtitle: null,
-            banners,
-            products: [],
-          };
-        }
-
-        if (s.key === "flash_sale") {
-          let saleId = s.selected_id;
-          if (!saleId) {
-            saleId = await pickFirstFlashSaleIdWithContent(supabase, excludeFlash);
-          }
-          if (!saleId) return null;
-          const fs = await fetchFlashSaleStorefrontById(saleId);
-          if (!fs || (fs.banners.length === 0 && fs.products.length === 0)) return null;
-          return {
-            sectionKey: "flash_sale",
-            title: fs.saleName,
-            subtitle: fs.subtitle,
-            banners: fs.banners,
-            products: fs.products,
-          };
-        }
+        // main_banner and flash_sale are rendered by dedicated components above brands
+        if (s.key === "main_banner" || s.key === "flash_sale") return null;
 
         if (s.key === "second_products" || s.key === "featured_products") {
           let promoId = s.selected_id;
@@ -779,12 +775,62 @@ export async function fetchDynamicHomePromoBlocks(
 
           if (banners.length === 0 && products.length === 0) return null;
 
+          const linkUrl = getPromoLink(promo.id);
           return {
             sectionKey: s.key,
             title: promo.title,
             subtitle: promo.subtitle,
-            banners,
+            banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
             products,
+            linkUrl,
+          };
+        }
+
+        // Generic slots promo_5…promo_8: auto-detect type from selected_id
+        if (GENERIC_SECTION_KEYS.has(s.key)) {
+          if (!s.selected_id) return null; // no auto-fallback for generic slots
+
+          // Try flash sale first
+          const flashData = await fetchFlashSaleStorefrontById(s.selected_id);
+          if (flashData) {
+            if (flashData.banners.length === 0 && flashData.products.length === 0) return null;
+            const linkUrl = getFlashSaleLink(s.selected_id);
+            return {
+              sectionKey: s.key,
+              title: flashData.saleName,
+              subtitle: flashData.subtitle,
+              banners: flashData.banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
+              products: flashData.products,
+              linkUrl,
+            };
+          }
+
+          // Try promotion (second_products or featured_products)
+          const { data: promo } = await supabase
+            .from("promotions")
+            .select("id, type, title, subtitle, is_active")
+            .eq("id", s.selected_id)
+            .maybeSingle();
+
+          if (!promo || promo.is_active !== true) return null;
+          const promoType = promo.type as "second_products" | "featured_products";
+          if (promoType !== "second_products" && promoType !== "featured_products") return null;
+
+          const [banners, products] = await Promise.all([
+            fetchTemplateBanners(promoType),
+            resolvePromotionShelfProducts(promo.id, promoType),
+          ]);
+
+          if (banners.length === 0 && products.length === 0) return null;
+
+          const linkUrl = getPromoLink(promo.id);
+          return {
+            sectionKey: s.key,
+            title: promo.title,
+            subtitle: promo.subtitle ?? null,
+            banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
+            products,
+            linkUrl,
           };
         }
 
@@ -793,19 +839,6 @@ export async function fetchDynamicHomePromoBlocks(
     );
 
     const blocks = results.filter((b): b is DynamicPromoBlock => b !== null);
-
-    if (blocks.length === 0) {
-      const products = await fetchDefaultHomeShelfProducts(12);
-      if (products.length > 0) {
-        blocks.push({
-          sectionKey: "featured_products",
-          title: FALLBACK_HOME_PROMO_TITLE,
-          subtitle: FALLBACK_HOME_PROMO_SUBTITLE,
-          banners: [],
-          products,
-        });
-      }
-    }
 
     return blocks;
   } catch {

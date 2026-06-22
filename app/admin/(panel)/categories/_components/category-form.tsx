@@ -108,7 +108,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
             </Label>
             <Input
               id="name"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47]"
               placeholder="Contoh: Laptop"
               {...register("name", {
                 onChange: (e) => {
@@ -127,7 +127,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
             </Label>
             <Input
               id="slug"
-              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47]"
               placeholder="laptop"
               {...register("slug")}
             />
@@ -142,7 +142,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
           <select
             id="parent_id"
             {...register("parent_id")}
-            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">— Tidak ada (kategori utama) —</option>
             {parentCategories.map((cat) => (
@@ -164,7 +164,7 @@ export function CategoryForm({ parentCategories, categoryId, defaultValues }: Ca
             id="sort_order"
             type="number"
             min="0"
-            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
             {...register("sort_order", { valueAsNumber: true })}
           />
           {errors.sort_order && (

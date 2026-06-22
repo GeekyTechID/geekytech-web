@@ -12,7 +12,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 type NotifItem = {
   id: string;
@@ -53,7 +56,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours} jam lalu`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days} hari lalu`;
-  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+  return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -97,6 +100,38 @@ export function AdminNotificationBell() {
   useEffect(() => {
     void fetchNotifs();
   }, [fetchNotifs]);
+
+  // Realtime subscription — listen for new notifications without polling.
+  // getSession() ensures the Supabase client finishes loading the session from
+  // cookies before we subscribe, so realtime connects with the admin JWT instead
+  // of anon (which would fail the is_admin() RLS check and receive no events).
+  useEffect(() => {
+    const supabase = createClient();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
+
+    void supabase.auth.getSession().then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel("admin-notifications-bell")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "admin_notifications" },
+          (payload) => {
+            const notif = payload.new as NotifItem;
+            setItems((prev) => [notif, ...prev].slice(0, 6));
+            setUnread((prev) => prev + 1);
+            fetchedRef.current = false;
+          },
+        )
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleMouseEnter = useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);

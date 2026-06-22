@@ -195,15 +195,16 @@ export function ProductDetailClient({
             <div className="min-w-0 ">
               <div className="flex flex-col lg:flex-row justify-between gap-8 sm:items-start">
                 {/* Galeri */}
-                <div className="mx-auto min-w-0 w-full max-w-[252px] sm:mx-0 sm:max-w-[294px] md:max-w-[315px]">
+                <div className="mx-auto min-w-0 w-full max-w-[280px] sm:mx-0 sm:max-w-[380px] md:max-w-[440px] lg:max-w-[480px]">
                   <div className="relative aspect-square w-full overflow-hidden">
                     {currentImage.url ? (
                       <Image
+                        key={currentImage.url}
                         src={currentImage.url}
                         alt={currentImage.alt ?? product.name}
                         fill
                         className="object-contain"
-                        sizes="(max-width: 640px) 252px, (max-width: 768px) 294px, 315px"
+                        sizes="(max-width: 640px) 280px, (max-width: 768px) 380px, (max-width: 1024px) 440px, 480px"
                         priority
                       />
                     ) : (
@@ -240,14 +241,14 @@ export function ProductDetailClient({
                           size="icon-sm"
                           onClick={() => setImgIndex(i)}
                           className={cn(
-                            "relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
+                            "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
                             i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
                           )}
                           aria-label={`Gambar ${i + 1}`}
                           aria-current={i === safeImgIndex ? "true" : undefined}
                         >
                           {im.url ? (
-                            <Image src={im.url} alt="" fill className="object-contain p-1" sizes="48px" />
+                            <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
                           ) : null}
                         </Button>
                       ))}
@@ -257,7 +258,7 @@ export function ProductDetailClient({
 
                 {/* Judul, kategori, varian, rating, harga */}
                 <div className="min-w-0 space-y-3">
-                  <h1 className="text-[clamp(1rem,3.5vw,1.5rem)] font-semibold leading-tight">
+                  <h1 className="text-base font-semibold leading-snug">
                     {product.name}
                   </h1>
                   {product.category ? (
@@ -301,7 +302,7 @@ export function ProductDetailClient({
                   </div>
 
                   <div className="space-y-2 border-t border-[#f0f0f0] pt-5">
-                    <p className="text-[clamp(1.5rem,4vw,2rem)] font-bold">{formatRupiah(unitPrice)}</p>
+                    <p className="text-lg font-bold">{formatRupiah(unitPrice)}</p>
                     {discountPercent != null && discountPercent > 0 ? (
                       <div className="flex flex-wrap items-center gap-2 text-[17px]">
                         <span className="text-[#7a7a7a] line-through">{formatRupiah(listPrice)}</span>
@@ -316,8 +317,8 @@ export function ProductDetailClient({
             </div>
 
             {/* Kartu belanja */}
-            <aside className="w-full shrink-0 lg:min-w-[23rem] lg:max-w-[26rem] xl:min-w-[24rem] xl:max-w-[28rem]">
-              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-8 lg:px-10">
+            <aside className="w-full shrink-0 lg:min-w-[19rem] lg:max-w-[21rem] xl:min-w-[20rem] xl:max-w-[22rem]">
+              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-6 lg:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <QuantityStepper
                     value={qty}
@@ -339,7 +340,7 @@ export function ProductDetailClient({
                 <div className="mt-8 space-y-2 border-t border-[#eadfd8] pt-6">
                   <p className="text-sm text-[#7a7a7a]">
                     Subtotal{" "}
-                    <span className="text-[23px] font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
+                    <span className="text-xl font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
                   </p>
                   {discountPercent != null && discountPercent > 0 ? (
                     <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -416,7 +417,7 @@ export function ProductDetailClient({
                     variant="link"
                     size="sm"
                     onClick={() => setShareOpen(true)}
-                    className="gap-1.5 text-[#1d1d1f]"
+                    className="gap-1.5 text-[#EA5329]"
                   >
                     <Share2 className="h-4 w-4" aria-hidden />
                     Share

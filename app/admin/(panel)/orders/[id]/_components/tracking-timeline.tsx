@@ -57,7 +57,8 @@ function fmt(iso: string | null): string | null {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    timeZone: "Asia/Jakarta",
+  }) + " WIB";
 }
 
 export function TrackingTimeline({ result }: { result: TrackingResult }) {
@@ -110,7 +111,7 @@ export function TrackingTimeline({ result }: { result: TrackingResult }) {
                   <p
                     className={[
                       "text-[14px] font-semibold leading-snug tracking-tight",
-                      isCurrent ? "text-[#EA5329]" : "text-[#1d1d1f] dark:text-foreground",
+                      isCurrent ? "text-[#EA5329]" : "text-[#1d1d1f]",
                     ].join(" ")}
                   >
                     {cfg.label}
@@ -128,7 +129,7 @@ export function TrackingTimeline({ result }: { result: TrackingResult }) {
                   return (
                     <div className="mt-1">
                       {s.description && (
-                        <p className="text-[13px] leading-relaxed text-[#5c5c5c] dark:text-muted-foreground">
+                        <p className="text-[13px] leading-relaxed text-[#5c5c5c]">
                           {s.description}
                         </p>
                       )}
@@ -145,7 +146,7 @@ export function TrackingTimeline({ result }: { result: TrackingResult }) {
                 })()}
 
                 {isMulti && (
-                  <div className="mt-2.5 space-y-0 border-l-2 border-[#ececec] pl-3.5 dark:border-border">
+                  <div className="mt-2.5 space-y-0 border-l-2 border-[#ececec] pl-3.5">
                     {group.steps.map((s, si) => {
                       const isLastSub = si === group.steps.length - 1;
                       const showNote = s.note && s.note !== s.description && s.description;
@@ -159,7 +160,7 @@ export function TrackingTimeline({ result }: { result: TrackingResult }) {
                               "absolute -left-[19px] top-[5px] h-2 w-2 rounded-full border",
                               isLastSub && isCurrent
                                 ? "border-[#EA5329] bg-[#EA5329]"
-                                : "border-[#d0d0d0] bg-white dark:bg-background",
+                                : "border-[#d0d0d0] bg-white",
                             ].join(" ")}
                           />
                           {s.description && (
@@ -167,8 +168,8 @@ export function TrackingTimeline({ result }: { result: TrackingResult }) {
                               className={[
                                 "text-[13px] leading-relaxed",
                                 isLastSub && isCurrent
-                                  ? "font-medium text-[#1d1d1f] dark:text-foreground"
-                                  : "text-[#5c5c5c] dark:text-muted-foreground",
+                                  ? "font-medium text-[#1d1d1f]"
+                                  : "text-[#5c5c5c]",
                               ].join(" ")}
                             >
                               {s.description}
@@ -242,7 +243,8 @@ export function ShipmentTrackingCard({
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
+      timeZone: "Asia/Jakarta",
+    }) + " WIB";
   }
 
   return (
@@ -254,7 +256,7 @@ export function ShipmentTrackingCard({
             <Truck className="h-4 w-4 text-[#EA5329]" />
           </div>
           <div>
-            <p className="text-[14px] font-semibold leading-snug text-[#1d1d1f] dark:text-foreground">
+            <p className="text-[14px] font-semibold leading-snug text-[#1d1d1f]">
               {courierName ?? courierCompany?.toUpperCase()}
               {courierService ? ` · ${courierService}` : ""}
             </p>
@@ -289,11 +291,11 @@ export function ShipmentTrackingCard({
 
       {/* Timeline */}
       {hasSteps ? (
-        <div className="mt-4 rounded-xl border border-[#e8e8e8] bg-[#fafafa] p-4 dark:border-border dark:bg-muted/20 sm:p-5">
+        <div className="mt-4 rounded-xl border border-[#e8e8e8] bg-[#fafafa] p-4 sm:p-5">
           <TrackingTimeline result={trackingResult} />
         </div>
       ) : (
-        <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#f5f5f7] px-4 py-3 dark:bg-muted/30">
+        <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#f5f5f7] px-4 py-3">
           <Package className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#b0b0b0]" />
           <p className="text-[12px] leading-relaxed text-[#a0a0a0]">
             Riwayat dari kurir belum tersedia. Coba cek langsung di website kurir.

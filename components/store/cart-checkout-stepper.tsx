@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -8,7 +9,7 @@ const steps = [
   { step: 3 as const, label: "Done", href: null },
 ];
 
-export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
+export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 | 4 }) {
   return (
     <nav aria-label="Langkah belanja" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-3 sm:gap-x-4 md:gap-x-6">
       {steps.map((s, i) => {
@@ -23,7 +24,7 @@ export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
               !active && !done && "border-[#d4d0c8] bg-white text-[#9a9590]",
             )}
           >
-            {s.step}
+            {done && !active ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : s.step}
           </span>
         );
         const label = (
@@ -49,7 +50,7 @@ export function CartCheckoutStepper({ current }: { current: 1 | 2 | 3 }) {
                   {label}
                 </Link>
               ) : (
-                <div className="flex cursor-not-allowed items-center gap-2 opacity-60">
+                <div className={cn("flex items-center gap-2", done ? "cursor-default" : "cursor-not-allowed opacity-60")}>
                   {content}
                   {label}
                 </div>

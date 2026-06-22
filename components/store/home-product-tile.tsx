@@ -5,7 +5,6 @@ import { formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import type { HomeShelfProduct } from "@/lib/data/home-storefront";
-import { AddToCartButton } from "@/components/store/add-to-cart-button";
 
 type HomeProductTileProps = {
   product: HomeShelfProduct;
@@ -17,20 +16,23 @@ type HomeProductTileProps = {
 export function HomeProductTile({ product, className, layout = "default" }: HomeProductTileProps) {
   const href = `/products/${product.slug}`;
   const showCompare = product.compareAtPrice != null && product.compareAtPrice > product.currentPrice;
+  const discountPct = showCompare
+    ? Math.round((1 - product.currentPrice / product.compareAtPrice!) * 100)
+    : 0;
   const imageSizes =
     layout === "default" ? "208px" : HOME_PRODUCT_FIVE_ACROSS_IMAGE_SIZES;
 
   return (
     <article
       className={cn(
-        "flex snap-start flex-col dark:border-border dark:bg-background",
+        "flex snap-start flex-col",
         layout === "default" && "w-[min(100%,11.5rem)] shrink-0 sm:w-52",
         layout === "promoRow" && "h-full w-full min-w-0 shrink-0",
         layout === "fluidRow" && "h-full min-h-0 w-full min-w-0",
         className,
       )}
     >
-      <Link href={href} className="relative block aspect-square dark:bg-muted">
+      <Link href={href} className="relative block aspect-square">
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
@@ -57,9 +59,12 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
         <div className="mt-auto space-y-0.5">
           <p className="text-sm font-bold text-foreground">{formatRupiah(product.currentPrice)}</p>
           {showCompare && (
-            <p className="text-xs text-muted-foreground/70 line-through">
-              {formatRupiah(product.compareAtPrice!)}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground/70 line-through">
+                {formatRupiah(product.compareAtPrice!)}
+              </p>
+              <span className="text-xs font-bold text-[#EA5329]">{discountPct}%</span>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -74,7 +79,6 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
           ) : null}
           <span>{product.soldCount} terjual</span>
         </div>
-        <AddToCartButton variantId={product.variantId} />
       </div>
     </article>
   );

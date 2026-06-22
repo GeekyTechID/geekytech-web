@@ -30,15 +30,15 @@ export function CartRemoveConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="gap-0 overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white p-0 shadow-none sm:max-w-[400px] dark:border-border dark:bg-card"
+        className="gap-0 overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white p-0 shadow-none sm:max-w-[400px]"
       >
-        <DialogHeader className="space-y-2 px-6 py-5 text-left dark:border-border">
-          <DialogTitle className="text-[21px] font-semibold leading-[1.19] tracking-[0.231px] text-[#1d1d1f] dark:text-foreground">
+        <DialogHeader className="space-y-2 px-6 py-5 text-left">
+          <DialogTitle className="text-[21px] font-semibold leading-[1.19] tracking-[0.231px] text-[#1d1d1f]">
             Hapus dari keranjang?
           </DialogTitle>
-          <DialogDescription className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#7a7a7a] dark:text-muted-foreground">
-            <span className="font-medium text-[#1d1d1f] dark:text-foreground">{productName}</span>{" "}
-            <span className="text-[#1d1d1f] font-medium dark:text-muted-foreground">akan dihapus dari keranjang Anda.</span>
+          <DialogDescription className="text-[17px] font-normal leading-[1.47] tracking-[-0.374px] text-[#7a7a7a]">
+            <span className="font-medium text-[#1d1d1f]">{productName}</span>{" "}
+            <span className="text-[#1d1d1f] font-medium">akan dihapus dari keranjang Anda.</span>
           </DialogDescription>
         </DialogHeader>
 

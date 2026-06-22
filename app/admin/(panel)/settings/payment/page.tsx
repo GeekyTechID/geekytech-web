@@ -31,7 +31,7 @@ export default async function AdminSettingsPaymentPage() {
       <SettingsNav />
 
       <div className="admin-utility-card overflow-hidden p-0">
-        <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
+        <div className="border-b border-[#e0e0e0] px-5 py-4">
           <h2 className="admin-section-title">Batas Waktu Pembayaran</h2>
           <p className="mt-1 text-[17px] leading-[1.47] text-foreground">
             Pesanan otomatis dibatalkan jika tidak dibayar dalam X jam.

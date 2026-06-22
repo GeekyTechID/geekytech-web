@@ -32,7 +32,7 @@ export async function FlashSaleBannersSection({
   const banners = (data ?? []) as BannerRow[];
 
   return (
-    <div className="space-y-3 border-t border-[#e0e0e0] pt-6 dark:border-border">
+    <div className="space-y-3 border-t border-[#e0e0e0] pt-6">
       <div className="flex items-center gap-2">
         <h2 className="admin-section-title text-foreground">Banner Flash Sale</h2>
         <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">

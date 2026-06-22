@@ -3,28 +3,37 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
+import { getBiteshipOrder } from "@/lib/biteship/get-order";
+import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
+import { ORDER_STATUSES, type OrderStatus } from "./_constants";
+import type { Database, Json } from "@/types/supabase";
 
-export const ORDER_STATUSES = [
-  "pending_payment",
-  "paid",
-  "processing",
-  "shipped",
-  "delivered",
-  "completed",
-  "cancelled",
-  "refunded",
-] as const;
+type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
+type TrackingHistoryEntry = { status: string; note: string; at: string };
 
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
+function mapShipmentStatus(s: string): ShipmentStatus {
+  switch (s.toLowerCase()) {
+    case "confirmed": return "confirmed";
+    case "allocated": return "allocated";
+    case "picking_up": return "picking_up";
+    case "picked": return "picked";
+    case "dropping_off": return "dropping_off";
+    case "delivered": return "delivered";
+    case "rejected": return "rejected";
+    case "cancelled": case "canceled": return "cancelled";
+    case "return": case "returned": return "returned";
+    default: return "pending";
+  }
+}
 
-// Valid next statuses for each current status
-export const VALID_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
-  pending_payment: ["paid", "cancelled"],
-  paid: ["processing", "cancelled"],
-  processing: ["shipped", "cancelled"],
-  shipped: ["delivered"],
-  delivered: ["completed"],
-};
+function orderStatusFromShipment(s: ShipmentStatus): Database["public"]["Enums"]["order_status"] | null {
+  switch (s) {
+    case "confirmed": case "allocated": case "picking_up": case "picked": case "dropping_off":
+      return "shipped";
+    case "delivered": return "delivered";
+    default: return null;
+  }
+}
 
 export async function updateOrderStatus(
   orderId: string,
@@ -153,6 +162,111 @@ export async function updateOrderStatus(
   return {};
 }
 
+export async function syncBiteshipAWB(
+  orderId: string,
+): Promise<{ error?: string; awb?: string | null; status?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data: shipment } = await supabase
+    .from("shipments")
+    .select("id, biteship_order_id, awb, status, tracking_history, picked_up_at, delivered_at")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  if (!shipment?.biteship_order_id) {
+    return { error: "Tidak ada Biteship Order ID untuk pesanan ini." };
+  }
+
+  const result = await getBiteshipOrder(shipment.biteship_order_id);
+  if (!result.ok) return { error: result.error };
+
+  const { order } = result;
+  const awb = order.courier?.waybill_id ?? null;
+  const rawStatus = (order.status ?? "").toLowerCase();
+  const now = new Date().toISOString();
+
+  const newShipStatus = mapShipmentStatus(rawStatus);
+
+  // Append tracking history entry
+  const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
+    ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
+    : [];
+  const entry: TrackingHistoryEntry = { status: rawStatus, note: "Sinkronisasi manual", at: now };
+  const last = history.at(-1);
+  const newHistory = last && last.status === entry.status ? history : [...history, entry];
+
+  const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
+    tracking_history: newHistory as unknown as Json,
+    updated_at: now,
+  };
+  if (newShipStatus !== "pending") updatePayload.status = newShipStatus;
+  if (awb) updatePayload.awb = awb;
+  if (order.courier?.name) updatePayload.courier_name = order.courier.name;
+  if (newShipStatus === "picked" && !shipment.picked_up_at) updatePayload.picked_up_at = now;
+  if (newShipStatus === "delivered" && !shipment.delivered_at) updatePayload.delivered_at = now;
+
+  await supabase.from("shipments").update(updatePayload).eq("id", shipment.id);
+
+  // Sync orders.status + history
+  const { data: orderRow } = await supabase
+    .from("orders")
+    .select("id, user_id, order_number, status")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  const newOrderStatus = orderStatusFromShipment(newShipStatus);
+  if (
+    orderRow &&
+    newOrderStatus &&
+    orderRow.status !== newOrderStatus &&
+    orderRow.status !== "completed" &&
+    orderRow.status !== "cancelled"
+  ) {
+    await supabase.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+    await supabase.from("order_status_history").insert({
+      order_id: orderRow.id,
+      status: newOrderStatus,
+      note: `Status diperbarui dari sinkronisasi manual Biteship: ${rawStatus}`,
+      changed_by: null,
+    });
+  }
+
+  // User notification
+  if (orderRow?.user_id && orderRow.order_number) {
+    if (newShipStatus === "picking_up" || newShipStatus === "picked") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Sedang Dikemas",
+        body: `Pesanan ${orderRow.order_number} sedang dikemas dan siap dikirim.`,
+        type: "order_shipped",
+        data: { orderId, awb: awb ?? undefined },
+      });
+    } else if (newShipStatus === "dropping_off") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Dalam Perjalanan",
+        body: `Pesanan ${orderRow.order_number} sedang dalam perjalanan ke alamatmu.`,
+        type: "order_in_transit",
+        data: { orderId, awb: awb ?? undefined },
+      });
+    } else if (newShipStatus === "delivered") {
+      await createNotification({
+        userId: orderRow.user_id,
+        title: "Pesanan Telah Sampai",
+        body: `Pesanan ${orderRow.order_number} telah sampai di tujuan. Jangan lupa beri ulasan!`,
+        type: "order_delivered",
+        data: { orderId },
+      });
+    }
+  }
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath(`/dashboard/orders/${orderId}`);
+  revalidatePath(`/dashboard/orders`);
+
+  return { awb, status: newShipStatus };
+}
+
 export async function updateOrderAWB(
   orderId: string,
   awb: string
@@ -221,6 +335,46 @@ export async function updateOrderAWB(
   }
 
   revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+  return {};
+}
+
+export async function confirmReadyForPickup(
+  orderId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data: shipment } = await supabase
+    .from("shipments")
+    .select("id, status, biteship_order_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
+
+  if (!shipment?.biteship_order_id) {
+    return { error: "Tidak ada Biteship Order ID untuk pesanan ini." };
+  }
+  if (shipment.status !== "pending") {
+    return { error: "Pesanan sudah dikonfirmasi atau sedang diproses kurir." };
+  }
+
+  // Konfirmasi ke Biteship API agar kurir dijadwalkan untuk pickup
+  const confirmResult = await confirmBiteshipOrder(shipment.biteship_order_id);
+  if (!confirmResult.ok) {
+    return { error: `Gagal konfirmasi ke Biteship: ${confirmResult.error}` };
+  }
+
+  await supabase
+    .from("shipments")
+    .update({ status: "confirmed", updated_at: new Date().toISOString() })
+    .eq("id", shipment.id);
+
+  await supabase.from("order_status_history").insert({
+    order_id: orderId,
+    status: "processing",
+    note: "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
+    changed_by: null,
+  });
+
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
 }

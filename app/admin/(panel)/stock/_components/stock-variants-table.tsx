@@ -55,7 +55,7 @@ export function StockVariantsTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
+              <tr className="border-b border-[#e0e0e0] text-left">
                 {["Produk", "Varian", "SKU", "Stok", "Reserved", "Tersedia", "Status"].map((h) => (
                   <th
                     key={h}
@@ -66,7 +66,7 @@ export function StockVariantsTable({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {variants.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-8 text-center text-sm text-foreground">
@@ -78,10 +78,10 @@ export function StockVariantsTable({
                   const available = v.stock - v.reserved;
                   const badgeCls =
                     v.stock === 0
-                      ? "bg-destructive/10 text-destructive dark:text-destructive"
+                      ? "bg-destructive/10 text-destructive"
                       : v.stock <= 5
                         ? "bg-brand/10 text-brand"
-                        : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400";
+                        : "bg-emerald-500/15 text-emerald-800";
                   const badgeLabel = v.stock === 0 ? "Habis" : v.stock <= 5 ? "Kritis" : "Aman";
 
                   return (
@@ -136,7 +136,7 @@ export function StockVariantsTable({
             >
               <ChevronLeft size={14} />
             </Button>
-            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase">
               {page} / {totalPages}
             </span>
             <Button

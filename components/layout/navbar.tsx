@@ -18,7 +18,6 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -197,14 +196,11 @@ export function Navbar() {
               {/* Cart */}
               <Link
                 href="/cart"
-                className="relative inline-flex items-center justify-center rounded-full p-2 text-muted-foreground outline-none transition-colors hover:bg-black/[0.04] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2 dark:hover:bg-white/10"
+                className="relative inline-flex items-center justify-center rounded-full p-2 text-muted-foreground outline-none transition-colors hover:bg-black/[0.04] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[#FF7A52] focus-visible:ring-offset-2"
                 aria-label="Keranjang belanja"
               >
                 <ShoppingCart size={18} />
               </Link>
-
-              {/* Theme toggle */}
-              <ThemeToggle className="hidden sm:flex" />
 
               {/* User menu / Auth buttons */}
               {isAuthenticated ? (
@@ -417,15 +413,6 @@ export function Navbar() {
               )}
             </nav>
 
-            {/* Theme toggle di drawer */}
-            <div className="border-t border-border p-4 shrink-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-muted-foreground">
-                  Tema
-                </span>
-                <ThemeToggle variant="full" />
-              </div>
-            </div>
           </aside>
         </>
       )}

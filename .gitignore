@@ -50,3 +50,6 @@ next-env.d.ts
 # claude
 .claude
 CLAUDE.md
+
+# infra access (sensitive — local only, never commit)
+docs/vps-access/

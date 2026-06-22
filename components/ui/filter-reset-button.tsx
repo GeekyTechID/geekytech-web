@@ -24,7 +24,7 @@ export function FilterResetButton({
       size="default"
       onClick={onClick}
       className={cn(
-        "min-h-11 gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-sm font-normal text-muted-foreground hover:border-brand/40 hover:bg-transparent hover:text-brand dark:border-border",
+        "min-h-11 gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-sm font-normal text-muted-foreground hover:border-brand/40 hover:bg-transparent hover:text-brand",
         className,
       )}
     >

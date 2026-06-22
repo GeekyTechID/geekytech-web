@@ -79,7 +79,7 @@ function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: ()
             onChange={(e) =>
               setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))
             }
-            className="h-8 w-20 rounded-lg border-[#e0e0e0] pr-7 text-xs dark:border-border"
+            className="h-8 w-20 rounded-lg border-[#e0e0e0] pr-7 text-xs"
             min={0}
             max={99}
           />
@@ -95,7 +95,7 @@ function EditRow({ product, onDone }: { product: FlashSaleProductRow; onDone: ()
           type="number"
           value={quota}
           onChange={(e) => setQuota(parseInt(e.target.value, 10) || 0)}
-          className="h-8 w-20 rounded-lg border-[#e0e0e0] text-xs dark:border-border"
+          className="h-8 w-20 rounded-lg border-[#e0e0e0] text-xs"
           min={1}
         />
       </div>
@@ -167,7 +167,7 @@ function AddProductForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand dark:border-border"
+        className="inline-flex h-10 items-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] px-4 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
       >
         <Plus size={14} />
         Tambah Produk
@@ -176,7 +176,7 @@ function AddProductForm({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-[#e0e0e0] p-4 dark:border-border">
+    <div className="space-y-4 rounded-lg border border-[#e0e0e0] p-4">
       <div className="flex items-center justify-between">
         <h3 className="admin-section-title">Tambah Produk Flash Sale</h3>
         <button
@@ -196,7 +196,7 @@ function AddProductForm({
             onChange={(e) => {
               setVariantId(e.target.value);
             }}
-            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-border"
+            className="h-10 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-[17px] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="">-- Pilih variant --</option>
             {availableVariants.map((v) => (
@@ -222,7 +222,7 @@ function AddProductForm({
               onChange={(e) =>
                 setDiscountPercent(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))
               }
-              className="h-10 rounded-lg border-[#e0e0e0] pr-9 text-[17px] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] pr-9 text-[17px]"
               min={1}
               max={99}
               placeholder="20"
@@ -241,7 +241,7 @@ function AddProductForm({
             type="number"
             value={quota}
             onChange={(e) => setQuota(parseInt(e.target.value, 10) || 0)}
-            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
             min={1}
             placeholder="10"
           />
@@ -297,7 +297,7 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-muted-foreground">
                   Produk / Variant
                 </th>
@@ -318,7 +318,7 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {products.map((product) => {
                 const normalPrice = product.product_variants?.price ?? 0;
                 const discount =
@@ -414,7 +414,7 @@ export function FlashSaleProducts({ flashSaleId, products, availableVariants }: 
         </div>
       )}
 
-      <div className="border-t border-[#e0e0e0] p-4 dark:border-border">
+      <div className="border-t border-[#e0e0e0] p-4">
         <AddProductForm flashSaleId={flashSaleId} availableVariants={availableVariants} />
       </div>
     </div>

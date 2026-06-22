@@ -36,7 +36,7 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-[#e0e0e0] bg-card px-3 py-2 text-xs dark:border-border">
+    <div className="rounded-lg border border-[#e0e0e0] bg-card px-3 py-2 text-xs">
       <p className="font-bold mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="text-muted-foreground">

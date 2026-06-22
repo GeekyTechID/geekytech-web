@@ -61,55 +61,55 @@ export function WishlistTileCard({ item }: { item: WishlistItemRow }) {
   );
 
   return (
-    <article className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-border dark:bg-background">
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white">
       {productHref ? (
-        <Link href={productHref} className="relative block aspect-square dark:bg-muted">
+        <Link href={productHref} className="relative block aspect-square">
           {media}
         </Link>
       ) : (
-        <div className="relative block aspect-square dark:bg-muted">{media}</div>
+        <div className="relative block aspect-square">{media}</div>
       )}
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         {item.eyebrow ? (
-          <p className="line-clamp-1 text-[11px] text-neutral-500 dark:text-muted-foreground">{item.eyebrow}</p>
+          <p className="line-clamp-1 text-[11px] text-neutral-500">{item.eyebrow}</p>
         ) : null}
         {productHref ? (
           <Link
             href={productHref}
-            className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black hover:text-brand dark:text-foreground"
+            className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black hover:text-brand"
           >
             {item.name}
           </Link>
         ) : (
-          <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black dark:text-foreground">{item.name}</p>
+          <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug text-black">{item.name}</p>
         )}
         {item.variantName ? (
-          <p className="line-clamp-1 text-[14px] text-neutral-500 dark:text-muted-foreground">{item.variantName}</p>
+          <p className="line-clamp-1 text-[14px] text-neutral-500">{item.variantName}</p>
         ) : null}
         <div className="mt-auto space-y-0.5">
           {productHref ? (
-            <p className="text-sm font-bold text-black dark:text-foreground">{formatRupiah(item.currentPrice)}</p>
+            <p className="text-sm font-bold text-black">{formatRupiah(item.currentPrice)}</p>
           ) : (
-            <p className="text-sm font-bold text-neutral-500 dark:text-muted-foreground">—</p>
+            <p className="text-sm font-bold text-neutral-500">—</p>
           )}
           {showCompare ? (
-            <p className="text-xs text-neutral-400 line-through dark:text-muted-foreground">
+            <p className="text-xs text-neutral-400 line-through">
               {formatRupiah(item.compareAtPrice!)}
             </p>
           ) : null}
         </div>
         {productHref ? (
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-muted-foreground">
+          <div className="flex items-center gap-1 text-[11px] text-neutral-500">
             <svg className="h-3.5 w-3.5 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <span className="font-medium text-neutral-800 dark:text-foreground">{item.rating.toFixed(1)}</span>
-            <span className="text-neutral-300 dark:text-border">·</span>
+            <span className="font-medium text-neutral-800">{item.rating.toFixed(1)}</span>
+            <span className="text-neutral-300">·</span>
             <span>{item.reviewCount} ulasan</span>
-            <span className="text-neutral-300 dark:text-border">·</span>
+            <span className="text-neutral-300">·</span>
             <span>{item.soldCount} terjual</span>
           </div>
         ) : (
-          <p className="text-[11px] text-neutral-500 dark:text-muted-foreground">
+          <p className="text-[11px] text-neutral-500">
             Detail produk tidak tersedia. Anda tetap bisa menghapus dari wishlist.
           </p>
         )}

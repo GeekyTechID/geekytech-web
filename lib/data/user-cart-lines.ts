@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { computeVariantUnitPrice } from "@/lib/utils/product-detail-pricing";
 
@@ -103,7 +103,8 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
   // Fetch active flash sale prices for all variants in cart
   const variantIds = items.map((r) => r.product_variants?.id).filter(Boolean) as string[];
   const now = new Date();
-  const { data: flashRows } = await supabase
+  const serviceSupabase = createServiceClient();
+  const { data: flashRows } = await serviceSupabase
     .from("flash_sale_products")
     .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
     .in("variant_id", variantIds);
@@ -154,6 +155,11 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
 
     const maxQty = Math.max(1, v.stock - (v.reserved ?? 0));
 
+    const isFlashSale =
+      flashSalePrice != null &&
+      (productSalePrice == null || flashSalePrice < productSalePrice) &&
+      unitPrice < listPrice;
+
     lines.push({
       lineId: r.id,
       qty: r.quantity,
@@ -173,6 +179,7 @@ export async function fetchUserCartWithLines(userId: string): Promise<UserCartWi
       listPrice,
       unitPrice,
       discountPercent,
+      isFlashSale,
       images: sortImages(p.product_images),
       sku: v.sku,
       weightGrams: Math.max(1, Math.round(Number(v.weight) || 1)),
@@ -217,7 +224,8 @@ export async function fetchVariantAsBuyNowLine(
   };
 
   const now = new Date();
-  const { data: flashRows } = await supabase
+  const serviceSupabase = createServiceClient();
+  const { data: flashRows } = await serviceSupabase
     .from("flash_sale_products")
     .select("variant_id, sale_price, quota, sold, flash_sales(is_active, starts_at, ends_at)")
     .eq("variant_id", variantId);
@@ -250,6 +258,11 @@ export async function fetchVariantAsBuyNowLine(
   const maxQty = Math.max(1, row.stock - (row.reserved ?? 0));
   const cat = firstRel(prod.categories);
 
+  const isFlashSale =
+    flashSalePrice != null &&
+    (productSalePrice == null || flashSalePrice < productSalePrice) &&
+    unitPrice < listPrice;
+
   return {
     lineId: "buy-now",
     qty: Math.min(Math.max(1, qty), maxQty),
@@ -269,6 +282,7 @@ export async function fetchVariantAsBuyNowLine(
     listPrice,
     unitPrice,
     discountPercent,
+    isFlashSale,
     images: sortImages(prod.product_images),
     sku: row.sku,
     weightGrams: Math.max(1, Math.round(Number(row.weight) || 1)),

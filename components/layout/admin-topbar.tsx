@@ -14,7 +14,6 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/store/auth-store";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import { Button } from "@/components/ui/button";
 import {
@@ -107,14 +106,13 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="admin-text-link hidden h-11 items-center gap-2 rounded-full border border-transparent px-4 sm:flex dark:hover:border-border"
+          className="admin-text-link hidden h-11 items-center gap-2 rounded-full border border-transparent px-4 sm:flex"
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
           <span className="hidden text-sm font-medium lg:inline">Website</span>
         </Link>
 
-        <ThemeToggle />
         <AdminNotificationBell />
 
         <DropdownMenu>

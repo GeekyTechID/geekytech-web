@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, ShoppingBag, Tag, Truck, CheckCircle, AlertCircle } from "lucide-react";
+import { Bell, ShoppingBag, Tag, Truck, CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -22,12 +22,13 @@ import { formatDate, formatRupiah } from "@/lib/format";
 import { orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
 import { cn } from "@/lib/utils";
 import { SpendingChartLazy } from "@/components/dashboard/spending-chart-lazy";
-import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
+import { PendingPaymentSection } from "@/components/dashboard/pending-payment-section";
 
 export const metadata: Metadata = {
   title: "Ringkasan akun",
   description: "Ringkasan pesanan, notifikasi, dan aktivitas akun GeekyTech Anda.",
 };
+
 
 function statusBadgeClasses(status: OrderStatus): string {
   if (status === "cancelled" || status === "refunded") {
@@ -117,95 +118,8 @@ export default async function DashboardOverviewPage() {
         Ringkasan pesanan dan aktivitas akun Anda.
       </p>
 
-      {/* Pending payment — custom urgency section */}
-      {pendingOrders.length > 0 && (
-        <div className="mt-6 overflow-hidden rounded-2xl border border-[#EA5329]/20 bg-[#FFF8F5]">
-          {/* Header */}
-          <div className="flex items-center justify-between gap-3 border-b border-[#EA5329]/10 px-5 py-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#EA5329]/10">
-                <AlertCircle className="h-4 w-4 text-[#EA5329]" />
-              </span>
-              <p className="text-[15px] font-semibold text-[#1d1d1f]">
-                {pendingOrders.length === 1
-                  ? "1 pesanan menunggu pembayaran"
-                  : `${pendingOrders.length} pesanan menunggu pembayaran`}
-              </p>
-            </div>
-            {pendingOrders.length > 1 && (
-              <Link
-                href="/dashboard/orders?status=pending_payment"
-                className="shrink-0 text-[12px] font-medium text-[#EA5329] underline-offset-2 hover:underline"
-              >
-                Lihat semua →
-              </Link>
-            )}
-          </div>
-
-          {/* Subtitle */}
-          <p className="px-5 pt-3 text-[13px] leading-relaxed text-[#5c5c5c]">
-            Segera selesaikan pembayaran sebelum pesanan otomatis dibatalkan.
-          </p>
-
-          {/* Order cards */}
-          <ul className="flex flex-col gap-3 px-4 py-4 sm:px-5">
-            {pendingOrders.map((o) => {
-              const ref = o.vaNumber ?? o.paymentCode ?? o.transactionId;
-              const label = o.vaNumber
-                ? "No. VA"
-                : o.paymentCode
-                  ? "Kode bayar"
-                  : o.transactionId
-                    ? "No. transaksi"
-                    : null;
-              return (
-                <li
-                  key={o.id}
-                  className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-[#EA5329]/10"
-                >
-                  {/* Card header: order number + countdown */}
-                  <div className="flex items-center justify-between gap-3 border-b border-[#f0f0f0] px-4 py-2.5">
-                    <p className="font-mono text-[12px] font-bold tracking-tight text-[#1d1d1f]">
-                      {o.order_number}
-                    </p>
-                    {o.expiryTime && <PaymentCountdown expiryTime={o.expiryTime} />}
-                  </div>
-
-                  {/* Card body */}
-                  <div className="px-4 pb-4 pt-3">
-                    {o.previewName && (
-                      <p className="truncate text-[13px] font-medium leading-snug text-[#1d1d1f]">
-                        {o.previewName}
-                      </p>
-                    )}
-                    {ref && label && (
-                      <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-[#f5f5f7] px-3 py-2">
-                        <span className="shrink-0 text-[11px] text-[#7a7a7a]">{label}</span>
-                        <span className="min-w-0 select-all truncate font-mono text-[12px] font-semibold text-[#1d1d1f]">
-                          {ref}
-                        </span>
-                      </div>
-                    )}
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <p className="text-[16px] font-bold tabular-nums text-[#1d1d1f]">
-                        {formatRupiah(o.total)}
-                      </p>
-                      <Button
-                        asChild
-                        variant="dark"
-                        size="sm"
-                        className="no-underline text-white hover:text-white"
-                      >
-                        <Link href={`/dashboard/orders/${o.id}`}>Bayar sekarang</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
+      {/* Pending payment — real-time client component */}
+      <PendingPaymentSection initialOrders={pendingOrders} userId={user.id} />
 
       {/* Stats cards — row 1: 4 cards, row 2: 2 cards + Total Pesanan (flex-1) */}
       {(() => {

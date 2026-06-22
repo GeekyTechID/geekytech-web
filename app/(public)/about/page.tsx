@@ -40,9 +40,9 @@ const values = [
 
 export default function AboutPage() {
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-white">
       {/* Hero — light tile */}
-      <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white dark:bg-background">
+      <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white">
         <div className="mx-auto max-w-[980px]">
           <p
             className="text-[14px] font-semibold text-[#EA5329] mb-4"
@@ -50,12 +50,12 @@ export default function AboutPage() {
             Tentang Kami
           </p>
           <h1
-            className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] dark:text-white mb-6"
+            className="text-[28px] sm:text-[40px] lg:text-[56px] font-semibold leading-[1.07] text-[#1d1d1f] mb-6"
           >
             Gadget terbaik,<br className="hidden sm:block" /> di tangan yang tepat.
           </h1>
           <p
-            className="text-[17px] font-light leading-[1.5] text-[#1d1d1f] dark:text-[#cccccc] max-w-[600px] mx-auto"
+            className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto"
           >
             GeekyTech hadir untuk memastikan semua orang bisa mengakses teknologi terbaik dengan mudah, aman, dan terpercaya.
           </p>
@@ -102,14 +102,14 @@ export default function AboutPage() {
       </section>
 
       {/* Values — parchment tile */}
-      <section className="w-full px-6 py-[80px] bg-[#f5f5f7] dark:bg-[#1a1a1a]">
+      <section className="w-full px-6 py-[80px] bg-[#f5f5f7][#1a1a1a]">
         <div className="mx-auto max-w-[980px]">
           <div className="text-center mb-12">
             <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
               Nilai Kami
             </p>
             <h2
-              className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white"
+              className="text-[34px] font-semibold leading-[1.1] text-[#1d1d1f]"
             >
               Mengapa memilih GeekyTech?
             </h2>
@@ -119,12 +119,12 @@ export default function AboutPage() {
             {values.map((value) => (
               <div
                 key={value.title}
-                className="bg-white dark:bg-[#272729] rounded-[18px] border border-[#e0e0e0] dark:border-[#3a3a3a] p-6"
+                className="bg-white[#272729] rounded-[18px] border border-[#e0e0e0][#3a3a3a] p-6"
               >
-                <h3 className="text-[17px] font-semibold leading-[1.24] text-[#1d1d1f] dark:text-white mb-3">
+                <h3 className="text-[17px] font-semibold leading-[1.24] text-[#1d1d1f] mb-3">
                   {value.title}
                 </h3>
-                <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a] dark:text-[#cccccc]">
+                <p className="text-[17px] font-normal leading-[1.47] text-[#7a7a7a][#cccccc]">
                   {value.description}
                 </p>
               </div>
@@ -151,14 +151,14 @@ export default function AboutPage() {
       </section>
 
       {/* CTA — white tile */}
-      <section className="w-full px-6 py-[80px] bg-white dark:bg-background text-center">
+      <section className="w-full px-6 py-[80px] bg-white text-center">
         <div className="mx-auto max-w-[680px]">
           <h2
-            className="text-[40px] font-semibold leading-[1.1] text-[#1d1d1f] dark:text-white mb-4"
+            className="text-[40px] font-semibold leading-[1.1] text-[#1d1d1f] mb-4"
           >
             Siap eksplor koleksi kami?
           </h2>
-          <p className="text-[21px] font-normal leading-[1.19] text-[#1d1d1f] dark:text-[#cccccc] mb-8">
+          <p className="text-[21px] font-normal leading-[1.19] text-[#1d1d1f][#cccccc] mb-8">
             107 produk tech & gadget original menunggumu.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">

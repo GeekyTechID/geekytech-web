@@ -226,7 +226,7 @@ export function MainBannerForm() {
       <FormSection title="Gambar Banner *">
         <div className="space-y-3 p-5">
           {imageUrl ? (
-            <div className="relative aspect-[3/1] max-h-52 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30 dark:border-border">
+            <div className="relative aspect-[3/1] max-h-52 w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted/30">
               <Image
                 src={imageUrl}
                 alt="Preview main banner"
@@ -250,7 +250,7 @@ export function MainBannerForm() {
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
               className={cn(
-                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-14 text-muted-foreground transition-colors dark:border-border",
+                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-14 text-muted-foreground transition-colors",
                 "hover:border-brand/50 hover:text-brand",
                 uploading && "cursor-not-allowed opacity-50",
               )}
@@ -298,7 +298,7 @@ export function MainBannerForm() {
           </div>
 
           {/* Collapsible link guide */}
-          <div className="rounded-lg border border-[#e0e0e0] dark:border-border">
+          <div className="rounded-lg border border-[#e0e0e0]">
             <button
               type="button"
               onClick={() => setShowGuide((v) => !v)}
@@ -322,7 +322,7 @@ export function MainBannerForm() {
                 showGuide ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0",
               )}
             >
-              <div className="border-t border-[#e0e0e0] px-4 pb-4 pt-3 dark:border-border">
+              <div className="border-t border-[#e0e0e0] px-4 pb-4 pt-3">
                 <p className="mb-3 text-[12px] text-muted-foreground">
                   Klik baris mana saja untuk langsung mengisi kolom URL di atas.
                 </p>
@@ -332,7 +332,7 @@ export function MainBannerForm() {
                       <p className="mb-1.5 text-[10px] font-semibold uppercase text-muted-foreground">
                         {group.group}
                       </p>
-                      <div className="overflow-hidden rounded-lg border border-[#e0e0e0] dark:border-border">
+                      <div className="overflow-hidden rounded-lg border border-[#e0e0e0]">
                         {group.items.map((item, i) => (
                           <button
                             key={item.example}
@@ -343,7 +343,7 @@ export function MainBannerForm() {
                             }}
                             className={cn(
                               "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/70 active:bg-muted",
-                              i !== 0 && "border-t border-[#e0e0e0] dark:border-border",
+                              i !== 0 && "border-t border-[#e0e0e0]",
                             )}
                           >
                             <ClipboardCopy

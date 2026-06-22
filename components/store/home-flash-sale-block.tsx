@@ -1,12 +1,12 @@
+import Link from "next/link";
+
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import { HorizontalScrollRow } from "@/components/store/horizontal-scroll-row";
 
 import { HOME_HERO_FLASH_SALE_CAMPAIGN_NAME } from "@/lib/constants/home-flash-sale";
-import {
-  HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS,
-  HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS,
-} from "@/lib/constants/home-product-row-slot";
+import { HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS } from "@/lib/constants/home-product-row-slot";
 import type { FlashSaleBlockData } from "@/lib/data/home-storefront";
+import { getFlashSaleLink } from "@/lib/promo-links";
 
 type HomeFlashSaleBlockProps = {
   /** Data kampanye; beranda memuat kampanye `HOME_HERO_FLASH_SALE_CAMPAIGN_NAME` via `fetchFlashSaleBlockByCampaignName`. */
@@ -19,7 +19,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   if (!block || block.products.length === 0) {
     if (hideWhenEmpty) return null;
     return (
-      <section className="border-b border-neutral-200 bg-background py-8 sm:py-10 dark:border-border">
+      <section className="border-b border-neutral-200 bg-background py-8 sm:py-10">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <p className="text-sm leading-relaxed text-muted-foreground">
             Flash sale{" "}
@@ -33,12 +33,23 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   }
 
   return (
-    <section className="bg-background py-8 sm:py-10 dark:border-border">
+    <section className="bg-background py-8 sm:py-10">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between">
-          <h3 className="text-lg font-black leading-tight text-foreground sm:text-xl md:text-2xl">
-            {block.saleName}
-          </h3>
+        <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4 sm:items-end">
+          <Link
+            href={getFlashSaleLink(block.saleId)}
+            className="group inline-block"
+          >
+            <h3 className="text-base font-black leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
+              {block.saleName}
+            </h3>
+          </Link>
+          <Link
+            href={getFlashSaleLink(block.saleId)}
+            className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+          >
+            Lihat Semua
+          </Link>
         </div>
 
         {block.subtitle ? (
@@ -46,7 +57,11 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
             {block.subtitle}
           </p>
         ) : null}
-        <HorizontalScrollRow gapClass="gap-3 sm:gap-4" fillRow={block.products.length > 0 && block.products.length <= 5}>
+        <HorizontalScrollRow
+          gapClass="gap-3 sm:gap-4"
+          fillRow={block.products.length > 0 && block.products.length <= 5}
+          itemsPerSlide={5}
+        >
           {block.products.length <= 5 ? (
             <>
               {block.products.map((p) => (
@@ -60,7 +75,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
             </>
           ) : (
             block.products.map((p) => (
-              <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_SCROLL_STRIP_CARD_CLASS}>
+              <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
                 <HomeProductTile product={p} layout="promoRow" className="h-full" />
               </div>
             ))

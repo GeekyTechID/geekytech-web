@@ -19,7 +19,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
   resolved: {
     label: "Selesai",
-    className: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+    className: "bg-emerald-500/15 text-emerald-800",
   },
   rejected: {
     label: "Ditolak",
@@ -70,7 +70,7 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                   Pelanggan
                 </th>
@@ -94,7 +94,7 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {complaints.map((complaint) => {
                 const statusCfg = STATUS_CONFIG[complaint.status] ?? {
                   label: complaint.status,

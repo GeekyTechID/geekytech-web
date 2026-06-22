@@ -1,16 +1,35 @@
 /** Shared utilities for on-demand courier (GoSend, GrabExpress, etc.) coordinate resolution. */
 
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
 
-export const ON_DEMAND_COURIERS = new Set([
-  "gojek",
-  "grab",
-  "gosend",
-  "borzo",
-  "lalamove",
-  "deliveree",
-  "rara",
-]);
+// Single source of truth — derived from BITESHIP_COURIER_BRANDS onDemand flag.
+// On-demand: gojek, gosend, grab, borzo, lalamove, deliveree, rara
+// Standard (later): all others (jne, sicepat, jnt, anteraja, tiki, ninja, lion,
+//   wahana, sap, pos, idexpress, paxel, rpx, jdl, sentralcargo, dash_express)
+export const ON_DEMAND_COURIERS = new Set(
+  BITESHIP_COURIER_BRANDS.filter((b) => b.onDemand).map((b) => b.code),
+);
+
+/**
+ * Check if current Asia/Jakarta (WIB) time is inside Gojek/Grab Same Day pickup window.
+ * Biteship enforces 06:00–15:00 WIB cutoff; outside this window Same Day is rejected.
+ * We apply a 1-hour pre-cutoff buffer (filter from 14:00 WIB) so payment + Biteship
+ * round-trip can still complete before 15:00.
+ */
+export function isWithinSameDayWindow(now: Date = new Date()): boolean {
+  // WIB = UTC+7
+  const wibHour = (now.getUTCHours() + 7) % 24;
+  return wibHour >= 6 && wibHour < 14;
+}
+
+/** Identify on-demand same-day services from Biteship rates response. */
+export function isOnDemandSameDayOption(courierCode: string, serviceCode: string): boolean {
+  const company = courierCode.toLowerCase();
+  if (!ON_DEMAND_COURIERS.has(company)) return false;
+  const service = serviceCode.toLowerCase().replace(/[_\s-]/g, "");
+  return service === "sameday";
+}
 
 export type OriginCoords = { lat: number; lng: number };
 

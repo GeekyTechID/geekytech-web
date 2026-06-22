@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/(panel)/notifications/_actions";
 import { Button } from "@/components/ui/button";
 import { formatRelativeDate } from "@/lib/format";
+import type { Json } from "@/types/supabase";
 
 type Row = {
   id: string;
@@ -18,7 +19,7 @@ type Row = {
   type: string;
   is_read: boolean;
   created_at: string;
-  data: Record<string, unknown> | null;
+  data: Json;
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -32,8 +33,9 @@ const TYPE_LABEL: Record<string, string> = {
   new_review: "Ulasan",
 };
 
-function getAdminNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
-  const orderId = data?.orderId as string | undefined;
+function getAdminNotificationUrl(type: string, data: Json): string | null {
+  const obj = data && typeof data === "object" && !Array.isArray(data) ? data : null;
+  const orderId = obj?.orderId as string | undefined;
   switch (type) {
     case "new_order":
     case "payment_confirmed":

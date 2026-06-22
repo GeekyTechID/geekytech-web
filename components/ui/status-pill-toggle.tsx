@@ -38,7 +38,7 @@ export function StatusPillToggle({
           : "min-h-8 px-3 text-[10px] font-semibold uppercase leading-none tracking-normal",
         active
           ? "border-brand/30 bg-brand/10 text-brand"
-          : "border-[#e0e0e0] bg-muted text-muted-foreground dark:border-border",
+          : "border-[#e0e0e0] bg-muted text-muted-foreground",
         className,
       )}
     >

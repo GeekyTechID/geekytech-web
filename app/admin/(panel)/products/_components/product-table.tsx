@@ -311,7 +311,7 @@ export function ProductTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+              <tr className="border-b border-[#e0e0e0] bg-muted/30">
                 <th className="w-10 px-4 py-3">
                   <Checkbox
                     checked={allSelected}
@@ -344,7 +344,7 @@ export function ProductTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
             {products.map((product) => {
               const primaryImage = getPrimaryImage(product.product_images);
               const totalStock = getTotalStock(product.product_variants);
@@ -365,7 +365,7 @@ export function ProductTable({
                   </td>
 
                   <td className="px-4 py-3">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-[#e0e0e0] bg-muted dark:border-border">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-[#e0e0e0] bg-muted">
                       {primaryImage ? (
                         <Image
                           src={primaryImage}
@@ -494,7 +494,7 @@ export function ProductTable({
             >
               <ChevronLeft size={14} />
             </Button>
-            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase dark:border-border">
+            <span className="flex h-8 items-center border-y border-[#e0e0e0] px-3 text-xs font-semibold uppercase">
               {page} / {totalPages}
             </span>
             <Button
@@ -513,7 +513,7 @@ export function ProductTable({
 
       {/* Single delete confirm dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0]">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold uppercase">Hapus Produk?</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
@@ -547,7 +547,7 @@ export function ProductTable({
 
       {/* Bulk delete confirm dialog */}
       <Dialog open={bulkDeleteOpen} onOpenChange={(open) => !open && setBulkDeleteOpen(false)}>
-        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0]">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold uppercase">
               Hapus {selectedIds.size} Produk?
@@ -581,7 +581,7 @@ export function ProductTable({
 
       {/* Bulk condition selector dialog */}
       <Dialog open={conditionDialogOpen} onOpenChange={(open) => { if (!open) setConditionDialogOpen(false); }}>
-        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0]">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold uppercase">Ganti Kondisi</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">
@@ -598,7 +598,7 @@ export function ProductTable({
                   className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors ${
                     selectedCondition === val
                       ? "border-brand bg-brand/10 text-brand"
-                      : "border-[#e0e0e0] bg-transparent text-foreground hover:border-foreground hover:text-foreground dark:border-border"
+                      : "border-[#e0e0e0] bg-transparent text-foreground hover:border-foreground hover:text-foreground"
                   }`}
                 >
                   {val === "new" ? "Baru" : "Second"}
@@ -631,7 +631,7 @@ export function ProductTable({
 
       {/* Bulk brand selector dialog */}
       <Dialog open={brandDialogOpen} onOpenChange={(open) => { if (!open) { setBrandDialogOpen(false); setSelectedBrandId(""); } }}>
-        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0] dark:border-border">
+        <DialogContent className="max-w-sm rounded-lg border-[#e0e0e0]">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold uppercase">Ganti Merek</DialogTitle>
             <DialogDescription className="text-[17px] leading-[1.47]">

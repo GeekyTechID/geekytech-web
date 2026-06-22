@@ -4,13 +4,22 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ChevronUp, ChevronDown,
-  ImageIcon, Zap, PackageSearch, Star,
-  ExternalLink, CheckCircle2,
+  ImageIcon, Zap, PackageSearch, Star, LayoutGrid,
+  ExternalLink, AlertCircle, Clock, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { StatusPillToggle } from "@/components/ui/status-pill-toggle";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { saveHomeSections, type HomeSection, type HomeSectionKey } from "../_actions";
@@ -54,62 +63,344 @@ interface Props {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────
+const GENERIC_KEYS = new Set<HomeSectionKey>([
+  "promo_5", "promo_6", "promo_7", "promo_8",
+]);
+
 const SECTION_META: Record<HomeSectionKey, {
   label: string;
+  description: string;
   icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+  manageHref: string | null;
 }> = {
-  main_banner:       { label: "Main Banner",   icon: ImageIcon     },
-  flash_sale:        { label: "Flash Sale",    icon: Zap           },
-  second_products:   { label: "Produk Second", icon: PackageSearch },
-  featured_products: { label: "Rekomendasi",   icon: Star          },
+  main_banner: {
+    label: "Main Banner",
+    description: "Bagian hero utama di atas halaman",
+    icon: ImageIcon,
+    manageHref: "/admin/promotions/main-banner",
+  },
+  flash_sale: {
+    label: "Flash Sale",
+    description: "Di bawah main banner",
+    icon: Zap,
+    manageHref: "/admin/promotions/flash-sale",
+  },
+  second_products: {
+    label: "Produk Second",
+    description: "Di bawah bagian brand",
+    icon: PackageSearch,
+    manageHref: "/admin/promotions/second-products",
+  },
+  featured_products: {
+    label: "Rekomendasi Produk",
+    description: "Di bawah Produk Second",
+    icon: Star,
+    manageHref: "/admin/promotions/featured-products",
+  },
+  promo_5: {
+    label: "Slot Promosi 5",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_6: {
+    label: "Slot Promosi 6",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_7: {
+    label: "Slot Promosi 7",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
+  promo_8: {
+    label: "Slot Promosi 8",
+    description: "Section tambahan — pilih tipe promosi bebas",
+    icon: LayoutGrid,
+    manageHref: null,
+  },
 };
 
-// ── Small helpers ─────────────────────────────────────────────────────────
-const labelClass = "text-[10px] font-semibold uppercase text-muted-foreground";
+const CLEAR_VALUE = "__clear__";
 
-function StatusBadge({ active }: { active: boolean }) {
-  return <AdminStatusBadge active={active} />;
+// ── Helpers ───────────────────────────────────────────────────────────────
+function isExpired(endsAt: string | null | undefined): boolean {
+  return !!endsAt && new Date(endsAt) < new Date();
 }
 
-function ThCell({ children, className }: { children: React.ReactNode; className?: string }) {
+function isUpcoming(startsAt: string | null | undefined): boolean {
+  return !!startsAt && new Date(startsAt) > new Date();
+}
+
+function StatusBadge({ className, children }: { className: string; children: React.ReactNode }) {
   return (
-    <th className={cn("px-4 py-2.5 text-left text-[10px] font-semibold uppercase text-muted-foreground", className)}>
+    <span className={cn(
+      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
+      className,
+    )}>
       {children}
-    </th>
+    </span>
   );
 }
 
-function TdCell({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <td className={cn("px-4 py-3 align-middle", className)}>
-      {children}
-    </td>
-  );
-}
-
-// ── Group header inside top card ──────────────────────────────────────────
-function GroupHeader({
-  sectionKey,
-  count,
+// ── Section card ──────────────────────────────────────────────────────────
+function SectionCard({
+  section,
+  index,
+  totalCount,
+  availableOptions,
+  warningBadge,
+  onSelect,
+  onToggle,
+  onMoveUp,
+  onMoveDown,
 }: {
-  sectionKey: HomeSectionKey;
-  count: number;
+  section: HomeSection;
+  index: number;
+  totalCount: number;
+  availableOptions: null | {
+    flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+    second: { value: string; label: string; sub: string; inactive: boolean }[];
+    featured: { value: string; label: string; sub: string; inactive: boolean }[];
+  } | { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+  warningBadge: React.ReactNode;
+  onSelect: (value: string) => void;
+  onToggle: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }) {
-  const { label, icon: Icon } = SECTION_META[sectionKey];
+  const { label, description, icon: Icon, manageHref } = SECTION_META[section.key];
+  const isGeneric = GENERIC_KEYS.has(section.key);
+
+  // Typed options (flash_sale / second / featured — single flat array)
+  const typedOptions = !isGeneric && availableOptions !== null
+    ? availableOptions as { value: string; label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean }[]
+    : null;
+
+  // Generic options (grouped)
+  const groupedOptions = isGeneric && availableOptions !== null
+    ? availableOptions as {
+        flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+        second: { value: string; label: string; sub: string; inactive: boolean }[];
+        featured: { value: string; label: string; sub: string; inactive: boolean }[];
+      }
+    : null;
+
+  const hasAnyOptions = typedOptions
+    ? typedOptions.length > 0
+    : groupedOptions
+      ? groupedOptions.flash.length + groupedOptions.second.length + groupedOptions.featured.length > 0
+      : false;
+
   return (
-    <div className="flex items-center gap-2.5 border-b border-[#e0e0e0] bg-muted/40 px-4 py-2.5 dark:border-border">
-      <Icon size={13} strokeWidth={1.5} className="shrink-0 text-muted-foreground" />
-      <span className="text-[11px] font-semibold uppercase text-foreground">
-        {label}
-      </span>
-      <span className="ml-auto text-[10px] text-muted-foreground">{count} item</span>
+    <div className={cn(
+      "rounded-xl border border-[#e0e0e0] bg-card",
+      !section.is_active && "opacity-60",
+    )}>
+      <div className="flex items-start gap-4 p-4">
+        {/* Order badge + move buttons */}
+        <div className="flex shrink-0 flex-col items-center gap-1 pt-0.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-black text-muted-foreground">
+            {index + 1}
+          </span>
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+          >
+            <ChevronUp size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={index === totalCount - 1}
+            className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-20"
+          >
+            <ChevronDown size={12} />
+          </button>
+        </div>
+
+        {/* Icon */}
+        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e0e0e0] bg-muted">
+          <Icon size={15} strokeWidth={1.5} className="text-foreground" />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 space-y-2.5">
+          <div>
+            <p className="text-sm font-semibold text-foreground">{label}</p>
+            <p className="text-[11px] text-muted-foreground">{description}</p>
+          </div>
+
+          {/* Main banner: no dropdown */}
+          {availableOptions === null ? (
+            <div className="flex items-center gap-3">
+              <span className="text-[12px] text-muted-foreground">
+                Semua banner aktif tampil otomatis di carousel
+              </span>
+              {manageHref && (
+                <Link
+                  href={manageHref}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
+                >
+                  Kelola <ExternalLink size={10} />
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Select
+                  value={section.selected_id ?? ""}
+                  onValueChange={onSelect}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-xs text-sm">
+                    <SelectValue placeholder="Pilih promosi..." />
+                  </SelectTrigger>
+                  <SelectContent position="popper" align="start" className="min-w-[300px]">
+                    {/* Clear */}
+                    <SelectGroup>
+                      <SelectItem value={CLEAR_VALUE} className="text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <XCircle size={12} className="text-muted-foreground" />
+                          Kosongkan pilihan
+                        </span>
+                      </SelectItem>
+                    </SelectGroup>
+
+                    {hasAnyOptions && <SelectSeparator />}
+
+                    {/* Typed (flash / second / featured — flat) */}
+                    {typedOptions && typedOptions.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>Tersedia</SelectLabel>
+                        {typedOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            <ItemLabel opt={opt} />
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+
+                    {/* Generic — grouped by type */}
+                    {groupedOptions && (
+                      <>
+                        {groupedOptions.flash.length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>Flash Sale</SelectLabel>
+                            {groupedOptions.flash.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <ItemLabel opt={opt} />
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        )}
+                        {groupedOptions.second.length > 0 && (
+                          <>
+                            {groupedOptions.flash.length > 0 && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>Produk Second</SelectLabel>
+                              {groupedOptions.second.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <ItemLabel opt={opt} />
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        )}
+                        {groupedOptions.featured.length > 0 && (
+                          <>
+                            {(groupedOptions.flash.length > 0 || groupedOptions.second.length > 0) && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>Rekomendasi Produk</SelectLabel>
+                              {groupedOptions.featured.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <ItemLabel opt={opt} />
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </>
+                        )}
+                        {!hasAnyOptions && (
+                          <div className="px-3 py-3 text-center text-[11px] text-muted-foreground">
+                            Semua promosi sudah dipakai di seksi lain
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {!isGeneric && !hasAnyOptions && (
+                      <div className="px-3 py-3 text-center text-[11px] text-muted-foreground">
+                        Semua item sudah dipakai di seksi lain
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {manageHref && (
+                  <Link
+                    href={manageHref}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-brand hover:underline"
+                  >
+                    Kelola <ExternalLink size={10} />
+                  </Link>
+                )}
+              </div>
+
+              {warningBadge}
+            </div>
+          )}
+        </div>
+
+        {/* Active toggle */}
+        <div className="shrink-0 pt-0.5">
+          <StatusPillToggle
+            active={section.is_active}
+            onToggle={onToggle}
+            activeLabel="Aktif"
+            inactiveLabel="Nonaktif"
+            size="compact"
+          />
+        </div>
+      </div>
     </div>
+  );
+}
+
+function ItemLabel({ opt }: {
+  opt: { label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean };
+}) {
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+        {opt.label}
+        {opt.expired && (
+          <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700">
+            Expired
+          </span>
+        )}
+        {opt.upcoming && (
+          <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase text-amber-700">
+            Belum mulai
+          </span>
+        )}
+        {opt.inactive && (
+          <span className="rounded-full bg-zinc-100 px-1.5 py-px text-[9px] font-semibold uppercase text-zinc-600">
+            Nonaktif
+          </span>
+        )}
+      </span>
+      <span className="text-[10px] text-muted-foreground">{opt.sub}</span>
+    </span>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────
 export function HomeSectionsEditor({
-  banners,
+  banners: _banners,
   flashSales,
   secondPromos,
   featuredPromos,
@@ -118,31 +409,154 @@ export function HomeSectionsEditor({
   const [sections, setSections] = useState<HomeSection[]>(initialSections);
   const [isPending, startTransition] = useTransition();
 
-  const activeBannerCount = banners.filter((b) => b.is_active).length;
+  // ── Collect ALL selected IDs (for exclusive assignment) ───────────────
+  const getAllUsedIds = (excludeKey: HomeSectionKey): Set<string> =>
+    new Set(
+      sections
+        .filter((s) => s.key !== excludeKey && s.selected_id)
+        .map((s) => s.selected_id!),
+    );
 
-  // Lookup selected item label for bottom table
-  const getSelectedLabel = (section: HomeSection): string => {
-    if (section.key === "main_banner") return `${activeBannerCount} banner aktif`;
-    if (!section.selected_id) return "Belum dipilih";
-    if (section.key === "flash_sale")
-      return flashSales.find((f) => f.id === section.selected_id)?.name ?? "—";
-    if (section.key === "second_products")
-      return secondPromos.find((p) => p.id === section.selected_id)?.title ?? "—";
-    if (section.key === "featured_products")
-      return featuredPromos.find((p) => p.id === section.selected_id)?.title ?? "—";
-    return "—";
+  // ── Build dropdown options per section ────────────────────────────────
+  const getOptionsForSection = (section: HomeSection) => {
+    if (section.key === "main_banner") return null;
+
+    const usedElsewhere = getAllUsedIds(section.key);
+
+    if (section.key === "flash_sale") {
+      return flashSales
+        .filter((f) => f.id === section.selected_id || !usedElsewhere.has(f.id))
+        .map((f) => ({
+          value: f.id,
+          label: f.name,
+          sub: `${f.product_count} varian · ${formatDate(f.starts_at)} – ${formatDate(f.ends_at)}`,
+          expired: isExpired(f.ends_at),
+          upcoming: isUpcoming(f.starts_at),
+          inactive: !f.is_active,
+        }));
+    }
+
+    if (section.key === "second_products") {
+      return secondPromos
+        .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+        .map((p) => ({
+          value: p.id,
+          label: p.title,
+          sub: p.selection_mode === "manual"
+            ? `Per Produk · ${p.product_count} produk · maks. ${p.max_items}`
+            : `Per Brand · ${p.brand_count} brand · maks. ${p.max_items}`,
+          expired: false,
+          upcoming: false,
+          inactive: !p.is_active,
+        }));
+    }
+
+    if (section.key === "featured_products") {
+      return featuredPromos
+        .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+        .map((p) => ({
+          value: p.id,
+          label: p.title,
+          sub: p.selection_mode === "manual"
+            ? `Per Produk · ${p.product_count} produk · maks. ${p.max_items}`
+            : `Per Brand · ${p.brand_count} brand · maks. ${p.max_items}`,
+          expired: false,
+          upcoming: false,
+          inactive: !p.is_active,
+        }));
+    }
+
+    // Generic slots (promo_5…promo_8)
+    if (GENERIC_KEYS.has(section.key)) {
+      return {
+        flash: flashSales
+          .filter((f) => f.id === section.selected_id || !usedElsewhere.has(f.id))
+          .map((f) => ({
+            value: f.id,
+            label: f.name,
+            sub: `${f.product_count} varian · ${formatDate(f.starts_at)} – ${formatDate(f.ends_at)}`,
+            expired: isExpired(f.ends_at),
+            upcoming: isUpcoming(f.starts_at),
+            inactive: !f.is_active,
+          })),
+        second: secondPromos
+          .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+          .map((p) => ({
+            value: p.id,
+            label: p.title,
+            sub: p.selection_mode === "manual"
+              ? `Per Produk · ${p.product_count} produk`
+              : `Per Brand · ${p.brand_count} brand`,
+            inactive: !p.is_active,
+          })),
+        featured: featuredPromos
+          .filter((p) => p.id === section.selected_id || !usedElsewhere.has(p.id))
+          .map((p) => ({
+            value: p.id,
+            label: p.title,
+            sub: p.selection_mode === "manual"
+              ? `Per Produk · ${p.product_count} produk`
+              : `Per Brand · ${p.brand_count} brand`,
+            inactive: !p.is_active,
+          })),
+      };
+    }
+
+    return [];
   };
 
-  const isSelected = (sectionKey: HomeSectionKey, itemId: string) =>
-    sections.find((s) => s.key === sectionKey)?.selected_id === itemId;
+  // ── Warning badge ─────────────────────────────────────────────────────
+  const getWarningBadge = (section: HomeSection): React.ReactNode => {
+    if (!section.selected_id) return null;
 
-  const assignItem = (sectionKey: HomeSectionKey, itemId: string) => {
+    // Try flash_sale (applies to flash_sale typed AND generic slots)
+    const f = flashSales.find((f) => f.id === section.selected_id);
+    if (f) {
+      if (isExpired(f.ends_at)) {
+        return (
+          <StatusBadge className="bg-red-50 text-red-700">
+            <AlertCircle size={10} />
+            Flash sale telah expired — tidak akan tampil di beranda
+          </StatusBadge>
+        );
+      }
+      if (isUpcoming(f.starts_at)) {
+        return (
+          <StatusBadge className="bg-amber-50 text-amber-700">
+            <Clock size={10} />
+            Belum mulai — akan tampil saat {formatDate(f.starts_at)}
+          </StatusBadge>
+        );
+      }
+      if (!f.is_active) {
+        return (
+          <StatusBadge className="bg-zinc-100 text-zinc-600">
+            <AlertCircle size={10} />
+            Nonaktif — tidak akan tampil di beranda
+          </StatusBadge>
+        );
+      }
+      return null;
+    }
+
+    const promo = [...secondPromos, ...featuredPromos].find((p) => p.id === section.selected_id);
+    if (promo && !promo.is_active) {
+      return (
+        <StatusBadge className="bg-zinc-100 text-zinc-600">
+          <AlertCircle size={10} />
+          Nonaktif — tidak akan tampil di beranda
+        </StatusBadge>
+      );
+    }
+
+    return null;
+  };
+
+  // ── Event handlers ────────────────────────────────────────────────────
+  const handleSelect = (sectionKey: HomeSectionKey, value: string) => {
+    const newId = value === CLEAR_VALUE || value === "" ? null : value;
     setSections((prev) =>
-      prev.map((s) =>
-        s.key === sectionKey
-          ? { ...s, selected_id: s.selected_id === itemId ? null : itemId }
-          : s,
-      ),
+      prev.map((s) => (s.key === sectionKey ? { ...s, selected_id: newId } : s)),
     );
   };
 
@@ -178,391 +592,34 @@ export function HomeSectionsEditor({
     });
   };
 
-  // ── Pill: Pilih / Dipilih ──────────────────────────────────────────────
-  function SelectButton({ sectionKey, itemId }: { sectionKey: HomeSectionKey; itemId: string }) {
-    const selected = isSelected(sectionKey, itemId);
-    return (
-      <button
-        type="button"
-        onClick={() => assignItem(sectionKey, itemId)}
-        className={cn(
-          "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[10px] font-semibold uppercase transition-colors",
-          selected
-            ? "bg-brand text-white hover:bg-brand-hover"
-            : "border border-[#e0e0e0] text-muted-foreground hover:border-brand/40 hover:text-brand dark:border-border",
-        )}
-      >
-        {selected && <CheckCircle2 size={11} />}
-        {selected ? "Dipilih" : "Pilih"}
-      </button>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // TABLE 1 — Data template promosi
-  // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div className="space-y-6">
-      <div className="admin-utility-card overflow-hidden p-0">
-        <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
-          <h2 className="admin-section-title">Data Template Promosi</h2>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Pilih satu konten per seksi untuk ditampilkan di beranda. Klik &ldquo;Pilih&rdquo; untuk menugaskan, klik lagi untuk membatalkan.
-          </p>
-        </div>
+    <div className="space-y-4">
+      {sections.map((section, index) => (
+        <SectionCard
+          key={section.key}
+          section={section}
+          index={index}
+          totalCount={sections.length}
+          availableOptions={getOptionsForSection(section)}
+          warningBadge={getWarningBadge(section)}
+          onSelect={(val) => handleSelect(section.key, val)}
+          onToggle={() => toggleActive(section.key)}
+          onMoveUp={() => moveUp(index)}
+          onMoveDown={() => moveDown(index)}
+        />
+      ))}
 
-        {/* ── Main Banner ─────────────────────────────────────────────── */}
-        <GroupHeader sectionKey="main_banner" count={banners.length} />
-        {banners.length === 0 ? (
-          <div className="flex items-center justify-between px-4 py-4">
-            <p className="text-sm text-muted-foreground">Belum ada banner. </p>
-            <Link
-              href="/admin/promotions/main-banner"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
-            >
-              Kelola Banner <ExternalLink size={10} />
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#e0e0e0] dark:border-border">
-                  <ThCell>Judul</ThCell>
-                  <ThCell>Urutan</ThCell>
-                  <ThCell>Status</ThCell>
-                  <ThCell>Dibuat</ThCell>
-                  <ThCell className="text-right">
-                    <Link
-                      href="/admin/promotions/main-banner"
-                      className="inline-flex items-center gap-1 normal-case font-medium text-brand hover:underline underline-offset-2"
-                    >
-                      Kelola <ExternalLink size={10} />
-                    </Link>
-                  </ThCell>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-                {banners.map((b) => (
-                  <tr key={b.id} className="transition-colors hover:bg-muted/30">
-                    <TdCell>
-                      <span className="text-sm font-medium text-foreground">
-                        {b.title ?? <span className="italic text-muted-foreground">Tanpa judul</span>}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">#{b.sort_order}</span>
-                    </TdCell>
-                    <TdCell><StatusBadge active={b.is_active} /></TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{formatDate(b.created_at)}</span>
-                    </TdCell>
-                    <TdCell className="text-right">
-                      <span className="text-[10px] text-muted-foreground">Semua banner aktif tampil otomatis</span>
-                    </TdCell>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* ── Flash Sale ──────────────────────────────────────────────── */}
-        <GroupHeader sectionKey="flash_sale" count={flashSales.length} />
-        {flashSales.length === 0 ? (
-          <div className="flex items-center justify-between px-4 py-4">
-            <p className="text-sm text-muted-foreground">Belum ada flash sale.</p>
-            <Link
-              href="/admin/promotions/flash-sale/new"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
-            >
-              Buat Flash Sale <ExternalLink size={10} />
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#e0e0e0] dark:border-border">
-                  <ThCell>Nama</ThCell>
-                  <ThCell>Periode</ThCell>
-                  <ThCell>Produk</ThCell>
-                  <ThCell>Status</ThCell>
-                  <ThCell>Dibuat</ThCell>
-                  <ThCell className="text-right">Aksi</ThCell>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-                {flashSales.map((f) => (
-                  <tr
-                    key={f.id}
-                    className={cn(
-                      "transition-colors hover:bg-muted/30",
-                      isSelected("flash_sale", f.id) && "bg-brand/[0.04]",
-                    )}
-                  >
-                    <TdCell>
-                      <span className="text-sm font-medium text-foreground">{f.name}</span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(f.starts_at)} – {formatDate(f.ends_at)}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{f.product_count} varian</span>
-                    </TdCell>
-                    <TdCell><StatusBadge active={f.is_active} /></TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{formatDate(f.created_at)}</span>
-                    </TdCell>
-                    <TdCell className="text-right">
-                      <SelectButton sectionKey="flash_sale" itemId={f.id} />
-                    </TdCell>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* ── Produk Second ───────────────────────────────────────────── */}
-        <GroupHeader sectionKey="second_products" count={secondPromos.length} />
-        {secondPromos.length === 0 ? (
-          <div className="flex items-center justify-between px-4 py-4">
-            <p className="text-sm text-muted-foreground">Belum ada promosi produk second.</p>
-            <Link
-              href="/admin/promotions/second-products/new"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
-            >
-              Buat Promosi <ExternalLink size={10} />
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#e0e0e0] dark:border-border">
-                  <ThCell>Judul</ThCell>
-                  <ThCell>Mode</ThCell>
-                  <ThCell>Konten</ThCell>
-                  <ThCell>Maks. Tampil</ThCell>
-                  <ThCell>Status</ThCell>
-                  <ThCell>Dibuat</ThCell>
-                  <ThCell className="text-right">Aksi</ThCell>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-                {secondPromos.map((p) => (
-                  <tr
-                    key={p.id}
-                    className={cn(
-                      "transition-colors hover:bg-muted/30",
-                      isSelected("second_products", p.id) && "bg-brand/[0.04]",
-                    )}
-                  >
-                    <TdCell>
-                      <span className="text-sm font-medium text-foreground">{p.title}</span>
-                    </TdCell>
-                    <TdCell>
-                      <span className={labelClass}>
-                        {p.selection_mode === "manual" ? "Per Produk" : "Per Brand"}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">
-                        {p.selection_mode === "manual" ? `${p.product_count} produk` : `${p.brand_count} brand`}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{p.max_items} item</span>
-                    </TdCell>
-                    <TdCell><StatusBadge active={p.is_active} /></TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{formatDate(p.created_at)}</span>
-                    </TdCell>
-                    <TdCell className="text-right">
-                      <SelectButton sectionKey="second_products" itemId={p.id} />
-                    </TdCell>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* ── Rekomendasi ─────────────────────────────────────────────── */}
-        <GroupHeader sectionKey="featured_products" count={featuredPromos.length} />
-        {featuredPromos.length === 0 ? (
-          <div className="flex items-center justify-between px-4 py-4">
-            <p className="text-sm text-muted-foreground">Belum ada promosi rekomendasi.</p>
-            <Link
-              href="/admin/promotions/featured-products/new"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand underline-offset-2 hover:underline"
-            >
-              Buat Promosi <ExternalLink size={10} />
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#e0e0e0] dark:border-border">
-                  <ThCell>Judul</ThCell>
-                  <ThCell>Mode</ThCell>
-                  <ThCell>Konten</ThCell>
-                  <ThCell>Maks. Tampil</ThCell>
-                  <ThCell>Status</ThCell>
-                  <ThCell>Dibuat</ThCell>
-                  <ThCell className="text-right">Aksi</ThCell>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-                {featuredPromos.map((p) => (
-                  <tr
-                    key={p.id}
-                    className={cn(
-                      "transition-colors hover:bg-muted/30",
-                      isSelected("featured_products", p.id) && "bg-brand/[0.04]",
-                    )}
-                  >
-                    <TdCell>
-                      <span className="text-sm font-medium text-foreground">{p.title}</span>
-                    </TdCell>
-                    <TdCell>
-                      <span className={labelClass}>
-                        {p.selection_mode === "manual" ? "Per Produk" : "Per Brand"}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">
-                        {p.selection_mode === "manual" ? `${p.product_count} produk` : `${p.brand_count} brand`}
-                      </span>
-                    </TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{p.max_items} item</span>
-                    </TdCell>
-                    <TdCell><StatusBadge active={p.is_active} /></TdCell>
-                    <TdCell>
-                      <span className="text-xs text-muted-foreground">{formatDate(p.created_at)}</span>
-                    </TdCell>
-                    <TdCell className="text-right">
-                      <SelectButton sectionKey="featured_products" itemId={p.id} />
-                    </TdCell>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          TABLE 2 — Susunan seksi beranda
-      ════════════════════════════════════════════════════════════════════ */}
-      <div className="admin-utility-card overflow-hidden p-0">
-        <div className="border-b border-[#e0e0e0] px-5 py-4 dark:border-border">
-          <h2 className="admin-section-title">Section 4 Beranda</h2>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Atur urutan tampilan section 4 dan aktif/nonaktifkan masing-masing.
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
-                <ThCell className="w-12">#</ThCell>
-                <ThCell className="w-16">Urutan</ThCell>
-                <ThCell>Seksi</ThCell>
-                <ThCell>Konten Dipilih</ThCell>
-                <ThCell className="text-right">Status</ThCell>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
-              {sections.map((section, index) => {
-                const { label, icon: Icon } = SECTION_META[section.key];
-                const selectedLabel = getSelectedLabel(section);
-                const isNoContent = !section.selected_id && section.key !== "main_banner";
-                return (
-                  <tr
-                    key={section.key}
-                    className={cn(
-                      "transition-colors hover:bg-muted/30",
-                      !section.is_active && "opacity-50",
-                    )}
-                  >
-                    {/* Order number */}
-                    <TdCell>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-black text-muted-foreground">
-                        {index + 1}
-                      </span>
-                    </TdCell>
-
-                    {/* Move buttons */}
-                    <TdCell>
-                      <div className="flex flex-col gap-0.5">
-                        <button
-                          type="button"
-                          onClick={() => moveUp(index)}
-                          disabled={index === 0}
-                          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
-                        >
-                          <ChevronUp size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveDown(index)}
-                          disabled={index === sections.length - 1}
-                          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-25"
-                        >
-                          <ChevronDown size={13} />
-                        </button>
-                      </div>
-                    </TdCell>
-
-                    {/* Section name */}
-                    <TdCell>
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                          <Icon size={14} strokeWidth={1.5} className="text-foreground" />
-                        </div>
-                        <span className="text-sm font-semibold text-foreground">{label}</span>
-                      </div>
-                    </TdCell>
-
-                    {/* Selected content */}
-                    <TdCell>
-                      <span className={cn(
-                        "text-sm",
-                        isNoContent ? "italic text-muted-foreground" : "text-foreground",
-                      )}>
-                        {selectedLabel}
-                      </span>
-                    </TdCell>
-
-                    {/* Active toggle */}
-                    <TdCell className="text-right">
-                      <StatusPillToggle
-                        active={section.is_active}
-                        onToggle={() => toggleActive(section.key)}
-                        activeLabel="Aktif"
-                        inactiveLabel="Nonaktif"
-                        size="compact"
-                      />
-                    </TdCell>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Save */}
-      <Button type="button" variant="primary" size="sm" onClick={handleSave}  loading={isPending}>
+      <div className="pt-2">
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          onClick={handleSave}
+          loading={isPending}
+        >
           Simpan Perubahan
         </Button>
+      </div>
     </div>
   );
 }

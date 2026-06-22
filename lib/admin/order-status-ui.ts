@@ -20,11 +20,11 @@ export function adminOrderStatusBadgeClass(status: string): string {
     case "shipped":
       return "bg-muted text-foreground";
     case "delivered":
-      return "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400";
+      return "bg-emerald-500/10 text-emerald-800";
     case "completed":
-      return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400";
+      return "bg-emerald-500/15 text-emerald-800";
     case "cancelled":
-      return "bg-destructive/10 text-destructive dark:text-destructive";
+      return "bg-destructive/10 text-destructive";
     case "refunded":
       return "bg-muted text-muted-foreground";
     default:

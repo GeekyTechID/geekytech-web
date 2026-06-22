@@ -5,7 +5,12 @@ import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/use
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
-import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
+import {
+  ON_DEMAND_COURIERS,
+  isOnDemandSameDayOption,
+  isWithinSameDayWindow,
+  parseOriginCoords,
+} from "@/lib/shipping/on-demand-coords";
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -131,11 +136,20 @@ export async function POST(req: Request) {
     });
 
     if (biteship.ok) {
+      // On-demand Same Day (Gojek/Grab) only accepted by Biteship between 06:00–15:00 WIB.
+      // Filter outside that window so users don't pick a service that will be rejected
+      // at settlement.
+      const sameDayOpen = isWithinSameDayWindow();
+      const options = sameDayOpen
+        ? biteship.options
+        : biteship.options.filter((o) => !isOnDemandSameDayOption(o.courierCode, o.serviceCode));
+
       return Response.json({
         success: true,
         data: {
           source: "biteship" as const,
-          options: biteship.options,
+          options,
+          sameDayUnavailable: !sameDayOpen,
         },
       });
     }

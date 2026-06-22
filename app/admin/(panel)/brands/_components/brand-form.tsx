@@ -182,7 +182,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
             </Label>
             <Input
               id="name"
-              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] text-[17px] leading-[1.47]"
               placeholder="Contoh: Samsung"
               {...register("name", {
                 onChange: (e) => {
@@ -201,7 +201,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
             </Label>
             <Input
               id="slug"
-              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47] dark:border-border"
+              className="h-10 rounded-lg border-[#e0e0e0] font-mono text-[17px] leading-[1.47]"
               placeholder="samsung"
               {...register("slug")}
             />
@@ -216,7 +216,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
           <Textarea
             id="description"
             rows={3}
-            className="resize-none rounded-lg border-[#e0e0e0] text-[15px] leading-relaxed dark:border-border"
+            className="resize-none rounded-lg border-[#e0e0e0] text-[15px] leading-relaxed"
             placeholder="Singkat tentang merek ini, mis. asal negara, spesialisasi produk..."
             {...register("description")}
           />
@@ -230,7 +230,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
           <input type="hidden" {...register("logo_url")} />
 
           {logoUrl ? (
-            <div className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-[#e0e0e0] bg-white dark:border-border">
+            <div className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border border-[#e0e0e0] bg-white">
               <Image src={logoUrl} alt="Logo merek" fill sizes="96px" className="object-contain p-2" />
               <button
                 type="button"
@@ -249,7 +249,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
@@ -287,7 +287,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
           <input type="hidden" {...register("banner_url")} />
 
           {bannerUrl ? (
-            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border" style={{ aspectRatio: "4/1" }}>
+            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted" style={{ aspectRatio: "4/1" }}>
               <Image src={bannerUrl} alt="Banner utama merek" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
               <button
                 type="button"
@@ -306,7 +306,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               type="button"
               onClick={() => bannerRef.current?.click()}
               disabled={uploadingBanner}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploadingBanner ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
@@ -344,7 +344,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
           <input type="hidden" {...register("banner_secondary_url")} />
 
           {bannerSecondaryUrl ? (
-            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border" style={{ aspectRatio: "3/1" }}>
+            <div className="group relative w-full overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted" style={{ aspectRatio: "3/1" }}>
               <Image src={bannerSecondaryUrl} alt="Banner kedua merek" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
               <button
                 type="button"
@@ -363,7 +363,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
               type="button"
               onClick={() => bannerSecondaryRef.current?.click()}
               disabled={uploadingBannerSecondary}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50 dark:border-border"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploadingBannerSecondary ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold uppercase">
@@ -400,7 +400,7 @@ export function BrandForm({ brandId, defaultValues }: BrandFormProps) {
             id="sort_order"
             type="number"
             min="0"
-            className="h-10 rounded-lg border-[#e0e0e0] text-[17px] dark:border-border"
+            className="h-10 rounded-lg border-[#e0e0e0] text-[17px]"
             {...register("sort_order", { valueAsNumber: true })}
           />
           {errors.sort_order && (

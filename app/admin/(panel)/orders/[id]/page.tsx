@@ -12,8 +12,11 @@ import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admi
 import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
+import { SyncBiteshipButton } from "./_components/sync-biteship-button";
+import { ConfirmPickupButton } from "./_components/confirm-pickup-button";
+import { StartPackingButton } from "./_components/start-packing-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
-import type { OrderStatus } from "../_actions";
+import type { OrderStatus } from "../_constants";
 
 export const metadata: Metadata = { title: "Detail Pesanan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -57,6 +60,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   ]);
 
   if (!order) notFound();
+
+  // Mark as viewed (fire-and-forget, non-blocking)
+  if (!(order as Record<string, unknown>).admin_viewed_at) {
+    supabase.from("orders").update({ admin_viewed_at: new Date().toISOString() } as never).eq("id", id).then(() => {});
+  }
 
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
@@ -143,11 +151,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 Item Pesanan ({items.length})
               </h2>
             </div>
-            <div className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <div className="divide-y divide-[#e0e0e0]">
               {items.map((item) => (
                 <div key={item.id} className="flex gap-3 px-4 py-3">
                   {/* Image */}
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted dark:border-border">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-muted">
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
@@ -184,16 +192,16 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </div>
 
             {/* Totals */}
-            <div className="space-y-1.5 border-t border-[#e0e0e0] bg-muted/30 px-4 py-3 dark:border-border">
+            <div className="space-y-1.5 border-t border-[#e0e0e0] bg-muted/30 px-4 py-3">
               <Row label="Subtotal" value={formatRupiah(order.subtotal)} />
               <Row label={`Ongkir (${order.courier_company ?? "—"} ${order.courier_service ?? ""})`} value={formatRupiah(order.shipping_cost)} />
               {order.shipping_insurance > 0 && (
                 <Row label="Asuransi Pengiriman" value={formatRupiah(order.shipping_insurance)} />
               )}
               {order.discount_amount > 0 && (
-                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-emerald-600 dark:text-emerald-400" />
+                <Row label={`Diskon${order.coupon_code ? ` (${order.coupon_code})` : ""}`} value={`-${formatRupiah(order.discount_amount)}`} className="text-emerald-600" />
               )}
-              <div className="border-t border-[#e0e0e0] pt-1.5 dark:border-border">
+              <div className="border-t border-[#e0e0e0] pt-1.5">
                 <Row label="Total" value={formatRupiah(order.total)} bold />
               </div>
             </div>
@@ -210,12 +218,12 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <span className={cn(
                     "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase",
                     payment.status === "paid"
-                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                      ? "bg-emerald-500/15 text-emerald-800"
                       : paymentIsExpiredPending
-                        ? "bg-destructive/10 text-destructive dark:text-destructive"
+                        ? "bg-destructive/10 text-destructive"
                         : payment.status === "pending"
                           ? "bg-brand/10 text-brand"
-                          : "bg-destructive/10 text-destructive dark:text-destructive"
+                          : "bg-destructive/10 text-destructive"
                   )}>
                     {paymentIsExpiredPending
                       ? "Kedaluwarsa (menunggu cron)"
@@ -363,6 +371,48 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 )}
                 {shipment?.status && (
                   <InfoRow label="Status Kurir" value={shipment.status.replace(/_/g, " ").toUpperCase()} />
+                )}
+                {shipment?.biteship_order_id && (
+                  <InfoRow
+                    label="Biteship ID"
+                    value={<span className="font-mono text-[11px]">{shipment.biteship_order_id}</span>}
+                  />
+                )}
+                {shipment?.awb && shipment.biteship_order_id && !["delivered", "cancelled", "returned"].includes(shipment.status ?? "") && (
+                  <div className="space-y-1 pt-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Tarik status terbaru dari Biteship secara manual.
+                    </p>
+                    <SyncBiteshipButton orderId={order.id} />
+                  </div>
+                )}
+                {shipment && !shipment.awb && shipment.biteship_order_id && (
+                  <div className="space-y-2 pt-1">
+                    {order.status === "paid" && shipment.status === "pending" ? (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          Pembayaran diterima. Kemas paket lalu lanjut ke konfirmasi pickup.
+                        </p>
+                        <StartPackingButton orderId={order.id} />
+                      </>
+                    ) : order.status === "processing" && shipment.status === "pending" ? (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          Paket terdaftar di Biteship. Konfirmasi siap pickup setelah selesai dikemas.
+                        </p>
+                        <ConfirmPickupButton orderId={order.id} />
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[11px] text-muted-foreground">
+                          {shipment.status === "confirmed"
+                            ? "Paket siap pickup. Kurir akan datang sesuai jadwal. AWB akan muncul otomatis."
+                            : "AWB dikirim otomatis via webhook, atau klik sync untuk tarik sekarang."}
+                        </p>
+                        <SyncBiteshipButton orderId={order.id} />
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </section>

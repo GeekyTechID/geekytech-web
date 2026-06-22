@@ -14,12 +14,14 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { cache } from "react";
+import React, { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { DashboardRevenueChart, DashboardOrdersChart } from "@/components/admin/dashboard-charts";
+import { AdminNewOrdersSection } from "@/components/admin/admin-new-orders-section";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Dashboard Admin" };
 export const revalidate = 60; // ISR: refresh data setiap 60 detik
@@ -41,14 +43,14 @@ const ORDER_STATUS_CONFIG: Record<
   OrderStatus,
   { label: string; color: string; icon: React.ElementType }
 > = {
-  pending_payment: { label: "Menunggu Bayar", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock },
-  paid: { label: "Dibayar", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle2 },
-  processing: { label: "Diproses", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400", icon: Package },
-  shipped: { label: "Dikirim", color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400", icon: Truck },
-  delivered: { label: "Terkirim", color: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400", icon: CheckCircle2 },
-  completed: { label: "Selesai", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
-  cancelled: { label: "Dibatalkan", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400", icon: XCircle },
-  refunded: { label: "Refund", color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400", icon: AlertTriangle },
+  pending_payment: { label: "Menunggu Bayar", color: "bg-yellow-100 text-yellow-800", icon: Clock },
+  paid: { label: "Dibayar", color: "bg-emerald-100 text-emerald-800", icon: CheckCircle2 },
+  processing: { label: "Diproses", color: "bg-purple-100 text-purple-800", icon: Package },
+  shipped: { label: "Dikirim", color: "bg-indigo-100 text-indigo-800", icon: Truck },
+  delivered: { label: "Terkirim", color: "bg-teal-100 text-teal-800", icon: CheckCircle2 },
+  completed: { label: "Selesai", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
+  cancelled: { label: "Dibatalkan", color: "bg-red-100 text-red-800", icon: XCircle },
+  refunded: { label: "Refund", color: "bg-gray-100 text-gray-700", icon: AlertTriangle },
 };
 
 // ----------------------------------------------------------------
@@ -69,17 +71,40 @@ const ALL_STATUSES: OrderStatus[] = [
 
 const TABLE_HEADERS = ["No. Order", "Pembeli", "Status", "Total", "Tanggal"] as const;
 
+type StatusCardCfg = {
+  label: string;
+  icon: React.ElementType;
+  accent: string;   // border-l color
+  iconBg: string;
+  iconColor: string;
+  bar: string;
+};
+
+const STATUS_CARD_CONFIG: Record<OrderStatus, StatusCardCfg> = {
+  pending_payment: { label: "Menunggu Bayar", icon: Clock,        accent: "border-l-amber-400",   iconBg: "bg-amber-50",    iconColor: "text-amber-500",   bar: "bg-amber-400" },
+  paid:            { label: "Dibayar",        icon: CheckCircle2, accent: "border-l-emerald-400", iconBg: "bg-emerald-50", iconColor: "text-emerald-500", bar: "bg-emerald-400" },
+  processing:      { label: "Diproses",       icon: Package,      accent: "border-l-purple-400",  iconBg: "bg-purple-50",   iconColor: "text-purple-500",  bar: "bg-purple-400" },
+  shipped:         { label: "Dikirim",        icon: Truck,        accent: "border-l-indigo-400",  iconBg: "bg-indigo-50",   iconColor: "text-indigo-500",  bar: "bg-indigo-400" },
+  delivered:       { label: "Terkirim",       icon: CheckCircle2, accent: "border-l-teal-400",    iconBg: "bg-teal-50",      iconColor: "text-teal-500",    bar: "bg-teal-400" },
+  completed:       { label: "Selesai",        icon: Star,         accent: "border-l-green-500",   iconBg: "bg-green-50",    iconColor: "text-green-600",   bar: "bg-green-500" },
+  cancelled:       { label: "Dibatalkan",     icon: XCircle,      accent: "border-l-red-400",     iconBg: "bg-red-50",        iconColor: "text-red-500",     bar: "bg-red-400" },
+  refunded:        { label: "Refund",         icon: AlertTriangle,accent: "border-l-zinc-400",    iconBg: "bg-zinc-100",        iconColor: "text-zinc-500",    bar: "bg-zinc-400" },
+};
+
 // ----------------------------------------------------------------
 // Data fetching — wrapped in cache() for per-request deduplication
 // ----------------------------------------------------------------
 const fetchDashboardData = cache(async function fetchDashboardData() {
   const supabase = await createClient();
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  // All boundaries computed in WIB (UTC+7) so "today" / "this month" match Jakarta time
+  const WIB = 7 * 60 * 60 * 1000;
+  const nowMs = Date.now();
+  const nowWIB = new Date(nowMs + WIB);
+  const todayStart = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth(), nowWIB.getUTCDate()) - WIB).toISOString();
+  const weekStart = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const monthStart = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth(), 1) - WIB).toISOString();
+  const thirtyDaysAgo = new Date(nowMs - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     revenueToday,
@@ -180,15 +205,14 @@ const fetchDashboardData = cache(async function fetchDashboardData() {
     (rows ?? []).reduce((sum, r) => sum + r.total, 0);
 
   // Aggregate daily data
+  const wibKey = (ms: number) => { const d = new Date(ms + WIB); return `${d.getUTCDate()}/${d.getUTCMonth() + 1}`; };
   const dailyMap: Record<string, { revenue: number; orders: number }> = {};
   for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(nowMs - i * 24 * 60 * 60 * 1000);
     dailyMap[key] = { revenue: 0, orders: 0 };
   }
   for (const row of dailyRevenue.data ?? []) {
-    const d = new Date(row.created_at);
-    const key = `${d.getDate()}/${d.getMonth() + 1}`;
+    const key = wibKey(new Date(row.created_at).getTime());
     if (dailyMap[key]) {
       dailyMap[key].revenue += row.total;
       dailyMap[key].orders += 1;
@@ -250,6 +274,9 @@ export default async function AdminDashboardPage() {
         </h1>
       </div>
 
+      {/* ── New Orders (real-time, client) ─────────────────────── */}
+      <AdminNewOrdersSection />
+
       {/* ── Stat Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -280,28 +307,43 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ── Order Status Breakdown ──────────────────────────────── */}
-      <div className="admin-utility-card p-5">
+      <div>
         <h2 className="admin-section-title mb-4">Status Pesanan</h2>
-        <div className="flex flex-wrap gap-2">
-          {(Object.entries(ORDER_STATUS_CONFIG) as [OrderStatus, typeof ORDER_STATUS_CONFIG[OrderStatus]][]).map(
-            ([status, cfg]) => {
-              const count = statusCounts[status] ?? 0;
-              const Icon = cfg.icon;
-              return (
-                <div
-                  key={status}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold",
-                    cfg.color,
-                  )}
-                >
-                  <Icon size={12} />
-                  {cfg.label}
-                  <span className="font-black ml-0.5">{count}</span>
-                </div>
-              );
-            },
-          )}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {(Object.entries(STATUS_CARD_CONFIG) as [OrderStatus, StatusCardCfg][]).map(([status, cfg]) => {
+            const count = statusCounts[status] ?? 0;
+            const pct = stats.totalOrders > 0 ? (count / stats.totalOrders) * 100 : 0;
+            const pctDisplay = pct < 1 && pct > 0 ? "<1" : Math.round(pct).toString();
+            const Icon = cfg.icon;
+            return (
+              <Link key={status} href={`/admin/orders?status=${status}`} className="group">
+                <Card className="relative overflow-hidden py-0 transition-all duration-200 hover:bg-[#EA5329]/15 cursor-pointer">
+                  <CardContent className="px-4 py-4">
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {cfg.label}
+                      </p>
+                      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", cfg.iconBg)}>
+                        <Icon size={14} className={cfg.iconColor} />
+                      </div>
+                    </div>
+                    {/* Count */}
+                    <p className="mt-2 text-[32px] font-black tabular-nums leading-none tracking-tight text-foreground">
+                      {count.toLocaleString("id-ID")}
+                    </p>
+                    {/* Progress bar */}
+                    <div className="mt-3 space-y-1">
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                        <div className={cn("h-full rounded-full transition-all", cfg.bar)} style={{ width: `${Math.min(100, pct)}%` }} />
+                      </div>
+                      <p className="text-[10px] font-medium text-muted-foreground">{pctDisplay}% dari total</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -351,7 +393,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <div className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <div className="divide-y divide-[#e0e0e0]">
             {lowStockVariants.map((v: {
               id: string;
               sku: string;
@@ -373,8 +415,8 @@ export default async function AdminDashboardPage() {
                     className={cn(
                       "text-xs font-black px-2 py-0.5 shrink-0 ml-4",
                       v.stock === 0
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700",
                     )}
                   >
                     {v.stock === 0 ? "Habis" : `${v.stock} sisa`}
@@ -400,7 +442,7 @@ export default async function AdminDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e0e0e0] text-left dark:border-border">
+              <tr className="border-b border-[#e0e0e0] text-left">
                 {TABLE_HEADERS.map((h) => (
                   <th
                     key={h}
@@ -411,7 +453,7 @@ export default async function AdminDashboardPage() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+            <tbody className="divide-y divide-[#e0e0e0]">
               {recentOrders.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-8 text-center text-sm text-foreground">
@@ -483,7 +525,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <ul className="divide-y divide-[#e0e0e0]">
             {recentCustomers.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada pelanggan
@@ -524,7 +566,7 @@ export default async function AdminDashboardPage() {
               Lihat semua <ArrowRight size={12} />
             </Link>
           </div>
-          <ul className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <ul className="divide-y divide-[#e0e0e0]">
             {recentReviews.length === 0 ? (
               <li className="px-5 py-6 text-center text-sm text-foreground">
                 Belum ada ulasan

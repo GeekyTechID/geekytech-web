@@ -54,7 +54,7 @@ export async function StoreFooter() {
                   type="email"
                   autoComplete="email"
                   placeholder="Email kamu.."
-                  className="h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent"
+                  className="h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-transparent focus-visible:ring-0"
                 />
                 <Button
                   type="submit"

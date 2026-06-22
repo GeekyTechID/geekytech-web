@@ -118,16 +118,16 @@ function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { co
 }
 
 const PAYMENT_LOGOS: Record<string, string> = {
-  gopay: "/payments/gopay.svg",
-  shopeepay: "/payments/shopeepay.svg",
-  qris: "/payments/qris.svg",
-  bca_va: "/payments/bca_va.svg",
-  bni_va: "/payments/bni_va.svg",
-  bri_va: "/payments/bri_va.svg",
-  permata_va: "/payments/permata_va.svg",
-  echannel: "/payments/echannel.svg",
-  indomaret: "/payments/indomaret.svg",
-  alfamart: "/payments/alfamart.svg",
+  gopay: "/payments/gopay_horizontal.svg",
+  shopeepay: "/payments/shopeepay_rectangle_orange.svg",
+  qris: "/payments/qris.png",
+  bca_va: "/payments/bca.png",
+  bni_va: "/payments/bni.png",
+  bri_va: "/payments/bri.png",
+  permata_va: "/payments/permata_bank.png",
+  echannel: "/payments/mandiri.png",
+  indomaret: "/payments/indomaret.png",
+  alfamart: "/payments/alfamart.png",
 };
 
 function PaymentLogo({ id, label, className = "h-8 w-auto max-w-[80px]" }: { id: string; label: string; className?: string }) {
@@ -188,7 +188,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [couponApplying, setCouponApplying] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
-  const [paymentOpen, setPaymentOpen] = useState(true);
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [countdown, setCountdown] = useState(5);
@@ -220,7 +220,14 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         .map((l) => l.lineId),
     );
   }, [appliedCoupon, lines]);
-  const catalogDiscount = Math.max(0, Math.round(subtotalGross - subtotalNet));
+  const flashSaleDiscount = useMemo(
+    () => lines.filter((l) => l.isFlashSale).reduce((s, l) => s + Math.max(0, l.listPrice - l.unitPrice) * l.qty, 0),
+    [lines],
+  );
+  const regularDiscount = useMemo(
+    () => Math.max(0, Math.round(subtotalGross - subtotalNet) - flashSaleDiscount),
+    [subtotalGross, subtotalNet, flashSaleDiscount],
+  );
   const serviceFee = 1000;
   const shippingFee = selectedShipping?.price ?? 0;
   const grandTotal = Math.max(0, Math.round(subtotalNet) - couponDiscount + shippingFee + serviceFee);
@@ -311,6 +318,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
 
   useEffect(() => {
     if (!doneState) return;
+    window.scrollTo({ top: 0, behavior: "instant" });
     if (countdown <= 0) {
       router.push(`/dashboard/orders/${doneState.orderId}`);
       return;
@@ -382,6 +390,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       toast.error("Pilih alamat dan metode pengiriman.");
       return;
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setSubmitting(true);
     try {
       const res = await fetch("/api/checkout/create", {
@@ -457,7 +466,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       <div className="px-4 py-20 text-[#1d1d1f]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="py-2 sm:py-3">
-            <CartCheckoutStepper current={3} />
+            <CartCheckoutStepper current={4} />
           </div>
         </div>
         <div className="flex min-h-[50vh] items-center justify-center">
@@ -654,12 +663,22 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                     <dt className="text-white/75">Sub total ({itemCount} item)</dt>
                     <dd className="shrink-0 font-semibold tabular-nums">{formatRupiah(subtotalGross)}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-white/75">Diskon katalog</dt>
-                    <dd className={cn("shrink-0 font-semibold tabular-nums", catalogDiscount > 0 && "text-[#ffb4a1]")}>
-                      {catalogDiscount > 0 ? `−${formatRupiah(catalogDiscount)}` : formatRupiah(0)}
-                    </dd>
-                  </div>
+                  {regularDiscount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-white/75">Diskon produk</dt>
+                      <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
+                        −{formatRupiah(regularDiscount)}
+                      </dd>
+                    </div>
+                  )}
+                  {flashSaleDiscount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-white/75">Diskon flash sale</dt>
+                      <dd className="shrink-0 font-semibold tabular-nums text-[#ffb4a1]">
+                        −{formatRupiah(flashSaleDiscount)}
+                      </dd>
+                    </div>
+                  )}
                   {couponDiscount > 0 ? (
                     <div className="flex flex-col gap-0.5">
                       <div className="flex justify-between gap-4">
@@ -906,6 +925,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                                   day: "numeric",
                                   month: "short",
                                   year: "numeric",
+                                  timeZone: "Asia/Jakarta",
                                 })}
                               </span>
                             )}

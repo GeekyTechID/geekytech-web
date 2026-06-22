@@ -580,6 +580,7 @@ export type PendingOrderPreview = {
   vaNumber: string | null;
   paymentCode: string | null;
   transactionId: string | null;
+  paymentType: string | null;
   previewName: string | null;
   previewImage: string | null;
 };
@@ -609,7 +610,7 @@ export async function fetchPendingPaymentOrders(
         .order("id", { ascending: true }),
       supabase
         .from("payments")
-        .select("order_id, expiry_time, va_number, payment_code, midtrans_transaction_id")
+        .select("order_id, expiry_time, va_number, payment_code, midtrans_transaction_id, payment_type")
         .in("order_id", orderIds)
         .order("created_at", { ascending: false }),
     ]);
@@ -626,6 +627,7 @@ export async function fetchPendingPaymentOrders(
       va_number: string | null;
       payment_code: string | null;
       midtrans_transaction_id: string | null;
+      payment_type: string | null;
     };
     const paymentByOrder = new Map<string, PaymentMeta>();
     for (const p of paymentsRaw ?? []) {
@@ -635,11 +637,12 @@ export async function fetchPendingPaymentOrders(
           va_number: p.va_number ?? null,
           payment_code: p.payment_code ?? null,
           midtrans_transaction_id: p.midtrans_transaction_id ?? null,
+          payment_type: p.payment_type ?? null,
         });
       }
     }
 
-    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+    const TWENTYFOUR_HOURS_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
     return orders
       .map((o) => {
@@ -647,7 +650,7 @@ export async function fetchPendingPaymentOrders(
         const pm = paymentByOrder.get(o.id);
         const expiryTime = pm?.expiry_time
           ? pm.expiry_time
-          : new Date(new Date(o.created_at).getTime() + THREE_HOURS_MS).toISOString();
+          : new Date(new Date(o.created_at).getTime() + TWENTYFOUR_HOURS_MS).toISOString();
         return {
           id: o.id,
           order_number: o.order_number,
@@ -657,6 +660,7 @@ export async function fetchPendingPaymentOrders(
           vaNumber: pm?.va_number ?? null,
           paymentCode: pm?.payment_code ?? null,
           transactionId: pm?.midtrans_transaction_id ?? null,
+          paymentType: pm?.payment_type ?? null,
           previewName: fi?.product_name ?? null,
           previewImage: fi?.image_url ?? null,
         };
@@ -796,32 +800,30 @@ export async function fetchSpendingByMonth(
   const cap = Math.min(Math.max(months, 3), 24);
   try {
     const supabase = await createClient();
-    const since = new Date();
-    since.setMonth(since.getMonth() - cap + 1);
-    since.setDate(1);
-    since.setHours(0, 0, 0, 0);
+    const WIB = 7 * 60 * 60 * 1000;
+    const nowWIB = new Date(Date.now() + WIB);
+    const sinceUTC = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth() - cap + 1, 1) - WIB);
 
     const { data, error } = await supabase
       .from("orders")
       .select("total, created_at")
       .eq("user_id", userId)
       .in("status", ["paid", "processing", "shipped", "delivered", "completed"])
-      .gte("created_at", since.toISOString())
+      .gte("created_at", sinceUTC.toISOString())
       .order("created_at", { ascending: true });
 
     if (error || !data) return [];
 
     const buckets = new Map<string, number>();
     for (let i = 0; i < cap; i++) {
-      const d = new Date(since);
-      d.setMonth(d.getMonth() + i);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const d = new Date(Date.UTC(nowWIB.getUTCFullYear(), nowWIB.getUTCMonth() - cap + 1 + i, 1));
+      const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
       buckets.set(key, 0);
     }
 
     for (const row of data) {
-      const d = new Date(row.created_at);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const dWIB = new Date(new Date(row.created_at).getTime() + WIB);
+      const key = `${dWIB.getUTCFullYear()}-${String(dWIB.getUTCMonth() + 1).padStart(2, "0")}`;
       if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + row.total);
     }
 

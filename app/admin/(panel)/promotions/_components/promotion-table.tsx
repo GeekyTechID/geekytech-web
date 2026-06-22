@@ -85,7 +85,7 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#e0e0e0] bg-muted/30 dark:border-border">
+            <tr className="border-b border-[#e0e0e0] bg-muted/30">
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground">
                 Judul
               </th>
@@ -103,7 +103,7 @@ export function PromotionTable({ rows, basePath, emptyLabel }: PromotionTablePro
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#e0e0e0] dark:divide-border">
+          <tbody className="divide-y divide-[#e0e0e0]">
             {rows.map((row) => (
               <tr key={row.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">

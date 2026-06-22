@@ -35,7 +35,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-lg border-[#e0e0e0] sm:max-w-md dark:border-border" showCloseButton={false}>
+      <DialogContent className="rounded-lg border-[#e0e0e0] sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="text-[17px] font-semibold leading-[1.24] tracking-[-0.374px] text-[#1d1d1f]">
             {title}

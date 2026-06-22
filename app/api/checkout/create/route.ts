@@ -10,7 +10,12 @@ import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
-import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
+import {
+  ON_DEMAND_COURIERS,
+  isOnDemandSameDayOption,
+  isWithinSameDayWindow,
+  parseOriginCoords,
+} from "@/lib/shipping/on-demand-coords";
 
 const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
 
@@ -79,6 +84,22 @@ export async function POST(req: Request) {
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
       return Response.json({ success: false, error: "Permintaan tidak valid." }, { status: 400 });
+    }
+
+    // Block Same Day on-demand (Gojek/Grab) outside Biteship pickup window — would be
+    // rejected at settlement and leave the order stuck without a shipment.
+    if (
+      isOnDemandSameDayOption(parsed.data.courierCode, parsed.data.serviceCode) &&
+      !isWithinSameDayWindow()
+    ) {
+      return Response.json(
+        {
+          success: false,
+          error:
+            "Layanan Same Day hanya tersedia pukul 06:00–14:00 WIB. Pilih kurir lain atau pesan kembali besok pagi.",
+        },
+        { status: 400 },
+      );
     }
 
     const auth = await createClient();
