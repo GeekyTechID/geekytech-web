@@ -129,7 +129,7 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
   for (const v of normalizedVariants) {
     if (!imageIdByUrl.has(v.image_url)) {
       await supabase.from("products").delete().eq("id", product.id);
-      return { error: "Foto varian tidak valid, coba upload ulang." };
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
     }
   }
 
@@ -177,6 +177,18 @@ export async function updateProduct(
     ...v,
     sku: normalizeSku(v.sku),
   }));
+
+  // Pre-flight: validate every variant's image_url resolves against the
+  // INCOMING payload before any destructive image mutation happens. Without
+  // this, a doomed-to-fail submission would delete the old product_images
+  // rows first, leaving existing variants with a now-dangling image_id that
+  // silently becomes NULL (ON DELETE SET NULL) even though we return an error.
+  const incomingImageUrls = new Set(data.images.map((img) => img.url));
+  for (const v of normalizedVariants) {
+    if (!incomingImageUrls.has(v.image_url)) {
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
+    }
+  }
 
   const { error } = await supabase
     .from("products")
@@ -228,7 +240,7 @@ export async function updateProduct(
 
   for (const v of normalizedVariants) {
     if (!imageIdByUrl.has(v.image_url)) {
-      return { error: "Foto varian tidak valid, coba upload ulang." };
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
     }
   }
 
