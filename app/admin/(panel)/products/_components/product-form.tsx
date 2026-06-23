@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUploader, type ImageItem } from "./image-uploader";
+import { VariantImagePicker } from "./variant-image-picker";
 import { createProduct, updateProduct } from "../_actions";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ const variantSchema = z.object({
   width: z.number().min(0),
   height: z.number().min(0),
   is_active: z.boolean(),
+  image_url: z.string().min(1, "Foto varian wajib diisi"),
 });
 
 const productSchema = z.object({
@@ -82,6 +84,7 @@ type FormValues = {
     width: number;
     height: number;
     is_active: boolean;
+    image_url: string;
   }[];
 };
 
@@ -128,6 +131,7 @@ type DefaultVariant = {
   width: number;
   height: number;
   is_active: boolean;
+  image_url: string;
 };
 
 interface ProductFormProps {
@@ -222,6 +226,7 @@ export function ProductForm({
                 width: 0,
                 height: 0,
                 is_active: true,
+                image_url: "",
               },
             ],
     },
@@ -233,6 +238,7 @@ export function ProductForm({
     handleSubmit,
     watch,
     setValue,
+    getValues,
     setError,
     clearErrors,
     formState: { errors },
@@ -592,6 +598,22 @@ export function ProductForm({
                     {/* Variant body */}
                     {isExpanded && (
                       <div className="grid grid-cols-1 gap-3 border-t border-[#e0e0e0] px-4 pb-4 pt-2 sm:grid-cols-2 lg:grid-cols-3">
+                        <Field
+                          label="Foto Varian"
+                          error={variantErrors?.image_url?.message}
+                          required
+                          className="sm:col-span-2 lg:col-span-3"
+                        >
+                          <VariantImagePicker
+                            images={images}
+                            value={watch(`variants.${i}.image_url`)}
+                            hasError={!!variantErrors?.image_url}
+                            onSelect={(url) =>
+                              setValue(`variants.${i}.image_url`, url, { shouldValidate: true })
+                            }
+                            onUploadNew={(item) => setImages((prev) => [...prev, item])}
+                          />
+                        </Field>
                         <Field label="Nama Varian" error={variantErrors?.name?.message} required>
                           <Input
                             {...register(`variants.${i}.name`)}
@@ -668,16 +690,18 @@ export function ProductForm({
               className="border-dashed"
               onClick={() => {
                 const nextIndex = fields.length;
+                const base = getValues("variants.0");
                 append({
                   name: "",
                   sku: "",
-                  price: 0,
-                  stock: 0,
-                  weight: 500,
-                  length: 0,
-                  width: 0,
-                  height: 0,
-                  is_active: true,
+                  price: base?.price ?? 0,
+                  stock: base?.stock ?? 0,
+                  weight: base?.weight ?? 500,
+                  length: base?.length ?? 0,
+                  width: base?.width ?? 0,
+                  height: base?.height ?? 0,
+                  is_active: base?.is_active ?? true,
+                  image_url: "",
                 });
                 setExpandedVariants((prev) => [...prev, nextIndex]);
               }}
@@ -789,15 +813,17 @@ function Field({
   label,
   error,
   required,
+  className,
   children,
 }: {
   label: string;
   error?: string;
   required?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className={cn("space-y-1.5", className)}>
       <Label
         className={cn(
           labelClass,
