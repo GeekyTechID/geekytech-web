@@ -8,6 +8,8 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 
+import { uploadProductImage } from "./upload-image";
+
 export type ImageItem = {
   url: string;
   is_primary: boolean;
@@ -23,24 +25,12 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  const uploadFile = async (file: File) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("bucket", "products");
-
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-    const json = await res.json();
-
-    if (!res.ok || json.error) throw new Error(json.error ?? "Upload gagal.");
-    return json.url as string;
-  };
-
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     setUploading(true);
     try {
-      const uploads = await Promise.all(Array.from(files).map((f) => uploadFile(f)));
+      const uploads = await Promise.all(Array.from(files).map((f) => uploadProductImage(f)));
 
       const newImages: ImageItem[] = uploads.map((url, i) => ({
         url,
