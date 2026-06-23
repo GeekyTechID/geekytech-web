@@ -112,7 +112,7 @@ export function ProductDetailClient({
   const subtotal = unitPrice * qty;
   const subtotalList = listPrice * qty;
 
-  const images = product.images.length > 0 ? product.images : [{ url: "", alt: product.name, sortOrder: 0 }];
+  const images = product.images.length > 0 ? product.images : [{ id: "", url: "", alt: product.name, sortOrder: 0 }];
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
   const currentImage = images[safeImgIndex];
 
@@ -277,6 +277,8 @@ export function ProductDetailClient({
                             onClick={() => {
                               setVariantId(v.id);
                               setQty((q) => clampQty(q));
+                              const targetIndex = images.findIndex((img) => img.id === v.imageId);
+                              if (targetIndex !== -1) setImgIndex(targetIndex);
                             }}
                           >
                             {v.name}
