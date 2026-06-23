@@ -1197,6 +1197,7 @@ export type Database = {
           created_at: string
           height: number
           id: string
+          image_id: string | null
           is_active: boolean
           length: number
           name: string
@@ -1213,6 +1214,7 @@ export type Database = {
           created_at?: string
           height?: number
           id?: string
+          image_id?: string | null
           is_active?: boolean
           length?: number
           name: string
@@ -1229,6 +1231,7 @@ export type Database = {
           created_at?: string
           height?: number
           id?: string
+          image_id?: string | null
           is_active?: boolean
           length?: number
           name?: string
@@ -1247,6 +1250,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "product_images"
             referencedColumns: ["id"]
           },
         ]
