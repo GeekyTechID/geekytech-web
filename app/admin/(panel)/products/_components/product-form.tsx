@@ -241,8 +241,17 @@ export function ProductForm({
     getValues,
     setError,
     clearErrors,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = form;
+
+  // Varian pertama otomatis ikut Harga Dasar selama admin belum mengubahnya
+  // sendiri (dirtyFields tetap false karena setValue di bawah tidak memicu shouldDirty).
+  const basePriceWatch = watch("base_price");
+  useEffect(() => {
+    if (isEdit) return;
+    if (dirtyFields.variants?.[0]?.price) return;
+    setValue("variants.0.price", basePriceWatch);
+  }, [basePriceWatch, isEdit, dirtyFields.variants, setValue]);
 
   // keyName diubah dari default "id" ke "_key" agar tidak bentrok dengan field
   // data "id" (UUID varian di database). Tanpa ini, RHF memakai field "id" sebagai
@@ -775,7 +784,10 @@ export function ProductForm({
           <Button
             type="button"
             variant="secondary"
-            onClick={() => router.back()}
+            onClick={() => {
+              if (!isEdit) sessionStorage.removeItem(DRAFT_KEY);
+              router.back();
+            }}
             disabled={isPending}
           >
             Batal
