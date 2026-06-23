@@ -43,6 +43,7 @@ type VariantRow = {
   sku: string;
   price: number;
   stock: number;
+  weight: number;
   reserved: number | null;
   is_active: boolean | null;
   image_id: string | null;
@@ -74,11 +75,11 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
     const { data, error } = await supabase
       .from("products")
       .select(
-        `id, brand_id, category_id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, min_order_qty,
+        `id, brand_id, category_id, name, slug, description, base_price, sale_price, condition, average_rating, review_count, total_sold, min_order_qty,
          brands:brand_id(name, slug),
          categories:category_id(name, slug),
          product_images(id, url, alt_text, sort_order, is_primary),
-         product_variants(id, name, sku, price, stock, reserved, is_active, image_id),
+         product_variants(id, name, sku, price, stock, weight, reserved, is_active, image_id),
          product_tags(tag)`,
       )
       .eq("slug", trimmed)
@@ -101,6 +102,7 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
       sku: v.sku,
       price: Number(v.price),
       stock: Math.max(0, v.stock - (v.reserved ?? 0)),
+      weight: Number(v.weight),
       imageId: v.image_id,
     }));
 
@@ -113,6 +115,7 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
       description: data.description ?? null,
       basePrice: Number(data.base_price),
       salePrice: data.sale_price != null ? Number(data.sale_price) : null,
+      condition: data.condition === "second" ? "second" : "new",
       averageRating: Number(data.average_rating ?? 0),
       reviewCount: data.review_count ?? 0,
       totalSold: data.total_sold ?? 0,
