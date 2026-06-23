@@ -31,6 +31,7 @@ export { computeVariantUnitPrice, pickDefaultVariantId } from "@/lib/utils/produ
 type BrandRow = { name: string; slug: string } | null;
 type CategoryRow = { name: string; slug: string } | null;
 type ImageRow = {
+  id: string;
   url: string;
   alt_text: string | null;
   sort_order: number | null;
@@ -44,6 +45,7 @@ type VariantRow = {
   stock: number;
   reserved: number | null;
   is_active: boolean | null;
+  image_id: string | null;
 };
 type TagRow = { tag: string };
 
@@ -56,6 +58,7 @@ function mapImages(rows: ImageRow[] | null | undefined): ProductDetailImage[] {
   if (!rows?.length) return [];
   return [...rows]
     .map((r) => ({
+      id: r.id,
       url: r.url,
       alt: r.alt_text,
       sortOrder: r.sort_order ?? 0,
@@ -74,8 +77,8 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
         `id, brand_id, category_id, name, slug, description, base_price, sale_price, average_rating, review_count, total_sold, min_order_qty,
          brands:brand_id(name, slug),
          categories:category_id(name, slug),
-         product_images(url, alt_text, sort_order, is_primary),
-         product_variants(id, name, sku, price, stock, reserved, is_active),
+         product_images(id, url, alt_text, sort_order, is_primary),
+         product_variants(id, name, sku, price, stock, reserved, is_active, image_id),
          product_tags(tag)`,
       )
       .eq("slug", trimmed)
@@ -98,6 +101,7 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
       sku: v.sku,
       price: Number(v.price),
       stock: Math.max(0, v.stock - (v.reserved ?? 0)),
+      imageId: v.image_id,
     }));
 
     return {
