@@ -4,9 +4,11 @@ export type ProductDetailVariant = {
   sku: string;
   price: number;
   stock: number;
+  imageId: string | null;
 };
 
 export type ProductDetailImage = {
+  id: string;
   url: string;
   alt: string | null;
   sortOrder: number;
