@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AdminTableDeleteButton,
+  AdminTableDetailLink,
   AdminTableEditLink,
 } from "@/components/admin/admin-table-row-actions";
 import {
@@ -458,6 +459,13 @@ export function ProductTable({
                   {/* Actions */}
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
+                      <AdminTableDetailLink
+                        href={`/products/${product.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Lihat
+                      </AdminTableDetailLink>
                       <AdminTableEditLink
                         href={`/admin/products/${product.id}/edit`}
                         appearance="filled"
