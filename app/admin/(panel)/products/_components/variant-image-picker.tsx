@@ -77,10 +77,11 @@ export function VariantImagePicker({
             <p className="p-1 text-xs text-muted-foreground">Belum ada foto di galeri produk.</p>
           ) : (
             <div className="grid grid-cols-4 gap-1.5">
-              {images.map((img) => (
+              {images.map((img, idx) => (
                 <button
                   key={img.url}
                   type="button"
+                  aria-label={`Pilih foto ${idx + 1}`}
                   onClick={() => {
                     onSelect(img.url);
                     setOpen(false);
