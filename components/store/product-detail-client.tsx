@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -77,27 +77,6 @@ export function ProductDetailClient({
   const [reviewIndex, setReviewIndex] = useState(0);
   const [shareOpen, setShareOpen] = useState(false);
   const thumbContainerRef = useRef<HTMLDivElement>(null);
-  const thumbScrollLockRef = useRef<number | null>(null);
-
-  // Restore thumbnail strip scroll position after chevron-triggered re-renders
-  useLayoutEffect(() => {
-    if (thumbScrollLockRef.current === null || !thumbContainerRef.current) return;
-    thumbContainerRef.current.scrollLeft = thumbScrollLockRef.current;
-    thumbScrollLockRef.current = null;
-  });
-
-  // Scroll active variant thumbnail into view when selected variant changes
-  useEffect(() => {
-    if (!thumbContainerRef.current || !variant?.imageId) return;
-    const idx = images.findIndex((img) => img.id === variant.imageId);
-    if (idx === -1) return;
-    (thumbContainerRef.current.children[idx] as HTMLElement | undefined)?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "nearest",
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variantId]);
 
   // Fetch wishlist state client-side so the product page can be ISR-cached
   useEffect(() => {
@@ -143,6 +122,17 @@ export function ProductDetailClient({
   const images = product.images.length > 0 ? product.images : [{ id: "", url: "", alt: product.name, sortOrder: 0 }];
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
   const currentImage = images[safeImgIndex];
+
+  // Scroll active thumbnail into view whenever the displayed image changes
+  useEffect(() => {
+    if (!thumbContainerRef.current) return;
+    (thumbContainerRef.current.children[safeImgIndex] as HTMLElement | undefined)?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [safeImgIndex]);
 
   const variantImage = useMemo(() => {
     if (!variant?.imageId) return images[0] ?? null;
@@ -250,14 +240,11 @@ export function ProductDetailClient({
                     <div className="mt-3 flex items-center gap-2">
                       <CarouselNavButton
                         direction="prev"
-                        onClick={() => {
-                          thumbScrollLockRef.current = thumbContainerRef.current?.scrollLeft ?? 0;
-                          setImgIndex((i) => (i - 1 + images.length) % images.length);
-                        }}
+                        onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
                       />
                       <div ref={thumbContainerRef} className="flex flex-1 gap-2 overflow-x-auto scrollbar-none">
                         {images.map((im, i) => {
-                          const isActive = variant?.imageId ? im.id === variant.imageId : i === safeImgIndex;
+                          const isActive = i === safeImgIndex;
                           return (
                             <Button
                               key={`${im.url}-${i}`}
@@ -281,10 +268,7 @@ export function ProductDetailClient({
                       </div>
                       <CarouselNavButton
                         direction="next"
-                        onClick={() => {
-                          thumbScrollLockRef.current = thumbContainerRef.current?.scrollLeft ?? 0;
-                          setImgIndex((i) => (i + 1) % images.length);
-                        }}
+                        onClick={() => setImgIndex((i) => (i + 1) % images.length)}
                       />
                     </div>
                   ) : null}
