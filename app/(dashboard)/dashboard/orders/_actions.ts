@@ -7,9 +7,11 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
+import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
 import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
+import { refundDurationText } from "@/lib/midtrans/refund-duration";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -117,15 +119,30 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
           console.error("[cancelOrderAction] Midtrans cancel failed:", midtransResult.error);
         }
       } else if (st === "paid" || st === "processing") {
+        const { data: paymentRow } = await svc
+          .from("payments")
+          .select("gross_amount, payment_type")
+          .eq("midtrans_order_id", row.order_number)
+          .maybeSingle();
+        const amount = Number(paymentRow?.gross_amount ?? 0);
         const midtransResult = await refundMidtransTransaction(
           row.order_number,
           "Dibatalkan oleh pelanggan",
+          amount,
         );
         if (midtransResult.ok) {
           await svc
             .from("payments")
             .update({ status: "refunded" })
             .eq("midtrans_order_id", row.order_number);
+          const duration = refundDurationText(paymentRow?.payment_type);
+          await createNotification({
+            userId: user.id,
+            title: "Refund Sedang Diproses",
+            body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${row.order_number} sedang diproses. Estimasi pengembalian: ${duration}.`,
+            type: "payment_refunded",
+            data: { orderId, orderNumber: row.order_number },
+          });
         } else {
           console.error("[cancelOrderAction] Midtrans refund failed:", midtransResult.error);
         }

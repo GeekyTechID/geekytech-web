@@ -5,6 +5,7 @@ export type MidtransRefundResult =
 export async function refundMidtransTransaction(
   midtransOrderId: string,
   reason: string,
+  amount: number,
 ): Promise<MidtransRefundResult> {
   const serverKey = process.env.MIDTRANS_SERVER_KEY?.trim();
   if (!serverKey) return { ok: false, error: "MIDTRANS_SERVER_KEY tidak dikonfigurasi." };
@@ -24,7 +25,7 @@ export async function refundMidtransTransaction(
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ reason, refund_key: midtransOrderId }),
+      body: JSON.stringify({ reason, amount, refund_key: midtransOrderId }),
     });
 
     const json = (await res.json()) as Record<string, unknown>;

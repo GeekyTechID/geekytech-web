@@ -8,6 +8,7 @@ import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
 import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
+import { refundDurationText } from "@/lib/midtrans/refund-duration";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
@@ -183,12 +184,28 @@ export async function updateOrderStatus(
         console.error("[updateOrderStatus] Midtrans cancel failed:", midtransResult.error);
       }
     } else if (prevStatus === "paid" || prevStatus === "processing") {
-      const midtransResult = await refundMidtransTransaction(orderNum, "Dibatalkan oleh admin");
+      const { data: paymentRow } = await supabase
+        .from("payments")
+        .select("gross_amount, payment_type")
+        .eq("midtrans_order_id", orderNum)
+        .maybeSingle();
+      const amount = Number(paymentRow?.gross_amount ?? 0);
+      const midtransResult = await refundMidtransTransaction(orderNum, "Dibatalkan oleh admin", amount);
       if (midtransResult.ok) {
         await supabase
           .from("payments")
           .update({ status: "refunded" })
           .eq("midtrans_order_id", orderNum);
+        if (currentOrder?.user_id) {
+          const duration = refundDurationText(paymentRow?.payment_type);
+          await createNotification({
+            userId: currentOrder.user_id as string,
+            title: "Refund Sedang Diproses",
+            body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${orderNum} sedang diproses. Estimasi pengembalian: ${duration}.`,
+            type: "payment_refunded",
+            data: { orderId, orderNumber: orderNum },
+          });
+        }
       } else {
         console.error("[updateOrderStatus] Midtrans refund failed:", midtransResult.error);
       }
