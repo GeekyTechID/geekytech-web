@@ -231,25 +231,28 @@ export function ProductDetailClient({
                         onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
                       />
                       <div className="flex flex-1 gap-2 overflow-x-auto scrollbar-none">
-                        {images.map((im, i) => (
-                          <Button
-                            key={`${im.url}-${i}`}
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setImgIndex(i)}
-                            className={cn(
-                              "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
-                              i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
-                            )}
-                            aria-label={`Gambar ${i + 1}`}
-                            aria-current={i === safeImgIndex ? "true" : undefined}
-                          >
-                            {im.url ? (
-                              <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
-                            ) : null}
-                          </Button>
-                        ))}
+                        {images.map((im, i) => {
+                          const isVariantImage = im.id === variant?.imageId;
+                          return (
+                            <Button
+                              key={`${im.url}-${i}`}
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => setImgIndex(i)}
+                              className={cn(
+                                "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
+                                isVariantImage ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
+                              )}
+                              aria-label={`Gambar ${i + 1}`}
+                              aria-current={isVariantImage ? "true" : undefined}
+                            >
+                              {im.url ? (
+                                <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
+                              ) : null}
+                            </Button>
+                          );
+                        })}
                       </div>
                       <CarouselNavButton
                         direction="next"
