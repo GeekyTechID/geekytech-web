@@ -110,7 +110,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           aria-label="Buka website"
         >
           <ExternalLink size={13} />
-          <span className="hidden text-sm font-medium lg:inline">Website</span>
+          <span className="hidden text-sm font-medium lg:inline">Ke Web GeekyTech</span>
         </Link>
 
         <AdminNotificationBell />

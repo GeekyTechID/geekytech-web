@@ -249,7 +249,7 @@ function NavAdmin() {
               <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
                 <Link href="/" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" />
-                  Lihat Website
+                  Ke Web GeekyTech
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

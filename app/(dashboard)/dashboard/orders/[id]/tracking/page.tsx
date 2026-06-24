@@ -336,14 +336,6 @@ export default async function OrderTrackingPage({
                         </p>
                       </div>
                     </div>
-                    <a
-                      href={externalLink ?? `https://track.biteship.com/${s.awb}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 text-[12px] font-semibold text-[#EA5329] underline-offset-2 hover:underline"
-                    >
-                      Lacak di kurir ↗
-                    </a>
                   </div>
 
                   {/* Current status badge */}
