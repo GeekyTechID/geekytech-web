@@ -411,3 +411,37 @@ export async function sendComplaintMessageAction(
   revalidatePath(`/dashboard/orders`);
   return { success: true };
 }
+
+export async function submitReturnAWBAction(
+  returnId: string,
+  returnAwb: string,
+  returnCourier: string,
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Tidak terautentikasi." };
+
+  const { data: ret } = await supabase
+    .from("returns")
+    .select("id, status")
+    .eq("id", returnId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!ret || ret.status !== "pending_shipback") {
+    return { success: false, error: "Pengajuan retur tidak ditemukan atau sudah diproses." };
+  }
+
+  const { error } = await supabase
+    .from("returns")
+    .update({
+      return_awb: returnAwb.trim(),
+      return_courier: returnCourier.trim(),
+      status: "shipped_back",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", returnId);
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
