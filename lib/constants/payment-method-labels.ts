@@ -1,0 +1,13 @@
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  bca_va: "BCA Virtual Account",
+  bni_va: "BNI Virtual Account",
+  bri_va: "BRI Virtual Account",
+  permata_va: "Permata Virtual Account",
+  echannel: "Mandiri Bill Payment",
+  gopay: "GoPay",
+  shopeepay: "ShopeePay",
+  qris: "QRIS",
+  indomaret: "Indomaret",
+  alfamart: "Alfamart",
+  credit_card: "Kartu Kredit",
+};
