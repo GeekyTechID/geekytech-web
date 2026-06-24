@@ -8,6 +8,8 @@ import type { Database, Json } from "@/types/supabase";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
+import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
+import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -103,6 +105,29 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
             .from("products")
             .update({ total_sold: Math.max(0, p.total_sold - qty) })
             .eq("id", productId);
+        }
+      }
+    }
+
+    // Midtrans: cancel/refund best-effort
+    if (row.order_number) {
+      if (st === "pending_payment") {
+        const midtransResult = await cancelMidtransTransaction(row.order_number);
+        if (!midtransResult.ok) {
+          console.error("[cancelOrderAction] Midtrans cancel failed:", midtransResult.error);
+        }
+      } else if (st === "paid") {
+        const midtransResult = await refundMidtransTransaction(
+          row.order_number,
+          "Dibatalkan oleh pelanggan",
+        );
+        if (midtransResult.ok) {
+          await svc
+            .from("payments")
+            .update({ status: "refunded" })
+            .eq("midtrans_order_id", row.order_number);
+        } else {
+          console.error("[cancelOrderAction] Midtrans refund failed:", midtransResult.error);
         }
       }
     }
