@@ -61,3 +61,25 @@ export async function updateAdminNote(
   revalidatePath(`/admin/complaints/${complaintId}`);
   return {};
 }
+
+export async function sendAdminComplaintMessage(
+  complaintId: string,
+  message: string,
+): Promise<{ error?: string }> {
+  const { createClient: createAuthClient } = await import("@/lib/supabase/server");
+  const authClient = await createAuthClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  if (!user) return { error: "Tidak terautentikasi." };
+
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from("complaint_messages").insert({
+    complaint_id: complaintId,
+    sender_id: user.id,
+    sender_role: "admin",
+    message: message.trim(),
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/complaints/${complaintId}`);
+  return {};
+}

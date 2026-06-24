@@ -383,3 +383,31 @@ export async function getRetryPaymentWhatsAppLink(orderNumber: string): Promise<
     return { success: false, error: "Terjadi kesalahan." };
   }
 }
+
+export async function sendComplaintMessageAction(
+  complaintId: string,
+  message: string,
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Tidak terautentikasi." };
+
+  const { data: complaint } = await supabase
+    .from("complaints")
+    .select("id")
+    .eq("id", complaintId)
+    .eq("user_id", user.id)
+    .single();
+  if (!complaint) return { success: false, error: "Komplain tidak ditemukan." };
+
+  const { error } = await supabase.from("complaint_messages").insert({
+    complaint_id: complaintId,
+    sender_id: user.id,
+    sender_role: "user",
+    message: message.trim(),
+  });
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath(`/dashboard/orders`);
+  return { success: true };
+}
