@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import Link from "next/link";
+import { useState, useMemo, useCallback, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import { CartLineCard } from "@/components/store/cart-line-card";
 import type { CartLineView } from "@/components/store/cart-line-card";
@@ -12,6 +12,8 @@ import { formatRupiah } from "@/lib/format";
 const SERVICE_FEE = 1000;
 
 export function CartClientShell({ lines }: { lines: CartLineView[] }) {
+  const router = useRouter();
+  const [checkoutPending, startCheckoutTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     () => new Set(lines.map((l) => l.lineId)),
   );
@@ -132,10 +134,14 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
               Pilih produk dahulu
             </Button>
           ) : (
-            <Button asChild variant="primary" className="mt-6 w-full">
-              <Link href={`/checkout?items=${[...selectedIds].join(",")}`}>
-                Beli sekarang ({selectedIds.size} produk)
-              </Link>
+            <Button
+              variant="primary"
+              className="mt-6 w-full"
+              loading={checkoutPending}
+              disabled={checkoutPending}
+              onClick={() => startCheckoutTransition(() => router.push(`/checkout?items=${[...selectedIds].join(",")}`))}
+            >
+              Beli sekarang ({selectedIds.size} produk)
             </Button>
           )}
         </div>

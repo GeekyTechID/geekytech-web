@@ -54,7 +54,8 @@ export function ProductDetailClient({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  const [isPending, startTransition] = useTransition();
+  const [cartPending, startCartTransition] = useTransition();
+  const [wishlistPending, startWishlistTransition] = useTransition();
   const incrementCart = useCartStore((s) => s.incrementCart);
   const setOpenChat = useChatStore((s) => s.setOpen);
   const setProductContext = useChatStore((s) => s.setProductContext);
@@ -138,7 +139,7 @@ export function ProductDetailClient({
       return;
     }
     const q = clampQty(qty);
-    startTransition(async () => {
+    startCartTransition(async () => {
       const res = await addVariantToCart(variant.id, q);
       if (!res.success) {
         toast.error(res.error);
@@ -164,7 +165,7 @@ export function ProductDetailClient({
   };
 
   const handleWishlist = () => {
-    startTransition(async () => {
+    startWishlistTransition(async () => {
       const res = await toggleWishlistProduct(product.id);
       if (!res.success) {
         toast.error(res.error);
@@ -354,12 +355,12 @@ export function ProductDetailClient({
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                   <QuantityStepper
                     value={qty}
                     min={minQty}
                     max={maxQty}
-                    disabled={isPending}
+                    disabled={cartPending || wishlistPending}
                     size="compact"
                     className="py-0"
                     onDecrease={() => setQty((q) => clampQty(q - 1))}
@@ -374,7 +375,7 @@ export function ProductDetailClient({
                   </p>
                 </div>
 
-                <div className="mt-8 space-y-2 border-t border-[#eadfd8] pt-6">
+                <div className="mt-5 space-y-2 border-t border-[#eadfd8] pt-4">
                   <p className="text-sm text-[#7a7a7a]">
                     Subtotal{" "}
                     <span className="text-xl font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
@@ -393,8 +394,7 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="primary"
-                    size="sm"
-                    disabled={!variant || variant.stock < 1 || isPending}
+                    disabled={!variant || variant.stock < 1 || cartPending}
                     onClick={handleBuyNow}
                     className="w-full"
                   >
@@ -403,8 +403,8 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="secondary"
-                    size="sm"
-                    disabled={!variant || variant.stock < 1 || isPending}
+                    disabled={!variant || variant.stock < 1 || cartPending}
+                    loading={cartPending}
                     onClick={handleAddCart}
                     className="w-full"
                   >
@@ -442,7 +442,7 @@ export function ProductDetailClient({
                     variant="link"
                     size="xs"
                     onClick={handleWishlist}
-                    loading={isPending}
+                    loading={wishlistPending}
                     className={cn("gap-1 whitespace-nowrap px-0", inWishlist && "text-brand")}
                   >
                     <Heart className={cn("h-3.5 w-3.5", inWishlist && "fill-current")} aria-hidden />
