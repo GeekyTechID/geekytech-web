@@ -232,7 +232,11 @@ export function ProductDetailClient({
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => setImgIndex(i)}
+                            onClick={() => {
+                              setImgIndex(i);
+                              const matchingVariant = product.variants.find((v) => v.imageId === im.id);
+                              if (matchingVariant) setVariantId(matchingVariant.id);
+                            }}
                             className={cn(
                               "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
                               i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
