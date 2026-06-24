@@ -53,3 +53,6 @@ CLAUDE.md
 
 # infra access (sensitive — local only, never commit)
 docs/vps-access/
+
+# git worktrees (local isolation, never commit)
+/.worktrees/

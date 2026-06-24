@@ -4,9 +4,12 @@ export type ProductDetailVariant = {
   sku: string;
   price: number;
   stock: number;
+  weight: number;
+  imageId: string | null;
 };
 
 export type ProductDetailImage = {
+  id: string;
   url: string;
   alt: string | null;
   sortOrder: number;
@@ -31,6 +34,7 @@ export type ProductDetailPublic = {
   description: string | null;
   basePrice: number;
   salePrice: number | null;
+  condition: "new" | "second";
   averageRating: number;
   reviewCount: number;
   totalSold: number;

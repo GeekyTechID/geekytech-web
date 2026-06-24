@@ -132,7 +132,7 @@ export function AdminShell({
               aria-label="Buka website"
             >
               <ExternalLink className="size-3.5" />
-              <span className="hidden lg:inline">Website</span>
+              <span className="hidden lg:inline">Ke Web GeekyTech</span>
             </Link>
             <AdminNotificationBell />
           </div>

@@ -54,7 +54,8 @@ export function ProductDetailClient({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  const [isPending, startTransition] = useTransition();
+  const [cartPending, startCartTransition] = useTransition();
+  const [wishlistPending, startWishlistTransition] = useTransition();
   const incrementCart = useCartStore((s) => s.incrementCart);
   const setOpenChat = useChatStore((s) => s.setOpen);
   const setProductContext = useChatStore((s) => s.setProductContext);
@@ -64,7 +65,12 @@ export function ProductDetailClient({
   );
   const [variantId, setVariantId] = useState<string | null>(defaultId);
   const [qty, setQty] = useState(product.minOrderQty);
-  const [imgIndex, setImgIndex] = useState(0);
+  const [imgIndex, setImgIndex] = useState(() => {
+    const defaultVariant = product.variants.find((v) => v.id === defaultId) ?? product.variants[0] ?? null;
+    if (!defaultVariant) return 0;
+    const idx = product.images.findIndex((img) => img.id === defaultVariant.imageId);
+    return idx !== -1 ? idx : 0;
+  });
   const [descExpanded, setDescExpanded] = useState(false);
   const [detailTab, setDetailTab] = useState<"detail" | "extra">("detail");
   const [inWishlist, setInWishlist] = useState(initialInWishlist ?? false);
@@ -112,7 +118,7 @@ export function ProductDetailClient({
   const subtotal = unitPrice * qty;
   const subtotalList = listPrice * qty;
 
-  const images = product.images.length > 0 ? product.images : [{ url: "", alt: product.name, sortOrder: 0 }];
+  const images = product.images.length > 0 ? product.images : [{ id: "", url: "", alt: product.name, sortOrder: 0 }];
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
   const currentImage = images[safeImgIndex];
 
@@ -133,7 +139,7 @@ export function ProductDetailClient({
       return;
     }
     const q = clampQty(qty);
-    startTransition(async () => {
+    startCartTransition(async () => {
       const res = await addVariantToCart(variant.id, q);
       if (!res.success) {
         toast.error(res.error);
@@ -159,7 +165,7 @@ export function ProductDetailClient({
   };
 
   const handleWishlist = () => {
-    startTransition(async () => {
+    startWishlistTransition(async () => {
       const res = await toggleWishlistProduct(product.id);
       if (!res.success) {
         toast.error(res.error);
@@ -193,10 +199,10 @@ export function ProductDetailClient({
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row justify-between gap-10">
             <div className="min-w-0 ">
-              <div className="flex flex-col lg:flex-row justify-between gap-8 sm:items-start">
+              <div className="flex flex-col lg:flex-row lg:h-full lg:items-stretch justify-between gap-8 sm:items-start">
                 {/* Galeri */}
-                <div className="mx-auto min-w-0 w-full max-w-[280px] sm:mx-0 sm:max-w-[380px] md:max-w-[440px] lg:max-w-[480px]">
-                  <div className="relative aspect-square w-full overflow-hidden">
+                <div className="mx-auto min-w-0 w-full max-w-[280px] sm:mx-0 sm:max-w-[380px] md:max-w-[440px] lg:flex lg:max-w-[480px] lg:flex-col">
+                  <div className="relative aspect-square w-full overflow-hidden lg:aspect-auto lg:min-h-0 lg:flex-1">
                     {currentImage.url ? (
                       <Image
                         key={currentImage.url}
@@ -212,54 +218,47 @@ export function ProductDetailClient({
                         Tanpa gambar
                       </div>
                     )}
-                    {images.length > 1 ? (
-                      <>
-                        <div className="absolute left-2 top-1/2 -translate-y-1/2">
-                          <CarouselNavButton
-                            direction="prev"
-                            surface="on-photo"
-                            onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                          />
-                        </div>
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                          <CarouselNavButton
-                            direction="next"
-                            surface="on-photo"
-                            onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                          />
-                        </div>
-                      </>
-                    ) : null}
                   </div>
                   {images.length > 1 ? (
-                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                      {images.map((im, i) => (
-                        <Button
-                          key={`${im.url}-${i}`}
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setImgIndex(i)}
-                          className={cn(
-                            "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
-                            i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
-                          )}
-                          aria-label={`Gambar ${i + 1}`}
-                          aria-current={i === safeImgIndex ? "true" : undefined}
-                        >
-                          {im.url ? (
-                            <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
-                          ) : null}
-                        </Button>
-                      ))}
+                    <div className="mt-3 flex items-center gap-2">
+                      <CarouselNavButton
+                        direction="prev"
+                        onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
+                      />
+                      <div className="flex flex-1 gap-2 overflow-x-auto scrollbar-none">
+                        {images.map((im, i) => (
+                          <Button
+                            key={`${im.url}-${i}`}
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setImgIndex(i)}
+                            className={cn(
+                              "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
+                              i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
+                            )}
+                            aria-label={`Gambar ${i + 1}`}
+                            aria-current={i === safeImgIndex ? "true" : undefined}
+                          >
+                            {im.url ? (
+                              <Image src={im.url} alt="" fill className="object-contain p-1" sizes="64px" />
+                            ) : null}
+                          </Button>
+                        ))}
+                      </div>
+                      <CarouselNavButton
+                        direction="next"
+                        onClick={() => setImgIndex((i) => (i + 1) % images.length)}
+                      />
                     </div>
                   ) : null}
                 </div>
 
                 {/* Judul, kategori, varian, rating, harga */}
                 <div className="min-w-0 space-y-3">
-                  <h1 className="text-base font-semibold leading-snug">
+                  <h1 className="text-xl font-semibold leading-snug">
                     {product.name}
+                    {variant ? ` - ${variant.name}` : ""}
                   </h1>
                   {product.category ? (
                     <p className="text-[17px] text-[#7a7a7a]">{product.category.name}</p>
@@ -277,6 +276,8 @@ export function ProductDetailClient({
                             onClick={() => {
                               setVariantId(v.id);
                               setQty((q) => clampQty(q));
+                              const targetIndex = images.findIndex((img) => img.id === v.imageId);
+                              if (targetIndex !== -1) setImgIndex(targetIndex);
                             }}
                           >
                             {v.name}
@@ -302,13 +303,36 @@ export function ProductDetailClient({
                   </div>
 
                   <div className="space-y-2 border-t border-[#f0f0f0] pt-5">
-                    <p className="text-lg font-bold">{formatRupiah(unitPrice)}</p>
+                    <p className="text-xl font-bold">{formatRupiah(unitPrice)}</p>
                     {discountPercent != null && discountPercent > 0 ? (
                       <div className="flex flex-wrap items-center gap-2 text-[17px]">
                         <span className="text-[#7a7a7a] line-through">{formatRupiah(listPrice)}</span>
                         <span className="rounded-full bg-[#EA5329]/10 px-2.5 py-0.5 text-xs font-bold text-[#EA5329]">
                           {discountPercent}% off
                         </span>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 border-t border-[#f0f0f0] pt-5 text-sm sm:max-w-sm">
+                    <div>
+                      <p className="text-[#7a7a7a]">Kondisi</p>
+                      <p className="font-medium">{product.condition === "second" ? "Second" : "Baru"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#7a7a7a]">Min. Pembelian</p>
+                      <p className="font-medium">{product.minOrderQty} pcs</p>
+                    </div>
+                    {product.brand ? (
+                      <div>
+                        <p className="text-[#7a7a7a]">Merek</p>
+                        <p className="font-medium">{product.brand.name}</p>
+                      </div>
+                    ) : null}
+                    {variant ? (
+                      <div>
+                        <p className="text-[#7a7a7a]">Berat Satuan</p>
+                        <p className="font-medium">{variant.weight} gram</p>
                       </div>
                     ) : null}
                   </div>
@@ -319,12 +343,26 @@ export function ProductDetailClient({
             {/* Kartu belanja */}
             <aside className="w-full shrink-0 lg:min-w-[19rem] lg:max-w-[21rem] xl:min-w-[20rem] xl:max-w-[22rem]">
               <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-6 lg:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3 border-b border-[#eadfd8] pb-5">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white">
+                    {currentImage.url ? (
+                      <Image src={currentImage.url} alt={currentImage.alt ?? product.name} fill className="object-contain p-1" sizes="56px" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{product.name}</p>
+                    {variant ? <p className="text-xs text-[#7a7a7a]">{variant.name}</p> : null}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                   <QuantityStepper
                     value={qty}
                     min={minQty}
                     max={maxQty}
-                    disabled={isPending}
+                    disabled={cartPending || wishlistPending}
+                    size="compact"
+                    className="py-0"
                     onDecrease={() => setQty((q) => clampQty(q - 1))}
                     onIncrease={() => setQty((q) => clampQty(q + 1))}
                   />
@@ -337,7 +375,7 @@ export function ProductDetailClient({
                   </p>
                 </div>
 
-                <div className="mt-8 space-y-2 border-t border-[#eadfd8] pt-6">
+                <div className="mt-5 space-y-2 border-t border-[#eadfd8] pt-4">
                   <p className="text-sm text-[#7a7a7a]">
                     Subtotal{" "}
                     <span className="text-xl font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
@@ -356,7 +394,7 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="primary"
-                    disabled={!variant || variant.stock < 1 || isPending}
+                    disabled={!variant || variant.stock < 1 || cartPending}
                     onClick={handleBuyNow}
                     className="w-full"
                   >
@@ -365,7 +403,8 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!variant || variant.stock < 1 || isPending}
+                    disabled={!variant || variant.stock < 1 || cartPending}
+                    loading={cartPending}
                     onClick={handleAddCart}
                     className="w-full"
                   >
@@ -373,11 +412,11 @@ export function ProductDetailClient({
                   </Button>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 border-t border-[#eadfd8] pt-6 text-[14px] font-medium">
+                <div className="mt-6 flex flex-nowrap items-center justify-center gap-x-2 border-t border-[#eadfd8] pt-6 text-xs font-medium">
                   <Button
                     type="button"
                     variant="link"
-                    size="sm"
+                    size="xs"
                     onClick={() => {
                       if (!isAuthenticated) {
                         router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
@@ -390,9 +429,9 @@ export function ProductDetailClient({
                       });
                       setOpenChat(true);
                     }}
-                    className="gap-1.5 text-[#EA5329]"
+                    className="gap-1 whitespace-nowrap px-0 text-[#EA5329]"
                   >
-                    <MessageCircle className="h-4 w-4" aria-hidden />
+                    <MessageCircle className="h-3.5 w-3.5" aria-hidden />
                     Chat
                   </Button>
                   <span className="text-[#e0e0e0]" aria-hidden>
@@ -401,12 +440,12 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="link"
-                    size="sm"
+                    size="xs"
                     onClick={handleWishlist}
-                    loading={isPending}
-                    className={cn("gap-1.5", inWishlist && "text-brand")}
+                    loading={wishlistPending}
+                    className={cn("gap-1 whitespace-nowrap px-0", inWishlist && "text-brand")}
                   >
-                    <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} aria-hidden />
+                    <Heart className={cn("h-3.5 w-3.5", inWishlist && "fill-current")} aria-hidden />
                     Wishlist
                   </Button>
                   <span className="text-[#e0e0e0]" aria-hidden>
@@ -415,11 +454,11 @@ export function ProductDetailClient({
                   <Button
                     type="button"
                     variant="link"
-                    size="sm"
+                    size="xs"
                     onClick={() => setShareOpen(true)}
-                    className="gap-1.5 text-[#EA5329]"
+                    className="gap-1 whitespace-nowrap px-0 text-[#EA5329]"
                   >
-                    <Share2 className="h-4 w-4" aria-hidden />
+                    <Share2 className="h-3.5 w-3.5" aria-hidden />
                     Share
                   </Button>
                   <ProductShareDialog

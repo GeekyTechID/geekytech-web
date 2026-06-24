@@ -456,9 +456,45 @@ export type Database = {
           },
         ]
       }
+      complaint_messages: {
+        Row: {
+          complaint_id: string
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          complaint_id: string
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          sender_role: string
+        }
+        Update: {
+          complaint_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_messages_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaints: {
         Row: {
           admin_note: string | null
+          category: string
           created_at: string
           description: string | null
           id: string
@@ -473,6 +509,7 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -487,6 +524,7 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -902,6 +940,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_viewed_at: string | null
           app_fee: number
           coupon_code: string | null
           coupon_id: string | null
@@ -909,6 +948,7 @@ export type Database = {
           courier_etd: string | null
           courier_service: string | null
           created_at: string
+          delivered_at: string | null
           discount_amount: number
           id: string
           notes: string | null
@@ -931,6 +971,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_viewed_at?: string | null
           app_fee?: number
           coupon_code?: string | null
           coupon_id?: string | null
@@ -938,6 +979,7 @@ export type Database = {
           courier_etd?: string | null
           courier_service?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number
           id?: string
           notes?: string | null
@@ -960,6 +1002,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_viewed_at?: string | null
           app_fee?: number
           coupon_code?: string | null
           coupon_id?: string | null
@@ -967,6 +1010,7 @@ export type Database = {
           courier_etd?: string | null
           courier_service?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number
           id?: string
           notes?: string | null
@@ -1197,6 +1241,7 @@ export type Database = {
           created_at: string
           height: number
           id: string
+          image_id: string | null
           is_active: boolean
           length: number
           name: string
@@ -1213,6 +1258,7 @@ export type Database = {
           created_at?: string
           height?: number
           id?: string
+          image_id?: string | null
           is_active?: boolean
           length?: number
           name: string
@@ -1229,6 +1275,7 @@ export type Database = {
           created_at?: string
           height?: number
           id?: string
+          image_id?: string | null
           is_active?: boolean
           length?: number
           name?: string
@@ -1242,6 +1289,13 @@ export type Database = {
           width?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "product_variants_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "product_images"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_variants_product_id_fkey"
             columns: ["product_id"]
@@ -1521,6 +1575,105 @@ export type Database = {
         }
         Relationships: []
       }
+      return_shipments: {
+        Row: {
+          awb_number: string | null
+          biteship_order_id: string | null
+          courier: string | null
+          created_at: string
+          id: string
+          return_id: string
+          status: string | null
+        }
+        Insert: {
+          awb_number?: string | null
+          biteship_order_id?: string | null
+          courier?: string | null
+          created_at?: string
+          id?: string
+          return_id: string
+          status?: string | null
+        }
+        Update: {
+          awb_number?: string | null
+          biteship_order_id?: string | null
+          courier?: string | null
+          created_at?: string
+          id?: string
+          return_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_shipments_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      returns: {
+        Row: {
+          admin_note: string | null
+          complaint_id: string
+          created_at: string
+          id: string
+          order_id: string
+          return_awb: string | null
+          return_courier: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          complaint_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          return_awb?: string | null
+          return_courier?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          complaint_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          return_awb?: string | null
+          return_courier?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           id: string
@@ -1558,6 +1711,7 @@ export type Database = {
           raw_response: Json | null
           status: Database["public"]["Enums"]["shipment_status"]
           tracking_history: Json
+          tracking_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1575,6 +1729,7 @@ export type Database = {
           raw_response?: Json | null
           status?: Database["public"]["Enums"]["shipment_status"]
           tracking_history?: Json
+          tracking_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1592,6 +1747,7 @@ export type Database = {
           raw_response?: Json | null
           status?: Database["public"]["Enums"]["shipment_status"]
           tracking_history?: Json
+          tracking_id?: string | null
           updated_at?: string
         }
         Relationships: [

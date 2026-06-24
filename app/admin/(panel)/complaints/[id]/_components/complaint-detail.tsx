@@ -10,6 +10,8 @@ import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { updateComplaintStatus, updateAdminNote, type ComplaintStatus } from "../../_actions";
+import { AdminComplaintThread } from "./admin-complaint-thread";
+import { ReturnManager } from "./return-manager";
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
@@ -35,6 +37,7 @@ const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 export type ComplaintDetail = {
   id: string;
   type: string;
+  category: string | null;
   reason: string;
   description: string | null;
   status: string;
@@ -42,8 +45,39 @@ export type ComplaintDetail = {
   images: string[];
   created_at: string;
   resolved_at: string | null;
-  orders: { id: string; order_number: string } | null;
+  user_id: string;
+  orders: {
+    id: string;
+    order_number: string;
+    shipping_address: string | null;
+    recipient_phone: string | null;
+    recipient_name: string | null;
+    order_items: {
+      product_name: string;
+      price: number;
+      quantity: number;
+      variant_id: string | null;
+      weight: number;
+    }[];
+  } | null;
   profiles: { full_name: string | null; phone: string | null } | null;
+  complaint_messages: {
+    id: string;
+    sender_role: string;
+    message: string;
+    created_at: string;
+  }[];
+  returns: {
+    id: string;
+    status: string;
+    return_awb: string | null;
+    return_courier: string | null;
+    return_shipments: {
+      awb_number: string | null;
+      courier: string | null;
+      status: string | null;
+    }[];
+  } | null;
 };
 
 interface ComplaintDetailProps {
@@ -181,6 +215,18 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
               </Button>
             </div>
           </div>
+
+          <div className="admin-utility-card overflow-hidden p-0">
+            <div className="admin-utility-card-header">
+              <h2 className="admin-section-title">Pesan</h2>
+            </div>
+            <div className="p-6">
+              <AdminComplaintThread
+                complaintId={complaint.id}
+                messages={complaint.complaint_messages ?? []}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -266,6 +312,40 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
               )}
             </div>
           </div>
+
+          {complaint.type === "return" && (
+            <div className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Retur</h2>
+              </div>
+              <div className="p-6">
+                <ReturnManager
+                  complaintId={complaint.id}
+                  complaintStatus={complaint.status}
+                  returnData={complaint.returns}
+                  order={
+                    complaint.orders
+                      ? {
+                          id: complaint.orders.id,
+                          order_number: complaint.orders.order_number,
+                          shipping_address: complaint.orders.shipping_address ?? "",
+                          shipping_phone: complaint.orders.recipient_phone ?? "",
+                          shipping_name: complaint.orders.recipient_name ?? "",
+                          order_items: (complaint.orders.order_items ?? []).map((item) => ({
+                            product_name: item.product_name,
+                            price: item.price,
+                            quantity: item.quantity,
+                            variant_id: item.variant_id,
+                            weight: item.weight,
+                          })),
+                        }
+                      : null
+                  }
+                  userId={complaint.user_id}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

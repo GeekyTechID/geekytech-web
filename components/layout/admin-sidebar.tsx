@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Moon,
   Package,
+  RotateCcw,
   PackageSearch,
   Settings,
   ShoppingBag,
@@ -116,6 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Chat", href: "/admin/chat", icon: MessageSquare },
       { label: "Ulasan", href: "/admin/reviews", icon: Star },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
+      { label: "Retur", href: "/admin/returns", icon: RotateCcw },
       { label: "Kupon", href: "/admin/coupons", icon: Ticket },
     ],
   },
@@ -249,7 +251,7 @@ function NavAdmin() {
               <DropdownMenuItem asChild className={HEADER_DROPDOWN_MENU_ITEM_CLASS}>
                 <Link href="/" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" />
-                  Lihat Website
+                  Ke Web GeekyTech
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

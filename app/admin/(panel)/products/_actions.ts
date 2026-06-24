@@ -21,6 +21,7 @@ export type VariantInput = {
   width: number;
   height: number;
   is_active: boolean;
+  image_url: string;
 };
 
 export type ProductInput = {
@@ -101,6 +102,37 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
     return { error: error.message };
   }
 
+  // Images must exist before variants so each variant can reference a real
+  // product_images.id via the image_url -> id map built below.
+  const imageIdByUrl = new Map<string, string>();
+  if (data.images.length > 0) {
+    const { data: insertedImages, error: imagesError } = await supabase
+      .from("product_images")
+      .insert(
+        data.images.map((img, i) => ({
+          product_id: product.id,
+          url: img.url,
+          is_primary: img.is_primary,
+          alt_text: img.alt_text || null,
+          sort_order: i,
+        }))
+      )
+      .select("id, url");
+
+    if (imagesError) {
+      await supabase.from("products").delete().eq("id", product.id);
+      return { error: `Gagal menyimpan gambar: ${imagesError.message}` };
+    }
+    for (const img of insertedImages ?? []) imageIdByUrl.set(img.url, img.id);
+  }
+
+  for (const v of normalizedVariants) {
+    if (!imageIdByUrl.has(v.image_url)) {
+      await supabase.from("products").delete().eq("id", product.id);
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
+    }
+  }
+
   const { error: variantsError } = await supabase.from("product_variants").insert(
     normalizedVariants.map((v) => ({
       product_id: product.id,
@@ -113,6 +145,7 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
       width: v.width,
       height: v.height,
       is_active: v.is_active,
+      image_id: imageIdByUrl.get(v.image_url),
     }))
   );
 
@@ -122,24 +155,11 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
     return { error: `Gagal menyimpan varian: ${variantsError.message}` };
   }
 
-  await Promise.all([
-    data.images.length > 0
-      ? supabase.from("product_images").insert(
-          data.images.map((img, i) => ({
-            product_id: product.id,
-            url: img.url,
-            is_primary: img.is_primary,
-            alt_text: img.alt_text || null,
-            sort_order: i,
-          }))
-        )
-      : null,
-    data.tags.length > 0
-      ? supabase.from("product_tags").insert(
-          data.tags.map((tag) => ({ product_id: product.id, tag }))
-        )
-      : null,
-  ]);
+  if (data.tags.length > 0) {
+    await supabase.from("product_tags").insert(
+      data.tags.map((tag) => ({ product_id: product.id, tag }))
+    );
+  }
 
   revalidatePath("/admin/products");
   return { id: product.id };
@@ -157,6 +177,18 @@ export async function updateProduct(
     ...v,
     sku: normalizeSku(v.sku),
   }));
+
+  // Pre-flight: validate every variant's image_url resolves against the
+  // INCOMING payload before any destructive image mutation happens. Without
+  // this, a doomed-to-fail submission would delete the old product_images
+  // rows first, leaving existing variants with a now-dangling image_id that
+  // silently becomes NULL (ON DELETE SET NULL) even though we return an error.
+  const incomingImageUrls = new Set(data.images.map((img) => img.url));
+  for (const v of normalizedVariants) {
+    if (!incomingImageUrls.has(v.image_url)) {
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
+    }
+  }
 
   const { error } = await supabase
     .from("products")
@@ -183,18 +215,33 @@ export async function updateProduct(
     return { error: error.message };
   }
 
-  // Replace images
+  // Replace images, capturing fresh ids so variants below can resolve image_id
   await supabase.from("product_images").delete().eq("product_id", id);
+  const imageIdByUrl = new Map<string, string>();
   if (data.images.length > 0) {
-    await supabase.from("product_images").insert(
-      data.images.map((img, i) => ({
-        product_id: id,
-        url: img.url,
-        is_primary: img.is_primary,
-        alt_text: img.alt_text || null,
-        sort_order: i,
-      }))
-    );
+    const { data: insertedImages, error: imagesError } = await supabase
+      .from("product_images")
+      .insert(
+        data.images.map((img, i) => ({
+          product_id: id,
+          url: img.url,
+          is_primary: img.is_primary,
+          alt_text: img.alt_text || null,
+          sort_order: i,
+        }))
+      )
+      .select("id, url");
+
+    if (imagesError) {
+      return { error: `Gagal menyimpan gambar: ${imagesError.message}` };
+    }
+    for (const img of insertedImages ?? []) imageIdByUrl.set(img.url, img.id);
+  }
+
+  for (const v of normalizedVariants) {
+    if (!imageIdByUrl.has(v.image_url)) {
+      return { error: "Foto salah satu varian tidak ditemukan di galeri. Pilih ulang fotonya dari galeri produk." };
+    }
   }
 
   // Variants: get all existing IDs for this product, including inactive variants
@@ -261,6 +308,8 @@ export async function updateProduct(
   // Phase 2: Apply actual values. All temp SKUs are now cleared so real SKUs can
   // be set freely; a 23505 here only means a genuine external conflict/race.
   for (const v of normalizedVariants) {
+    const imageId = imageIdByUrl.get(v.image_url);
+
     if (v.id && existingIds.includes(v.id)) {
       const { error: updateVariantError } = await supabase
         .from("product_variants")
@@ -274,6 +323,7 @@ export async function updateProduct(
           width: v.width,
           height: v.height,
           is_active: v.is_active,
+          image_id: imageId,
         })
         .eq("id", v.id)
         .eq("product_id", id);
@@ -293,6 +343,7 @@ export async function updateProduct(
         width: v.width,
         height: v.height,
         is_active: v.is_active,
+        image_id: imageId,
       });
       if (insertVariantError) {
         if (insertVariantError.code === "23505") return { error: "SKU varian sudah digunakan produk lain." };

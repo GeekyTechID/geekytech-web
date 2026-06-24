@@ -5,6 +5,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
+import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
+import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
+import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
@@ -54,7 +57,10 @@ export async function updateOrderStatus(
 
   const { error } = await supabase
     .from("orders")
-    .update({ status: newStatus })
+    .update({
+      status: newStatus,
+      ...(newStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+    })
     .eq("id", orderId);
 
   if (error) return { error: error.message };
@@ -117,14 +123,25 @@ export async function updateOrderStatus(
         if (!item.variant_id) continue;
         const { data: v } = await supabase
           .from("product_variants")
-          .select("stock, product_id")
+          .select("stock, reserved, product_id")
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
         await supabase
           .from("product_variants")
-          .update({ stock: v.stock + item.quantity })
+          .update({
+            stock: v.stock + item.quantity,
+            reserved: Math.max(0, v.reserved - item.quantity),
+          })
           .eq("id", item.variant_id);
+        await supabase.from("stock_history").insert({
+          variant_id: item.variant_id,
+          order_id: orderId,
+          quantity: item.quantity,
+          type: "return",
+          note: `Pesanan ${currentOrder?.order_number ?? orderId} dibatalkan oleh admin`,
+          changed_by: null,
+        });
         if (v.product_id) {
           productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
         }
@@ -156,6 +173,51 @@ export async function updateOrderStatus(
     });
 
   if (historyError) console.error("history log failed:", historyError.message);
+
+  // Midtrans cancel/refund on cancellation — best-effort
+  if (newStatus === "cancelled" && currentOrder?.order_number) {
+    const orderNum = currentOrder.order_number as string;
+    if (prevStatus === "pending_payment") {
+      const midtransResult = await cancelMidtransTransaction(orderNum);
+      if (!midtransResult.ok) {
+        console.error("[updateOrderStatus] Midtrans cancel failed:", midtransResult.error);
+      }
+    } else if (prevStatus === "paid" || prevStatus === "processing") {
+      const midtransResult = await refundMidtransTransaction(orderNum, "Dibatalkan oleh admin");
+      if (midtransResult.ok) {
+        await supabase
+          .from("payments")
+          .update({ status: "refunded" })
+          .eq("midtrans_order_id", orderNum);
+      } else {
+        console.error("[updateOrderStatus] Midtrans refund failed:", midtransResult.error);
+      }
+    }
+  }
+
+  // Biteship cancel on cancellation when shipment exists — best-effort
+  if (newStatus === "cancelled") {
+    const { data: shipment } = await supabase
+      .from("shipments")
+      .select("biteship_order_id, status")
+      .eq("order_id", orderId)
+      .maybeSingle();
+
+    if (
+      shipment?.biteship_order_id &&
+      !["delivered", "cancelled", "returned"].includes(shipment.status ?? "")
+    ) {
+      const biteshipResult = await cancelBiteshipOrder(shipment.biteship_order_id);
+      if (biteshipResult.ok) {
+        await supabase
+          .from("shipments")
+          .update({ status: "cancelled", updated_at: new Date().toISOString() })
+          .eq("order_id", orderId);
+      } else {
+        console.error("[updateOrderStatus] Biteship cancel failed:", biteshipResult.error);
+      }
+    }
+  }
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
@@ -222,7 +284,10 @@ export async function syncBiteshipAWB(
     orderRow.status !== "completed" &&
     orderRow.status !== "cancelled"
   ) {
-    await supabase.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+    await supabase.from("orders").update({
+      status: newOrderStatus,
+      ...(newOrderStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+    }).eq("id", orderRow.id);
     await supabase.from("order_status_history").insert({
       order_id: orderRow.id,
       status: newOrderStatus,

@@ -165,7 +165,10 @@ export async function POST(req: Request) {
       orderRow.status !== "completed" &&
       orderRow.status !== "cancelled"
     ) {
-      await svc.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+      await svc.from("orders").update({
+        status: newOrderStatus,
+        ...(newOrderStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+      }).eq("id", orderRow.id);
       await svc.from("order_status_history").insert({
         order_id: orderRow.id,
         status: newOrderStatus,

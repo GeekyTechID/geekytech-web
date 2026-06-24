@@ -276,7 +276,34 @@ export default async function OrderTrackingPage({
     }),
   );
 
+  const deliveredAt = order.delivered_at ? new Date(order.delivered_at) : null;
+  const deadlineMs = deliveredAt ? deliveredAt.getTime() + 3 * 24 * 60 * 60 * 1000 : null;
+  const canComplain = order.status === "delivered" && deadlineMs !== null && Date.now() < deadlineMs;
+  const hoursLeft = deadlineMs ? Math.max(0, Math.ceil((deadlineMs - Date.now()) / (1000 * 60 * 60))) : 0;
+
   return (
+    <>
+    {canComplain && (
+      <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <p className="text-[13px] leading-relaxed text-amber-900">
+          Ada masalah dengan pesanan? Anda memiliki{" "}
+          <span className="font-semibold">{hoursLeft} jam</span> lagi untuk{" "}
+          <a href={`/dashboard/orders/${order.id}/complaint`} className="underline underline-offset-2">
+            mengajukan komplain
+          </a>
+          .
+        </p>
+      </div>
+    )}
+    {order.status === "completed" && (
+      <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] px-4 py-3">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#a0a0a0]" />
+        <p className="text-[13px] text-[#7a7a7a]">
+          Batas waktu komplain untuk pesanan ini telah berakhir.
+        </p>
+      </div>
+    )}
     <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
       {/* ── Status Pesanan ── */}
       <div className="rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
@@ -336,14 +363,6 @@ export default async function OrderTrackingPage({
                         </p>
                       </div>
                     </div>
-                    <a
-                      href={externalLink ?? `https://track.biteship.com/${s.awb}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 text-[12px] font-semibold text-[#EA5329] underline-offset-2 hover:underline"
-                    >
-                      Lacak di kurir ↗
-                    </a>
                   </div>
 
                   {/* Current status badge */}
@@ -393,5 +412,6 @@ export default async function OrderTrackingPage({
         )}
       </div>
     </div>
+    </>
   );
 }

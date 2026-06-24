@@ -263,14 +263,6 @@ export function ShipmentTrackingCard({
             <p className="mt-0.5 select-all font-mono text-[12px] text-[#7a7a7a]">{awb}</p>
           </div>
         </div>
-        <a
-          href={externalLink ?? `https://track.biteship.com/${awb}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-[12px] font-semibold text-[#EA5329] underline-offset-2 hover:underline"
-        >
-          Lacak di kurir ↗
-        </a>
       </div>
 
       {/* Status badge */}
