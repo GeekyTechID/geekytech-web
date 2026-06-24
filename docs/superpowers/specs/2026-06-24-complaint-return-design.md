@@ -9,6 +9,8 @@
 
 Upgrade sistem komplain + tambah alur retur penggantian produk. Entry point tetap komplain — admin review dulu sebelum retur disetujui. Hanya satu tipe resolusi: penggantian produk (bukan refund).
 
+User hanya bisa ajukan komplain dalam **3 hari sejak order berstatus `delivered`**. Setelah 3 hari, order otomatis pindah ke `completed` (via cron/DB trigger) dan halaman komplain tidak bisa diakses — user hanya bisa beri review produk. Informasi batas waktu ini ditampilkan di halaman tracking pengiriman user.
+
 ---
 
 ## Data Model
@@ -76,7 +78,7 @@ Form diupgrade dari versi sekarang:
 - **Dropdown kategori** (required): wrong_item / damaged / missing_item / not_as_described / other
 - **Ringkasan** (text input, required) — existing
 - **Detail** (textarea, optional) — existing
-- **Upload foto bukti** (max 5 gambar) — upload ke Supabase Storage bucket `complaint-images`, simpan URL di `complaints.images`
+- **Upload media bukti** (max 5 file: gambar JPG/PNG atau video MP4/MOV, masing-masing max 50 MB) — upload ke Supabase Storage bucket `complaint-images`, simpan URL di `complaints.images`
 
 ### 2. Tunggu Review
 
@@ -134,7 +136,7 @@ Tabel semua return request, filter by status. Entry terpisah dari complaints lis
 
 | File | Aksi |
 |------|------|
-| `components/dashboard/order-complaint-form.tsx` | Upgrade: tambah dropdown kategori + image upload |
+| `components/dashboard/order-complaint-form.tsx` | Upgrade: tambah dropdown kategori + image/video upload |
 | `app/(dashboard)/dashboard/orders/[id]/complaint/page.tsx` | Tambah inline thread + section kirim balik (conditional by status) |
 | `app/(dashboard)/dashboard/orders/[id]/return/page.tsx` | Baru: status retur + tracking penggantian |
 | `app/(dashboard)/dashboard/orders/_actions.ts` | Tambah action: submitReturnAWB |
@@ -153,8 +155,8 @@ Tabel semua return request, filter by status. Entry terpisah dari complaints lis
 
 | Item | Detail |
 |------|--------|
-| Supabase Storage | Bucket `complaint-images`, public read, auth write |
-| Image upload helper | `lib/supabase/upload-complaint-image.ts` |
+| Supabase Storage | Bucket `complaint-images`, public read, auth write — mendukung gambar (JPG/PNG) dan video (MP4/MOV) |
+| Media upload helper | `lib/supabase/upload-complaint-media.ts` |
 | Notifikasi user | Saat `return_approved`, `replacement_sent` — via `createNotification` |
 
 ---
@@ -169,6 +171,16 @@ Tabel semua return request, filter by status. Entry terpisah dari complaints lis
    - `complaint_messages`: user bisa read/insert di komplain miliknya; admin service role full access
    - `returns`: user bisa read miliknya, insert via server action only; admin service role full access
    - `return_shipments`: user read only (via return miliknya); admin service role full access
+
+---
+
+## Batas Waktu Komplain
+
+- Order `delivered` → cron job atau Supabase scheduled function cek setiap hari
+- Jika `delivered_at` + 3 hari < now → update status order ke `completed`
+- Halaman `/dashboard/orders/[id]/complaint` cek status order: jika `completed`, tampilkan pesan "Batas waktu komplain telah berakhir" dan form tidak bisa diakses
+- Halaman `/dashboard/orders/[id]/tracking` tampilkan banner: *"Anda memiliki X hari untuk mengajukan komplain jika ada masalah dengan pesanan"* (hitung mundur dari `delivered_at + 3 hari`)
+- Gate juga ada di server action `submitComplaintAction` — validasi status order sebelum insert
 
 ---
 
