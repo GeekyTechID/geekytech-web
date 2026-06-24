@@ -122,6 +122,11 @@ export function ProductDetailClient({
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
   const currentImage = images[safeImgIndex];
 
+  const variantImage = useMemo(() => {
+    if (!variant?.imageId) return images[0] ?? null;
+    return images.find((img) => img.id === variant.imageId) ?? images[0] ?? null;
+  }, [variant, images]);
+
   const description = product.description?.trim() ?? "";
   const showDescToggle = description.length > DESCRIPTION_PREVIEW_CHARS;
   const descriptionPreview = descExpanded ? description : description.slice(0, DESCRIPTION_PREVIEW_CHARS);
@@ -232,11 +237,7 @@ export function ProductDetailClient({
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => {
-                              setImgIndex(i);
-                              const matchingVariant = product.variants.find((v) => v.imageId === im.id);
-                              if (matchingVariant) setVariantId(matchingVariant.id);
-                            }}
+                            onClick={() => setImgIndex(i)}
                             className={cn(
                               "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
                               i === safeImgIndex ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
@@ -349,8 +350,8 @@ export function ProductDetailClient({
               <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-6 lg:p-6">
                 <div className="flex items-center gap-3 border-b border-[#eadfd8] pb-5">
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white">
-                    {currentImage.url ? (
-                      <Image src={currentImage.url} alt={currentImage.alt ?? product.name} fill className="object-contain p-1" sizes="56px" />
+                    {variantImage?.url ? (
+                      <Image src={variantImage.url} alt={variantImage.alt ?? product.name} fill className="object-contain p-1" sizes="56px" />
                     ) : null}
                   </div>
                   <div className="min-w-0">
