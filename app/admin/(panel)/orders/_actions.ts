@@ -57,7 +57,10 @@ export async function updateOrderStatus(
 
   const { error } = await supabase
     .from("orders")
-    .update({ status: newStatus })
+    .update({
+      status: newStatus,
+      ...(newStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+    })
     .eq("id", orderId);
 
   if (error) return { error: error.message };
@@ -281,7 +284,10 @@ export async function syncBiteshipAWB(
     orderRow.status !== "completed" &&
     orderRow.status !== "cancelled"
   ) {
-    await supabase.from("orders").update({ status: newOrderStatus }).eq("id", orderRow.id);
+    await supabase.from("orders").update({
+      status: newOrderStatus,
+      ...(newOrderStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+    }).eq("id", orderRow.id);
     await supabase.from("order_status_history").insert({
       order_id: orderRow.id,
       status: newOrderStatus,

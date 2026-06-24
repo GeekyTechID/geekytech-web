@@ -948,6 +948,7 @@ export type Database = {
           courier_etd: string | null
           courier_service: string | null
           created_at: string
+          delivered_at: string | null
           discount_amount: number
           id: string
           notes: string | null
@@ -978,6 +979,7 @@ export type Database = {
           courier_etd?: string | null
           courier_service?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number
           id?: string
           notes?: string | null
@@ -1008,6 +1010,7 @@ export type Database = {
           courier_etd?: string | null
           courier_service?: string | null
           created_at?: string
+          delivered_at?: string | null
           discount_amount?: number
           id?: string
           notes?: string | null

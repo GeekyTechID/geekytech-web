@@ -293,7 +293,7 @@ export async function submitComplaintAction(input: {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("id, status, updated_at")
+    .select("id, status, delivered_at")
     .eq("id", input.orderId)
     .eq("user_id", user.id)
     .single();
@@ -311,9 +311,8 @@ export async function submitComplaintAction(input: {
       error: "Komplain hanya bisa diajukan setelah barang diterima.",
     };
   }
-  if (order.updated_at) {
-    // updated_at reflects when the order moved to "delivered" status
-    const deadline = new Date(order.updated_at).getTime() + 3 * 24 * 60 * 60 * 1000;
+  if (order.delivered_at) {
+    const deadline = new Date(order.delivered_at).getTime() + 3 * 24 * 60 * 60 * 1000;
     if (Date.now() > deadline) {
       return {
         success: false,
