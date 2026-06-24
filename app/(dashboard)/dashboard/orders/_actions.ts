@@ -116,7 +116,7 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
         if (!midtransResult.ok) {
           console.error("[cancelOrderAction] Midtrans cancel failed:", midtransResult.error);
         }
-      } else if (st === "paid") {
+      } else if (st === "paid" || st === "processing") {
         const midtransResult = await refundMidtransTransaction(
           row.order_number,
           "Dibatalkan oleh pelanggan",

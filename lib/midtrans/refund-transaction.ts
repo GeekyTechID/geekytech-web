@@ -24,7 +24,7 @@ export async function refundMidtransTransaction(
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ reason, refund_key: midtransOrderId }),
     });
 
     const json = (await res.json()) as Record<string, unknown>;
