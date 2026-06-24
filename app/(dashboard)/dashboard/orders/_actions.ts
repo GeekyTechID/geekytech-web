@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import type { Database, Json } from "@/types/supabase";
+import type { Database } from "@/types/supabase";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
@@ -86,7 +86,7 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
         await svc.from("stock_history").insert({
           variant_id: item.variant_id,
           order_id: orderId,
-          quantity: st === "pending_payment" ? 0 : item.quantity,
+          quantity: item.quantity,
           type: "return",
           note: `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan`,
           changed_by: null,
@@ -278,62 +278,92 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
   }
 }
 
-const complaintSchema = z.object({
-  orderId: z.string().uuid(),
-  reason: z.string().trim().min(3).max(200),
-  description: z.string().trim().max(4000).optional().nullable(),
-});
+export async function submitComplaintAction(input: {
+  orderId: string;
+  category: string;
+  reason: string;
+  description: string | null;
+  mediaUrls: string[];
+}): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Tidak terautentikasi." };
 
-export async function submitComplaintAction(input: z.infer<typeof complaintSchema>): Promise<OrderActionResult> {
-  try {
-    const parsed = complaintSchema.safeParse(input);
-    if (!parsed.success) return { success: false, error: "Data komplain tidak valid." };
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, status, updated_at")
+    .eq("id", input.orderId)
+    .eq("user_id", user.id)
+    .single();
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
-
-    const { orderId, reason, description } = parsed.data;
-
-    const { data: order } = await supabase
-      .from("orders")
-      .select("id, status")
-      .eq("id", orderId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!order) return { success: false, error: "Pesanan tidak ditemukan." };
-
-    const allowed: OrderStatus[] = ["shipped", "delivered", "completed", "paid", "processing"];
-    if (!allowed.includes(order.status as OrderStatus)) {
-      return { success: false, error: "Komplain tidak dapat diajukan untuk status pesanan ini." };
-    }
-
-    const { error: insErr } = await supabase.from("complaints").insert({
-      order_id: orderId,
-      user_id: user.id,
-      type: "order",
-      reason,
-      description: description?.trim() || null,
-      images: [] as Json,
-      status: "open",
-    });
-    if (insErr) return { success: false, error: insErr.message };
-
-    await createAdminNotification({
-      title: "Komplain Baru Masuk",
-      body: `Komplain baru untuk pesanan ${orderId}: "${reason}"`,
-      type: "new_complaint",
-      data: { orderId, reason },
-    });
-
-    revalidatePath(`/dashboard/orders/${orderId}`);
-    revalidatePath(`/dashboard/orders/${orderId}/complaint`);
-    return { success: true };
-  } catch {
-    return { success: false, error: "Terjadi kesalahan. Coba lagi." };
+  if (!order) return { success: false, error: "Pesanan tidak ditemukan." };
+  if (order.status === "completed") {
+    return {
+      success: false,
+      error: "Batas waktu komplain (3 hari setelah diterima) telah berakhir.",
+    };
   }
+  if (order.status !== "delivered") {
+    return {
+      success: false,
+      error: "Komplain hanya bisa diajukan setelah barang diterima.",
+    };
+  }
+  if (order.updated_at) {
+    // updated_at reflects when the order moved to "delivered" status
+    const deadline = new Date(order.updated_at).getTime() + 3 * 24 * 60 * 60 * 1000;
+    if (Date.now() > deadline) {
+      return {
+        success: false,
+        error: "Batas waktu komplain (3 hari setelah diterima) telah berakhir.",
+      };
+    }
+  }
+
+  const { data: existing } = await supabase
+    .from("complaints")
+    .select("id")
+    .eq("order_id", input.orderId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (existing) return { success: false, error: "Komplain untuk pesanan ini sudah ada." };
+
+  const VALID_CATEGORIES = [
+    "wrong_item",
+    "damaged",
+    "missing_item",
+    "not_as_described",
+    "other",
+  ];
+  if (!VALID_CATEGORIES.includes(input.category)) {
+    return { success: false, error: "Kategori tidak valid." };
+  }
+
+  const { error } = await supabase.from("complaints").insert({
+    order_id: input.orderId,
+    user_id: user.id,
+    type: "product",
+    category: input.category,
+    reason: input.reason.trim(),
+    description: input.description,
+    images: input.mediaUrls,
+    status: "open",
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  await createAdminNotification({
+    title: "Komplain Baru Masuk",
+    body: `Komplain baru untuk pesanan ${input.orderId}: "${input.reason}"`,
+    type: "new_complaint",
+    data: { orderId: input.orderId, reason: input.reason },
+  });
+
+  revalidatePath(`/dashboard/orders/${input.orderId}`);
+  revalidatePath(`/dashboard/orders/${input.orderId}/complaint`);
+  return { success: true };
 }
 
 /**
