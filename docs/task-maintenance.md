@@ -1,10 +1,6 @@
 # DASHBOARD ADMIN
 
-1. Varian punya image sendiri. Tiap klik varian, otomatis image muncul di main image di produk detail.
-
-2. Data varian otomatis terisi mengikuti data awal ketika dibuat varian baru.
-
-3. Ketika transaksi digagalkan user, data di geeky dibatalkan, tapi di biteship masih ada/jalan. Gimana connect agar biteship juga dibatalkan
+1. Cek sistem komplain retur barang dan retur batalkan transaksi
 
 ----------------------------------------------------------
 ----------------------------------------------------------
