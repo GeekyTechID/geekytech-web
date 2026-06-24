@@ -120,14 +120,25 @@ export async function updateOrderStatus(
         if (!item.variant_id) continue;
         const { data: v } = await supabase
           .from("product_variants")
-          .select("stock, product_id")
+          .select("stock, reserved, product_id")
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
         await supabase
           .from("product_variants")
-          .update({ stock: v.stock + item.quantity })
+          .update({
+            stock: v.stock + item.quantity,
+            reserved: Math.max(0, v.reserved - item.quantity),
+          })
           .eq("id", item.variant_id);
+        await supabase.from("stock_history").insert({
+          variant_id: item.variant_id,
+          order_id: orderId,
+          quantity: item.quantity,
+          type: "return",
+          note: `Pesanan ${currentOrder?.order_number ?? orderId} dibatalkan oleh admin`,
+          changed_by: null,
+        });
         if (v.product_id) {
           productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);
         }
