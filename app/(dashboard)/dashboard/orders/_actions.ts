@@ -386,6 +386,71 @@ export async function submitComplaintAction(input: {
  * Bantuan lanjut bayar: tautan WhatsApp CS dengan konteks nomor order.
  * Integrasi Midtrans snap ulang dapat ditambahkan di route API terpisah.
  */
+export async function deleteUnpaidOrderAction(orderId: string): Promise<OrderActionResult> {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
+
+    const { data: row } = await supabase
+      .from("orders")
+      .select("id, status, coupon_id")
+      .eq("id", orderId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!row) return { success: false, error: "Pesanan tidak ditemukan." };
+    if (row.status !== "pending_payment") return { success: false, error: "Pesanan tidak dapat dihapus." };
+
+    const svc = createServiceClient();
+
+    // Release stock reservation
+    const { data: items } = await svc
+      .from("order_items")
+      .select("variant_id, quantity")
+      .eq("order_id", orderId);
+    if (items) {
+      for (const item of items) {
+        if (!item.variant_id) continue;
+        const { data: v } = await svc
+          .from("product_variants")
+          .select("reserved")
+          .eq("id", item.variant_id)
+          .single();
+        if (v) {
+          await svc
+            .from("product_variants")
+            .update({ reserved: Math.max(0, v.reserved - item.quantity) })
+            .eq("id", item.variant_id);
+        }
+      }
+    }
+
+    // Reverse coupon used_count (coupon_usages cascade-deleted with order)
+    if (row.coupon_id) {
+      const { data: coupon } = await svc
+        .from("coupons")
+        .select("used_count")
+        .eq("id", row.coupon_id)
+        .single();
+      if (coupon) {
+        await svc
+          .from("coupons")
+          .update({ used_count: Math.max(0, coupon.used_count - 1) })
+          .eq("id", row.coupon_id);
+      }
+    }
+
+    // Delete order — cascades to order_items, payments, coupon_usages,
+    // order_status_history, shipments, complaints
+    await svc.from("orders").delete().eq("id", orderId);
+
+    revalidatePath("/dashboard/orders");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Terjadi kesalahan. Coba lagi." };
+  }
+}
+
 export async function getRetryPaymentWhatsAppLink(orderNumber: string): Promise<{ success: true; url: string | null } | { success: false; error: string }> {
   try {
     const supabase = await createClient();

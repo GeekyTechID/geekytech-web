@@ -25,6 +25,7 @@ import {
   MIDTRANS_CHECKOUT_PAYMENT_OPTIONS,
   type MidtransCheckoutPaymentId,
 } from "@/lib/constants/midtrans-checkout-payments";
+import { deleteUnpaidOrderAction } from "@/app/(dashboard)/dashboard/orders/_actions";
 
 type AddressRow = {
   id: string;
@@ -433,6 +434,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           router.push(`/dashboard/orders/${orderId}`);
           return;
         }
+        let paymentInitiated = false;
         window.snap.pay(snapToken, {
           onSuccess: () => {
             void fetch(`/api/orders/${orderId}/verify-payment`, { method: "POST" });
@@ -440,14 +442,18 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
             setDoneState({ orderId, orderNumber });
           },
           onPending: () => {
+            paymentInitiated = true;
             router.push(`/dashboard/orders/${orderId}`);
           },
           onError: () => {
-            toast.error("Pembayaran gagal atau dibatalkan.");
+            toast.error("Pembayaran gagal. Silakan coba lagi atau pilih metode lain.");
             router.push(`/dashboard/orders/${orderId}`);
           },
           onClose: () => {
-            router.push(`/dashboard/orders/${orderId}`);
+            if (!paymentInitiated) {
+              void deleteUnpaidOrderAction(orderId);
+              router.push("/dashboard/orders");
+            }
           },
         });
       } else {
