@@ -5,6 +5,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
+import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
+import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
+import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
@@ -156,6 +159,51 @@ export async function updateOrderStatus(
     });
 
   if (historyError) console.error("history log failed:", historyError.message);
+
+  // Midtrans cancel/refund on cancellation — best-effort
+  if (newStatus === "cancelled" && currentOrder?.order_number) {
+    const orderNum = currentOrder.order_number as string;
+    if (prevStatus === "pending_payment") {
+      const midtransResult = await cancelMidtransTransaction(orderNum);
+      if (!midtransResult.ok) {
+        console.error("[updateOrderStatus] Midtrans cancel failed:", midtransResult.error);
+      }
+    } else if (prevStatus === "paid" || prevStatus === "processing") {
+      const midtransResult = await refundMidtransTransaction(orderNum, "Dibatalkan oleh admin");
+      if (midtransResult.ok) {
+        await supabase
+          .from("payments")
+          .update({ status: "refunded" })
+          .eq("midtrans_order_id", orderNum);
+      } else {
+        console.error("[updateOrderStatus] Midtrans refund failed:", midtransResult.error);
+      }
+    }
+  }
+
+  // Biteship cancel on cancellation when shipment exists — best-effort
+  if (newStatus === "cancelled") {
+    const { data: shipment } = await supabase
+      .from("shipments")
+      .select("biteship_order_id, status")
+      .eq("order_id", orderId)
+      .maybeSingle();
+
+    if (
+      shipment?.biteship_order_id &&
+      !["delivered", "cancelled", "returned"].includes(shipment.status ?? "")
+    ) {
+      const biteshipResult = await cancelBiteshipOrder(shipment.biteship_order_id);
+      if (biteshipResult.ok) {
+        await supabase
+          .from("shipments")
+          .update({ status: "cancelled", updated_at: new Date().toISOString() })
+          .eq("order_id", orderId);
+      } else {
+        console.error("[updateOrderStatus] Biteship cancel failed:", biteshipResult.error);
+      }
+    }
+  }
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
