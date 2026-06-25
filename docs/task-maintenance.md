@@ -1,6 +1,38 @@
 # DASHBOARD ADMIN
 
-1. Cek sistem komplain retur barang dan retur batalkan transaksi
+1. Cek pembatalan transaksi dan refund pakai gopay
+2. Error ini bukan masalah kode — kode signInWithOAuth sudah benar. Ini adalah konfigurasi Supabase: Google provider belum diaktifkan di Supabase Dashboard.
+
+Langkah untuk mengaktifkannya:
+
+1. Buat Google OAuth App di Google Cloud Console
+Buka Google Cloud Console → pilih atau buat project
+Masuk ke APIs & Services → Credentials
+Klik Create Credentials → OAuth 2.0 Client IDs
+Application type: Web application
+Di Authorized redirect URIs, tambahkan:
+https://<project-ref>.supabase.co/auth/v1/callback
+(ganti <project-ref> dengan ID project Supabase kamu)
+Simpan → catat Client ID dan Client Secret
+2. Aktifkan Google Provider di Supabase
+Buka Supabase Dashboard → Authentication → Providers
+Cari Google → toggle Enable
+Masukkan Client ID dan Client Secret dari langkah 1
+Klik Save
+3. Verifikasi Redirect URL di Supabase
+Pastikan di Supabase → Authentication → URL Configuration, bagian Redirect URLs sudah ada:
+
+http://localhost:3000/auth/callback
+https://yourdomain.com/auth/callback
+Cek juga apakah /auth/callback route sudah ada di project:
+
+
+Found files, read a file
+Callback route sudah benar. Masalahnya murni konfigurasi Supabase.
+
+Ringkasan: Kode di project sudah benar sepenuhnya — signInWithOAuth, callback route, semua sudah oke. Yang perlu dilakukan adalah aktivasi Google provider di Supabase Dashboard dengan menambahkan Client ID dan Client Secret dari Google Cloud Console. Setelah dikonfigurasi, fitur daftar/login dengan Google langsung berfungsi tanpa perlu perubahan kode apapun.
+
+3. resend
 
 ----------------------------------------------------------
 ----------------------------------------------------------
