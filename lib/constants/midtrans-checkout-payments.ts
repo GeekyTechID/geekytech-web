@@ -9,6 +9,7 @@ export const MIDTRANS_CHECKOUT_PAYMENT_OPTIONS = [
   { id: "echannel" as const, label: "Mandiri Bill Payment" },
   { id: "indomaret" as const, label: "Indomaret" },
   { id: "alfamart" as const, label: "Alfamart" },
+  { id: "credit_card" as const, label: "Kartu Kredit" },
 ] as const;
 
 export type MidtransCheckoutPaymentId = (typeof MIDTRANS_CHECKOUT_PAYMENT_OPTIONS)[number]["id"];

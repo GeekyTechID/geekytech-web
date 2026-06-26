@@ -17,7 +17,7 @@ import {
   parseOriginCoords,
 } from "@/lib/shipping/on-demand-coords";
 
-const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
+const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart", "credit_card"] as const;
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
