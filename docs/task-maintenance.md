@@ -1,38 +1,20 @@
 # DASHBOARD ADMIN
 
 1. Cek pembatalan transaksi dan refund pakai gopay
-2. Error ini bukan masalah kode — kode signInWithOAuth sudah benar. Ini adalah konfigurasi Supabase: Google provider belum diaktifkan di Supabase Dashboard.
 
-Langkah untuk mengaktifkannya:
+2. Welcome email user baru (Google OAuth)
+   - Kode sudah ada di `lib/email/send-welcome.ts` + `lib/email/templates/welcome.ts`
+   - Dikirim otomatis di `app/auth/callback/route.ts` untuk user baru (created < 60 detik)
+   - **Perlu**: set `RESEND_API_KEY` dan `RESEND_FROM_EMAIL` di `.env.production` (VPS) dan Vercel env vars (development/production)
+   - **Perlu**: verifikasi domain `geeky.id` di Resend Dashboard → Domains agar email tidak masuk spam
+   - **Perlu**: tambah `noreply@geeky.id` (atau subdomain `mail.geeky.id`) sebagai verified sender di Resend
 
-1. Buat Google OAuth App di Google Cloud Console
-Buka Google Cloud Console → pilih atau buat project
-Masuk ke APIs & Services → Credentials
-Klik Create Credentials → OAuth 2.0 Client IDs
-Application type: Web application
-Di Authorized redirect URIs, tambahkan:
-https://<project-ref>.supabase.co/auth/v1/callback
-(ganti <project-ref> dengan ID project Supabase kamu)
-Simpan → catat Client ID dan Client Secret
-2. Aktifkan Google Provider di Supabase
-Buka Supabase Dashboard → Authentication → Providers
-Cari Google → toggle Enable
-Masukkan Client ID dan Client Secret dari langkah 1
-Klik Save
-3. Verifikasi Redirect URL di Supabase
-Pastikan di Supabase → Authentication → URL Configuration, bagian Redirect URLs sudah ada:
-
-http://localhost:3000/auth/callback
-https://yourdomain.com/auth/callback
-Cek juga apakah /auth/callback route sudah ada di project:
-
-
-Found files, read a file
-Callback route sudah benar. Masalahnya murni konfigurasi Supabase.
-
-Ringkasan: Kode di project sudah benar sepenuhnya — signInWithOAuth, callback route, semua sudah oke. Yang perlu dilakukan adalah aktivasi Google provider di Supabase Dashboard dengan menambahkan Client ID dan Client Secret dari Google Cloud Console. Setelah dikonfigurasi, fitur daftar/login dengan Google langsung berfungsi tanpa perlu perubahan kode apapun.
-
-3. resend
+3. Setup Resend (belum ada konfigurasi sama sekali)
+   - Daftar / login ke [resend.com](https://resend.com)
+   - Tambah dan verifikasi domain `geeky.id` (tambah DNS record TXT/MX di GoDaddy cPanel)
+   - Buat API key → salin ke env var `RESEND_API_KEY` di VPS `.env.production` dan Vercel
+   - Set `RESEND_FROM_EMAIL=noreply@geeky.id`
+   - Test kirim email dari Resend Dashboard sebelum deploy ke production
 
 ----------------------------------------------------------
 ----------------------------------------------------------

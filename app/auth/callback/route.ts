@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/supabase";
+import { sendWelcomeEmail } from "@/lib/email/send-welcome";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -41,10 +42,23 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    const { error: exchangeError } =
+    const { data, error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code);
 
     if (!exchangeError) {
+      // Kirim welcome email untuk user yang baru daftar (created < 60 detik lalu)
+      const user = data.user;
+      if (user?.email) {
+        const createdAt = new Date(user.created_at).getTime();
+        const isNewUser = Date.now() - createdAt < 60_000;
+        if (isNewUser) {
+          const name =
+            user.user_metadata?.full_name ??
+            user.user_metadata?.name ??
+            user.email;
+          sendWelcomeEmail({ to: user.email, name }).catch(() => {});
+        }
+      }
       return response;
     }
   }
