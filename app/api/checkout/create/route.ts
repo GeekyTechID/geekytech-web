@@ -362,7 +362,12 @@ export async function POST(req: Request) {
             email: user.email ?? "customer@geekytech.local",
             phone: address.phone.replace(/\D/g, "").slice(0, 20) || "081000000000",
           },
-          enabled_payments: [parsed.data.paymentMethod],
+          // Di production: batasi ke metode yang dipilih user.
+          // Di sandbox: jangan batasi — GoPay/QRIS butuh aktivasi terpisah dari Midtrans
+          // dan belum tentu tersedia di semua sandbox account.
+          ...(process.env.MIDTRANS_IS_PRODUCTION === "true"
+            ? { enabled_payments: [parsed.data.paymentMethod] }
+            : {}),
           ...(appUrl
             ? {
                 callbacks: {
