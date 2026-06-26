@@ -211,6 +211,8 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
       status: "paid",
       paid_at: new Date().toISOString(),
       midtrans_transaction_id: notification.transaction_id ?? null,
+      // Simpan payment_type aktual dari Midtrans (bisa beda dari pilihan awal user, misal pilih gopay tapi bayar credit_card di Snap)
+      ...(notification.payment_type ? { payment_type: notification.payment_type } : {}),
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       pdf_url: notification.pdf_url ?? null,
