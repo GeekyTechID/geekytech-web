@@ -116,6 +116,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const { order, items, shipments } = detail;
   const payments = [...detail.payments];
 
+  const cancelNote = order.status === "cancelled"
+    ? detail.statusHistory.slice().reverse().find((h) => h.status === "cancelled")?.note ?? null
+    : null;
+
   // Sync VA/payment code from Midtrans if still pending and not yet stored
   if (order.status === "pending_payment") {
     const ppIdx = payments.findIndex((p) => p.status === "pending");
@@ -308,6 +312,11 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${ORDER_STATUS_STYLES[order.status]}`}>
               {orderStatusLabel(order.status)}
             </span>
+            {cancelNote && (
+              <p className="max-w-[220px] text-right text-[11px] leading-snug text-red-500 sm:max-w-[240px]">
+                {cancelNote}
+              </p>
+            )}
             <p className="text-2xl font-black tabular-nums text-[#1d1d1f]">{formatRupiah(order.total)}</p>
           </div>
         </div>

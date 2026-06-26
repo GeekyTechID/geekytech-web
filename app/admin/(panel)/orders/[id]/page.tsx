@@ -103,6 +103,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     payment?.status === "pending" &&
     adminPaymentExpired;
   const items = Array.isArray(order.order_items) ? order.order_items : [];
+  const cancelNote = order.status === "cancelled"
+    ? (history ?? []).slice().reverse().find((h) => h.status === "cancelled")?.note ?? null
+    : null;
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -130,14 +133,21 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             })}
           </p>
         </div>
-        <span
-          className={cn(
-            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
-            adminOrderStatusBadgeClass(order.status),
+        <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
+              adminOrderStatusBadgeClass(order.status),
+            )}
+          >
+            {ADMIN_ORDER_STATUS_LABEL[order.status] ?? order.status}
+          </span>
+          {cancelNote && (
+            <p className="max-w-[260px] text-right text-[11px] leading-snug text-red-500/80">
+              {cancelNote}
+            </p>
           )}
-        >
-          {ADMIN_ORDER_STATUS_LABEL[order.status] ?? order.status}
-        </span>
+        </div>
       </div>
 
       {/* Main grid */}

@@ -368,6 +368,14 @@ export async function POST(req: Request) {
                 callbacks: {
                   finish: `${appUrl}/dashboard/orders/${order.id}`,
                 },
+                ...(parsed.data.paymentMethod === "gopay" || parsed.data.paymentMethod === "shopeepay"
+                  ? {
+                      gopay: {
+                        enable_callback: true,
+                        callback_url: `${appUrl}/dashboard/orders/${order.id}`,
+                      },
+                    }
+                  : {}),
               }
             : {}),
         });

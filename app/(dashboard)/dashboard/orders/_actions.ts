@@ -111,6 +111,15 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
       }
     }
 
+    // Notifikasi user: pembatalan berhasil
+    await createNotification({
+      userId: user.id,
+      title: "Pesanan Dibatalkan",
+      body: `Pesanan ${row.order_number ?? orderId} telah dibatalkan sesuai permintaan Anda.`,
+      type: "order_cancelled",
+      data: { orderId, orderNumber: row.order_number },
+    });
+
     // Midtrans: cancel/refund best-effort
     if (row.order_number) {
       if (st === "pending_payment") {
