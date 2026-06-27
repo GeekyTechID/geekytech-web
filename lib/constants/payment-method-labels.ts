@@ -3,6 +3,8 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   bni_va: "BNI Virtual Account",
   bri_va: "BRI Virtual Account",
   permata_va: "Permata Virtual Account",
+  other_va: "Virtual Account",
+  bank_transfer: "Virtual Account",
   echannel: "Mandiri Bill Payment",
   gopay: "GoPay",
   shopeepay: "ShopeePay",
@@ -10,4 +12,5 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   indomaret: "Indomaret",
   alfamart: "Alfamart",
   credit_card: "Kartu Kredit",
+  cstore: "Convenience Store",
 };

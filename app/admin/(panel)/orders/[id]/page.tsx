@@ -443,7 +443,10 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
                 )}
                 <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
-                  Proses refund manual via Midtrans Dashboard → Transactions → {order.order_number} → Refund.
+                  Proses refund manual via{" "}
+                  <strong>Midtrans Dashboard (Production)</strong> → Transactions → {order.order_number} → Refund.
+                  Tombol Refund hanya tersedia di dashboard production, tidak di sandbox.
+                  Transfer langsung ke rekening di atas jika di luar Midtrans.
                 </p>
               </div>
             </section>

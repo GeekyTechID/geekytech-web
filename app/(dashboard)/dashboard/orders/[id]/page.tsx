@@ -165,7 +165,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const hasPendingPayment = payments.some((p) => p.status === "pending");
   const paidPayment = payments.find((p) => p.status === "paid");
   const problemPayments = payments.filter((p) => PROBLEM_PAYMENT.includes(p.status));
-  const hasShipment = shipments.length > 0 || order.status === "shipped" || order.status === "delivered";
+  const hasShipment =
+    order.status !== "cancelled" &&
+    order.status !== "refunded" &&
+    (shipments.length > 0 || order.status === "shipped" || order.status === "delivered");
 
   // Most recent pending payment, fallback to any payment record
   const pendingPayment = payments.find((p) => p.status === "pending") ?? payments[0] ?? null;
