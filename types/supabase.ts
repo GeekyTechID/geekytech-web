@@ -845,6 +845,7 @@ export type Database = {
           image_url: string | null
           order_id: string
           price: number
+          product_id: string | null
           product_name: string
           quantity: number
           sku: string
@@ -858,6 +859,7 @@ export type Database = {
           image_url?: string | null
           order_id: string
           price: number
+          product_id?: string | null
           product_name: string
           quantity: number
           sku: string
@@ -871,6 +873,7 @@ export type Database = {
           image_url?: string | null
           order_id?: string
           price?: number
+          product_id?: string | null
           product_name?: string
           quantity?: number
           sku?: string
@@ -955,6 +958,9 @@ export type Database = {
           order_number: string
           recipient_name: string
           recipient_phone: string
+          refund_account_name: string | null
+          refund_account_number: string | null
+          refund_bank_name: string | null
           shipping_address: string
           shipping_city: string
           shipping_cost: number
@@ -986,6 +992,9 @@ export type Database = {
           order_number?: string
           recipient_name: string
           recipient_phone: string
+          refund_account_name?: string | null
+          refund_account_number?: string | null
+          refund_bank_name?: string | null
           shipping_address: string
           shipping_city: string
           shipping_cost?: number
@@ -1017,6 +1026,9 @@ export type Database = {
           order_number?: string
           recipient_name?: string
           recipient_phone?: string
+          refund_account_name?: string | null
+          refund_account_number?: string | null
+          refund_bank_name?: string | null
           shipping_address?: string
           shipping_city?: string
           shipping_cost?: number
@@ -1431,6 +1443,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
           created_at: string
           deleted_at: string | null
           first_login_done: boolean
@@ -1442,6 +1457,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
           created_at?: string
           deleted_at?: string | null
           first_login_done?: boolean
@@ -1453,6 +1471,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
           created_at?: string
           deleted_at?: string | null
           first_login_done?: boolean

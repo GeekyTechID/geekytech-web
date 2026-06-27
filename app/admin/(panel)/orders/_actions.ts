@@ -89,7 +89,7 @@ export async function updateOrderStatus(
       },
       cancelled: {
         title: "Pesanan Dibatalkan",
-        body: `Pesanan ${orderNum} telah dibatalkan.`,
+        body: `Pesanan ${orderNum} dibatalkan oleh admin. Jika ada pertanyaan, silakan hubungi kami.`,
       },
       refunded: {
         title: "Pesanan Direfund",

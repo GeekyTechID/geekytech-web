@@ -103,6 +103,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     payment?.status === "pending" &&
     adminPaymentExpired;
   const items = Array.isArray(order.order_items) ? order.order_items : [];
+  const cancelNote = order.status === "cancelled"
+    ? (history ?? []).slice().reverse().find((h) => h.status === "cancelled")?.note ?? null
+    : null;
 
   return (
     <div className="w-full space-y-8 p-6 lg:p-8">
@@ -130,14 +133,21 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             })}
           </p>
         </div>
-        <span
-          className={cn(
-            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
-            adminOrderStatusBadgeClass(order.status),
+        <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase",
+              adminOrderStatusBadgeClass(order.status),
+            )}
+          >
+            {ADMIN_ORDER_STATUS_LABEL[order.status] ?? order.status}
+          </span>
+          {cancelNote && (
+            <p className="max-w-[260px] text-right text-[11px] leading-snug text-red-500/80">
+              {cancelNote}
+            </p>
           )}
-        >
-          {ADMIN_ORDER_STATUS_LABEL[order.status] ?? order.status}
-        </span>
+        </div>
       </div>
 
       {/* Main grid */}
@@ -414,6 +424,30 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     )}
                   </div>
                 )}
+              </div>
+            </section>
+          )}
+
+          {/* Refund bank info — shown if order cancelled and bank data exists */}
+          {order.status === "cancelled" && order.refund_bank_name && (
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Info Rekening Refund</h2>
+              </div>
+              <div className="space-y-2 px-4 py-4">
+                <InfoRow label="Bank" value={order.refund_bank_name} />
+                {order.refund_account_name && (
+                  <InfoRow label="Atas Nama" value={order.refund_account_name} />
+                )}
+                {order.refund_account_number && (
+                  <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
+                )}
+                <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
+                  Proses refund manual via{" "}
+                  <strong>Midtrans Dashboard (Production)</strong> → Transactions → {order.order_number} → Refund.
+                  Tombol Refund hanya tersedia di dashboard production, tidak di sandbox.
+                  Transfer langsung ke rekening di atas jika di luar Midtrans.
+                </p>
               </div>
             </section>
           )}

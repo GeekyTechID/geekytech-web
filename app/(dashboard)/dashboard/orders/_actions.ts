@@ -17,7 +17,16 @@ type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 export type OrderActionResult = { success: true } | { success: false; error: string };
 
-export async function cancelOrderAction(orderId: string): Promise<OrderActionResult> {
+type BankInfo = {
+  bank_name: string;
+  bank_account_name: string;
+  bank_account_number: string;
+};
+
+export async function cancelOrderAction(
+  orderId: string,
+  bankInfo?: BankInfo,
+): Promise<OrderActionResult> {
   try {
     const supabase = await createClient();
     const {
@@ -40,7 +49,17 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
 
     const { error: upErr } = await supabase
       .from("orders")
-      .update({ status: "cancelled", updated_at: new Date().toISOString() })
+      .update({
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
+        ...(bankInfo
+          ? {
+              refund_bank_name: bankInfo.bank_name,
+              refund_account_name: bankInfo.bank_account_name,
+              refund_account_number: bankInfo.bank_account_number,
+            }
+          : {}),
+      })
       .eq("id", orderId)
       .eq("user_id", user.id);
     if (upErr) return { success: false, error: upErr.message };
@@ -111,6 +130,29 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
       }
     }
 
+    // Simpan rekening bank ke profil user (untuk reuse berikutnya)
+    if (bankInfo) {
+      const svcForProfile = createServiceClient();
+      await svcForProfile
+        .from("profiles")
+        .update({
+          bank_name: bankInfo.bank_name,
+          bank_account_name: bankInfo.bank_account_name,
+          bank_account_number: bankInfo.bank_account_number,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+    }
+
+    // Notifikasi user: pembatalan berhasil
+    await createNotification({
+      userId: user.id,
+      title: "Pesanan Dibatalkan",
+      body: `Pesanan ${row.order_number ?? orderId} telah dibatalkan sesuai permintaan Anda.`,
+      type: "order_cancelled",
+      data: { orderId, orderNumber: row.order_number },
+    });
+
     // Midtrans: cancel/refund best-effort
     if (row.order_number) {
       if (st === "pending_payment") {
@@ -144,7 +186,21 @@ export async function cancelOrderAction(orderId: string): Promise<OrderActionRes
             data: { orderId, orderNumber: row.order_number },
           });
         } else {
-          console.error("[cancelOrderAction] Midtrans refund failed:", midtransResult.error);
+          // VA/bank transfer: refund manual oleh admin — beri notifikasi yang sesuai
+          const isVA =
+            paymentRow?.payment_type === "bank_transfer" ||
+            (paymentRow?.payment_type ?? "").endsWith("_va");
+          if (isVA && bankInfo) {
+            await createNotification({
+              userId: user.id,
+              title: "Refund Akan Diproses Admin",
+              body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${row.order_number} akan dikembalikan ke rekening ${bankInfo.bank_name} atas nama ${bankInfo.bank_account_name} dalam 3–14 hari kerja.`,
+              type: "payment_refunded",
+              data: { orderId, orderNumber: row.order_number },
+            });
+          } else {
+            console.error("[cancelOrderAction] Midtrans refund failed:", midtransResult.error);
+          }
         }
       }
     }

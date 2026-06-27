@@ -1,6 +1,20 @@
 # DASHBOARD ADMIN
 
-1. Cek sistem komplain retur barang dan retur batalkan transaksi
+1. Cek pembatalan transaksi dan refund pakai gopay
+
+2. Welcome email user baru (Google OAuth)
+   - Kode sudah ada di `lib/email/send-welcome.ts` + `lib/email/templates/welcome.ts`
+   - Dikirim otomatis di `app/auth/callback/route.ts` untuk user baru (created < 60 detik)
+   - **Perlu**: set `RESEND_API_KEY` dan `RESEND_FROM_EMAIL` di `.env.production` (VPS) dan Vercel env vars (development/production)
+   - **Perlu**: verifikasi domain `geeky.id` di Resend Dashboard → Domains agar email tidak masuk spam
+   - **Perlu**: tambah `noreply@geeky.id` (atau subdomain `mail.geeky.id`) sebagai verified sender di Resend
+
+3. Setup Resend (belum ada konfigurasi sama sekali)
+   - Daftar / login ke [resend.com](https://resend.com)
+   - Tambah dan verifikasi domain `geeky.id` (tambah DNS record TXT/MX di GoDaddy cPanel)
+   - Buat API key → salin ke env var `RESEND_API_KEY` di VPS `.env.production` dan Vercel
+   - Set `RESEND_FROM_EMAIL=noreply@geeky.id`
+   - Test kirim email dari Resend Dashboard sebelum deploy ke production
 
 ----------------------------------------------------------
 ----------------------------------------------------------
