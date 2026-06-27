@@ -428,6 +428,27 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </section>
           )}
 
+          {/* Refund bank info — shown if order cancelled and bank data exists */}
+          {order.status === "cancelled" && order.refund_bank_name && (
+            <section className="admin-utility-card overflow-hidden p-0">
+              <div className="admin-utility-card-header">
+                <h2 className="admin-section-title">Info Rekening Refund</h2>
+              </div>
+              <div className="space-y-2 px-4 py-4">
+                <InfoRow label="Bank" value={order.refund_bank_name} />
+                {order.refund_account_name && (
+                  <InfoRow label="Atas Nama" value={order.refund_account_name} />
+                )}
+                {order.refund_account_number && (
+                  <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
+                )}
+                <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
+                  Proses refund manual via Midtrans Dashboard → Transactions → {order.order_number} → Refund.
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* Notes */}
           {order.notes && (
             <section className="admin-utility-card overflow-hidden p-0">

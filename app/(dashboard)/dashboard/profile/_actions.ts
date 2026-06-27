@@ -11,6 +11,9 @@ const profileSchema = z.object({
   full_name: z.string().trim().max(200).optional(),
   phone: z.string().trim().max(30).optional(),
   avatar_url: z.string().trim().max(2000).optional(),
+  bank_name: z.string().trim().max(100).optional(),
+  bank_account_name: z.string().trim().max(200).optional(),
+  bank_account_number: z.string().trim().max(50).optional(),
 });
 
 export async function updateProfileAction(values: z.infer<typeof profileSchema>): Promise<SimpleActionResult> {
@@ -24,7 +27,7 @@ export async function updateProfileAction(values: z.infer<typeof profileSchema>)
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
 
-    const { full_name, phone, avatar_url } = parsed.data;
+    const { full_name, phone, avatar_url, bank_name, bank_account_name, bank_account_number } = parsed.data;
     const trimmedAvatar = avatar_url?.trim() ?? "";
     if (trimmedAvatar.length > 0 && !z.string().url().safeParse(trimmedAvatar).success) {
       return { success: false, error: "URL foto tidak valid." };
@@ -36,6 +39,9 @@ export async function updateProfileAction(values: z.infer<typeof profileSchema>)
         full_name: full_name?.trim() || null,
         phone: phone?.trim() || null,
         avatar_url: trimmedAvatar.length > 0 ? trimmedAvatar : null,
+        bank_name: bank_name?.trim() || null,
+        bank_account_name: bank_account_name?.trim() || null,
+        bank_account_number: bank_account_number?.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);

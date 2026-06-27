@@ -106,10 +106,16 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirectTo=/dashboard/orders/${id}`);
 
-  const [detail, reviewedIds, existingReviews] = await Promise.all([
+  const [detail, reviewedIds, existingReviews, profileRow] = await Promise.all([
     fetchOrderDetailForUser(user.id, id),
     fetchReviewedProductIdsForOrder(user.id, id),
     fetchReviewsForOrder(user.id, id),
+    supabase
+      .from("profiles")
+      .select("bank_name, bank_account_name, bank_account_number")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then((r) => r.data),
   ]);
   if (!detail) notFound();
 
@@ -362,7 +368,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           )}
           <OrderToolbar
             orderId={order.id}
+            orderNumber={order.order_number}
             status={order.status}
+            paymentType={paidPayment?.payment_type}
+            savedBank={profileRow}
             allReviewed={allReviewed}
           />
         </div>
