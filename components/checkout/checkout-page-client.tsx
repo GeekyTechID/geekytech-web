@@ -21,10 +21,6 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  MIDTRANS_CHECKOUT_PAYMENT_OPTIONS,
-  type MidtransCheckoutPaymentId,
-} from "@/lib/constants/midtrans-checkout-payments";
 import { deleteUnpaidOrderAction } from "@/app/(dashboard)/dashboard/orders/_actions";
 
 type AddressRow = {
@@ -118,32 +114,6 @@ function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { co
   );
 }
 
-const PAYMENT_LOGOS: Record<string, string> = {
-  gopay: "/payments/gopay_horizontal.svg",
-  shopeepay: "/payments/shopeepay_rectangle_orange.svg",
-  qris: "/payments/qris.png",
-  bca_va: "/payments/bca.png",
-  bni_va: "/payments/bni.png",
-  bri_va: "/payments/bri.png",
-  permata_va: "/payments/permata_bank.png",
-  echannel: "/payments/mandiri.png",
-  indomaret: "/payments/indomaret.png",
-  alfamart: "/payments/alfamart.png",
-};
-
-function PaymentLogo({ id, label, className = "h-8 w-auto max-w-[80px]" }: { id: string; label: string; className?: string }) {
-  const src = PAYMENT_LOGOS[id];
-  if (!src) return null;
-  return (
-    <img
-      src={src}
-      alt={label}
-      className={`shrink-0 object-contain ${className}`}
-      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-    />
-  );
-}
-
 // Defined outside component — stateless, no deps on React state
 function loadSnapScript(clientKey: string, isProduction: boolean): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -188,8 +158,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [couponLabel, setCouponLabel] = useState("");
   const [couponApplying, setCouponApplying] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<MidtransCheckoutPaymentId>("bni_va");
-  const [paymentOpen, setPaymentOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [countdown, setCountdown] = useState(5);
@@ -237,11 +205,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const selectedAddress = useMemo(
     () => addresses.find((a) => a.id === addressId) ?? null,
     [addresses, addressId],
-  );
-
-  const selectedPaymentOption = useMemo(
-    () => MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.find((m) => m.id === paymentMethod) ?? null,
-    [paymentMethod],
   );
 
   const couponEligibilityList = useMemo(
@@ -403,7 +366,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           serviceCode: selectedShipping.serviceCode,
           ratesSource: "biteship",
           couponCode: couponInput.trim() || null,
-          paymentMethod,
           ...(isBuyNow
             ? { buyNow: { variantId: lines[0]!.variantId, qty: lines[0]!.qty } }
             : { lineIds: lines.map((l) => l.lineId) }),
@@ -791,85 +753,21 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
-            <Collapsible
-              open={paymentOpen}
-              onOpenChange={setPaymentOpen}
-              className="overflow-hidden rounded-2xl border border-[#e8e4dc] bg-white shadow-sm"
-            >
-              <CollapsibleTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className={cn(
-                    "h-auto w-full justify-between rounded-none px-4 py-4 hover:bg-transparent",
-                    !paymentOpen
-                      ? "bg-white text-[#1d1d1f]"
-                      : "bg-[#2a2a2c] text-white hover:bg-[#2a2a2c]",
-                  )}
-                >
-                  <span className="text-sm font-semibold uppercase">Metode pembayaran</span>
-                  {!paymentOpen ? (
-                    <span className="flex items-center gap-2">
-                      <PaymentLogo id={paymentMethod} label={selectedPaymentOption?.label ?? ""} className="h-6 w-auto max-w-[64px]" />
-                      <span className="text-sm font-semibold text-[#1d1d1f]">
-                        {selectedPaymentOption?.label}
-                      </span>
-                      <ChevronDown className="h-4 w-4 shrink-0 text-[#1d1d1f] opacity-50" aria-hidden />
-                    </span>
-                  ) : (
-                    <ChevronUp className="h-4 w-4 opacity-80" aria-hidden />
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-5">
-              <ul className="space-y-2">
-                {MIDTRANS_CHECKOUT_PAYMENT_OPTIONS.map((m) => (
-                  <li key={m.id}>
-                    <label
-                      className={cn(
-                        "flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-3 text-sm transition",
-                        paymentMethod === m.id ? "border-[#EA5329] bg-[#fff8f5]" : "border-[#e8e4dc] hover:border-[#EA5329]/40",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="pay"
-                        checked={paymentMethod === m.id}
-                        onChange={() => {
-                          setPaymentMethod(m.id);
-                          setPaymentOpen(false);
-                        }}
-                        className="accent-[#EA5329]"
-                      />
-                      <span className="flex flex-1 items-center gap-3">
-                        <span className="flex h-9 w-[68px] shrink-0 items-center justify-center rounded-lg bg-[#f5f5f7]">
-                          <PaymentLogo id={m.id} label={m.label} className="h-7 w-auto max-w-[60px]" />
-                        </span>
-                        <span className="font-medium text-[#1d1d1f]">{m.label}</span>
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              </CollapsibleContent>
-
-              <div className="p-5 pt-0">
+            <div className="rounded-2xl border border-[#e8e4dc] bg-white p-5 shadow-sm">
               <Button
                 type="button"
                 variant="primary"
                 loading={submitting}
                 disabled={!addressId || !selectedShipping || addresses.length === 0}
                 onClick={() => void handleCheckout()}
-                className="mt-6 w-full uppercase"
+                className="w-full uppercase"
               >
                 Beli sekarang
               </Button>
               <p className="mt-3 text-center text-[10px] leading-relaxed text-[#9a9590]">
-                Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko. Asuransi pengiriman
-                mengikuti ketentuan kurir (Biteship).
+                Pilih metode pembayaran di langkah berikutnya. Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko.
               </p>
-              </div>
-            </Collapsible>
+            </div>
 
           </aside>
         </div>

@@ -35,6 +35,14 @@ function verifySignature(
   return hash === sig;
 }
 
+function resolvePaymentType(notification: MidtransNotification): string | null {
+  if (!notification.payment_type) return null;
+  if (notification.payment_type === "bank_transfer" && notification.va_numbers?.[0]?.bank) {
+    return `${notification.va_numbers[0].bank}_va`;
+  }
+  return notification.payment_type;
+}
+
 async function applySettlement(orderId: string, notification: MidtransNotification) {
   const svc = createServiceClient();
 
@@ -211,8 +219,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
       status: "paid",
       paid_at: new Date().toISOString(),
       midtrans_transaction_id: notification.transaction_id ?? null,
-      // Simpan payment_type aktual dari Midtrans (bisa beda dari pilihan awal user, misal pilih gopay tapi bayar credit_card di Snap)
-      ...(notification.payment_type ? { payment_type: notification.payment_type } : {}),
+      ...(resolvePaymentType(notification) ? { payment_type: resolvePaymentType(notification) } : {}),
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       pdf_url: notification.pdf_url ?? null,
@@ -233,10 +240,12 @@ function midtransExpiryToISO(t: string | undefined | null): string | null {
 async function applyPending(orderId: string, notification: MidtransNotification) {
   const svc = createServiceClient();
   const vaNumber = notification.va_numbers?.[0]?.va_number ?? null;
+  const resolvedType = resolvePaymentType(notification);
   await svc
     .from("payments")
     .update({
       midtrans_transaction_id: notification.transaction_id ?? null,
+      ...(resolvedType ? { payment_type: resolvedType } : {}),
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       expiry_time: midtransExpiryToISO(notification.expiry_time),
