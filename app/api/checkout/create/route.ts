@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
+import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
@@ -465,6 +466,29 @@ export async function POST(req: Request) {
       type: "new_order",
       data: { orderId: order.id, orderNumber: order.order_number },
     });
+
+    if (user.email) {
+      sendOrderConfirmation({
+        to: user.email,
+        name: address.recipient,
+        orderNumber: order.order_number,
+        orderId: order.id,
+        items: orderLines.map((l) => ({
+          name: l.productName,
+          variantName: l.variantName,
+          qty: l.qty,
+          unitPrice: Math.round(l.unitPrice),
+        })),
+        subtotal: subtotalRounded,
+        discount: discountAmount,
+        shipping: shippingCost,
+        fee: APP_SERVICE_FEE,
+        total,
+        courierName: ship.courierName,
+        serviceName: ship.serviceName,
+        etd: ship.etd,
+      }).catch(() => {});
+    }
 
     return Response.json({
       success: true,

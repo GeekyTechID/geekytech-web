@@ -1,5 +1,8 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
+import { getUserEmail } from "@/lib/email/get-user-email";
+import { sendOrderShipped } from "@/lib/email/send-order-shipped";
+import { sendOrderDelivered } from "@/lib/email/send-order-delivered";
 import type { Database, Json } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
@@ -203,6 +206,40 @@ export async function POST(req: Request) {
           type: "order_delivered",
           data: { orderId: shipment.order_id },
         });
+      }
+
+      // Email: kirim saat picking_up/picked/dropping_off (idempotency key cegah duplikat)
+      if (
+        newShipStatus === "picking_up" ||
+        newShipStatus === "picked" ||
+        newShipStatus === "dropping_off"
+      ) {
+        getUserEmail(orderRow.user_id).then((user) => {
+          if (user) {
+            sendOrderShipped({
+              to: user.email,
+              name: user.name,
+              orderNumber: orderRow.order_number!,
+              orderId: orderRow.id,
+              awb: awb ?? undefined,
+              courierCompany: body.courier_company ?? undefined,
+              trackingUrl: body.courier_link ?? undefined,
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
+
+      if (newShipStatus === "delivered") {
+        getUserEmail(orderRow.user_id).then((user) => {
+          if (user) {
+            sendOrderDelivered({
+              to: user.email,
+              name: user.name,
+              orderNumber: orderRow.order_number!,
+              orderId: orderRow.id,
+            }).catch(() => {});
+          }
+        }).catch(() => {});
       }
     }
 
