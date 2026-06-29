@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const activationUrl = data.properties.action_link;
+    const activationUrl = data.properties?.action_link;
 
     await sendWelcomeEmail({ to: email, name: fullName, activationUrl }).catch((err) => {
       console.error("[auth/register] sendWelcomeEmail error:", err);
