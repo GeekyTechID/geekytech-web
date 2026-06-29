@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
@@ -31,6 +32,39 @@ async function verifyTurnstile(token: string): Promise<boolean> {
   }
 }
 
+/**
+ * Cek apakah email yang sudah terdaftar di auth boleh didaftarkan ulang.
+ * Kasus: admin sudah hapus user (soft-delete di profiles), tapi auth.users masih ada.
+ * Jika iya: hard-delete auth user lama agar email bebas, return true.
+ */
+async function tryCleanupDeletedAuthUser(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
+  email: string,
+): Promise<boolean> {
+  // Cari user di auth berdasarkan email
+  const { data: userList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  const existingUser = userList?.users.find((u) => u.email === email);
+  if (!existingUser) return false;
+
+  // Jangan hapus akun admin
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, deleted_at")
+    .eq("id", existingUser.id)
+    .maybeSingle();
+
+  if (profile?.role === "admin") return false;
+
+  // User sudah soft-deleted atau profile tidak ada (orphan) → boleh re-register
+  if (!profile || profile.deleted_at) {
+    await supabase.auth.admin.deleteUser(existingUser.id);
+    return true;
+  }
+
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: unknown = await request.json();
@@ -60,11 +94,10 @@ export async function POST(request: NextRequest) {
 
     const fullName = `${first_name.trim()} ${last_name.trim()}`.trim();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id";
-
     const supabase = createServiceClient();
 
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: "signup",
+    const generateLinkParams = {
+      type: "signup" as const,
       email,
       password,
       options: {
@@ -76,22 +109,37 @@ export async function POST(request: NextRequest) {
         },
         redirectTo: `${appUrl}/auth/callback?next=/dashboard`,
       },
-    });
+    };
+
+    let { data, error } = await supabase.auth.admin.generateLink(generateLinkParams);
 
     if (error) {
       const msg = error.message.toLowerCase();
-      if (
+      const isAlreadyRegistered =
         msg.includes("already registered") ||
         msg.includes("already been registered") ||
-        msg.includes("user already exists")
-      ) {
-        return NextResponse.json({ success: false, error: "EMAIL_EXISTS" }, { status: 409 });
+        msg.includes("user already exists");
+
+      if (isAlreadyRegistered) {
+        // Cek apakah user sudah dihapus (soft-delete) tapi masih ada di auth
+        const cleaned = await tryCleanupDeletedAuthUser(supabase, email);
+        if (cleaned) {
+          // Retry setelah auth user lama dihapus
+          const retry = await supabase.auth.admin.generateLink(generateLinkParams);
+          data = retry.data;
+          error = retry.error;
+        }
+
+        if (error || !data) {
+          return NextResponse.json({ success: false, error: "EMAIL_EXISTS" }, { status: 409 });
+        }
+      } else {
+        console.error("[auth/register] generateLink error:", error);
+        return NextResponse.json(
+          { success: false, error: "Terjadi kesalahan. Coba lagi." },
+          { status: 500 },
+        );
       }
-      console.error("[auth/register] generateLink error:", error);
-      return NextResponse.json(
-        { success: false, error: "Terjadi kesalahan. Coba lagi." },
-        { status: 500 },
-      );
     }
 
     const activationUrl = data.properties.action_link;
