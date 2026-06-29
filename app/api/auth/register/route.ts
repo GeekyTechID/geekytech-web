@@ -42,12 +42,10 @@ async function tryCleanupDeletedAuthUser(
   supabase: SupabaseClient<any>,
   email: string,
 ): Promise<boolean> {
-  // Cari user di auth berdasarkan email
   const { data: userList } = await supabase.auth.admin.listUsers({ perPage: 1000 });
   const existingUser = userList?.users.find((u) => u.email === email);
   if (!existingUser) return false;
 
-  // Jangan hapus akun admin
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, deleted_at")
@@ -56,7 +54,6 @@ async function tryCleanupDeletedAuthUser(
 
   if (profile?.role === "admin") return false;
 
-  // User sudah soft-deleted atau profile tidak ada (orphan) → boleh re-register
   if (!profile || profile.deleted_at) {
     await supabase.auth.admin.deleteUser(existingUser.id);
     return true;
@@ -96,7 +93,6 @@ export async function POST(request: NextRequest) {
 
     // Gunakan origin dari request agar link aktivasi mengarah ke server yang sama
     // (Vercel preview → Vercel, VPS production → VPS).
-    // Fallback ke NEXT_PUBLIC_APP_URL hanya jika berjalan di localhost.
     const reqUrl = new URL(request.url);
     const callbackOrigin =
       reqUrl.hostname === "localhost" || reqUrl.hostname === "127.0.0.1"
@@ -105,25 +101,25 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient();
 
-    const generateLinkParams = {
-      type: "signup" as const,
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone.trim(),
-          first_name: first_name.trim(),
-          last_name: last_name.trim(),
-        },
-        redirectTo: `${callbackOrigin}/auth/callback?next=/dashboard`,
-      },
+    const userMetadata = {
+      full_name: fullName,
+      phone: phone.trim(),
+      first_name: first_name.trim(),
+      last_name: last_name.trim(),
     };
 
-    let { data, error } = await supabase.auth.admin.generateLink(generateLinkParams);
+    // Buat user dengan email langsung dikonfirmasi.
+    // Tidak pakai generateLink({ type: "signup" }) karena menghasilkan OTP yang
+    // langsung tidak valid jika Supabase project punya email confirmation disabled.
+    let { data: createData, error: createError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: userMetadata,
+    });
 
-    if (error) {
-      const msg = error.message.toLowerCase();
+    if (createError) {
+      const msg = createError.message.toLowerCase();
       const isAlreadyRegistered =
         msg.includes("already registered") ||
         msg.includes("already been registered") ||
@@ -133,17 +129,21 @@ export async function POST(request: NextRequest) {
         // Cek apakah user sudah dihapus (soft-delete) tapi masih ada di auth
         const cleaned = await tryCleanupDeletedAuthUser(supabase, email);
         if (cleaned) {
-          // Retry setelah auth user lama dihapus
-          const retry = await supabase.auth.admin.generateLink(generateLinkParams);
-          data = retry.data;
-          error = retry.error;
+          const retry = await supabase.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: userMetadata,
+          });
+          createData = retry.data;
+          createError = retry.error;
         }
 
-        if (error || !data) {
+        if (createError || !createData?.user) {
           return NextResponse.json({ success: false, error: "EMAIL_EXISTS" }, { status: 409 });
         }
       } else {
-        console.error("[auth/register] generateLink error:", error);
+        console.error("[auth/register] createUser error:", createError);
         return NextResponse.json(
           { success: false, error: "Terjadi kesalahan. Coba lagi." },
           { status: 500 },
@@ -151,7 +151,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const activationUrl = data.properties?.action_link;
+    // Generate magic link untuk tombol "Mulai Belanja" di email.
+    // Magic link tidak bergantung pada email confirmation setting.
+    const { data: linkData } = await supabase.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: {
+        redirectTo: `${callbackOrigin}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    const activationUrl = linkData?.properties?.action_link;
 
     await sendWelcomeEmail({ to: email, name: fullName, activationUrl }).catch((err) => {
       console.error("[auth/register] sendWelcomeEmail error:", err);
