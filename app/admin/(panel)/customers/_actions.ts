@@ -47,13 +47,22 @@ export async function updateCustomer(
 export async function deleteCustomer(id: string): Promise<{ error?: string }> {
   const supabase = createServiceClient();
 
-  // Soft delete — pelanggan tidak muncul di daftar tapi data tetap ada
-  const { error } = await supabase
+  // Guard: jangan hapus admin
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .update({ deleted_at: new Date().toISOString() })
+    .select("role")
     .eq("id", id)
-    .neq("role", "admin"); // guard: jangan bisa hapus admin
+    .single();
 
+  if (profileError || !profile) return { error: "Pelanggan tidak ditemukan." };
+  if (profile.role === "admin") return { error: "Tidak bisa menghapus akun admin." };
+
+  // Hard delete dari Supabase Auth:
+  // - Otomatis hapus profiles (ON DELETE CASCADE) + semua data user lainnya
+  // - Orders tetap tersimpan dengan user_id = NULL (ON DELETE SET NULL)
+  // - Semua session browser aktif langsung tidak valid
+  // - Email bisa didaftarkan ulang
+  const { error } = await supabase.auth.admin.deleteUser(id);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/customers");
