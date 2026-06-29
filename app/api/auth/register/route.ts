@@ -108,13 +108,10 @@ export async function POST(request: NextRequest) {
       last_name: last_name.trim(),
     };
 
-    // Buat user dengan email langsung dikonfirmasi.
-    // Tidak pakai generateLink({ type: "signup" }) karena menghasilkan OTP yang
-    // langsung tidak valid jika Supabase project punya email confirmation disabled.
     let { data: createData, error: createError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: false,
       user_metadata: userMetadata,
     });
 
@@ -132,7 +129,7 @@ export async function POST(request: NextRequest) {
           const retry = await supabase.auth.admin.createUser({
             email,
             password,
-            email_confirm: true,
+            email_confirm: false,
             user_metadata: userMetadata,
           });
           createData = retry.data;
@@ -151,8 +148,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate magic link untuk tombol "Mulai Belanja" di email.
-    // Magic link tidak bergantung pada email confirmation setting.
+    // Generate magic link untuk tombol aktivasi di email.
+    // Pakai hashed_token (bukan action_link) agar URL mengarah langsung ke app kita
+    // dan diverifikasi via verifyOtp() di callback — menghindari implicit flow Supabase
+    // yang mengirim token lewat hash fragment (#) yang tidak terbaca server.
     const { data: linkData } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -161,7 +160,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const activationUrl = linkData?.properties?.action_link;
+    const tokenHash = linkData?.properties?.hashed_token;
+    const activationUrl = tokenHash
+      ? `${callbackOrigin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=/dashboard`
+      : undefined;
 
     await sendWelcomeEmail({ to: email, name: fullName, activationUrl }).catch((err) => {
       console.error("[auth/register] sendWelcomeEmail error:", err);

@@ -35,14 +35,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (code) {
-    // Buat response redirect dulu, lalu set cookies LANGSUNG ke response ini.
-    // Jika cookies di-set ke cookieStore (next/headers) dan response dibuat
-    // terpisah via NextResponse.redirect(), cookies tidak ikut terbawa ke browser.
-    const redirectUrl = new URL(next, origin);
-    const response = NextResponse.redirect(redirectUrl);
-
-    const supabase = createServerClient<Database>(
+  // Helper: buat Supabase server client yang menulis cookies ke `response`.
+  function makeSupabaseWithResponse(response: ReturnType<typeof NextResponse.redirect>) {
+    return createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -58,6 +53,15 @@ export async function GET(request: NextRequest) {
         },
       },
     );
+  }
+
+  if (code) {
+    // Buat response redirect dulu, lalu set cookies LANGSUNG ke response ini.
+    // Jika cookies di-set ke cookieStore (next/headers) dan response dibuat
+    // terpisah via NextResponse.redirect(), cookies tidak ikut terbawa ke browser.
+    const redirectUrl = new URL(next, origin);
+    const response = NextResponse.redirect(redirectUrl);
+    const supabase = makeSupabaseWithResponse(response);
 
     const { data, error: exchangeError } =
       await supabase.auth.exchangeCodeForSession(code);
@@ -77,9 +81,40 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Tidak ada code & tidak ada query-param error.
-  // Kemungkinan hash-based error dari Supabase (misal #error=otp_expired) —
-  // fragment tidak dikirim ke server, jadi tidak bisa dibaca di sini.
+  // Token-hash flow: link aktivasi email yang dibangun dari hashed_token.
+  // Tidak melewati server Supabase (/auth/v1/verify) sehingga tidak ada
+  // masalah implicit flow / hash fragment yang tidak terbaca server.
+  const tokenHash = searchParams.get("token_hash");
+  const typeParam = searchParams.get("type") as
+    | "signup"
+    | "invite"
+    | "magiclink"
+    | "recovery"
+    | "email_change"
+    | "email"
+    | null;
+
+  if (tokenHash && typeParam) {
+    const redirectUrl = new URL(next, origin);
+    const response = NextResponse.redirect(redirectUrl);
+    const supabase = makeSupabaseWithResponse(response);
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: typeParam,
+    });
+
+    if (!verifyError) return response;
+
+    const failUrl = new URL("/login", origin);
+    failUrl.searchParams.set(
+      "error",
+      "Link aktivasi tidak valid atau sudah kedaluwarsa. Silakan minta link baru.",
+    );
+    return NextResponse.redirect(failUrl);
+  }
+
+  // Tidak ada code / token_hash — parameter tidak dikenali.
   const failUrl = new URL("/login", origin);
   failUrl.searchParams.set(
     "error",
