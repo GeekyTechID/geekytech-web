@@ -123,14 +123,16 @@ export function ProductDetailClient({
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
   const currentImage = images[safeImgIndex];
 
-  // Scroll active thumbnail into view whenever the displayed image changes
+  // Scroll active thumbnail into view within the strip — uses container.scrollTo to avoid
+  // propagating to the window scroll (scrollIntoView with block:"nearest" can scroll the page
+  // on initial mount when the strip is below the fold).
   useEffect(() => {
-    if (!thumbContainerRef.current) return;
-    (thumbContainerRef.current.children[safeImgIndex] as HTMLElement | undefined)?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "nearest",
-    });
+    const container = thumbContainerRef.current;
+    if (!container) return;
+    const el = container.children[safeImgIndex] as HTMLElement | undefined;
+    if (!el) return;
+    const targetLeft = el.offsetLeft - container.offsetWidth / 2 + el.offsetWidth / 2;
+    container.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [safeImgIndex]);
 
@@ -138,7 +140,6 @@ export function ProductDetailClient({
     if (!variant?.imageId) return images[0] ?? null;
     return images.find((img) => img.id === variant.imageId) ?? images[0] ?? null;
   }, [variant, images]);
-
   const description = product.description?.trim() ?? "";
   const showDescToggle = description.length > DESCRIPTION_PREVIEW_CHARS;
   const descriptionPreview = descExpanded ? description : description.slice(0, DESCRIPTION_PREVIEW_CHARS);

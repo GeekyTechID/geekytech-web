@@ -5,6 +5,12 @@ import { createBiteshipOrder } from "@/lib/biteship/create-order";
 import { ON_DEMAND_COURIERS, parseOriginCoords, resolveOnDemandCoords } from "@/lib/shipping/on-demand-coords";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
+import { getUserEmail } from "@/lib/email/get-user-email";
+import { sendPaymentConfirmed } from "@/lib/email/send-payment-confirmed";
+import { sendPaymentInstructions } from "@/lib/email/send-payment-instructions";
+import { sendOrderCancelled } from "@/lib/email/send-order-cancelled";
+import { sendRefundProcessed } from "@/lib/email/send-refund-processed";
+import { sendLowStockAlert } from "@/lib/email/send-low-stock-alert";
 import type { Json } from "@/types/supabase";
 
 type MidtransNotification = {
@@ -20,6 +26,7 @@ type MidtransNotification = {
   payment_code?: string;
   pdf_url?: string;
   expiry_time?: string;
+  refund_amount?: string;
 };
 
 function verifySignature(
@@ -35,11 +42,19 @@ function verifySignature(
   return hash === sig;
 }
 
+function resolvePaymentType(notification: MidtransNotification): string | null {
+  if (!notification.payment_type) return null;
+  if (notification.payment_type === "bank_transfer" && notification.va_numbers?.[0]?.bank) {
+    return `${notification.va_numbers[0].bank}_va`;
+  }
+  return notification.payment_type;
+}
+
 async function applySettlement(orderId: string, notification: MidtransNotification) {
   const svc = createServiceClient();
 
   const [{ data: order }, { data: settingsRow }] = await Promise.all([
-    svc.from("orders").select("id, status, user_id").eq("order_number", orderId).maybeSingle(),
+    svc.from("orders").select("id, status, user_id, total").eq("order_number", orderId).maybeSingle(),
     svc.from("settings").select("value").eq("key", "store_origin").maybeSingle(),
   ]);
   const storeOrigin = (settingsRow?.value ?? null) as { lat?: string; lng?: string } | null;
@@ -63,6 +78,18 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
         type: "payment_confirmed",
         data: { orderId: order.id, orderNumber: orderId },
       });
+
+      getUserEmail(order.user_id).then((user) => {
+        if (user) {
+          sendPaymentConfirmed({
+            to: user.email,
+            name: user.name,
+            orderNumber: orderId,
+            orderId: order.id,
+            total: order.total,
+          }).catch(() => {});
+        }
+      }).catch(() => {});
     }
 
     await createAdminNotification({
@@ -75,7 +102,7 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
     // Deduct stock and clear reservation
     const { data: items } = await svc
       .from("order_items")
-      .select("variant_id, quantity")
+      .select("variant_id, quantity, product_name, variant_name, sku")
       .eq("order_id", order.id);
 
     if (items) {
@@ -104,6 +131,13 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
             type: "low_stock",
             data: { variantId: item.variant_id, stock: newStock, orderId: order.id },
           });
+          sendLowStockAlert({
+            productName: item.product_name,
+            variantName: item.variant_name,
+            sku: item.sku ?? null,
+            stock: newStock,
+            orderNumber: orderId,
+          }).catch(() => {});
         }
         await svc.from("stock_history").insert({
           variant_id: item.variant_id,
@@ -205,12 +239,15 @@ async function applySettlement(orderId: string, notification: MidtransNotificati
   }
 
   const vaNumber = notification.va_numbers?.[0]?.va_number ?? null;
+  const resolvedPaymentType = resolvePaymentType(notification);
   await svc
     .from("payments")
     .update({
       status: "paid",
       paid_at: new Date().toISOString(),
       midtrans_transaction_id: notification.transaction_id ?? null,
+      // Only overwrite if we resolved to something more specific than the generic "bank_transfer"
+      ...(resolvedPaymentType && resolvedPaymentType !== "bank_transfer" ? { payment_type: resolvedPaymentType } : {}),
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       pdf_url: notification.pdf_url ?? null,
@@ -231,10 +268,14 @@ function midtransExpiryToISO(t: string | undefined | null): string | null {
 async function applyPending(orderId: string, notification: MidtransNotification) {
   const svc = createServiceClient();
   const vaNumber = notification.va_numbers?.[0]?.va_number ?? null;
+  const vaBank = notification.va_numbers?.[0]?.bank ?? null;
+  const resolvedType = resolvePaymentType(notification);
+
   await svc
     .from("payments")
     .update({
       midtrans_transaction_id: notification.transaction_id ?? null,
+      ...(resolvedType && resolvedType !== "bank_transfer" ? { payment_type: resolvedType } : {}),
       va_number: vaNumber,
       payment_code: notification.payment_code ?? null,
       expiry_time: midtransExpiryToISO(notification.expiry_time),
@@ -242,6 +283,131 @@ async function applyPending(orderId: string, notification: MidtransNotification)
     })
     .eq("midtrans_order_id", orderId)
     .eq("status", "pending");
+
+  // Send payment instructions email (fire-and-forget)
+  const { data: order } = await svc
+    .from("orders")
+    .select("id, user_id, total")
+    .eq("order_number", orderId)
+    .maybeSingle();
+
+  if (order?.user_id) {
+    getUserEmail(order.user_id).then((user) => {
+      if (user) {
+        sendPaymentInstructions({
+          to: user.email,
+          name: user.name,
+          orderNumber: orderId,
+          orderId: order.id,
+          total: order.total,
+          paymentType: resolvedType,
+          vaBank,
+          vaNumber,
+          paymentCode: notification.payment_code ?? null,
+          pdfUrl: notification.pdf_url ?? null,
+          expiryTime: midtransExpiryToISO(notification.expiry_time),
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }
+}
+
+async function applyRefund(orderId: string) {
+  const svc = createServiceClient();
+
+  const { data: order } = await svc
+    .from("orders")
+    .select("id, status, user_id")
+    .eq("order_number", orderId)
+    .maybeSingle();
+
+  if (!order) return;
+
+  await svc
+    .from("orders")
+    .update({ status: "refunded", updated_at: new Date().toISOString() })
+    .eq("id", order.id);
+
+  await svc.from("order_status_history").insert({
+    order_id: order.id,
+    status: "refunded",
+    note: "Dana dikembalikan — refund dikonfirmasi oleh Midtrans.",
+    changed_by: null,
+  });
+
+  await svc
+    .from("payments")
+    .update({ status: "refunded" })
+    .eq("midtrans_order_id", orderId);
+
+  if (order.user_id) {
+    await createNotification({
+      userId: order.user_id,
+      title: "Dana Sudah Dikembalikan",
+      body: `Refund untuk pesanan ${orderId} telah dikonfirmasi Midtrans. Dana akan masuk dalam 1–14 hari kerja sesuai kebijakan bank.`,
+      type: "payment_refunded",
+      data: { orderId: order.id, orderNumber: orderId },
+    });
+
+    getUserEmail(order.user_id).then((user) => {
+      if (user) {
+        sendRefundProcessed({
+          to: user.email,
+          name: user.name,
+          orderNumber: orderId,
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }
+
+  await createAdminNotification({
+    title: "Refund Dikonfirmasi Midtrans",
+    body: `Midtrans mengkonfirmasi refund untuk pesanan ${orderId}. Dana dalam proses pengembalian ke customer.`,
+    type: "payment_refunded",
+    data: { orderId: order.id, orderNumber: orderId },
+  });
+}
+
+async function applyChallenge(orderId: string) {
+  const svc = createServiceClient();
+
+  const { data: order } = await svc
+    .from("orders")
+    .select("id, status, user_id")
+    .eq("order_number", orderId)
+    .maybeSingle();
+
+  if (!order) return;
+
+  await svc
+    .from("payments")
+    .update({ status: "challenge" })
+    .eq("midtrans_order_id", orderId)
+    .eq("status", "pending");
+
+  await svc.from("order_status_history").insert({
+    order_id: order.id,
+    status: order.status,
+    note: "Pembayaran ditandai 'challenge' oleh Midtrans — perlu review manual di Midtrans Dashboard.",
+    changed_by: null,
+  });
+
+  if (order.user_id) {
+    await createNotification({
+      userId: order.user_id,
+      title: "Pembayaran Sedang Diverifikasi",
+      body: `Pembayaran untuk pesanan ${orderId} sedang dalam proses verifikasi. Kami akan segera mengabari hasilnya.`,
+      type: "payment_challenge",
+      data: { orderId: order.id, orderNumber: orderId },
+    });
+  }
+
+  await createAdminNotification({
+    title: "Pembayaran Perlu Review",
+    body: `Pesanan ${orderId} ditandai "challenge" oleh sistem fraud Midtrans. Accept atau Deny di Midtrans Dashboard → Transactions.`,
+    type: "payment_challenge",
+    data: { orderId: order.id, orderNumber: orderId },
+  });
 }
 
 async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled" | "expired" | "failed") {
@@ -308,6 +474,19 @@ async function applyCancelOrExpire(orderId: string, newPaymentStatus: "cancelled
       type: `payment_${newPaymentStatus}`,
       data: { orderId: order.id, orderNumber: orderId },
     });
+
+    getUserEmail(order.user_id).then((user) => {
+      if (user) {
+        sendOrderCancelled({
+          to: user.email,
+          name: user.name,
+          orderNumber: orderId,
+          reason: newPaymentStatus === "expired" ? "expired"
+            : newPaymentStatus === "failed" ? "failed"
+            : "cancelled",
+        }).catch(() => {});
+      }
+    }).catch(() => {});
   }
 
   await createAdminNotification({
@@ -349,6 +528,10 @@ export async function POST(req: Request) {
       await applyCancelOrExpire(body.order_id, "cancelled");
     } else if (txStatus === "deny" || fraudStatus === "deny") {
       await applyCancelOrExpire(body.order_id, "failed");
+    } else if (txStatus === "refund" || txStatus === "partial_refund") {
+      await applyRefund(body.order_id);
+    } else if (txStatus === "challenge") {
+      await applyChallenge(body.order_id);
     }
 
     return Response.json({ ok: true });

@@ -11,7 +11,19 @@ import { updateProfileAction } from "@/app/(dashboard)/dashboard/profile/_action
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuthStore } from "@/store/auth-store";
+
+const BANK_OPTIONS = [
+  "BCA", "BNI", "BRI", "Mandiri", "BSI", "CIMB Niaga",
+  "SeaBank", "Danamon", "Permata", "BTN", "Maybank", "OCBC", "Lainnya",
+];
 
 async function refreshProfileInAuthStore() {
   try {
@@ -28,6 +40,9 @@ type Profile = {
   full_name: string | null;
   phone: string | null;
   avatar_url: string | null;
+  bank_name: string | null;
+  bank_account_name: string | null;
+  bank_account_number: string | null;
 };
 
 export function ProfileForm({ profile }: { profile: Profile }) {
@@ -35,6 +50,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   const [pending, startTransition] = useTransition();
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url ?? "");
   const [uploading, setUploading] = useState(false);
+  const [bankName, setBankName] = useState(profile.bank_name ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initials = profile.full_name
@@ -79,6 +95,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             full_name: String(fd.get("full_name") ?? ""),
             phone: String(fd.get("phone") ?? ""),
             avatar_url: avatarUrl,
+            bank_name: bankName || undefined,
+            bank_account_name: String(fd.get("bank_account_name") ?? "") || undefined,
+            bank_account_number: String(fd.get("bank_account_number") ?? "") || undefined,
           });
           if (res.success) {
             toast.success("Profil diperbarui.");
@@ -145,6 +164,50 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <div>
         <Label htmlFor="phone">Nomor telepon</Label>
         <Input id="phone" name="phone" defaultValue={profile.phone ?? ""} className="mt-1 border-[#e0e0e0]" />
+      </div>
+
+      {/* Bank account section */}
+      <div className="space-y-4 border-t border-[#f0f0f0] pt-5">
+        <div>
+          <p className="text-sm font-semibold text-[#1d1d1f]">Rekening bank</p>
+          <p className="mt-0.5 text-[12px] text-[#7a7a7a]">
+            Digunakan untuk pengembalian dana jika pesanan dibatalkan setelah pembayaran.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="profile-bank-name">Nama bank</Label>
+          <Select value={bankName} onValueChange={setBankName}>
+            <SelectTrigger id="profile-bank-name" className="mt-1 border-[#e0e0e0]">
+              <SelectValue placeholder="Pilih bank..." />
+            </SelectTrigger>
+            <SelectContent>
+              {BANK_OPTIONS.map((b) => (
+                <SelectItem key={b} value={b}>{b}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="bank_account_name">Nama pemilik rekening</Label>
+          <Input
+            id="bank_account_name"
+            name="bank_account_name"
+            defaultValue={profile.bank_account_name ?? ""}
+            placeholder="Sesuai buku tabungan / ATM"
+            className="mt-1 border-[#e0e0e0]"
+          />
+        </div>
+        <div>
+          <Label htmlFor="bank_account_number">Nomor rekening</Label>
+          <Input
+            id="bank_account_number"
+            name="bank_account_number"
+            defaultValue={profile.bank_account_number ?? ""}
+            placeholder="Contoh: 1234567890"
+            inputMode="numeric"
+            className="mt-1 border-[#e0e0e0] font-mono"
+          />
+        </div>
       </div>
 
       <Button type="submit" variant="primary" loading={pending || uploading}>

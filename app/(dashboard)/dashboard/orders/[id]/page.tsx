@@ -106,15 +106,25 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirectTo=/dashboard/orders/${id}`);
 
-  const [detail, reviewedIds, existingReviews] = await Promise.all([
+  const [detail, reviewedIds, existingReviews, profileRow] = await Promise.all([
     fetchOrderDetailForUser(user.id, id),
     fetchReviewedProductIdsForOrder(user.id, id),
     fetchReviewsForOrder(user.id, id),
+    supabase
+      .from("profiles")
+      .select("bank_name, bank_account_name, bank_account_number")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then((r) => r.data),
   ]);
   if (!detail) notFound();
 
   const { order, items, shipments } = detail;
   const payments = [...detail.payments];
+
+  const cancelNote = order.status === "cancelled"
+    ? detail.statusHistory.slice().reverse().find((h) => h.status === "cancelled")?.note ?? null
+    : null;
 
   // Sync VA/payment code from Midtrans if still pending and not yet stored
   if (order.status === "pending_payment") {
@@ -155,7 +165,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const hasPendingPayment = payments.some((p) => p.status === "pending");
   const paidPayment = payments.find((p) => p.status === "paid");
   const problemPayments = payments.filter((p) => PROBLEM_PAYMENT.includes(p.status));
-  const hasShipment = shipments.length > 0 || order.status === "shipped" || order.status === "delivered";
+  const hasShipment =
+    order.status !== "cancelled" &&
+    order.status !== "refunded" &&
+    (shipments.length > 0 || order.status === "shipped" || order.status === "delivered");
 
   // Most recent pending payment, fallback to any payment record
   const pendingPayment = payments.find((p) => p.status === "pending") ?? payments[0] ?? null;
@@ -308,6 +321,11 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${ORDER_STATUS_STYLES[order.status]}`}>
               {orderStatusLabel(order.status)}
             </span>
+            {cancelNote && (
+              <p className="max-w-[220px] text-right text-[11px] leading-snug text-red-500 sm:max-w-[240px]">
+                {cancelNote}
+              </p>
+            )}
             <p className="text-2xl font-black tabular-nums text-[#1d1d1f]">{formatRupiah(order.total)}</p>
           </div>
         </div>
@@ -353,7 +371,10 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
           )}
           <OrderToolbar
             orderId={order.id}
+            orderNumber={order.order_number}
             status={order.status}
+            paymentType={paidPayment?.payment_type}
+            savedBank={profileRow}
             allReviewed={allReviewed}
           />
         </div>

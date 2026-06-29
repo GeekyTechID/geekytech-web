@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
+import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
@@ -17,15 +18,12 @@ import {
   parseOriginCoords,
 } from "@/lib/shipping/on-demand-coords";
 
-const paymentMethods = ["gopay", "shopeepay", "qris", "bca_va", "bni_va", "bri_va", "permata_va", "echannel", "indomaret", "alfamart"] as const;
-
 const bodySchema = z.object({
   addressId: z.string().uuid(),
   courierCode: z.string().min(1).max(40),
   serviceCode: z.string().min(1).max(40),
   ratesSource: z.enum(["biteship"]),
   couponCode: z.string().max(64).optional().nullable(),
-  paymentMethod: z.enum(paymentMethods),
   lineIds: z.array(z.string()).min(1).optional().nullable(),
   buyNow: z.object({ variantId: z.string().uuid(), qty: z.number().int().min(1) }).optional().nullable(),
 });
@@ -316,7 +314,7 @@ export async function POST(req: Request) {
       midtrans_order_id: order.order_number,
       gross_amount: total,
       status: "pending",
-      payment_type: parsed.data.paymentMethod,
+      payment_type: null,
     });
     if (payErr) {
       await svc.from("orders").delete().eq("id", order.id);
@@ -362,11 +360,14 @@ export async function POST(req: Request) {
             email: user.email ?? "customer@geekytech.local",
             phone: address.phone.replace(/\D/g, "").slice(0, 20) || "081000000000",
           },
-          enabled_payments: [parsed.data.paymentMethod],
           ...(appUrl
             ? {
                 callbacks: {
                   finish: `${appUrl}/dashboard/orders/${order.id}`,
+                },
+                gopay: {
+                  enable_callback: true,
+                  callback_url: `${appUrl}/dashboard/orders/${order.id}`,
                 },
               }
             : {}),
@@ -465,6 +466,29 @@ export async function POST(req: Request) {
       type: "new_order",
       data: { orderId: order.id, orderNumber: order.order_number },
     });
+
+    if (user.email) {
+      sendOrderConfirmation({
+        to: user.email,
+        name: address.recipient,
+        orderNumber: order.order_number,
+        orderId: order.id,
+        items: orderLines.map((l) => ({
+          name: l.productName,
+          variantName: l.variantName,
+          qty: l.qty,
+          unitPrice: Math.round(l.unitPrice),
+        })),
+        subtotal: subtotalRounded,
+        discount: discountAmount,
+        shipping: shippingCost,
+        fee: APP_SERVICE_FEE,
+        total,
+        courierName: ship.courierName,
+        serviceName: ship.serviceName,
+        etd: ship.etd,
+      }).catch(() => {});
+    }
 
     return Response.json({
       success: true,

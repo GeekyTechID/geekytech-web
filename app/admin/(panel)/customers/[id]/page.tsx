@@ -9,6 +9,8 @@ import { formatRupiah, formatDate, formatRelativeDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import { Button } from "@/components/ui/button";
+import { CustomerEditDialog } from "../_components/customer-edit-dialog";
+import { CustomerDeleteButton } from "../_components/customer-delete-button";
 
 export const metadata: Metadata = { title: "Detail Pelanggan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -103,9 +105,16 @@ export default async function AdminCustomerDetailPage({ params, searchParams }: 
             {lastSignIn ? ` · Login terakhir ${formatRelativeDate(lastSignIn)}` : ""}
           </p>
         </div>
-        <span className="inline-flex shrink-0 items-center rounded-full border border-[#e0e0e0] px-3 py-1.5 text-xs font-semibold uppercase text-foreground">
-          {profile.role}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex shrink-0 items-center rounded-full border border-[#e0e0e0] px-3 py-1.5 text-xs font-semibold uppercase text-foreground">
+            {profile.role}
+          </span>
+          <CustomerEditDialog
+            customerId={id}
+            defaultValues={{ full_name: profile.full_name, phone: profile.phone }}
+          />
+          <CustomerDeleteButton customerId={id} customerName={profile.full_name} />
+        </div>
       </div>
 
       {/* Profile + Info + Addresses — single card */}

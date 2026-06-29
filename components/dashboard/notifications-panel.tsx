@@ -8,6 +8,7 @@ import { markAllNotificationsReadAction, markNotificationReadAction } from "@/ap
 import { useNotificationStore } from "@/store/notification-store";
 import { Button } from "@/components/ui/button";
 import { formatRelativeDate } from "@/lib/format";
+import { getNotificationTypeLabel } from "@/lib/notifications/format-notification-display";
 import type { Json } from "@/types/supabase";
 
 type Row = {
@@ -73,10 +74,13 @@ export function NotificationsPanel({ items }: { items: Row[] }) {
             <li key={n.id} className={`px-4 py-4 ${n.is_read ? "bg-white" : "bg-[#fafafa]"}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
+                  <span className="mb-1 inline-block rounded-full bg-[#f5f5f7] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#7a7a7a]">
+                    {getNotificationTypeLabel(n.type)}
+                  </span>
                   <p className="font-semibold text-[#1d1d1f]">{n.title}</p>
                   <p className="mt-1 text-sm leading-relaxed text-[#5c5c5c]">{n.body}</p>
                   <p className="mt-2 text-xs text-[#7a7a7a]">
-                    {formatRelativeDate(n.created_at)} · {n.type}
+                    {formatRelativeDate(n.created_at)}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">

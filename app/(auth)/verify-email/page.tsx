@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { ArrowLeft, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export default function VerifyEmailPage() {
@@ -30,21 +29,20 @@ function VerifyEmailContent() {
 
     setIsResending(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        },
+      const res = await fetch("/api/auth/resend-activation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        toast.error(error.message);
+      const json = (await res.json()) as { success: boolean; error?: string };
+
+      if (!json.success) {
+        toast.error(json.error ?? "Gagal kirim ulang. Coba lagi.");
         return;
       }
 
-      toast.success("Email verifikasi berhasil dikirim ulang.");
+      toast.success("Email aktivasi berhasil dikirim ulang. Cek inbox kamu.");
     } catch {
       toast.error("Terjadi kesalahan. Coba lagi.");
     } finally {
@@ -60,28 +58,38 @@ function VerifyEmailContent() {
 
       <div className="space-y-3">
         <h1 className="text-[28px] font-semibold leading-[1.14] text-[#1d1d1f]">
-          Verifikasi Email
+          Cek Email Kamu!
         </h1>
         <p className="text-[17px] font-normal leading-[1.47] text-[#1d1d1f]">
-          Kami telah mengirimkan link verifikasi ke{" "}
+          Kami sudah kirim email sambutan sekaligus link aktivasi ke{" "}
           {email ? (
             <span className="font-semibold">{email}</span>
           ) : (
-            "emailmu"
+            "alamat emailmu"
           )}
-          . Klik link tersebut untuk mengaktifkan akunmu.
+          .
+        </p>
+        <p className="text-[15px] font-normal leading-[1.6] text-[#1d1d1f]">
+          Klik tombol <span className="font-semibold">"Aktifkan Akun"</span> di
+          email tersebut untuk mulai belanja di GeekyTech.
         </p>
         <p className="text-[14px] font-normal leading-[1.43] text-[#7a7a7a]">
           Tidak menerima email? Cek folder{" "}
-          <span className="font-semibold text-[#1d1d1f]">spam</span> atau kirim
-          ulang di bawah.
+          <span className="font-semibold text-[#1d1d1f]">Spam</span> atau klik
+          tombol di bawah untuk kirim ulang.
         </p>
       </div>
 
       <div className="space-y-3">
         {email && (
-          <Button type="button" variant="primary" onClick={handleResend} loading={isResending} className="w-full">
-            Kirim ulang email verifikasi
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleResend}
+            loading={isResending}
+            className="w-full"
+          >
+            Kirim ulang email aktivasi
           </Button>
         )}
 
