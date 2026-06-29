@@ -93,7 +93,16 @@ export async function POST(request: NextRequest) {
     }
 
     const fullName = `${first_name.trim()} ${last_name.trim()}`.trim();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id";
+
+    // Gunakan origin dari request agar link aktivasi mengarah ke server yang sama
+    // (Vercel preview → Vercel, VPS production → VPS).
+    // Fallback ke NEXT_PUBLIC_APP_URL hanya jika berjalan di localhost.
+    const reqUrl = new URL(request.url);
+    const callbackOrigin =
+      reqUrl.hostname === "localhost" || reqUrl.hostname === "127.0.0.1"
+        ? (process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id")
+        : reqUrl.origin;
+
     const supabase = createServiceClient();
 
     const generateLinkParams = {
@@ -107,7 +116,7 @@ export async function POST(request: NextRequest) {
           first_name: first_name.trim(),
           last_name: last_name.trim(),
         },
-        redirectTo: `${appUrl}/auth/callback?next=/dashboard`,
+        redirectTo: `${callbackOrigin}/auth/callback?next=/dashboard`,
       },
     };
 

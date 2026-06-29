@@ -18,7 +18,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { email } = parsed.data;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id";
+
+    const reqUrl = new URL(request.url);
+    const callbackOrigin =
+      reqUrl.hostname === "localhost" || reqUrl.hostname === "127.0.0.1"
+        ? (process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id")
+        : reqUrl.origin;
+
     const supabase = createServiceClient();
 
     // Cek apakah user ada dan belum confirmed
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
       type: "magiclink",
       email,
       options: {
-        redirectTo: `${appUrl}/auth/callback?next=/dashboard`,
+        redirectTo: `${callbackOrigin}/auth/callback?next=/dashboard`,
       },
     });
 

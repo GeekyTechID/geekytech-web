@@ -26,7 +26,12 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     const redirectUrl = new URL("/login", origin);
-    redirectUrl.searchParams.set("error", errorDescription ?? error);
+    // otp_expired = link aktivasi kedaluwarsa atau sudah pernah dipakai
+    const friendlyMsg =
+      error === "access_denied" && errorDescription?.toLowerCase().includes("expired")
+        ? "Link aktivasi sudah kedaluwarsa. Silakan minta link baru."
+        : (errorDescription ?? error);
+    redirectUrl.searchParams.set("error", friendlyMsg);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -72,7 +77,13 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Tidak ada code & tidak ada query-param error.
+  // Kemungkinan hash-based error dari Supabase (misal #error=otp_expired) —
+  // fragment tidak dikirim ke server, jadi tidak bisa dibaca di sini.
   const failUrl = new URL("/login", origin);
-  failUrl.searchParams.set("error", "Autentikasi gagal. Coba lagi.");
+  failUrl.searchParams.set(
+    "error",
+    "Link aktivasi tidak valid atau sudah kedaluwarsa. Silakan minta link baru.",
+  );
   return NextResponse.redirect(failUrl);
 }
