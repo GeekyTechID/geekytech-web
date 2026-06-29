@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const activationUrl = data.properties.action_link;
+    const tokenHash = data.properties.hashed_token;
+    const activationUrl = `${callbackOrigin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=/dashboard`;
     const name =
       user.user_metadata?.full_name ?? user.user_metadata?.name ?? email;
 
