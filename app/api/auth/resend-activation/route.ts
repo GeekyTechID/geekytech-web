@@ -19,11 +19,8 @@ export async function POST(request: NextRequest) {
 
     const { email } = parsed.data;
 
-    const reqUrl = new URL(request.url);
     const callbackOrigin =
-      reqUrl.hostname === "localhost" || reqUrl.hostname === "127.0.0.1"
-        ? (process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id")
-        : reqUrl.origin;
+      process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
     const supabase = createServiceClient();
 

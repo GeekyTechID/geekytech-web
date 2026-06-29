@@ -91,13 +91,11 @@ export async function POST(request: NextRequest) {
 
     const fullName = `${first_name.trim()} ${last_name.trim()}`.trim();
 
-    // Gunakan origin dari request agar link aktivasi mengarah ke server yang sama
-    // (Vercel preview → Vercel, VPS production → VPS).
-    const reqUrl = new URL(request.url);
+    // NEXT_PUBLIC_APP_URL adalah sumber kebenaran per environment (localhost:3000
+    // lokal, geeky.id VPS, preview URL di Vercel). Fallback ke reqUrl.origin
+    // hanya jika env var tidak ada — mencegah cPanel proxy via 127.0.0.1 merusak URL.
     const callbackOrigin =
-      reqUrl.hostname === "localhost" || reqUrl.hostname === "127.0.0.1"
-        ? (process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id")
-        : reqUrl.origin;
+      process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
     const supabase = createServiceClient();
 
