@@ -1,7 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
+
+// 10 menit — cukup untuk OAuth flow selesai
+const NEW_USER_WINDOW_MS = 10 * 60 * 1000;
+
+function isNewOAuthUser(user: User): boolean {
+  const provider = user.app_metadata?.provider as string | undefined;
+  // Email/password: welcome email sudah dikirim saat register via /api/auth/register
+  if (!provider || provider === "email") return false;
+  // OAuth (Google, dll): cek apakah baru saja dibuat
+  return Date.now() - new Date(user.created_at).getTime() < NEW_USER_WINDOW_MS;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -46,18 +58,15 @@ export async function GET(request: NextRequest) {
       await supabase.auth.exchangeCodeForSession(code);
 
     if (!exchangeError) {
-      // Kirim welcome email untuk user yang baru daftar (created < 60 detik lalu)
       const user = data.user;
-      if (user?.email) {
-        const createdAt = new Date(user.created_at).getTime();
-        const isNewUser = Date.now() - createdAt < 60_000;
-        if (isNewUser) {
-          const name =
-            user.user_metadata?.full_name ??
-            user.user_metadata?.name ??
-            user.email;
-          sendWelcomeEmail({ to: user.email, name }).catch(() => {});
-        }
+      if (user?.email && isNewOAuthUser(user)) {
+        const name =
+          user.user_metadata?.full_name ??
+          user.user_metadata?.name ??
+          user.email;
+        sendWelcomeEmail({ to: user.email, name }).catch((err) => {
+          console.error("[auth/callback] sendWelcomeEmail error:", err);
+        });
       }
       return response;
     }

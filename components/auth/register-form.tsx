@@ -48,31 +48,28 @@ export function RegisterForm() {
 
     setIsLoading(true);
     try {
-      const fullName = `${values.first_name.trim()} ${values.last_name.trim()}`.trim();
-      const { error } = await supabase.auth.signUp({
-        email: values.email.trim(),
-        password: values.password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone: values.phone.trim(),
-            first_name: values.first_name.trim(),
-            last_name: values.last_name.trim(),
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: values.first_name.trim(),
+          last_name: values.last_name.trim(),
+          phone: values.phone.trim(),
+          email: values.email.trim(),
+          password: values.password,
+          turnstileToken: turnstileToken ?? undefined,
+        }),
       });
 
-      if (error) {
-        if (error.message.includes("already registered")) {
+      const json = (await res.json()) as { success: boolean; error?: string };
+
+      if (!json.success) {
+        if (json.error === "EMAIL_EXISTS") {
           toast.error("Email ini sudah terdaftar. Silakan masuk.", {
-            action: {
-              label: "Masuk",
-              onClick: () => router.push("/login"),
-            },
+            action: { label: "Masuk", onClick: () => router.push("/login") },
           });
         } else {
-          toast.error(error.message);
+          toast.error(json.error ?? "Terjadi kesalahan. Coba lagi.");
         }
         return;
       }
