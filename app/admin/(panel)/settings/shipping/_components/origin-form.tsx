@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { settingsLabelClass } from "../../_lib/label-class";
 import { saveSetting } from "../../_actions";
-import type { StoreOrigin } from "../_lib/store-origin";
+import type { StoreOrigin } from "@/lib/settings/store-origin";
 
 interface OriginFormProps {
   initialValue: StoreOrigin;
