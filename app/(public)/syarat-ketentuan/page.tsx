@@ -67,9 +67,7 @@ const sections = [
     content: [
       "GeekyTech menyediakan kebijakan pengembalian gratis dalam waktu 7 hari setelah barang sampai, dengan syarat barang dalam kondisi original dan belum digunakan.",
       "Pengembalian karena kecacatan pabrik dapat dilakukan kapan saja selama garansi resmi masih berlaku.",
-      "Untuk mengajukan pengembalian, hubungi customer service kami dan ikuti proses yang telah ditentukan.",
-      "Biaya pengembalian ditanggung oleh GeekyTech jika pengembalian disebabkan oleh kecacatan pabrik atau barang tidak sesuai pesanan.",
-      "Dana pengembalian akan diproses dalam waktu 5-7 hari kerja setelah barang retur diterima dan diverifikasi.",
+      "Ketentuan lengkap mengenai syarat, cara pengajuan, dan estimasi waktu pengembalian dana dijelaskan secara rinci di halaman Kebijakan Pengembalian.",
     ],
   },
   {

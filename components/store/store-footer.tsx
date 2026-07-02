@@ -11,6 +11,7 @@ const FOOTER_DISCOVER = [
   { label: "Syarat & Ketentuan", href: "/syarat-ketentuan" },
   { label: "FAQ", href: "/faq" },
   { label: "Kebijakan privasi", href: "/kebijakan-privasi" },
+  { label: "Kebijakan pengembalian", href: "/kebijakan-pengembalian" },
 ] as const;
 
 const FOOTER_SOCIAL = [
