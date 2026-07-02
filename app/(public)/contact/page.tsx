@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact/contact-form";
 import { MessageCircle, Mail, MapPin, Clock } from "lucide-react";
+import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
+import { getStoreOriginFullAddress, getStoreOriginMapsUrl } from "@/lib/settings/store-origin";
 
 export const metadata: Metadata = {
   title: "Hubungi Kami",
@@ -8,42 +10,45 @@ export const metadata: Metadata = {
     "Hubungi tim GeekyTech untuk konsultasi produk, pertanyaan pesanan, atau keluhan. Kami siap membantu 24/7.",
 };
 
-const contactChannels = [
-  {
-    icon: MessageCircle,
-    title: "WhatsApp",
-    description: "Chat langsung dengan tim kami",
-    value: "+62 812-3456-7890",
-    href: "https://wa.me/6281234567890",
-    label: "Buka WhatsApp",
-  },
-  {
-    icon: Mail,
-    title: "Email",
-    description: "Kirim email pertanyaanmu",
-    value: "support@geekytech.com",
-    href: "mailto:support@geekytech.com",
-    label: "Kirim Email",
-  },
-  {
-    icon: MapPin,
-    title: "Lokasi",
-    description: "Kunjungi showroom kami",
-    value: "Jakarta Selatan, Indonesia",
-    href: "#",
-    label: "Lihat Peta",
-  },
-  {
-    icon: Clock,
-    title: "Jam Operasional",
-    description: "Kami siap melayani",
-    value: "Senin - Minggu, 09:00 - 21:00",
-    href: "#",
-    label: "Hubungi Sekarang",
-  },
-];
+export default async function ContactPage() {
+  const [storeOrigin, whatsappCs] = await Promise.all([getStoreOrigin(), getWhatsappCs()]);
+  const fullAddress = getStoreOriginFullAddress(storeOrigin);
 
-export default function ContactPage() {
+  const contactChannels = [
+    {
+      icon: MessageCircle,
+      title: "WhatsApp",
+      description: "Chat langsung dengan tim kami",
+      value: whatsappCs ? `+${whatsappCs}` : "Belum diatur",
+      href: whatsappCs ? `https://wa.me/${whatsappCs}` : "#",
+      label: "Buka WhatsApp",
+    },
+    {
+      icon: Mail,
+      title: "Email",
+      description: "Kirim email pertanyaanmu",
+      value: "support@geekytech.com",
+      href: "mailto:support@geekytech.com",
+      label: "Kirim Email",
+    },
+    {
+      icon: MapPin,
+      title: "Lokasi",
+      description: "Kunjungi showroom kami",
+      value: fullAddress || "Belum diatur",
+      href: getStoreOriginMapsUrl(storeOrigin),
+      label: "Lihat Peta",
+    },
+    {
+      icon: Clock,
+      title: "Jam Operasional",
+      description: "Kami siap melayani",
+      value: "Senin - Minggu, 09:00 - 21:00",
+      href: "#",
+      label: "Hubungi Sekarang",
+    },
+  ];
+
   return (
     <div className="bg-white">
       {/* Hero — light tile */}

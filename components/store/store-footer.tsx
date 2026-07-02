@@ -4,6 +4,8 @@ import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchShopBrands } from "@/lib/data/home-storefront";
+import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
+import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
 
 const FOOTER_DISCOVER = [
   { label: "Tentang kami", href: "/about" },
@@ -28,8 +30,13 @@ const FOOTER_MARKETPLACES = [
 ] as const;
 
 export async function StoreFooter() {
-  const brands = await fetchShopBrands();
+  const [brands, storeOrigin, whatsappCs] = await Promise.all([
+    fetchShopBrands(),
+    getStoreOrigin(),
+    getWhatsappCs(),
+  ]);
   const year = new Date().getFullYear();
+  const fullAddress = getStoreOriginFullAddress(storeOrigin);
 
   return (
     <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
@@ -68,9 +75,23 @@ export async function StoreFooter() {
               </div>
             </form>
 
-            <p className="relative z-10 mt-14 text-xs text-white/45">
-              © {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.
-            </p>
+            <div className="relative z-10 mt-14 space-y-1.5 text-xs text-white/45">
+              <p>© {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.</p>
+              {fullAddress && <p>{fullAddress}</p>}
+              {whatsappCs && (
+                <p>
+                  WhatsApp:{" "}
+                  <a
+                    href={`https://wa.me/${whatsappCs}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline-offset-2 hover:text-white hover:underline"
+                  >
+                    +{whatsappCs}
+                  </a>
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="min-w-0 grid gap-10 grid-cols-2 sm:grid-cols-4">
