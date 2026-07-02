@@ -138,7 +138,7 @@ export default function TermsPage() {
   return (
     <div className="bg-white">
       {/* Hero — light tile */}
-      <section className="bg-red-500 w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white">
+      <section className="w-full px-6 py-20 md:pt-[80px] md:pb-0 text-center bg-white">
         <div className="mx-auto max-w-[980px]">
           <p className="text-[14px] font-semibold text-[#EA5329] mb-4">
             Legal
@@ -156,7 +156,7 @@ export default function TermsPage() {
       </section>
 
       {/* Content — light tile */}
-      <section className="bg-blue-500 w-full px-6 bg-white">
+      <section className="w-full px-6 bg-white">
         <div className="mx-auto max-w-[980px]">
           <div className="prose prose-invert max-w-none">
             {sections.map((section, idx) => (

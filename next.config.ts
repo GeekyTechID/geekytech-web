@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
     config.externals = [...(config.externals ?? []), "lightningcss"];
     return config;
   },
+  async redirects() {
+    return [
+      { source: "/terms", destination: "/syarat-ketentuan", permanent: true },
+      { source: "/privacy", destination: "/kebijakan-privasi", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       {

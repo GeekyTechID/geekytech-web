@@ -8,9 +8,9 @@ import { fetchShopBrands } from "@/lib/data/home-storefront";
 const FOOTER_DISCOVER = [
   { label: "Tentang kami", href: "/about" },
   { label: "Kontak", href: "/contact" },
-  { label: "Syarat & Ketentuan", href: "/terms" },
+  { label: "Syarat & Ketentuan", href: "/syarat-ketentuan" },
   { label: "FAQ", href: "/faq" },
-  { label: "Kebijakan privasi", href: "/privacy" },
+  { label: "Kebijakan privasi", href: "/kebijakan-privasi" },
 ] as const;
 
 const FOOTER_SOCIAL = [
