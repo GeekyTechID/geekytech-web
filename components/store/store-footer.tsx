@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { fetchShopBrands } from "@/lib/data/home-storefront";
 import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
 import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
+import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 
 const FOOTER_DISCOVER = [
   { label: "Tentang kami", href: "/about" },
@@ -76,7 +77,7 @@ export async function StoreFooter() {
             </form>
 
             <div className="relative z-10 mt-14 space-y-1.5 text-xs text-white/45">
-              <p>© {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.</p>
+              <p>© {year} GeekyTech by {LEGAL_ENTITY_NAME}. All rights reserved.</p>
               {fullAddress && <p>{fullAddress}</p>}
               {whatsappCs && (
                 <p>
