@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getWhatsappCs } from "@/lib/settings/queries";
 
 export const metadata: Metadata = {
   title: "Kebijakan Pengembalian",
@@ -8,68 +9,70 @@ export const metadata: Metadata = {
     "Kebijakan pengembalian dan penukaran barang GeekyTech. Pelajari syarat, cara pengajuan, dan estimasi waktu pengembalian dana.",
 };
 
-const sections = [
-  {
-    title: "1. Syarat Pengembalian Barang",
-    content: [
-      "GeekyTech menyediakan kebijakan pengembalian gratis dalam waktu 7 hari sejak barang diterima, dengan syarat barang dalam kondisi original, belum digunakan, dan kelengkapan (dus, aksesori, kartu garansi) masih utuh.",
-      "Pengembalian karena kecacatan pabrik dapat diajukan kapan saja selama garansi resmi produk masih berlaku, tanpa batas waktu 7 hari di atas.",
-      "Barang yang dikembalikan karena tidak sesuai pesanan (salah warna/varian yang dikirim oleh GeekyTech) mengikuti syarat yang sama seperti kecacatan pabrik.",
-    ],
-  },
-  {
-    title: "2. Barang yang Tidak Dapat Dikembalikan",
-    content: [
-      "Barang yang sudah digunakan, dipasang, atau menunjukkan tanda pemakaian di luar untuk keperluan pengecekan awal.",
-      "Barang dengan segel/garansi yang sudah rusak akibat pembukaan yang tidak wajar, kecuali kerusakan tersebut adalah bagian dari cacat pabrik yang diklaim.",
-      "Kerusakan yang timbul akibat kesalahan penggunaan, kecelakaan, atau modifikasi oleh pembeli setelah barang diterima.",
-      "Produk yang dibeli dalam kategori kebutuhan khusus atau pre-order dengan ketentuan tertulis berbeda saat pemesanan.",
-    ],
-  },
-  {
-    title: "3. Cara Mengajukan Pengembalian",
-    content: [
-      "Hubungi customer service GeekyTech melalui halaman Kontak selambat-lambatnya 7 hari sejak barang diterima, sertakan nomor pesanan dan foto/video kondisi barang.",
-      "Tim kami akan memverifikasi pengajuan dan mengirimkan instruksi pengiriman balik (termasuk alamat tujuan retur) melalui email atau WhatsApp.",
-      "Kemas barang beserta seluruh kelengkapannya, lalu kirim menggunakan kurir yang diinstruksikan oleh tim kami.",
-    ],
-  },
-  {
-    title: "4. Proses Verifikasi dan Biaya Pengiriman Balik",
-    content: [
-      "Setelah barang retur diterima, tim kami akan melakukan verifikasi kondisi barang dalam waktu 2-3 hari kerja.",
-      "Biaya pengiriman balik ditanggung oleh GeekyTech jika pengembalian disebabkan oleh kecacatan pabrik atau kesalahan pengiriman dari pihak kami.",
-      "Biaya pengiriman balik ditanggung oleh pembeli jika pengembalian disebabkan oleh alasan di luar cacat pabrik/kesalahan pengiriman (misal berubah pikiran), sepanjang barang masih memenuhi syarat pada bagian 1.",
-    ],
-  },
-  {
-    title: "5. Estimasi Waktu Pengembalian Dana",
-    content: [
-      "Dana akan dikembalikan dalam waktu 5-7 hari kerja setelah barang retur diterima dan lolos verifikasi.",
-      "Pengembalian dana dilakukan melalui metode pembayaran yang sama dengan metode pembayaran saat transaksi berlangsung.",
-      "Untuk transaksi yang belum melewati status pembayaran berhasil (settlement), pembatalan pesanan tidak memerlukan proses retur fisik — dana otomatis tidak terpotong.",
-    ],
-  },
-  {
-    title: "6. Penukaran Barang",
-    content: [
-      "Penukaran varian (misal ukuran, warna) hanya dapat dilakukan jika stok varian yang diminta tersedia, dan mengikuti syarat kondisi barang pada bagian 1.",
-      "Jika terjadi selisih harga antara barang lama dan barang pengganti, selisih akan ditagihkan atau dikembalikan sesuai kondisi.",
-      "Proses penukaran mengikuti alur pengajuan yang sama seperti pengembalian pada bagian 3.",
-    ],
-  },
-  {
-    title: "7. Hubungi Kami",
-    content: [
-      "Untuk pertanyaan atau pengajuan pengembalian, silakan hubungi kami melalui:",
-      "Email: support@geekytech.com",
-      "WhatsApp: +62 812-3456-7890",
-      "Jam operasional: Senin - Minggu, 09:00 - 21:00",
-    ],
-  },
-];
+export default async function KebijakanPengembalianPage() {
+  const whatsappCs = await getWhatsappCs();
 
-export default function KebijakanPengembalianPage() {
+  const sections = [
+    {
+      title: "1. Syarat Pengembalian Barang",
+      content: [
+        "GeekyTech menyediakan kebijakan pengembalian gratis dalam waktu 7 hari sejak barang diterima, dengan syarat barang dalam kondisi original, belum digunakan, dan kelengkapan (dus, aksesori, kartu garansi) masih utuh.",
+        "Pengembalian karena kecacatan pabrik dapat diajukan kapan saja selama garansi resmi produk masih berlaku, tanpa batas waktu 7 hari di atas.",
+        "Barang yang dikembalikan karena tidak sesuai pesanan (salah warna/varian yang dikirim oleh GeekyTech) mengikuti syarat yang sama seperti kecacatan pabrik.",
+      ],
+    },
+    {
+      title: "2. Barang yang Tidak Dapat Dikembalikan",
+      content: [
+        "Barang yang sudah digunakan, dipasang, atau menunjukkan tanda pemakaian di luar untuk keperluan pengecekan awal.",
+        "Barang dengan segel/garansi yang sudah rusak akibat pembukaan yang tidak wajar, kecuali kerusakan tersebut adalah bagian dari cacat pabrik yang diklaim.",
+        "Kerusakan yang timbul akibat kesalahan penggunaan, kecelakaan, atau modifikasi oleh pembeli setelah barang diterima.",
+        "Produk yang dibeli dalam kategori kebutuhan khusus atau pre-order dengan ketentuan tertulis berbeda saat pemesanan.",
+      ],
+    },
+    {
+      title: "3. Cara Mengajukan Pengembalian",
+      content: [
+        "Hubungi customer service GeekyTech melalui halaman Kontak selambat-lambatnya 7 hari sejak barang diterima, sertakan nomor pesanan dan foto/video kondisi barang.",
+        "Tim kami akan memverifikasi pengajuan dan mengirimkan instruksi pengiriman balik (termasuk alamat tujuan retur) melalui email atau WhatsApp.",
+        "Kemas barang beserta seluruh kelengkapannya, lalu kirim menggunakan kurir yang diinstruksikan oleh tim kami.",
+      ],
+    },
+    {
+      title: "4. Proses Verifikasi dan Biaya Pengiriman Balik",
+      content: [
+        "Setelah barang retur diterima, tim kami akan melakukan verifikasi kondisi barang dalam waktu 2-3 hari kerja.",
+        "Biaya pengiriman balik ditanggung oleh GeekyTech jika pengembalian disebabkan oleh kecacatan pabrik atau kesalahan pengiriman dari pihak kami.",
+        "Biaya pengiriman balik ditanggung oleh pembeli jika pengembalian disebabkan oleh alasan di luar cacat pabrik/kesalahan pengiriman (misal berubah pikiran), sepanjang barang masih memenuhi syarat pada bagian 1.",
+      ],
+    },
+    {
+      title: "5. Estimasi Waktu Pengembalian Dana",
+      content: [
+        "Dana akan dikembalikan dalam waktu 5-7 hari kerja setelah barang retur diterima dan lolos verifikasi.",
+        "Pengembalian dana dilakukan melalui metode pembayaran yang sama dengan metode pembayaran saat transaksi berlangsung.",
+        "Untuk transaksi yang belum melewati status pembayaran berhasil (settlement), pembatalan pesanan tidak memerlukan proses retur fisik — dana otomatis tidak terpotong.",
+      ],
+    },
+    {
+      title: "6. Penukaran Barang",
+      content: [
+        "Penukaran varian (misal ukuran, warna) hanya dapat dilakukan jika stok varian yang diminta tersedia, dan mengikuti syarat kondisi barang pada bagian 1.",
+        "Jika terjadi selisih harga antara barang lama dan barang pengganti, selisih akan ditagihkan atau dikembalikan sesuai kondisi.",
+        "Proses penukaran mengikuti alur pengajuan yang sama seperti pengembalian pada bagian 3.",
+      ],
+    },
+    {
+      title: "7. Hubungi Kami",
+      content: [
+        "Untuk pertanyaan atau pengajuan pengembalian, silakan hubungi kami melalui:",
+        "Email: support@geeky.id",
+        `WhatsApp: ${whatsappCs ? `+${whatsappCs}` : "Belum diatur"}`,
+        "Jam operasional: Senin - Minggu, 09:00 - 21:00",
+      ],
+    },
+  ];
+
   return (
     <div className="bg-white">
       {/* Hero — light tile */}
