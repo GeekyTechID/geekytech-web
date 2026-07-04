@@ -8,10 +8,13 @@
 
 ## Status Perbaikan (Bagian 2)
 
-- ✅ Blocker #1-6 — selesai, lihat [2026-07-02-midtrans-activation-blockers.md](superpowers/plans/2026-07-02-midtrans-activation-blockers.md)
-- ✅ Perlu Diperhatikan #7-11 — selesai, lihat [2026-07-03-midtrans-audit-items-7-11.md](superpowers/plans/2026-07-03-midtrans-audit-items-7-11.md)
-- ⏳ Perlu Diperhatikan #12-13 — belum dikerjakan (bug logika webhook Midtrans, sengaja dipisah karena menyentuh stok & pembayaran nyata)
+Semua 13 temuan selesai.
+
+- ✅ Blocker #1-6 — lihat [2026-07-02-midtrans-activation-blockers.md](superpowers/plans/2026-07-02-midtrans-activation-blockers.md)
+- ✅ Perlu Diperhatikan #7-11 — lihat [2026-07-03-midtrans-audit-items-7-11.md](superpowers/plans/2026-07-03-midtrans-audit-items-7-11.md)
+- ✅ Perlu Diperhatikan #12-13 (bug webhook) — lihat [2026-07-04-midtrans-webhook-fixes.md](superpowers/plans/2026-07-04-midtrans-webhook-fixes.md)
 - Referensi data bisnis (email, WA, alamat) terkini: [geeky-datal.md](../geeky-datal.md)
+- Sisa manual (bukan kode): verifikasi `NEXT_PUBLIC_APP_URL` di Vercel, isi `settings.whatsapp_cs` dengan nomor asli, cek kecocokan nama rekening bank — lihat §3.
 
 ## 1. Ringkasan: Penyebab Aktivasi Ditolak/Lama Menurut Dokumentasi Midtrans
 
@@ -97,10 +100,10 @@ Kaitan Midtrans: kalau migrasi ini pernah dijalankan di Supabase project produks
 **11. Tidak ada nama badan hukum (PT/CV) yang disebut di halaman publik manapun** ✅ *Selesai — nama badan usaha dipindah ke konstanta bersama, ditambahkan di About & Contact. Commit `6798cc3`, `bc1a54e`, `e3e56cf`.*
 Grep untuk `PT `, `CV `, `NPWP`, `akta pendirian`, `NIB` di seluruh repo hanya menemukan referensi di dokumen spek internal (`docs/superpowers/specs/2026-05-28-invoice-design.md:248`), bukan di halaman publik. Semua halaman (`/about`, `/contact`, `/terms`, `/privacy`) hanya menyebut nama dagang "GeekyTech". Jika Midtrans didaftarkan atas nama badan usaha (PT/CV), nama itu sebaiknya juga tampil publik agar konsisten dengan dokumen legalitas dan nama rekening yang diverifikasi (kriteria C).
 
-**12. Bug logika fraud-review kartu kredit di webhook Midtrans (bukan syarat aktivasi, tapi risiko finansial nyata setelah aktif)** ⏳ *Belum dikerjakan — sesi berikutnya*
+**12. Bug logika fraud-review kartu kredit di webhook Midtrans (bukan syarat aktivasi, tapi risiko finansial nyata setelah aktif)** ✅ *Selesai — commit `315d69f`, diverifikasi live end-to-end dengan order dummy (dihapus setelah tes)*
 `app/api/webhooks/midtrans/route.ts:518-521` — kondisi `(txStatus === "settlement" || txStatus === "capture") && fraudStatus !== "deny"` membuat transaksi `capture` dengan `fraud_status: "challenge"` (transaksi kartu yang perlu direview manual oleh Fraud Detection System) justru diproses sebagai **settlement** — stok dikurangi, shipment dibuat, customer dikira sudah bayar — sebelum manusia menyetujui/menolaknya di dashboard Midtrans. Cabang `challenge` yang sudah ada di baris 533 tidak pernah tercapai untuk transaksi kartu karena Midtrans melaporkan status kartu yang di-challenge sebagai `capture` + `fraud_status: "challenge"`, bukan `transaction_status: "challenge"`. Ini tidak menghalangi aktivasi, tapi sebaiknya diperbaiki sebelum menerima pembayaran kartu kredit sungguhan.
 
-**13. `applyRefund` tanpa idempotency guard** ⏳ *Belum dikerjakan — sesi berikutnya*
+**13. `applyRefund` tanpa idempotency guard** ✅ *Selesai — commit `315d69f`, sekalian dibenahi `applyChallenge` (bug sejenis, ditemukan saat investigasi #12)*
 `app/api/webhooks/midtrans/route.ts:315-369` (khususnya baris 326-329, 338-341) — tidak ada pengecekan status sebelum menulis `status: "refunded"`, tidak ada `.eq("status", ...)` seperti handler lain. Webhook refund yang dikirim ulang oleh Midtrans akan menduplikasi baris `order_status_history` dan mengirim ulang notifikasi/email. Bug moderat, tidak terkait aktivasi.
 
 ### ✅ SUDAH SESUAI
@@ -139,4 +142,4 @@ Tidak ditemukan lorem ipsum atau teks "TODO"/"coming soon" di `/terms`, `/privac
 7. ⚠️ **Ganti nomor WhatsApp/telepon placeholder** — kode sudah dinamis (commit `2830345`, `e2aac0a`, `3e8d241`), tapi nilai `settings.whatsapp_cs` di production **masih placeholder**. Perlu diisi manual lewat Admin → Settings sebelum submit ke Midtrans (cek dulu apakah `6281992283947` di `store_origin.phone` adalah nomor yang sama — lihat [geeky-datal.md](../geeky-datal.md)).
 8. ✅ **Perbaiki `returnAddress` placeholder** — selesai, commit `b9bac72`.
 9. ⏳ **Siapkan dan cek kecocokan nama rekening bank** (belum dilakukan — dokumen fisik/administratif di luar codebase): nama rekening yang akan didaftarkan ke Midtrans harus sama dengan KTP/KITAS pemilik akun dan/atau nama badan usaha di dokumen legal.
-10. ⏳ **Perbaiki bug non-blocking di webhook** (belum dikerjakan — sesi berikutnya): logika `capture` + `fraud_status: "challenge"` yang salah masuk ke jalur settlement (`app/api/webhooks/midtrans/route.ts:518-521`), dan idempotency guard yang hilang di `applyRefund` (baris 315-369).
+10. ✅ **Perbaiki bug non-blocking di webhook** — selesai, commit `315d69f`: routing `capture`+`challenge` diarahkan ke `applyChallenge`, idempotency guard ditambahkan di `applyRefund` dan `applyChallenge`.
