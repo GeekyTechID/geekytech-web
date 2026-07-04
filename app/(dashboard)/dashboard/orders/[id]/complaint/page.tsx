@@ -9,6 +9,8 @@ import { fetchComplaintForOrder } from "@/lib/data/complaints";
 import { OrderComplaintForm } from "@/components/dashboard/order-complaint-form";
 import { ComplaintThread } from "@/components/dashboard/complaint-thread";
 import { ReturnAwbForm } from "@/components/dashboard/return-awb-form";
+import { getStoreOrigin } from "@/lib/settings/queries";
+import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
 
 const CATEGORY_LABELS: Record<string, string> = {
   wrong_item: "Barang tidak sesuai pesanan",
@@ -62,7 +64,8 @@ export default async function OrderComplaintPage({ params }: { params: Promise<{
   }
 
   const ret = complaint.return;
-  const returnAddress = "Jl. Contoh No. 123, Jakarta";
+  const storeOrigin = await getStoreOrigin();
+  const returnAddress = getStoreOriginFullAddress(storeOrigin);
 
   return (
     <div className="space-y-6">
