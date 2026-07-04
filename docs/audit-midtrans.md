@@ -15,7 +15,7 @@ Semua 13 temuan selesai.
 - ✅ Perlu Diperhatikan #12-13 (bug webhook) — lihat [2026-07-04-midtrans-webhook-fixes.md](superpowers/plans/2026-07-04-midtrans-webhook-fixes.md)
 - Referensi data bisnis (email, WA, alamat) terkini: [geeky-datal.md](../geeky-datal.md)
 - Ketiga tindak lanjut manual (Vercel `NEXT_PUBLIC_APP_URL`, `settings.whatsapp_cs`, kecocokan nama rekening) sudah dikonfirmasi selesai per 2026-07-04 — lihat §3.
-- Sisa satu gap kecil: teks "geekytech.id" di `components/dashboard/invoice-print-view.tsx` belum diseragamkan ke `geeky.id` (item #8).
+- Tidak ada gap tersisa. Semua 13 temuan + tindak lanjut manual selesai per 2026-07-04.
 
 ## 1. Ringkasan: Penyebab Aktivasi Ditolak/Lama Menurut Dokumentasi Midtrans
 
@@ -89,7 +89,7 @@ Kaitan Midtrans: kalau migrasi ini pernah dijalankan di Supabase project produks
 **7. WhatsApp CS floating button (disyaratkan CLAUDE.md) tidak pernah tayang** ✅ *Selesai — bukan WhatsApp button, tapi Chat CS sekarang tampil untuk guest & arahkan ke login. Commit `1a8a0be`.*
 `components/layout/whatsapp-button.tsx` adalah dead code, tidak pernah dirender. Yang tayang adalah `ChatWidget` (`components/chat/chat-widget.tsx`), tapi widget ini **return `null` untuk user yang belum login** (baris 60: `if (!user) return null;`). Artinya reviewer/pengunjung anonim tidak melihat tombol kontak apapun. Bukan blocker langsung menurut kriteria Midtrans tertulis, tapi melemahkan kesan "informasi bisnis lengkap" dan bertentangan dengan aturan proyek sendiri.
 
-**8. Inkonsistensi domain email di seluruh halaman publik vs domain pengiriman email asli** ✅ *Sebagian besar selesai — `support@geekytech.com` diseragamkan ke `support@geeky.id` di semua halaman publik (commit `e2aac0a`, `3e8d241`, `bc1a54e`). Belum: teks "geekytech.id" di `components/dashboard/invoice-print-view.tsx` masih belum diseragamkan — lihat [geeky-datal.md](../geeky-datal.md).*
+**8. Inkonsistensi domain email di seluruh halaman publik vs domain pengiriman email asli** ✅ *Selesai penuh — `support@geekytech.com` diseragamkan ke `support@geeky.id` di semua halaman publik (commit `e2aac0a`, `3e8d241`, `bc1a54e`), dan teks "geekytech.id" di invoice diseragamkan ke `geeky.id` (commit `8d4b065`).*
 `support@geekytech.com` dipakai di `/contact`, `/faq`, `/privacy`, `/terms`, `/syarat-ketentuan`, tapi `RESEND_FROM_EMAIL`/`RESEND_ADMIN_EMAIL` di `.env.local` sebenarnya `admin@geeky.id`, dan invoice (`components/dashboard/invoice-print-view.tsx`) memakai `geekytech.id`. Tiga domain berbeda (`geekytech.com`, `geeky.id`, `geekytech.id`) untuk satu identitas brand. Jika reviewer Midtrans mengirim email ke `support@geekytech.com` seperti yang tertulis di situs, kemungkinan tidak ada yang menerimanya.
 
 **9. Nomor WhatsApp dan alamat yang tampil terlihat seperti data placeholder yang belum diganti** ✅ *Selesai penuh — nomor WA & alamat di `/contact`, footer, halaman legal, dan FAQ dinamis dari `settings` (commit `2830345`, `e2aac0a`, `3e8d241`). `settings.whatsapp_cs` sudah diupdate ke nomor asli `6281992283947` (2026-07-04) — sama dengan nomor di `store_origin.phone`, dikonfirmasi user.*
