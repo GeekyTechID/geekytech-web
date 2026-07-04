@@ -99,7 +99,7 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
               />
             </div>
             <p className="mt-2 text-xs text-[#5c5c5c]">GeekyTech</p>
-            <p className="text-xs text-[#5c5c5c]">geekytech.id</p>
+            <p className="text-xs text-[#5c5c5c]">geeky.id</p>
           </div>
           <div className="text-right">
             <p className="text-xl font-black uppercase tracking-wide text-[#1d1d1f]">Invoice</p>
@@ -212,7 +212,7 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
             Terima kasih telah berbelanja di GeekyTech!
           </p>
           <p className="mt-1 text-xs text-[#7a7a7a]">
-            Pertanyaan? Hubungi kami di geekytech.id
+            Pertanyaan? Hubungi kami di geeky.id
           </p>
         </div>
       </div>
