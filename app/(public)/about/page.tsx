@@ -60,7 +60,7 @@ export default function AboutPage() {
           >
             GeekyTech hadir untuk memastikan semua orang bisa mengakses teknologi terbaik dengan mudah, aman, dan terpercaya.
           </p>
-          <p className="mt-4 text-[13px] text-[#7a7a7a][#cccccc]">
+          <p className="mt-4 text-[13px] text-[#7a7a7a]">
             Dioperasikan oleh {LEGAL_ENTITY_NAME}.
           </p>
         </div>
