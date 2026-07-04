@@ -139,7 +139,7 @@ Tidak ditemukan lorem ipsum atau teks "TODO"/"coming soon" di `/terms`, `/privac
 3. ✅ **Hapus duplikasi Terms** — selesai, commit `335213a`.
 4. ✅ **Bersihkan produk seed placeholder** — dicek, semua sudah `is_active = false`, tidak perlu aksi.
 5. ✅ **Tambahkan alamat bisnis riil** — selesai, commit `2830345`.
-6. ✅ **Satukan domain kontak** — selesai untuk email publik (`support@geeky.id`), commit `171aff6`, `e2aac0a`, `3e8d241`, `bc1a54e`. Sisa: teks "geekytech.id" di invoice belum diseragamkan (lihat temuan #8 di atas).
+6. ✅ **Satukan domain kontak** — selesai penuh untuk email publik dan invoice, commit `171aff6`, `e2aac0a`, `3e8d241`, `bc1a54e`, `8d4b065`.
 7. ✅ **Ganti nomor WhatsApp/telepon placeholder** — kode dinamis (commit `2830345`, `e2aac0a`, `3e8d241`), `settings.whatsapp_cs` diupdate 2026-07-04 ke `6281992283947` (dikonfirmasi sama dengan `store_origin.phone`).
 8. ✅ **Perbaiki `returnAddress` placeholder** — selesai, commit `b9bac72`.
 9. ✅ **Cek kecocokan nama rekening bank** — dikonfirmasi user, nama rekening sudah sama dengan KTP.
