@@ -14,7 +14,8 @@ Semua 13 temuan selesai.
 - ✅ Perlu Diperhatikan #7-11 — lihat [2026-07-03-midtrans-audit-items-7-11.md](superpowers/plans/2026-07-03-midtrans-audit-items-7-11.md)
 - ✅ Perlu Diperhatikan #12-13 (bug webhook) — lihat [2026-07-04-midtrans-webhook-fixes.md](superpowers/plans/2026-07-04-midtrans-webhook-fixes.md)
 - Referensi data bisnis (email, WA, alamat) terkini: [geeky-datal.md](../geeky-datal.md)
-- Sisa manual (bukan kode): verifikasi `NEXT_PUBLIC_APP_URL` di Vercel, isi `settings.whatsapp_cs` dengan nomor asli, cek kecocokan nama rekening bank — lihat §3.
+- Ketiga tindak lanjut manual (Vercel `NEXT_PUBLIC_APP_URL`, `settings.whatsapp_cs`, kecocokan nama rekening) sudah dikonfirmasi selesai per 2026-07-04 — lihat §3.
+- Sisa satu gap kecil: teks "geekytech.id" di `components/dashboard/invoice-print-view.tsx` belum diseragamkan ke `geeky.id` (item #8).
 
 ## 1. Ringkasan: Penyebab Aktivasi Ditolak/Lama Menurut Dokumentasi Midtrans
 
@@ -71,7 +72,7 @@ Kaitan Midtrans: kriteria "informasi bisnis jelas dan lengkap" pada `apa-saja-kr
 `app/(public)/contact/page.tsx:28-35` — field "Lokasi" hanya berisi `"Jakarta Selatan, Indonesia"` (bukan alamat jalan) dengan link `href="#"` yang tidak ke mana-mana ("Lihat Peta" tidak berfungsi). Alamat asli hanya ada di setting admin `store_origin` (`app/admin/(panel)/settings/shipping/_components/origin-form.tsx`) untuk kalkulasi ongkir Biteship, tidak pernah disurface ke publik.
 Kaitan Midtrans: dokumen legalitas bisnis (poin C) yang diajukan ke Midtrans mencantumkan alamat — kalau tidak ada korespondensi publik, ini melemahkan verifikasi identitas bisnis dan berisiko masuk kategori "dokumen tidak valid/sesuai ketentuan".
 
-**5. Domain produksi yang benar-benar live adalah `geeky.id`, bukan `geekytech.com`** ✅ *Fallback kode diperbaiki — commit `171aff6`. Verifikasi manual `NEXT_PUBLIC_APP_URL` di Vercel Production masih tertunda (lihat §3.1).*
+**5. Domain produksi yang benar-benar live adalah `geeky.id`, bukan `geekytech.com`** ✅ *Selesai — fallback kode diperbaiki (commit `171aff6`), `NEXT_PUBLIC_APP_URL` di Vercel Production dikonfirmasi sudah `geeky.id`.*
 `https://geekytech.com` hanya menampilkan halaman parkir yang redirect ke `/lander` (bukan toko), sedangkan `https://geeky.id` adalah storefront asli yang berfungsi. Namun beberapa fallback default di kode masih mengarah ke domain yang salah:
 - `app/layout.tsx:30` → `metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://geekytech.com")`
 - `lib/email/resend.ts:4,7` → fallback `noreply@geekytech.com` / `admin@geekytech.com`
@@ -91,7 +92,7 @@ Kaitan Midtrans: kalau migrasi ini pernah dijalankan di Supabase project produks
 **8. Inkonsistensi domain email di seluruh halaman publik vs domain pengiriman email asli** ✅ *Sebagian besar selesai — `support@geekytech.com` diseragamkan ke `support@geeky.id` di semua halaman publik (commit `e2aac0a`, `3e8d241`, `bc1a54e`). Belum: teks "geekytech.id" di `components/dashboard/invoice-print-view.tsx` masih belum diseragamkan — lihat [geeky-datal.md](../geeky-datal.md).*
 `support@geekytech.com` dipakai di `/contact`, `/faq`, `/privacy`, `/terms`, `/syarat-ketentuan`, tapi `RESEND_FROM_EMAIL`/`RESEND_ADMIN_EMAIL` di `.env.local` sebenarnya `admin@geeky.id`, dan invoice (`components/dashboard/invoice-print-view.tsx`) memakai `geekytech.id`. Tiga domain berbeda (`geekytech.com`, `geeky.id`, `geekytech.id`) untuk satu identitas brand. Jika reviewer Midtrans mengirim email ke `support@geekytech.com` seperti yang tertulis di situs, kemungkinan tidak ada yang menerimanya.
 
-**9. Nomor WhatsApp dan alamat yang tampil terlihat seperti data placeholder yang belum diganti** ✅ *Kode selesai — nomor WA & alamat di `/contact`, footer, halaman legal, dan FAQ sekarang dinamis dari `settings` (commit `2830345`, `e2aac0a`, `3e8d241`). Alamat sudah asli di production. Nomor WA (`settings.whatsapp_cs`) masih placeholder — tugas isi data manual, lihat [geeky-datal.md](../geeky-datal.md).*
+**9. Nomor WhatsApp dan alamat yang tampil terlihat seperti data placeholder yang belum diganti** ✅ *Selesai penuh — nomor WA & alamat di `/contact`, footer, halaman legal, dan FAQ dinamis dari `settings` (commit `2830345`, `e2aac0a`, `3e8d241`). `settings.whatsapp_cs` sudah diupdate ke nomor asli `6281992283947` (2026-07-04) — sama dengan nomor di `store_origin.phone`, dikonfirmasi user.*
 `app/(public)/contact/page.tsx` hardcode `+62 812-3456-7890` (`wa.me/6281234567890`) — pola digit berurutan yang identik dengan placeholder `NEXT_PUBLIC_WHATSAPP_NUMBER`/`BITESHIP_SHIPPER_PHONE` di `.env.local` dan placeholder di form admin shipping. Sepertinya belum diganti data asli.
 
 **10. Alamat pengembalian barang di flow komplain juga masih placeholder** ✅ *Selesai — commit `b9bac72`*
@@ -133,13 +134,13 @@ Tidak ditemukan lorem ipsum atau teks "TODO"/"coming soon" di `/terms`, `/privac
 
 ## 3. Rekomendasi Langkah Selanjutnya (Urut Prioritas)
 
-1. ⏳ **Verifikasi manual di Vercel dashboard** (belum dilakukan — di luar jangkauan kode): pastikan `NEXT_PUBLIC_APP_URL` di environment Production benar-benar `https://geeky.id`, dan pastikan URL inilah yang akan diinput ke form registrasi Midtrans — bukan `geekytech.com` (parkir) atau URL preview/development branch Vercel.
+1. ✅ **Verifikasi manual di Vercel dashboard** — dikonfirmasi user, `NEXT_PUBLIC_APP_URL` Production sudah `https://geeky.id`.
 2. ✅ **Perbaiki seluruh link kebijakan pengembalian** — selesai, commit `eaded95`.
 3. ✅ **Hapus duplikasi Terms** — selesai, commit `335213a`.
 4. ✅ **Bersihkan produk seed placeholder** — dicek, semua sudah `is_active = false`, tidak perlu aksi.
 5. ✅ **Tambahkan alamat bisnis riil** — selesai, commit `2830345`.
 6. ✅ **Satukan domain kontak** — selesai untuk email publik (`support@geeky.id`), commit `171aff6`, `e2aac0a`, `3e8d241`, `bc1a54e`. Sisa: teks "geekytech.id" di invoice belum diseragamkan (lihat temuan #8 di atas).
-7. ⚠️ **Ganti nomor WhatsApp/telepon placeholder** — kode sudah dinamis (commit `2830345`, `e2aac0a`, `3e8d241`), tapi nilai `settings.whatsapp_cs` di production **masih placeholder**. Perlu diisi manual lewat Admin → Settings sebelum submit ke Midtrans (cek dulu apakah `6281992283947` di `store_origin.phone` adalah nomor yang sama — lihat [geeky-datal.md](../geeky-datal.md)).
+7. ✅ **Ganti nomor WhatsApp/telepon placeholder** — kode dinamis (commit `2830345`, `e2aac0a`, `3e8d241`), `settings.whatsapp_cs` diupdate 2026-07-04 ke `6281992283947` (dikonfirmasi sama dengan `store_origin.phone`).
 8. ✅ **Perbaiki `returnAddress` placeholder** — selesai, commit `b9bac72`.
-9. ⏳ **Siapkan dan cek kecocokan nama rekening bank** (belum dilakukan — dokumen fisik/administratif di luar codebase): nama rekening yang akan didaftarkan ke Midtrans harus sama dengan KTP/KITAS pemilik akun dan/atau nama badan usaha di dokumen legal.
+9. ✅ **Cek kecocokan nama rekening bank** — dikonfirmasi user, nama rekening sudah sama dengan KTP.
 10. ✅ **Perbaiki bug non-blocking di webhook** — selesai, commit `315d69f`: routing `capture`+`challenge` diarahkan ke `applyChallenge`, idempotency guard ditambahkan di `applyRefund` dan `applyChallenge`.
