@@ -3,6 +3,7 @@ import { ContactForm } from "@/components/contact/contact-form";
 import { MessageCircle, Mail, MapPin, Clock } from "lucide-react";
 import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
 import { getStoreOriginFullAddress, getStoreOriginMapsUrl } from "@/lib/settings/store-origin";
+import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 
 export const metadata: Metadata = {
   title: "Hubungi Kami",
@@ -27,8 +28,8 @@ export default async function ContactPage() {
       icon: Mail,
       title: "Email",
       description: "Kirim email pertanyaanmu",
-      value: "support@geekytech.com",
-      href: "mailto:support@geekytech.com",
+      value: "support@geeky.id",
+      href: "mailto:support@geeky.id",
       label: "Kirim Email",
     },
     {
@@ -62,6 +63,9 @@ export default async function ContactPage() {
           </h1>
           <p className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto">
             Tim kami siap membantu dengan konsultasi produk, pertanyaan pesanan, atau keluhan apapun. Hubungi kami melalui channel favoritmu.
+          </p>
+          <p className="mt-4 text-[13px] text-[#7a7a7a]">
+            Dioperasikan oleh {LEGAL_ENTITY_NAME}.
           </p>
         </div>
       </section>
