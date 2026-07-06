@@ -14,7 +14,7 @@ export const HOME_PRODUCT_FIVE_ACROSS_IMAGE_SIZES =
 
 /**
  * Slot baris responsif (selaras `gap-3` + `sm:gap-4` di `HorizontalScrollRow`).
- * Kolom: 2 (default) → 3 (`sm`) → 4 (`md`) → 5 (`lg+`).
+ * Kolom: 2 (default) → 3 (`sm`) → 4 (`md`) → 6 (`lg+`).
  * Dipakai flash sale & blok promo dinamis beranda.
  */
 export const HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS =
@@ -22,4 +22,4 @@ export const HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS =
   "w-[calc((100%-0.75rem)/2)] min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] " +
   "sm:w-[calc((100%-2rem)/3)] sm:min-w-[calc((100%-2rem)/3)] sm:max-w-[calc((100%-2rem)/3)] " +
   "md:w-[calc((100%-3rem)/4)] md:min-w-[calc((100%-3rem)/4)] md:max-w-[calc((100%-3rem)/4)] " +
-  "lg:w-[calc((100%-4rem)/5)] lg:min-w-[calc((100%-4rem)/5)] lg:max-w-[calc((100%-4rem)/5)]";
+  "lg:w-[calc((100%-5rem)/6)] lg:min-w-[calc((100%-5rem)/6)] lg:max-w-[calc((100%-5rem)/6)]";

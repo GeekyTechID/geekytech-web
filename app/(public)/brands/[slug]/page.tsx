@@ -109,7 +109,7 @@ export default async function BrandProductListPage({
           </Suspense>
 
           <div className="mt-8">
-            <BrandStoreProductGrid products={listResult.products} />
+            <BrandStoreProductGrid products={listResult.products} brandName={brand.name} />
           </div>
 
           <BrandStorePagination

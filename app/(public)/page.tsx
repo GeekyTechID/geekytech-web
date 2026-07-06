@@ -26,7 +26,7 @@ export default async function HomePage() {
     fetchMainHeroBanners(),
     fetchPrimaryHomeFlashSaleBlock(),
     fetchShopBrands(),
-    fetchLatestHomeProducts(12),
+    fetchLatestHomeProducts(18),
   ]).catch(() => null);
 
   if (loaded === null) {

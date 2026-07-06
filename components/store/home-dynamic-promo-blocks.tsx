@@ -67,24 +67,24 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
             {block.products.length > 0 ? (
               <HorizontalScrollRow
                 gapClass="gap-3 sm:gap-4"
-                fillRow={block.products.length <= 5}
-                itemsPerSlide={5}
+                fillRow={block.products.length <= 6}
+                itemsPerSlide={6}
               >
-                {block.products.length <= 5 ? (
+                {block.products.length <= 6 ? (
                   <>
                     {block.products.map((p) => (
                       <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                        <HomeProductTile product={p} layout="fluidRow" />
+                        <HomeProductTile product={p} layout="fluidRow" compact />
                       </div>
                     ))}
-                    {Array.from({ length: 5 - block.products.length }, (_, i) => (
+                    {Array.from({ length: 6 - block.products.length }, (_, i) => (
                       <div key={`pad-${blockIndex}-${i}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS} aria-hidden />
                     ))}
                   </>
                 ) : (
                   block.products.map((p) => (
                     <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                      <HomeProductTile product={p} layout="promoRow" className="h-full" />
+                      <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
                     </div>
                   ))
                 )}

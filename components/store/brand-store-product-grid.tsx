@@ -1,7 +1,13 @@
 import { HomeProductTile } from "@/components/store/home-product-tile";
 import type { HomeShelfProduct } from "@/lib/data/home-storefront";
 
-export function BrandStoreProductGrid({ products }: { products: HomeShelfProduct[] }) {
+export function BrandStoreProductGrid({
+  products,
+  brandName,
+}: {
+  products: HomeShelfProduct[];
+  brandName?: string;
+}) {
   if (products.length === 0) {
     return <p className="py-12 text-center text-sm text-[#7a7a7a]">Tidak ada produk yang cocok dengan filter.</p>;
   }
@@ -13,7 +19,9 @@ export function BrandStoreProductGrid({ products }: { products: HomeShelfProduct
           <HomeProductTile
             product={p}
             layout="promoRow"
-            className="h-full overflow-hidden rounded-[18px] border border-[#e0e0e0] bg-white"
+            className="h-full overflow-hidden rounded-[18px] bg-white"
+            compact
+            brandLabel={brandName}
           />
         </div>
       ))}

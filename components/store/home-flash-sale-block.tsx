@@ -40,7 +40,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
             href={getFlashSaleLink(block.saleId)}
             className="group inline-block"
           >
-            <h3 className="text-base font-black leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
+            <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
               {block.saleName}
             </h3>
           </Link>
@@ -59,24 +59,24 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
         ) : null}
         <HorizontalScrollRow
           gapClass="gap-3 sm:gap-4"
-          fillRow={block.products.length > 0 && block.products.length <= 5}
-          itemsPerSlide={5}
+          fillRow={block.products.length > 0 && block.products.length <= 6}
+          itemsPerSlide={6}
         >
-          {block.products.length <= 5 ? (
+          {block.products.length <= 6 ? (
             <>
               {block.products.map((p) => (
                 <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                  <HomeProductTile product={p} layout="fluidRow" />
+                  <HomeProductTile product={p} layout="fluidRow" compact />
                 </div>
               ))}
-              {Array.from({ length: Math.max(0, 5 - block.products.length) }, (_, i) => (
+              {Array.from({ length: Math.max(0, 6 - block.products.length) }, (_, i) => (
                 <div key={`flash-row-pad-${i}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS} aria-hidden />
               ))}
             </>
           ) : (
             block.products.map((p) => (
               <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                <HomeProductTile product={p} layout="promoRow" className="h-full" />
+                <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
               </div>
             ))
           )}

@@ -75,7 +75,7 @@ export function BrandStoreBrandOverview({ brand, aggregate, bestSellers }: Brand
             <div className="mt-6 flex flex-wrap gap-3 sm:gap-4">
               {bestSellers.map((p) => (
                 <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_FIVE_ACROSS_SLOT_CLASS}>
-                  <HomeProductTile product={p} layout="fluidRow" />
+                  <HomeProductTile product={p} layout="fluidRow" compact brandLabel={brand.name} />
                 </div>
               ))}
               {Array.from({ length: pad }, (_, i) => (

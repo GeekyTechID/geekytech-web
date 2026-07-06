@@ -256,7 +256,7 @@ export function FlashSaleForm({
               required
             />
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="flex items-center gap-3 sm:col-span-2">
             <label className={labelClass}>Status</label>
             <StatusPillToggle
               active={isActive}

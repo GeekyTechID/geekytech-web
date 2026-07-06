@@ -432,7 +432,7 @@ export function StoreHeader({
 
           <nav
             aria-label="Kategori produk"
-            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6"
+            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:justify-center sm:px-6"
           >
             {categories.length === 0 ? (
               <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>

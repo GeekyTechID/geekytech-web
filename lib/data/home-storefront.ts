@@ -26,6 +26,12 @@ const DEFAULT_HOME_SECTIONS: HomeSection[] = [
 
 const GENERIC_SECTION_KEYS = new Set<HomeSectionKey>(["promo_5", "promo_6", "promo_7", "promo_8"]);
 
+/**
+ * Batas jumlah produk per rak di beranda: 6 item per slide × maksimal 3 slide (digeser via chevron).
+ * Halaman "Lihat Semua" (promo/flash sale) tetap tampilkan semua.
+ */
+const HOME_SHELF_DISPLAY_LIMIT = 18;
+
 function nowMs(): number {
   return Date.now();
 }
@@ -449,7 +455,7 @@ async function loadFlashSaleShelfProductsForSaleId(saleId: string): Promise<Home
     const shelf = flashRowToShelf(row as Parameters<typeof flashRowToShelf>[0]);
     if (shelf) products.push(shelf);
   }
-  return products;
+  return products.slice(0, HOME_SHELF_DISPLAY_LIMIT);
 }
 
 /** Flash sale aktif pertama (urut `starts_at`) yang punya minimal satu produk siap tampil di rak. */
@@ -673,7 +679,7 @@ async function fetchFlashSaleStorefrontById(saleId: string): Promise<{
       saleName: sale.name,
       subtitle: sale.subtitle ?? null,
       banners: mapBanners(bannerRows as BannerRow[]),
-      products,
+      products: products.slice(0, HOME_SHELF_DISPLAY_LIMIT),
     };
   } catch {
     return null;
@@ -781,7 +787,7 @@ export async function fetchDynamicHomePromoBlocks(
             title: promo.title,
             subtitle: promo.subtitle,
             banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
-            products,
+            products: products.slice(0, HOME_SHELF_DISPLAY_LIMIT),
             linkUrl,
           };
         }
@@ -829,7 +835,7 @@ export async function fetchDynamicHomePromoBlocks(
             title: promo.title,
             subtitle: promo.subtitle ?? null,
             banners: banners.map((b) => ({ ...b, link_url: b.link_url ?? linkUrl })),
-            products,
+            products: products.slice(0, HOME_SHELF_DISPLAY_LIMIT),
             linkUrl,
           };
         }
