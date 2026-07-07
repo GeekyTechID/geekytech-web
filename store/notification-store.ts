@@ -22,8 +22,6 @@ type NotificationState = {
   markRead: (id: string) => void;
   /** Tandai semua sudah dibaca (optimistic) */
   markAllRead: () => void;
-  /** Reset fetched → bell akan refetch saat dibuka berikutnya */
-  invalidate: () => void;
   setLoading: (v: boolean) => void;
 };
 
@@ -50,8 +48,6 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       items: s.items.map((n) => ({ ...n, is_read: true })),
       unread: 0,
     })),
-
-  invalidate: () => set({ fetched: false }),
 
   setLoading: (v) => set({ loading: v }),
 }));
