@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { AnnouncementBarServer } from "@/components/layout/announcement-bar-server";
 import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
@@ -11,6 +12,25 @@ import { fetchUserProfile } from "@/lib/data/dashboard-user";
 import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/supabase";
+
+// StoreHeader pakai useSearchParams() — halaman /_not-found selalu di-prerender
+// statis oleh Next.js, jadi wajib dibungkus Suspense agar build tidak gagal.
+function StoreHeaderFallback() {
+  return (
+    <header className="w-full border-b border-neutral-200 bg-white">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
+        <div className="flex items-center gap-3 py-3 md:py-4">
+          <div className="h-8 w-[9.5rem] shrink-0 rounded bg-[#f5f5f7] sm:h-9 sm:w-[11.5rem]" />
+          <div className="mx-auto hidden h-11 max-w-2xl flex-1 rounded-md bg-[#f5f5f7] sm:block" />
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-[#f5f5f7]" />
+            <div className="h-8 w-8 rounded-full bg-[#f5f5f7]" />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 async function fetchLayoutData(): Promise<{
   user: User | null;
@@ -43,7 +63,9 @@ export default async function NotFound() {
     <div className="flex min-h-screen flex-col bg-white">
       <InitAuthStore user={user} profile={profile} />
       <AnnouncementBarServer />
-      <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      <Suspense fallback={<StoreHeaderFallback />}>
+        <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      </Suspense>
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <section className="flex min-h-[70vh] w-full items-center justify-center bg-white px-6 py-20">
           <div className="flex max-w-[560px] flex-col items-center text-center">
