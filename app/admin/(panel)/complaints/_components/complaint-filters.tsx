@@ -61,7 +61,7 @@ export function ComplaintFilters() {
             if (debounceRef.current) clearTimeout(debounceRef.current);
             debounceRef.current = setTimeout(() => updateParam("q", val), 400);
           }}
-          className="h-11 rounded-full border-[#e0e0e0] pl-10 pr-10 text-[17px] leading-[1.47]"
+          className="h-11 rounded-md border-[#e0e0e0] pl-10 pr-10 text-[17px] leading-[1.47]"
         />
         {q && (
           <button

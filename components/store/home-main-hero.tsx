@@ -79,7 +79,7 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
   if (n === 0) {
     return (
       <section className="border-b border-neutral-200 bg-neutral-900 py-16 text-center text-white">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <h1 className="sr-only">GeekyTech</h1>
           <p className="text-sm font-medium text-white/70">Belum ada banner utama. Atur di Admin → Promosi → Main Banner.</p>
         </div>
@@ -97,7 +97,7 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
       onFocus={handleFocus}
       onBlur={handleBlur}
     >
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <h1 className="sr-only">GeekyTech — Toko Tech & Gadget</h1>
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {n > 1 ? (banners[index]?.title ?? `Slide ${index + 1} dari ${n}`) : null}

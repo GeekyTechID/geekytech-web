@@ -11,9 +11,13 @@ type HomeProductTileProps = {
   className?: string;
   /** `promoRow` / `fluidRow`: slot lebar 1/5 baris (≈254px gambar persegi pada kontainer max 1400px + gap-4); pakai `HOME_PRODUCT_FIVE_ACROSS_*`. */
   layout?: "default" | "promoRow" | "fluidRow";
+  /** Saat true: hanya gambar, nama produk, harga, dan info diskon — sembunyikan eyebrow, varian, rating, dan jumlah terjual. */
+  compact?: boolean;
+  /** Override label di atas nama produk (mis. nama brand di halaman detail brand). Tetap tampil walau `compact`. */
+  brandLabel?: string;
 };
 
-export function HomeProductTile({ product, className, layout = "default" }: HomeProductTileProps) {
+export function HomeProductTile({ product, className, layout = "default", compact = false, brandLabel }: HomeProductTileProps) {
   const href = `/products/${product.slug}`;
   const showCompare = product.compareAtPrice != null && product.compareAtPrice > product.currentPrice;
   const discountPct = showCompare
@@ -49,11 +53,15 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <p className="line-clamp-1 text-[11px] text-muted-foreground">{product.eyebrow}</p>
+        {brandLabel ? (
+          <p className="line-clamp-1 text-sm text-muted-foreground">{brandLabel}</p>
+        ) : (
+          !compact && <p className="line-clamp-1 text-[11px] text-muted-foreground">{product.eyebrow}</p>
+        )}
         <Link href={href} className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-foreground hover:text-brand">
           {product.name}
         </Link>
-        {product.variantName && (
+        {!compact && product.variantName && (
           <p className="line-clamp-1 text-[14px] text-muted-foreground">{product.variantName}</p>
         )}
         <div className="mt-auto space-y-0.5">
@@ -67,18 +75,20 @@ export function HomeProductTile({ product, className, layout = "default" }: Home
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          {product.reviewCount > 0 ? (
-            <>
-              <span className="inline-flex items-center gap-1">
-                <svg className="h-3 w-3 shrink-0 text-rating" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span className="font-medium text-[--color-rating]">{product.rating.toFixed(1)}</span>
-              </span>
-              <span className="text-muted-foreground/40">·</span>
-            </>
-          ) : null}
-          <span>{product.soldCount} terjual</span>
-        </div>
+        {!compact && (
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            {product.reviewCount > 0 ? (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <svg className="h-3 w-3 shrink-0 text-rating" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span className="font-medium text-[--color-rating]">{product.rating.toFixed(1)}</span>
+                </span>
+                <span className="text-muted-foreground/40">·</span>
+              </>
+            ) : null}
+            <span>{product.soldCount} terjual</span>
+          </div>
+        )}
       </div>
     </article>
   );

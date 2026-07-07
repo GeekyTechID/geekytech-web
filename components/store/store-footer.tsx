@@ -1,38 +1,51 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchShopBrands } from "@/lib/data/home-storefront";
+import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
+import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
+import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 
 const FOOTER_DISCOVER = [
   { label: "Tentang kami", href: "/about" },
   { label: "Kontak", href: "/contact" },
-  { label: "Syarat & Ketentuan", href: "/terms" },
+  { label: "Syarat & Ketentuan", href: "/syarat-ketentuan" },
   { label: "FAQ", href: "/faq" },
-  { label: "Kebijakan privasi", href: "/privacy" },
+  { label: "Kebijakan privasi", href: "/kebijakan-privasi" },
+  { label: "Kebijakan pengembalian", href: "/kebijakan-pengembalian" },
 ] as const;
 
 const FOOTER_SOCIAL = [
-  { label: "Instagram", href: "https://instagram.com/geekytech.id" },
-  { label: "Tiktok", href: "https://tiktok.com/@geekytech.id" },
-  { label: "X", href: "https://x.com/geekytech" },
+  { label: "geekytech.id", href: "https://instagram.com/geekytech.id", logo: "/socialmedia/instagram.webp" },
+  { label: "@geekytech.id", href: "https://tiktok.com/@geekytech.id", logo: "/socialmedia/tiktok.png" },
+  { label: "Geekytech", href: "https://x.com/geekytech", logo: "/socialmedia/x.png" },
 ] as const;
 
+/** `scale`: file logo tiap marketplace punya padding transparan yang beda-beda di dalam kanvasnya,
+ * jadi walau ditampilkan di kotak yang sama persis, mereknya sendiri terlihat lebih kecil. Nilai ini
+ * mengompensasi supaya ukuran visual merek kira-kira sama besar dengan logo Shopee (paling penuh/tanpa padding). */
 const FOOTER_MARKETPLACES = [
-  { label: "Tokopedia", href: "https://tokopedia.com" },
-  { label: "Shopee", href: "https://shopee.co.id" },
-  { label: "Blibli", href: "https://blibli.com" },
-  { label: "TikTok shop", href: "https://www.tiktok.com" },
+  { label: "Tokopedia", href: "https://tokopedia.com", logo: "/marketplace/tokopedia.png", scale: 2 },
+  { label: "Shopee", href: "https://shopee.co.id", logo: "/marketplace/shopee.png", scale: 1 },
+  { label: "Blibli", href: "https://blibli.com", logo: "/marketplace/blibli.webp", scale: 1.5 },
+  { label: "TikTok shop", href: "https://www.tiktok.com", logo: "/marketplace/tiktokshop.webp", scale: 2.75 },
 ] as const;
 
 export async function StoreFooter() {
-  const brands = await fetchShopBrands();
+  const [brands, storeOrigin, whatsappCs] = await Promise.all([
+    fetchShopBrands(),
+    getStoreOrigin(),
+    getWhatsappCs(),
+  ]);
   const year = new Date().getFullYear();
+  const fullAddress = getStoreOriginFullAddress(storeOrigin);
 
   return (
     <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
-      <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16 lg:pb-5">
+      <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-24 lg:py-16">
         <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-20">
           <div className="min-w-0 space-y-4 lg:max-w-xl">
             <h2 className="text-2xl font-black leading-tight text-white md:text-3xl">
@@ -67,9 +80,23 @@ export async function StoreFooter() {
               </div>
             </form>
 
-            <p className="relative z-10 mt-14 text-xs text-white/45">
-              © {year} GeekyTech by CV. Sentosa Berkat Jaya. All rights reserved.
-            </p>
+            <div className="relative z-10 mt-14 space-y-1.5 text-xs text-white/45">
+              <p>© {year} GeekyTech by {LEGAL_ENTITY_NAME}. All rights reserved.</p>
+              {fullAddress && <p>{fullAddress}</p>}
+              {whatsappCs && (
+                <p>
+                  WhatsApp:{" "}
+                  <a
+                    href={`https://wa.me/${whatsappCs}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline-offset-2 hover:text-white hover:underline"
+                  >
+                    +{whatsappCs}
+                  </a>
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="min-w-0 grid gap-10 grid-cols-2 sm:grid-cols-4">
@@ -103,7 +130,15 @@ export async function StoreFooter() {
               <ul className="space-y-2.5 text-sm text-white/90">
                 {FOOTER_SOCIAL.map((l) => (
                   <li key={l.href}>
-                    <a href={l.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-brand">
+                    <a
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 transition hover:text-brand"
+                    >
+                      <span className="relative size-5 shrink-0 overflow-hidden rounded">
+                        <Image src={l.logo} alt="" fill className="object-contain" sizes="20px" />
+                      </span>
                       {l.label}
                     </a>
                   </li>
@@ -115,7 +150,22 @@ export async function StoreFooter() {
               <ul className="space-y-2.5 text-sm text-white/90">
                 {FOOTER_MARKETPLACES.map((l) => (
                   <li key={l.href}>
-                    <a href={l.href} target="_blank" rel="noopener noreferrer" className="transition hover:text-brand">
+                    <a
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 transition hover:text-brand"
+                    >
+                      <span className="relative size-5 shrink-0 overflow-hidden rounded">
+                        <Image
+                          src={l.logo}
+                          alt=""
+                          fill
+                          className="object-contain"
+                          style={{ transform: `scale(${l.scale})` }}
+                          sizes="20px"
+                        />
+                      </span>
                       {l.label}
                     </a>
                   </li>
@@ -125,13 +175,6 @@ export async function StoreFooter() {
           </div>
         </div>
       </div>
-
-      <p
-        className="pointer-events-none bottom-0 select-none text-center sm:text-[2rem] md:text-[10rem] lg:text-[13rem] xl:text-[16rem] 2xl:text-[20rem] font-thin leading-none text-white"
-        aria-hidden
-      >
-        geekytech
-      </p>
     </footer>
   );
 }

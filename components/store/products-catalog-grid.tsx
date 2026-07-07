@@ -38,7 +38,7 @@ export function ProductsCatalogGrid({ products, hasActiveFilters }: ProductsCata
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
       {products.map((p) => (
         <div key={`${p.productId}-${p.variantId}`} className="min-w-0">
-          <HomeProductTile product={p} layout="promoRow" className="h-full" />
+          <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
         </div>
       ))}
     </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 
 export const metadata: Metadata = {
   title: "Tentang GeekyTech",
@@ -58,6 +59,9 @@ export default function AboutPage() {
             className="text-[17px] font-light leading-[1.5] text-[#1d1d1f][#cccccc] max-w-[600px] mx-auto"
           >
             GeekyTech hadir untuk memastikan semua orang bisa mengakses teknologi terbaik dengan mudah, aman, dan terpercaya.
+          </p>
+          <p className="mt-4 text-[13px] text-[#7a7a7a]">
+            Dioperasikan oleh {LEGAL_ENTITY_NAME}.
           </p>
         </div>
       </section>

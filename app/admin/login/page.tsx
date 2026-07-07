@@ -112,7 +112,7 @@ function AdminLoginContent() {
                       <Input
                         type="email"
                         autoComplete="email"
-                        placeholder="admin@geekytech.com"
+                        placeholder="admin@geeky.id"
                         className="h-11 rounded-none border-x-0 border-t-0 border-b-2 border-[#e0e0e0] bg-transparent px-0 text-[15px] shadow-none placeholder:text-[#c8c8c8] focus-visible:border-[#1d1d1f] focus-visible:ring-0"
                         {...field}
                       />

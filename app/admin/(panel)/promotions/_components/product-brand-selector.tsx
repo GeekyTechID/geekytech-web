@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/format";
 
 const selectClass =
-  "h-10 w-full rounded-full border border-[#e0e0e0] bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
+  "h-10 w-full rounded-md border border-[#e0e0e0] bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
 
 type ProductSort = "name_asc" | "name_desc" | "price_asc" | "price_desc" | "rating_desc" | "reviews_desc" | "sold_desc";
 type BrandSort = "name_asc" | "name_desc" | "count_desc" | "count_asc";
@@ -186,7 +186,7 @@ export function ProductBrandSelector({
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
                 placeholder="Cari produk..."
-                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
+                className="h-10 rounded-md border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
               />
             </div>
             {categories.length > 0 && (
@@ -259,7 +259,7 @@ export function ProductBrandSelector({
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
                 placeholder="Cari brand..."
-                className="h-10 rounded-full border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
+                className="h-10 rounded-md border-[#e0e0e0] bg-card pl-10 pr-4 text-[17px] leading-[1.47]"
               />
             </div>
             {categories.length > 0 && (

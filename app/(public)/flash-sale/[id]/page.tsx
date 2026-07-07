@@ -27,7 +27,7 @@ export default async function FlashSalePage({ params }: Props) {
   const isExpired = data.endsAt ? new Date(data.endsAt) < new Date() : false;
 
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-24">
       <div className="mb-8 space-y-3">
         <h1 className="text-lg font-black leading-snug text-foreground sm:text-xl md:text-2xl">
           {data.name}

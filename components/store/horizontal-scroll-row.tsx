@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { CarouselNavButton } from "@/components/ui/carousel-nav-button";
 import { cn } from "@/lib/utils";
 
 type HorizontalScrollRowProps = {
@@ -68,23 +68,16 @@ export function HorizontalScrollRow({
     }
   }, [itemsPerSlide]);
 
-  return (
-    <div className={cn("flex items-center gap-2", className)}>
-      {showChevrons ? (
-        <CarouselNavButton
-          direction="prev"
-          surface="surface"
-          aria-label="Geser kiri"
-          onClick={() => scrollByDir(-1)}
-          disabled={!canLeft}
-          className={cn("shrink-0", !canLeft && "pointer-events-none opacity-40")}
-        />
-      ) : null}
+  const chevronBaseClass =
+    "flex size-10 items-center justify-center text-[#1d1d1f] opacity-0 transition-opacity duration-200 " +
+    "pointer-events-none group-hover:pointer-events-auto hover:text-brand " +
+    "disabled:pointer-events-none disabled:text-muted-foreground disabled:hover:text-muted-foreground";
 
+  return (
+    <div className={cn("group relative", className)}>
       <div
         ref={ref}
         className={cn(
-          "flex-1 min-w-0",
           "flex snap-x snap-mandatory overflow-x-auto scroll-smooth pb-1",
           "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           gapClass,
@@ -95,14 +88,31 @@ export function HorizontalScrollRow({
       </div>
 
       {showChevrons ? (
-        <CarouselNavButton
-          direction="next"
-          surface="surface"
-          aria-label="Geser kanan"
-          onClick={() => scrollByDir(1)}
-          disabled={!canRight}
-          className={cn("shrink-0", !canRight && "pointer-events-none opacity-40")}
-        />
+        <div className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 sm:-left-6 lg:-left-8">
+          <button
+            type="button"
+            aria-label="Geser kiri"
+            onClick={() => scrollByDir(-1)}
+            disabled={!canLeft}
+            className={cn(chevronBaseClass, canLeft ? "group-hover:opacity-100" : "group-hover:opacity-40")}
+          >
+            <ChevronLeft className="h-8 w-8" strokeWidth={2.5} />
+          </button>
+        </div>
+      ) : null}
+
+      {showChevrons ? (
+        <div className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 sm:-right-6 lg:-right-8">
+          <button
+            type="button"
+            aria-label="Geser kanan"
+            onClick={() => scrollByDir(1)}
+            disabled={!canRight}
+            className={cn(chevronBaseClass, canRight ? "group-hover:opacity-100" : "group-hover:opacity-40")}
+          >
+            <ChevronRight className="h-8 w-8" strokeWidth={2.5} />
+          </button>
+        </div>
       ) : null}
     </div>
   );

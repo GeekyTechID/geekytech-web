@@ -26,12 +26,12 @@ export default async function HomePage() {
     fetchMainHeroBanners(),
     fetchPrimaryHomeFlashSaleBlock(),
     fetchShopBrands(),
-    fetchLatestHomeProducts(12),
+    fetchLatestHomeProducts(18),
   ]).catch(() => null);
 
   if (loaded === null) {
     return (
-      <div className="mx-auto max-w-[1400px] px-4 py-16 text-center">
+      <div className="mx-auto max-w-[1440px] px-4 py-16 text-center">
         <p className="text-sm text-muted-foreground">Gagal memuat beranda. Silakan muat ulang halaman.</p>
       </div>
     );

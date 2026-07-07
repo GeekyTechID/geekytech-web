@@ -141,29 +141,29 @@ export default async function DashboardOverviewPage() {
           <div className="mt-10 flex flex-col gap-3">
             {/* Row 1 */}
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-md bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Diproses", String(orderStats.processingCount), "Dibayar, diproses, dikirim")}
               </Link>
-              <Link href="/dashboard/orders?status=shipped" className={`${cellCls} overflow-hidden rounded-2xl bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/orders?status=shipped" className={`${cellCls} overflow-hidden rounded-md bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Dikirim", String(orderStats.shippedCount), "Dalam pengiriman")}
               </Link>
-              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-md bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Selesai", String(orderStats.completedCount), "Pesanan selesai")}
               </Link>
-              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-2xl bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/orders" className={`${cellCls} overflow-hidden rounded-md bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Total belanja", compactRupiah(orderStats.totalSpending), "Pesanan aktif & selesai", true)}
               </Link>
             </div>
             {/* Row 2 */}
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-2xl bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/orders?status=completed" className={`${cellCls} overflow-hidden rounded-md bg-[#272729] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Ulasan tertunda", String(pendingReviews), "Pesanan belum diulas")}
               </Link>
-              <Link href="/dashboard/wishlist" className={`${cellCls} overflow-hidden rounded-2xl bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
+              <Link href="/dashboard/wishlist" className={`${cellCls} overflow-hidden rounded-md bg-[#2a2a2c] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5`}>
                 {cardBody("Wishlist", String(overview.wishlistCount), "Produk tersimpan")}
               </Link>
               {/* Total Pesanan — flex-1, mengisi sisa ruang baris 2 */}
-              <Link href="/dashboard/orders" className="min-w-0 flex-1 overflow-hidden rounded-2xl bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5">
+              <Link href="/dashboard/orders" className="min-w-0 flex-1 overflow-hidden rounded-md bg-[#252527] p-4 text-white ring-1 ring-black/5 transition active:scale-[0.99] xl:p-5">
                 {cardBody("Total pesanan", String(orderStats.totalOrders), "Semua waktu")}
               </Link>
             </div>

@@ -16,40 +16,35 @@ export function HomeLatestProductsSection({ products }: HomeLatestProductsSectio
 
   return (
     <section className="bg-background py-8 sm:py-10">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="mb-5 space-y-1 sm:mb-6">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-base font-black leading-snug text-foreground sm:text-lg">
-              Produk Terbaru
-            </h3>
-            <Link
-              href="/products"
-              className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
-            >
-              Lihat Semua
-            </Link>
-          </div>
-          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Kurasi dari katalog aktif GeekyTech — buka halaman produk untuk varian lengkap.
-          </p>
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
+        <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+          <h3 className="text-base font-bold leading-snug text-foreground sm:text-lg">
+            Produk Terbaru
+          </h3>
+          <Link
+            href="/products"
+            className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+          >
+            Lihat Semua
+          </Link>
         </div>
 
-        <HorizontalScrollRow gapClass="gap-3 sm:gap-4" fillRow={products.length <= 5} itemsPerSlide={5}>
-          {products.length <= 5 ? (
+        <HorizontalScrollRow gapClass="gap-3 sm:gap-4" fillRow={products.length <= 6} itemsPerSlide={6}>
+          {products.length <= 6 ? (
             <>
               {products.map((p) => (
                 <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                  <HomeProductTile product={p} layout="fluidRow" />
+                  <HomeProductTile product={p} layout="fluidRow" compact />
                 </div>
               ))}
-              {Array.from({ length: Math.max(0, 5 - products.length) }, (_, i) => (
+              {Array.from({ length: Math.max(0, 6 - products.length) }, (_, i) => (
                 <div key={`latest-row-pad-${i}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS} aria-hidden />
               ))}
             </>
           ) : (
             products.map((p) => (
               <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                <HomeProductTile product={p} layout="promoRow" className="h-full" />
+                <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
               </div>
             ))
           )}

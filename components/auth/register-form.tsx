@@ -262,11 +262,11 @@ export function RegisterForm() {
 
         <p className="text-[12px] font-normal leading-relaxed text-[#7a7a7a]">
           Dengan mendaftar, kamu setuju dengan{" "}
-          <Link href="/terms" className="text-[#EA5329] underline-offset-2 hover:underline">
+          <Link href="/syarat-ketentuan" className="text-[#EA5329] underline-offset-2 hover:underline">
             Syarat & Ketentuan
           </Link>{" "}
           dan{" "}
-          <Link href="/privacy" className="text-[#EA5329] underline-offset-2 hover:underline">
+          <Link href="/kebijakan-privasi" className="text-[#EA5329] underline-offset-2 hover:underline">
             Kebijakan Privasi
           </Link>{" "}
           GeekyTech.

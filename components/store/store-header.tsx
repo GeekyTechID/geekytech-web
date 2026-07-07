@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, startTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ChevronDown,
   LayoutDashboard,
@@ -103,6 +103,8 @@ export function StoreHeader({
 }: StoreHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeCategorySlug = pathname === "/products" ? searchParams.get("category") : null;
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
   const { reset } = useAuthStore();
   const cartCount = useCartStore((s) => s.cartCount);
@@ -251,7 +253,7 @@ export function StoreHeader({
           className,
         )}
       >
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="flex items-center gap-3 py-3 md:py-4">
             <Button
               type="button"
@@ -279,7 +281,7 @@ export function StoreHeader({
               onSubmit={handleSearchSubmit}
               className="relative mx-auto hidden min-w-0 max-w-2xl flex-1 sm:block"
             >
-              <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-4 pr-3">
+              <div className="flex w-full items-center rounded-md border border-neutral-200 bg-neutral-100 pl-4 pr-3">
                 <Search size={14} className="mr-2 shrink-0 text-neutral-400" aria-hidden />
                 <Input
                   ref={searchInputRef}
@@ -412,7 +414,7 @@ export function StoreHeader({
           </div>
 
           <form onSubmit={handleSearchSubmit} className="relative pb-3 sm:hidden">
-            <div className="flex w-full items-center rounded-full border border-neutral-200 bg-neutral-100 pl-3 pr-3">
+            <div className="flex w-full items-center rounded-md border border-neutral-200 bg-neutral-100 pl-3 pr-3">
               <Search size={15} className="shrink-0 text-neutral-500" aria-hidden />
               <Input
                 type="search"
@@ -432,7 +434,7 @@ export function StoreHeader({
 
           <nav
             aria-label="Kategori produk"
-            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:px-6"
+            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:justify-center sm:px-6"
           >
             {categories.length === 0 ? (
               <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>
@@ -441,7 +443,10 @@ export function StoreHeader({
                 <Link
                   key={c.id}
                   href={`/products?category=${encodeURIComponent(c.slug)}`}
-                  className="shrink-0 whitespace-nowrap transition hover:text-brand"
+                  className={cn(
+                    "shrink-0 whitespace-nowrap border-b-2 border-transparent pb-[13px] -mb-[13px] transition hover:text-brand",
+                    c.slug === activeCategorySlug && "border-current font-bold",
+                  )}
                 >
                   {c.name}
                 </Link>
@@ -476,7 +481,14 @@ export function StoreHeader({
                     className="h-10 w-full justify-start px-2 text-sm font-medium"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Link href={`/products?category=${encodeURIComponent(c.slug)}`}>{c.name}</Link>
+                    <Link
+                      href={`/products?category=${encodeURIComponent(c.slug)}`}
+                      className={cn(
+                        c.slug === activeCategorySlug && "font-bold underline underline-offset-4",
+                      )}
+                    >
+                      {c.name}
+                    </Link>
                   </Button>
                 </li>
               ))}

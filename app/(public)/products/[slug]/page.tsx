@@ -110,7 +110,7 @@ export default async function ProductDetailPage({ params }: { params: PageParams
   return (
     <div className="bg-white">
       <div className="border-b border-[#e0e0e0] py-4">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <ProductBreadcrumbs product={product} />
         </div>
       </div>

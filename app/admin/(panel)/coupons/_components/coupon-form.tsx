@@ -331,12 +331,12 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                     placeholder={`Cari ${label}...`}
                     value={itemSearch}
                     onChange={(e) => setItemSearch(e.target.value)}
-                    className="h-9 flex-1 rounded-lg border-[#e0e0e0] text-sm"
+                    className="h-9 flex-1 rounded-md border-[#e0e0e0] text-sm"
                   />
                   {isProduct && (
                     <>
                       <Select value={filterCategoryId} onValueChange={setFilterCategoryId}>
-                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-44">
+                        <SelectTrigger className="h-9 w-full rounded-md border-[#e0e0e0] text-sm sm:w-44">
                           <SelectValue placeholder="Semua Kategori" />
                         </SelectTrigger>
                         <SelectContent>
@@ -347,7 +347,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
                         </SelectContent>
                       </Select>
                       <Select value={filterBrandId} onValueChange={setFilterBrandId}>
-                        <SelectTrigger className="h-9 w-full rounded-lg border-[#e0e0e0] text-sm sm:w-40">
+                        <SelectTrigger className="h-9 w-full rounded-md border-[#e0e0e0] text-sm sm:w-40">
                           <SelectValue placeholder="Semua Merek" />
                         </SelectTrigger>
                         <SelectContent>
@@ -482,7 +482,7 @@ export function CouponForm({ initialData, products = [], categories = [], brands
               type="button"
               onClick={() => imageRef.current?.click()}
               disabled={uploading}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-[#e0e0e0] py-10 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? <Spinner className="size-5" /> : <ImagePlus size={20} />}
               <span className="text-xs font-semibold">{uploading ? "Mengupload..." : "Klik untuk upload gambar"}</span>

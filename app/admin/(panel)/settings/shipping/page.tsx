@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { SettingsNav } from "../_components/settings-nav";
 import { OriginForm } from "./_components/origin-form";
-import { parseStoreOrigin } from "./_lib/store-origin";
+import { parseStoreOrigin } from "@/lib/settings/store-origin";
 
 export const metadata: Metadata = { title: "Pengiriman — Admin GeekyTech" };
 export const dynamic = "force-dynamic";

@@ -72,7 +72,7 @@ export function BrandStorePagination({
           key={n}
           href={buildHref(basePath, n, q, categoryId, sort)}
           className={cn(
-            "flex h-10 min-w-10 items-center justify-center rounded-full border px-2 text-sm font-medium transition",
+            "flex h-10 min-w-10 items-center justify-center rounded-md border px-2 text-sm font-medium transition",
             n === currentPage
               ? "border-[#1d1d1f] bg-[#1d1d1f] text-white"
               : "border-[#e0e0e0] bg-white text-[#1d1d1f] hover:border-[#EA5329]/40",

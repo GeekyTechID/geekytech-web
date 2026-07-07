@@ -603,7 +603,7 @@ export function ProductTable({
                   key={val}
                   type="button"
                   onClick={() => setSelectedCondition(val)}
-                  className={`h-9 flex-1 rounded-lg border text-xs font-semibold uppercase transition-colors ${
+                  className={`h-9 flex-1 rounded-md border text-xs font-semibold uppercase transition-colors ${
                     selectedCondition === val
                       ? "border-brand bg-brand/10 text-brand"
                       : "border-[#e0e0e0] bg-transparent text-foreground hover:border-foreground hover:text-foreground"

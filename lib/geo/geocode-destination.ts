@@ -142,7 +142,7 @@ async function fetchFromNominatim(postal: string): Promise<LatLng | null> {
       `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(postal)}&country=Indonesia&format=json&limit=1`,
       {
         headers: {
-          "User-Agent": "GeekyTech/1.0 (geekytech.com)",
+          "User-Agent": "GeekyTech/1.0 (geeky.id)",
           Accept: "application/json",
         },
         cache: "no-store",

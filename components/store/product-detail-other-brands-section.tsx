@@ -10,7 +10,7 @@ export function ProductDetailOtherBrandsSection({ groups }: ProductDetailOtherBr
 
   return (
     <section className="border-t border-[#e0e0e0] bg-white py-14 md:py-16" aria-labelledby="other-brands-heading">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <h2 id="other-brands-heading" className="mb-10 text-[clamp(1.25rem,3vw,1.5rem)] font-semibold text-[#1d1d1f]">
           Produk lainnya di brand lain
         </h2>

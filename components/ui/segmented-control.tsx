@@ -38,7 +38,7 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex overflow-hidden rounded-lg border border-[#e0e0e0] bg-card",
+        "inline-flex overflow-hidden rounded-md border border-[#e0e0e0] bg-card",
         fullWidth && "w-full",
         className,
       )}

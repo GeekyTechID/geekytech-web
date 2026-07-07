@@ -321,7 +321,7 @@ async function applyRefund(orderId: string) {
     .eq("order_number", orderId)
     .maybeSingle();
 
-  if (!order) return;
+  if (!order || order.status === "refunded") return;
 
   await svc
     .from("orders")
@@ -379,11 +379,15 @@ async function applyChallenge(orderId: string) {
 
   if (!order) return;
 
-  await svc
+  const { data: updatedPayment } = await svc
     .from("payments")
     .update({ status: "challenge" })
     .eq("midtrans_order_id", orderId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (!updatedPayment) return;
 
   await svc.from("order_status_history").insert({
     order_id: order.id,
@@ -515,7 +519,9 @@ export async function POST(req: Request) {
     const txStatus = body.transaction_status;
     const fraudStatus = body.fraud_status;
 
-    if (
+    if (txStatus === "capture" && fraudStatus === "challenge") {
+      await applyChallenge(body.order_id);
+    } else if (
       (txStatus === "settlement" || txStatus === "capture") &&
       fraudStatus !== "deny"
     ) {

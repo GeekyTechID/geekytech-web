@@ -182,7 +182,7 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[#c0c0c0] bg-[#fafafa] text-[#a0a0a0] hover:border-[#EA5329] hover:text-[#EA5329] disabled:opacity-50"
+              className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-[#c0c0c0] bg-[#fafafa] text-[#a0a0a0] hover:border-[#EA5329] hover:text-[#EA5329] disabled:opacity-50"
             >
               {uploading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

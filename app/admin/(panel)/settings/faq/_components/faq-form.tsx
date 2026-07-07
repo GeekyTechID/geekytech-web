@@ -123,7 +123,7 @@ export function FaqForm({ initialData }: FaqFormProps) {
               />
             </div>
           </div>
-          <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
             <label className={labelClass}>Status</label>
             <StatusPillToggle
               active={isActive}

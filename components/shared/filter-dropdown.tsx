@@ -24,10 +24,12 @@ type FilterDropdownProps = {
   className?: string;
   align?: "start" | "center" | "end";
   "aria-label"?: string;
+  /** Tampilkan trigger dengan gaya aktif (bg hitam, teks putih) — dipakai saat filter ini sedang dipilih. */
+  active?: boolean;
 };
 
 const triggerBaseClass =
-  "h-8 min-h-8 w-full shrink-0 justify-between gap-1.5 rounded-lg border-[#e0e0e0] px-2.5 py-2 text-sm font-normal text-[#1d1d1f] focus-visible:outline-[#1d1d1f]/40 sm:w-[13rem]";
+  "h-8 min-h-8 w-full shrink-0 justify-between gap-1.5 rounded-md border-[#e0e0e0] px-2.5 py-2 text-sm font-normal text-[#1d1d1f] focus-visible:outline-[#1d1d1f]/40 sm:w-[13rem]";
 
 /** Filter URL/query — shadcn DropdownMenu (radio), trigger netral hitam. */
 export function FilterDropdown({
@@ -37,6 +39,7 @@ export function FilterDropdown({
   className,
   align = "start",
   "aria-label": ariaLabel,
+  active = false,
 }: FilterDropdownProps) {
   const selected = options.find((o) => o.value === value) ?? options[0];
 
@@ -45,13 +48,14 @@ export function FilterDropdown({
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
-          variant="table-action"
+          variant={active ? "dark" : "table-action"}
           size="sm"
           aria-label={ariaLabel ?? selected?.label}
+          style={active ? { backgroundColor: "#1d1d1f", color: "#fff", borderColor: "transparent" } : undefined}
           className={cn(triggerBaseClass, className)}
         >
           <span className="truncate">{selected?.label ?? "Pilih"}</span>
-          <ChevronDown className="size-4 shrink-0 opacity-50" />
+          <ChevronDown className={cn("size-4 shrink-0", active ? "opacity-70" : "opacity-50")} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="min-w-[var(--radix-dropdown-menu-trigger-width)]">

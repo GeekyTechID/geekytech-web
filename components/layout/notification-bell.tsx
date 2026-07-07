@@ -127,15 +127,16 @@ export function NotificationBell() {
   const hydrate = useNotificationStore((s) => s.hydrate);
   const storeMarkRead = useNotificationStore((s) => s.markRead);
   const storeMarkAllRead = useNotificationStore((s) => s.markAllRead);
-  const invalidate = useNotificationStore((s) => s.invalidate);
   const setLoading = useNotificationStore((s) => s.setLoading);
 
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Refetch setiap kali bell dibuka (untuk notif baru), tapi skeleton loading
+  // hanya tampil saat belum pernah ada data — kalau data sudah ada, refresh
+  // terjadi diam-diam di background tanpa mengganggu tampilan yang sudah ada.
   const fetchNotifs = useCallback(async () => {
-    if (fetched) return;
-    setLoading(true);
+    if (!fetched) setLoading(true);
     try {
       const res = await fetch("/api/notifications");
       if (res.ok) {
@@ -156,10 +157,9 @@ export function NotificationBell() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     openTimer.current = setTimeout(() => {
       setOpen(true);
-      invalidate();
       void fetchNotifs();
     }, 80);
-  }, [fetchNotifs, invalidate]);
+  }, [fetchNotifs]);
 
   const handleMouseLeave = useCallback(() => {
     if (openTimer.current) clearTimeout(openTimer.current);
@@ -170,11 +170,10 @@ export function NotificationBell() {
     (next: boolean) => {
       setOpen(next);
       if (next) {
-        invalidate();
         void fetchNotifs();
       }
     },
-    [fetchNotifs, invalidate],
+    [fetchNotifs],
   );
 
   const handleMarkAllRead = () => {
