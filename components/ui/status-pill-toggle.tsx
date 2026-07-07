@@ -31,7 +31,7 @@ export function StatusPillToggle({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "group/pill relative overflow-hidden inline-flex items-center gap-2 rounded-full border transition-[transform,background-color,color,border-color] duration-[160ms] ease-spring motion-reduce:transition-[background-color,color,border-color]",
+        "group/pill relative overflow-hidden inline-flex items-center gap-2 rounded-md border transition-[transform,background-color,color,border-color] duration-[160ms] ease-spring motion-reduce:transition-[background-color,color,border-color]",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF7A52] motion-safe:active:scale-95 motion-safe:active:duration-[50ms] disabled:opacity-50",
         size === "default"
           ? "min-h-10 px-4 text-sm font-normal leading-[1.29] tracking-[-0.224px]"

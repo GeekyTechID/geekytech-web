@@ -106,7 +106,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="admin-text-link hidden h-11 items-center gap-2 rounded-full border border-transparent px-4 sm:flex"
+          className="admin-text-link hidden h-11 items-center gap-2 rounded-md border border-transparent px-4 sm:flex"
           aria-label="Buka website"
         >
           <ExternalLink size={13} />

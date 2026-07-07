@@ -2,13 +2,13 @@ export default function ProductsHubLoading() {
   return (
     <div className="bg-white">
       <div className="border-b border-[#e0e0e0] bg-white py-3">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="h-4 w-40 animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />
         </div>
       </div>
 
       <section className="py-8 sm:py-10">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="mb-6 space-y-2">
             <div className="h-7 w-48 animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />
             <div className="h-4 w-28 animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />

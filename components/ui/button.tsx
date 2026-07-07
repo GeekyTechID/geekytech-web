@@ -26,19 +26,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "rounded-full border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
+          "rounded-md border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
         secondary:
-          "rounded-full border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
+          "rounded-md border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
         dark:
           "rounded-md border-transparent bg-[#1d1d1f] text-white shadow-none hover:bg-[#333333]",
         pearl:
-          "rounded-xl border-[3px] border-[#f0f0f0] bg-[#fafafc] text-[#333333] shadow-none hover:bg-[#f5f5f7]",
+          "rounded-md border-[3px] border-[#f0f0f0] bg-[#fafafc] text-[#333333] shadow-none hover:bg-[#f5f5f7]",
         hero:
-          "rounded-full border-transparent bg-brand font-light text-brand-foreground shadow-none hover:bg-brand-hover",
+          "rounded-md border-transparent bg-brand font-light text-brand-foreground shadow-none hover:bg-brand-hover",
         ghost:
           "rounded-md border-transparent bg-transparent text-foreground shadow-none hover:bg-muted",
         destructive:
-          "rounded-full border-transparent bg-destructive text-destructive-foreground shadow-none hover:bg-destructive/90",
+          "rounded-md border-transparent bg-destructive text-destructive-foreground shadow-none hover:bg-destructive/90",
         "destructive-ghost":
           "rounded-md border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
         link:
@@ -55,10 +55,10 @@ const buttonVariants = cva(
           "rounded-md border-destructive/40 bg-transparent text-destructive shadow-none hover:bg-destructive/10",
         /** @deprecated Use `primary` */
         default:
-          "rounded-full border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
+          "rounded-md border-transparent bg-brand text-brand-foreground shadow-none hover:bg-brand-hover",
         /** @deprecated Use `secondary` */
         outline:
-          "rounded-full border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
+          "rounded-md border-brand bg-transparent text-brand shadow-none hover:bg-brand/5",
       },
       size: {
         default:

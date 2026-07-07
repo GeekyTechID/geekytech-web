@@ -195,7 +195,7 @@ export function ProductShareDialog({ open, onOpenChange, productName, productUrl
             type="button"
             onClick={() => void copyLink()}
             className={cn(
-              "flex w-full items-center justify-center gap-2 rounded-full py-[11px] px-6",
+              "flex w-full items-center justify-center gap-2 rounded-md py-[11px] px-6",
               "text-[17px] font-normal tracking-[-0.374px] transition-transform active:scale-95",
               copied
                 ? "bg-[#1d1d1f] text-white"
@@ -223,7 +223,7 @@ export function ProductShareDialog({ open, onOpenChange, productName, productUrl
                     key={platform.id}
                     type="button"
                     onClick={() => void handlePlatform(platform)}
-                    className="group flex flex-col items-center gap-1.5 rounded-[18px] p-2.5 transition-colors hover:bg-[#f5f5f7] active:scale-[0.96]"
+                    className="group flex flex-col items-center gap-1.5 rounded-md p-2.5 transition-colors hover:bg-[#f5f5f7] active:scale-[0.96]"
                   >
                     <div
                       className={cn(

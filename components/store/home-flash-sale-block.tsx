@@ -20,7 +20,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
     if (hideWhenEmpty) return null;
     return (
       <section className="border-b border-neutral-200 bg-background py-8 sm:py-10">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <p className="text-sm leading-relaxed text-muted-foreground">
             Flash sale{" "}
             <span className="font-medium text-foreground">{HOME_HERO_FLASH_SALE_CAMPAIGN_NAME}</span> tidak ditemukan
@@ -34,7 +34,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
 
   return (
     <section className="bg-background py-8 sm:py-10">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4 sm:items-end">
           <Link
             href={getFlashSaleLink(block.saleId)}

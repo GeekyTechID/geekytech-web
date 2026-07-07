@@ -9,7 +9,7 @@ import {
 
 export const PRODUCTS_CATALOG_PER_PAGE = 20;
 
-export type ProductsCatalogSortKey = "latest" | "price-asc" | "price-desc" | "best_selling";
+export type ProductsCatalogSortKey = "latest" | "price-asc" | "price-desc" | "best_selling" | "popular";
 
 export type ProductsCatalogBrandOption = {
   id: string;
@@ -17,7 +17,7 @@ export type ProductsCatalogBrandOption = {
   slug: string;
 };
 
-const SORT_KEYS = new Set<ProductsCatalogSortKey>(["latest", "price-asc", "price-desc", "best_selling"]);
+const SORT_KEYS = new Set<ProductsCatalogSortKey>(["latest", "price-asc", "price-desc", "best_selling", "popular"]);
 
 export function normalizeProductsCatalogSort(raw: string | undefined): ProductsCatalogSortKey {
   if (raw && SORT_KEYS.has(raw as ProductsCatalogSortKey)) return raw as ProductsCatalogSortKey;
@@ -114,6 +114,9 @@ export async function fetchProductsCatalogPage(
         break;
       case "best_selling":
         query = query.order("total_sold", { ascending: false });
+        break;
+      case "popular":
+        query = query.order("average_rating", { ascending: false }).order("review_count", { ascending: false });
         break;
       default:
         query = query.order("created_at", { ascending: false });

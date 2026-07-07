@@ -18,7 +18,7 @@ const SORT_OPTIONS: { value: BrandStoreSortKey; label: string }[] = [
 ];
 
 const brandFilterTriggerClass =
-  "h-11 min-h-11 rounded-full bg-white sm:min-w-[10.5rem] sm:w-auto";
+  "h-11 min-h-11 rounded-md bg-white sm:min-w-[10.5rem] sm:w-auto";
 
 type BrandStoreCatalogFiltersProps = {
   categories: BrandStoreCategoryOption[];
@@ -86,18 +86,18 @@ export function BrandStoreCatalogFilters({ categories }: BrandStoreCatalogFilter
         <label htmlFor="brand-catalog-search" className="sr-only">
           Cari produk
         </label>
-        <Input
-          id="brand-catalog-search"
-          type="search"
-          value={qInput}
-          onChange={(e) => scheduleSearch(e.target.value)}
-          placeholder="Cari produkmu di sini..."
-          className="h-11 rounded-full border-[#e0e0e0] bg-[#fafafc] pr-12 text-sm text-[#1d1d1f] placeholder:text-[#7a7a7a] focus-visible:border-[#1d1d1f] focus-visible:ring-[#1d1d1f]/15"
-          autoComplete="off"
-        />
-        <span className="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#1d1d1f] text-white">
-          <Search className="h-4 w-4" aria-hidden />
-        </span>
+        <div className="flex h-11 items-center rounded-md border border-[#e0e0e0] bg-[#fafafc] pl-4 pr-3 focus-within:border-[#1d1d1f]">
+          <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a7a7a]" aria-hidden />
+          <Input
+            id="brand-catalog-search"
+            type="search"
+            value={qInput}
+            onChange={(e) => scheduleSearch(e.target.value)}
+            placeholder="Cari produkmu di sini..."
+            className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#1d1d1f] shadow-none placeholder:text-[#7a7a7a] focus-visible:ring-0"
+            autoComplete="off"
+          />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">

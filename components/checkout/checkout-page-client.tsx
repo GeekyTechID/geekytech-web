@@ -266,7 +266,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       }
       setShippingOptions(json.data.options);
       setSelectedShipping(json.data.options[0] ?? null);
-      setShippingOpen(true);
+      setShippingOpen(!json.data.options[0]);
     } catch {
       toast.error("Gagal memuat ongkir.");
       setShippingOptions([]);
@@ -414,7 +414,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           onClose: () => {
             if (!paymentInitiated) {
               void deleteUnpaidOrderAction(orderId);
-              router.push("/dashboard/orders");
             }
           },
         });
@@ -432,7 +431,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   if (doneState) {
     return (
       <div className="px-4 py-20 text-[#1d1d1f]">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="py-2 sm:py-3">
             <CartCheckoutStepper current={4} />
           </div>
@@ -466,7 +465,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   return (
     <>
     <div className="bg-gradient-to-b from-[#f4f1ea]/50 to-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-6 text-[#1d1d1f] sm:pt-8 md:pb-20 lg:pb-20">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="py-2 sm:py-3">
           <CartCheckoutStepper current={2} />
         </div>
@@ -592,6 +591,10 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                                 ? "border-[#EA5329] bg-[#fff8f5]"
                                 : "border-[#e0e0e0] bg-[#fafafa] hover:border-[#EA5329]/40",
                             )}
+                            onClick={() => {
+                              setSelectedShipping(opt);
+                              setShippingOpen(false);
+                            }}
                           >
                             <input
                               type="radio"

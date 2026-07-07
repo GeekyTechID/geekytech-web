@@ -106,7 +106,7 @@ export function ChatWidget() {
                 </div>
                 <Link
                   href={`/login?redirectTo=${encodeURIComponent(pathname)}`}
-                  className="inline-flex h-10 w-full items-center justify-center rounded-full bg-[#EA5329] px-5 text-[13px] font-bold uppercase text-white transition-colors hover:bg-[#d44820]"
+                  className="inline-flex h-10 w-full items-center justify-center rounded-md bg-[#EA5329] px-5 text-[13px] font-bold uppercase text-white transition-colors hover:bg-[#d44820]"
                 >
                   Masuk / Daftar
                 </Link>

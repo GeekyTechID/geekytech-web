@@ -14,7 +14,7 @@ import { createFlashSale, updateFlashSale, bulkAddFlashSaleProducts, createFlash
 const labelClass = "text-[11px] font-semibold uppercase text-foreground";
 
 const selectClass =
-  "h-9 w-full rounded-lg border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
+  "h-9 w-full rounded-md border border-[#e0e0e0] bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand";
 
 export type Product = {
   id: string;
@@ -289,7 +289,7 @@ export function FlashSaleForm({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari produk..."
-                className="h-9 pl-8 text-sm"
+                className="h-9 rounded-md pl-8 text-sm"
               />
             </div>
             <select
@@ -517,7 +517,7 @@ export function FlashSaleForm({
                 <button
                   type="button"
                   onClick={() => bannerFileRef.current?.click()}
-                  className="h-7 rounded-full bg-white/90 px-3 text-[10px] font-semibold uppercase text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                  className="h-7 rounded-md bg-white/90 px-3 text-[10px] font-semibold uppercase text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
                 >
                   Ganti
                 </button>
@@ -538,7 +538,7 @@ export function FlashSaleForm({
             <button
               type="button"
               onClick={() => bannerFileRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
             >
               <ImagePlus size={22} strokeWidth={1.5} />
               <span className="text-xs font-semibold uppercase">Pilih gambar banner</span>

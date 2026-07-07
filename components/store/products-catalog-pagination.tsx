@@ -66,7 +66,7 @@ export function ProductsCatalogPagination({ currentPage, totalCount, ...filters 
           key={n}
           href={buildHref(n, filters)}
           className={cn(
-            "flex h-10 min-w-10 items-center justify-center rounded-full border px-2 text-sm font-medium transition",
+            "flex h-10 min-w-10 items-center justify-center rounded-md border px-2 text-sm font-medium transition",
             n === currentPage
               ? "border-foreground bg-foreground text-background"
               : "border-[#e0e0e0] bg-white text-foreground hover:border-brand/40",

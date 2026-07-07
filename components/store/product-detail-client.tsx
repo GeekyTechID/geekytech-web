@@ -214,7 +214,7 @@ export function ProductDetailClient({
     <div className="bg-white text-[#1d1d1f]">
       {/* Atas: kiri info + galeri, kanan kartu belanja */}
       <section className="py-8">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="flex flex-col lg:flex-row justify-between gap-10">
             <div className="min-w-0 ">
               <div className="flex flex-col lg:flex-row lg:h-full lg:items-stretch justify-between gap-8 sm:items-start">
@@ -497,7 +497,7 @@ export function ProductDetailClient({
 
       {/* Bawah: deskripsi | rating & ulasan */}
       <section className="py-12 md:py-16">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="grid gap-12 md:grid-cols-2 md:gap-10 lg:gap-16">
             <div>
               <Tabs

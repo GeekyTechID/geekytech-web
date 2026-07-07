@@ -30,7 +30,7 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
           key={`${block.sectionKey}-${blockIndex}`}
           className="bg-background py-8 sm:py-10 [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
         >
-          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
             {block.banners.length > 0 ? (
               <HomePromoBannerStrip banners={block.banners} className="mb-6 sm:mb-8" />
             ) : null}

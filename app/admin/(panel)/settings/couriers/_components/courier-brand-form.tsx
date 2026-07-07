@@ -41,7 +41,7 @@ export function CourierBrandForm({ activeCodes }: CourierBrandFormProps) {
         {BITESHIP_COURIER_BRANDS.map((brand) => (
           <label
             key={brand.code}
-            className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#e0e0e0] px-3 py-2 transition-colors hover:border-brand/50"
+            className="flex cursor-pointer items-center gap-2 rounded-md border border-[#e0e0e0] px-3 py-2 transition-colors hover:border-brand/50"
           >
             <Checkbox
               checked={selected.has(brand.code)}

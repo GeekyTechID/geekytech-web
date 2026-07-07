@@ -81,7 +81,7 @@ export function DashboardOrdersFilters({ categories = [], sort: sortProp = "newe
           type="text"
           defaultValue={q}
           placeholder="Cari nomor pesanan atau nama produk…"
-          className="h-8 w-full rounded-lg border border-[#e0e0e0] bg-white pl-9 pr-8 text-sm text-[#1d1d1f] outline-none placeholder:text-[#aaa] focus:border-[#1d1d1f] focus:ring-2 focus:ring-[#1d1d1f]/15"
+          className="h-8 w-full rounded-md border border-[#e0e0e0] bg-white pl-9 pr-8 text-sm text-[#1d1d1f] outline-none placeholder:text-[#aaa] focus:border-[#1d1d1f] focus:ring-2 focus:ring-[#1d1d1f]/15"
         />
         {q ? (
           <Button

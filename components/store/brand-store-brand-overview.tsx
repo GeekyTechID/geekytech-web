@@ -21,7 +21,7 @@ export function BrandStoreBrandOverview({ brand, aggregate, bestSellers }: Brand
 
   return (
     <section className="bg-white pb-10 pt-2">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
           <div className="flex shrink-0 items-start gap-6 lg:max-w-[min(100%,20rem)]">
             {brand.logo_url ? (

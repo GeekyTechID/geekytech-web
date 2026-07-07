@@ -53,7 +53,7 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
       <div data-no-print className="mb-6 flex justify-end">
         <button
           onClick={() => window.print()}
-          className="rounded-lg bg-[#1d1d1f] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
+          className="rounded-md bg-[#1d1d1f] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
         >
           Cetak Invoice
         </button>

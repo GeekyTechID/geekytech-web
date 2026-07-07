@@ -299,7 +299,7 @@ export function PromotionForm({
                 <button
                   type="button"
                   onClick={() => bannerFileRef.current?.click()}
-                  className="h-7 rounded-full bg-white/90 px-3 text-[10px] font-semibold uppercase text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                  className="h-7 rounded-md bg-white/90 px-3 text-[10px] font-semibold uppercase text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
                 >
                   Ganti
                 </button>
@@ -316,7 +316,7 @@ export function PromotionForm({
             <button
               type="button"
               onClick={() => bannerFileRef.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors hover:border-brand/40 hover:text-brand"
             >
               <ImagePlus size={22} strokeWidth={1.5} />
               <span className="text-xs font-semibold uppercase">Pilih gambar banner</span>

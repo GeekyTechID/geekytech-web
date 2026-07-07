@@ -66,7 +66,7 @@ export function VariantImagePicker({
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-lg border border-[#e0e0e0] px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand"
+            className="flex items-center gap-1.5 rounded-md border border-[#e0e0e0] px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand"
           >
             <Images size={13} />
             Pilih dari Galeri
@@ -109,7 +109,7 @@ export function VariantImagePicker({
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className={cn(
-          "flex items-center gap-1.5 rounded-lg border border-dashed border-[#e0e0e0] px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand",
+          "flex items-center gap-1.5 rounded-md border border-dashed border-[#e0e0e0] px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-brand/40 hover:text-brand",
           uploading && "cursor-not-allowed opacity-50",
         )}
       >

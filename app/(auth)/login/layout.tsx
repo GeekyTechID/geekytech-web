@@ -5,7 +5,7 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
     <AuthSplitShell
       imageSrc="/image-masuk.jpg"
       imagePriority
-      formMaxWidthClass="max-w-md"
+      formMaxWidthClass="w-full lg:w-1/2"
       leftPanel={
         <>
           <p className="max-w-lg text-[clamp(2rem,4vw,2.5rem)] font-semibold uppercase leading-[1.1] text-white">

@@ -86,14 +86,14 @@ export default async function BrandProductListPage({
 
   return (
     <div className="bg-white text-[#1d1d1f]">
-      <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 pt-6 sm:px-6 lg:px-24">
         <BrandStoreHeroBanners banners={heroBanners} />
       </div>
 
       <BrandStoreBrandOverview brand={brand} aggregate={aggregate} bestSellers={bestSellers} />
 
       <section className="bg-white py-10">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           {secondaryBanners.length > 0 ? (
             <div className="mb-10">
               <HomePromoBannerStrip banners={secondaryBanners} />
@@ -125,7 +125,7 @@ export default async function BrandProductListPage({
 
       {preFooterBanners.length > 0 ? (
         <section className="bg-[#f5f5f7] py-10">
-          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
             <HomePromoBannerStrip banners={preFooterBanners} />
           </div>
         </section>

@@ -10,7 +10,7 @@ export function ProductDetailMoreChoicesSection({ products }: ProductDetailMoreC
 
   return (
     <section className="bg-white pb-14 md:py-10" aria-labelledby="more-choices-heading">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <h2 id="more-choices-heading" className="mb-10 text-[clamp(1.25rem,3vw,1.5rem)] font-semibold text-[#1d1d1f]">
           Pilihan lainnya untuk kamu
         </h2>

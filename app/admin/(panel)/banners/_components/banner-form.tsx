@@ -160,7 +160,7 @@ export function BannerForm({ initialData, template: templateProp }: BannerFormPr
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
               className={cn(
-                "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-12 text-muted-foreground transition-colors",
+                "flex w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-[#e0e0e0] py-12 text-muted-foreground transition-colors",
                 "hover:border-brand/50 hover:text-brand",
                 uploading && "cursor-not-allowed opacity-50",
               )}

@@ -16,7 +16,7 @@ export function ShopByBrandSection({ brands, showSeeAllLink = true, limit }: Sho
 
   return (
     <section className="bg-background py-12">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-bold leading-snug text-foreground sm:text-lg">
             Brand Focus

@@ -66,7 +66,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         className={cn(
-          "flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors",
+          "flex w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-[#e0e0e0] py-8 text-muted-foreground transition-colors",
           "hover:border-brand/40 hover:text-foreground",
           uploading && "cursor-not-allowed opacity-50",
         )}

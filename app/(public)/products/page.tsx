@@ -91,7 +91,7 @@ export default async function ProductsHubPage({ searchParams }: { searchParams: 
   return (
     <div className="bg-white text-foreground">
       <nav aria-label="Breadcrumb" className="border-b border-[#e0e0e0] bg-white py-3">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <ol className="scrollbar-none flex min-w-0 items-center gap-2 overflow-x-auto py-1 text-[13px]">
             {breadcrumbItems.map((item, i) => (
               <li key={i} className="flex items-center gap-2">
@@ -116,16 +116,15 @@ export default async function ProductsHubPage({ searchParams }: { searchParams: 
       </nav>
 
       <section className="py-8 sm:py-10">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="mb-6 space-y-1">
             <h1 className="text-xl font-black leading-tight text-foreground sm:text-2xl md:text-[28px]">{title}</h1>
-            <p className="text-sm text-muted-foreground">{listResult.totalCount} produk ditemukan</p>
           </div>
 
           <Suspense
             fallback={<div className="mb-6 h-11 w-full max-w-xl animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />}
           >
-            <ProductsCatalogFilters categories={categories} brands={brands} />
+            <ProductsCatalogFilters categories={categories} brands={brands} totalCount={listResult.totalCount} />
           </Suspense>
 
           <div className="mt-6">

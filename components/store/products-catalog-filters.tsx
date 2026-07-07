@@ -5,10 +5,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ListFilter, Search, X } from "lucide-react";
 
 import { FilterDropdown } from "@/components/shared/filter-dropdown";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Sheet,
   SheetClose,
@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 const SORT_OPTIONS: { value: ProductsCatalogSortKey; label: string }[] = [
   { value: "latest", label: "Terbaru" },
+  { value: "popular", label: "Populer" },
   { value: "best_selling", label: "Terlaris" },
   { value: "price-asc", label: "Harga termurah" },
   { value: "price-desc", label: "Harga termahal" },
@@ -36,11 +37,12 @@ const RATING_OPTIONS = [
   { value: "3", label: "3 bintang & ke atas" },
 ];
 
-const filterTriggerClass = "h-11 min-h-11 w-full rounded-full bg-white sm:w-auto sm:min-w-[9.5rem]";
+const filterTriggerClass = "h-11 min-h-11 w-full rounded-md bg-white sm:w-auto";
 
 type ProductsCatalogFiltersProps = {
   categories: CategoryStorePublicCategory[];
   brands: ProductsCatalogBrandOption[];
+  totalCount: number;
 };
 
 function buildQueryString(params: URLSearchParams): string {
@@ -48,7 +50,7 @@ function buildQueryString(params: URLSearchParams): string {
   return s ? `?${s}` : "";
 }
 
-export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFiltersProps) {
+export function ProductsCatalogFilters({ categories, brands, totalCount }: ProductsCatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -132,43 +134,9 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
       ? `${minPrice ? formatRupiah(Number(minPrice)) : "Rp 0"} – ${maxPrice ? formatRupiah(Number(maxPrice)) : "tanpa batas"}`
       : "Harga";
 
-  type ActiveChip = { key: string; label: string; onRemove: () => void };
-  const chips: ActiveChip[] = [];
-  if (qInput.trim()) {
-    chips.push({ key: "q", label: `"${qInput.trim()}"`, onRemove: () => pushParams((p) => p.delete("q")) });
-  }
-  if (categorySlug) {
-    const c = categories.find((x) => x.slug === categorySlug);
-    chips.push({
-      key: "category",
-      label: c?.name ?? categorySlug,
-      onRemove: () => pushParams((p) => p.delete("category")),
-    });
-  }
-  if (brandSlug) {
-    const b = brands.find((x) => x.slug === brandSlug);
-    chips.push({
-      key: "brand",
-      label: b?.name ?? brandSlug,
-      onRemove: () => pushParams((p) => p.delete("brand")),
-    });
-  }
-  if (minPrice || maxPrice) {
-    chips.push({
-      key: "price",
-      label: priceLabel,
-      onRemove: () =>
-        pushParams((p) => {
-          p.delete("minPrice");
-          p.delete("maxPrice");
-        }),
-    });
-  }
-  if (rating) {
-    chips.push({ key: "rating", label: `${rating} bintang & ke atas`, onRemove: () => pushParams((p) => p.delete("rating")) });
-  }
-
-  const hasFilters = chips.length > 0 || sort !== "latest";
+  const hasFilters = Boolean(
+    qInput.trim() || categorySlug || brandSlug || minPrice || maxPrice || rating || sort !== "latest",
+  );
 
   const clearAll = useCallback(() => {
     setQInput("");
@@ -184,6 +152,7 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
         className={filterTriggerClass}
         value={categorySlug}
         options={categoryOptions}
+        active={Boolean(categorySlug)}
         onValueChange={(v) =>
           pushParams((p) => {
             if (v) p.set("category", v);
@@ -196,6 +165,7 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
         className={filterTriggerClass}
         value={brandSlug}
         options={brandOptions}
+        active={Boolean(brandSlug)}
         onValueChange={(v) =>
           pushParams((p) => {
             if (v) p.set("brand", v);
@@ -205,7 +175,13 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
       />
       <Popover>
         <PopoverTrigger asChild>
-          <Button type="button" variant="table-action" size="sm" className={cn(filterTriggerClass, "justify-between")}>
+          <Button
+            type="button"
+            variant={minPrice || maxPrice ? "dark" : "table-action"}
+            size="sm"
+            style={minPrice || maxPrice ? { backgroundColor: "#1d1d1f", color: "#fff", borderColor: "transparent" } : undefined}
+            className={cn(filterTriggerClass, "justify-between")}
+          >
             <span className="truncate">{priceLabel}</span>
           </Button>
         </PopoverTrigger>
@@ -248,6 +224,7 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
         className={filterTriggerClass}
         value={rating}
         options={RATING_OPTIONS}
+        active={Boolean(rating)}
         onValueChange={(v) =>
           pushParams((p) => {
             if (v) p.set("rating", v);
@@ -255,109 +232,115 @@ export function ProductsCatalogFilters({ categories, brands }: ProductsCatalogFi
           })
         }
       />
-      <FilterDropdown
-        aria-label="Urutkan produk"
-        className={filterTriggerClass}
+    </>
+  );
+
+  const sortByText = (
+    <div className="flex shrink-0 items-center gap-1.5 text-sm">
+      <span className="text-muted-foreground">Urutkan:</span>
+      <Select
         value={sort}
-        options={SORT_OPTIONS}
         onValueChange={(v) =>
           pushParams((p) => {
             if (v && v !== "latest") p.set("sort", v);
             else p.delete("sort");
           })
         }
-      />
-    </>
+      >
+        <SelectTrigger
+          aria-label="Urutkan produk"
+          className="w-auto gap-1.5 rounded-none border-0 bg-transparent p-0 font-semibold text-foreground shadow-none hover:bg-transparent focus-visible:border-0 focus-visible:ring-0"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align="end">
+          {SORT_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 flex-1 sm:max-w-xs">
-          <label htmlFor="products-catalog-search" className="sr-only">
-            Cari produk
-          </label>
-          <Input
-            id="products-catalog-search"
-            type="search"
-            value={qInput}
-            onChange={(e) => scheduleSearch(e.target.value)}
-            placeholder="Cari produk, brand, atau kategori..."
-            className="h-11 rounded-full border-[#e0e0e0] bg-[#fafafc] pr-12 text-sm placeholder:text-muted-foreground focus-visible:border-foreground"
-            autoComplete="off"
-          />
-          <span className="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#1d1d1f] text-white">
-            <Search className="h-4 w-4" aria-hidden />
-          </span>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative min-w-0 flex-1 sm:max-w-xs">
+            <label htmlFor="products-catalog-search" className="sr-only">
+              Cari produk
+            </label>
+            <div className="flex h-11 items-center rounded-md border border-[#e0e0e0] bg-[#fafafc] pl-4 pr-3 focus-within:border-foreground">
+              <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+              <Input
+                id="products-catalog-search"
+                type="search"
+                value={qInput}
+                onChange={(e) => scheduleSearch(e.target.value)}
+                placeholder="Cari produk, brand, atau kategori..."
+                className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-0"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button type="button" variant="dark" size="default" className="relative shrink-0 sm:hidden">
+                <ListFilter className="h-4 w-4" />
+                Filter
+                {hasFilters ? (
+                  <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-brand" aria-hidden />
+                ) : null}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
+              <SheetHeader>
+                <SheetTitle>Filter</SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col gap-3 px-4">{filterControls}</div>
+              <SheetFooter>
+                <SheetClose asChild>
+                  <Button type="button" variant="primary" className="w-full">
+                    Tampilkan hasil
+                  </Button>
+                </SheetClose>
+                {hasFilters ? (
+                  <Button type="button" variant="ghost" className="w-full" onClick={clearAll}>
+                    Hapus semua filter
+                  </Button>
+                ) : null}
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
+
+          {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar search+filter satu baris di sm+ */}
+          <div className="hidden sm:contents">
+            {filterControls}
+            {hasFilters ? (
+              <Button
+                type="button"
+                variant="pearl"
+                size="sm"
+                className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
+                onClick={clearAll}
+              >
+                <X size={12} />
+                Reset
+              </Button>
+            ) : null}
+          </div>
         </div>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button type="button" variant="dark" size="default" className="relative shrink-0 sm:hidden">
-              <ListFilter className="h-4 w-4" />
-              Filter
-              {chips.length > 0 ? (
-                <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold text-white">
-                  {chips.length}
-                </span>
-              ) : null}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
-            <SheetHeader>
-              <SheetTitle>Filter & Urutkan</SheetTitle>
-            </SheetHeader>
-            <div className="flex flex-col gap-3 px-4">{filterControls}</div>
-            <SheetFooter>
-              <SheetClose asChild>
-                <Button type="button" variant="primary" className="w-full">
-                  Tampilkan hasil
-                </Button>
-              </SheetClose>
-              {hasFilters ? (
-                <Button type="button" variant="ghost" className="w-full" onClick={clearAll}>
-                  Hapus semua filter
-                </Button>
-              ) : null}
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-
-        {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar search+filter+sort satu baris di sm+ */}
-        <div className="hidden sm:contents">
-          {filterControls}
-          {hasFilters ? (
-            <Button
-              type="button"
-              variant="pearl"
-              size="sm"
-              className="shrink-0 gap-1.5 border-dashed text-muted-foreground"
-              onClick={clearAll}
-            >
-              <X size={12} />
-              Reset
-            </Button>
-          ) : null}
+        <div className="flex shrink-0 flex-wrap items-center gap-4 sm:gap-6">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{totalCount}</span> produk ditemukan
+          </p>
+          {sortByText}
         </div>
       </div>
-
-      {chips.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2">
-          {chips.map((chip) => (
-            <Badge key={chip.key} variant="outline" className="gap-1 border-brand/20 bg-brand/10 pl-2.5 pr-1.5 text-brand">
-              {chip.label}
-              <button
-                type="button"
-                onClick={chip.onRemove}
-                aria-label={`Hapus filter ${chip.label}`}
-                className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full hover:bg-brand/20"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
