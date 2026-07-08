@@ -19,7 +19,7 @@ export function HomePromoBannerStrip({ banners, className }: HomePromoBannerStri
     <div className={cn("mb-6 w-full space-y-3", className)}>
       {banners.map((b) => {
         const img = (
-          <div className={`${STORE_BANNER_MEDIA_CLASS} bg-neutral-100`}>
+          <div className={cn(STORE_BANNER_MEDIA_CLASS, "h-[230px] sm:h-[390px]", "bg-neutral-100")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={b.image_url}

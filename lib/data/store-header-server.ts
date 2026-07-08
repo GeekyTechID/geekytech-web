@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export type StoreHeaderCategoryRow = { id: string; name: string; slug: string };
 
@@ -15,6 +15,25 @@ export async function fetchStoreHeaderCategories(): Promise<StoreHeaderCategoryR
     return data ?? [];
   } catch {
     return [];
+  }
+}
+
+/** Promo produk second aktif terbaru — dipakai link "Second Hand" di nav header. */
+export async function fetchStoreHeaderSecondHandPromoId(): Promise<string | null> {
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from("promotions")
+      .select("id")
+      .eq("type", "second_products")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.id;
+  } catch {
+    return null;
   }
 }
 

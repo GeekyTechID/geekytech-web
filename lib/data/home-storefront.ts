@@ -103,6 +103,10 @@ export type HomeShelfProduct = {
   rating: number;
   reviewCount: number;
   soldCount: number;
+  /** Opsional — hanya diisi oleh alur yang butuh filter kategori/brand/kondisi (mis. halaman detail promosi). */
+  categoryName?: string | null;
+  brandName?: string | null;
+  condition?: "new" | "second" | null;
 };
 
 type ProductImageRow = { url: string; is_primary: boolean | null; sort_order: number | null; alt_text: string | null };
@@ -119,6 +123,7 @@ export type ProductQueryRow = {
   total_sold: number | null;
   base_price: number;
   sale_price: number | null;
+  condition?: string | null;
   brands: BrandRel | BrandRel[];
   categories: CategoryRel | CategoryRel[];
   product_images: ProductImageRow[] | null;
@@ -168,6 +173,9 @@ export function productRowToShelf(p: ProductQueryRow): HomeShelfProduct | null {
     rating: Number(p.average_rating ?? 0),
     reviewCount: p.review_count ?? 0,
     soldCount: p.total_sold ?? 0,
+    categoryName: cat?.name ?? null,
+    brandName: brand?.name ?? null,
+    condition: p.condition === "new" || p.condition === "second" ? p.condition : null,
   };
 }
 
@@ -177,7 +185,7 @@ async function fetchProductsByIdsOrdered(ids: string[]): Promise<HomeShelfProduc
   const { data, error } = await supabase
     .from("products")
     .select(
-      `id, name, slug, created_at, average_rating, review_count, total_sold, base_price, sale_price,
+      `id, name, slug, created_at, average_rating, review_count, total_sold, base_price, sale_price, condition,
        brands:brand_id(name),
        categories:category_id(name),
        product_images(url, is_primary, sort_order, alt_text),
@@ -232,7 +240,7 @@ async function fetchProductsForBrandPromotion(
 
   const { data, error } = await q;
   if (error || !data) return [];
-  const rows = data as unknown as (ProductQueryRow & { condition?: string })[];
+  const rows = data as unknown as ProductQueryRow[];
   const sortBy = config?.sort_by ?? (type === "second_products" ? "rating" : "newest");
 
   const scored = rows

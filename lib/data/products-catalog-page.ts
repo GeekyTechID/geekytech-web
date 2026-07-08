@@ -48,9 +48,11 @@ export async function fetchActiveBrandsForCatalog(): Promise<ProductsCatalogBran
 
 export type ProductsCatalogFilters = {
   page: number;
-  q: string;
-  categoryId: string | null;
+  /** Array dipakai untuk gabungan beberapa kategori sekaligus (mis. nav "Headset" = headphone + earphone). */
+  categoryId: string | string[] | null;
   brandId: string | null;
+  condition: string | null;
+  discountOnly: boolean;
   sort: string | undefined;
   /** Rupiah. Difilter terhadap `base_price` (lihat catatan di fetchProductsCatalogPage). */
   minPrice: number | null;
@@ -74,7 +76,6 @@ export async function fetchProductsCatalogPage(
 ): Promise<ProductsCatalogPageResult> {
   const page = Math.max(1, filters.page);
   const sort = normalizeProductsCatalogSort(filters.sort);
-  const q = filters.q.trim();
   const from = (page - 1) * PRODUCTS_CATALOG_PER_PAGE;
   const to = from + PRODUCTS_CATALOG_PER_PAGE - 1;
 
@@ -86,14 +87,23 @@ export async function fetchProductsCatalogPage(
       .eq("is_active", true)
       .is("deleted_at", null);
 
-    if (q.length > 0) {
-      query = query.ilike("name", `%${q}%`);
-    }
-    if (filters.categoryId) {
+    if (Array.isArray(filters.categoryId)) {
+      if (filters.categoryId.length === 1) query = query.eq("category_id", filters.categoryId[0]);
+      else if (filters.categoryId.length > 1) query = query.in("category_id", filters.categoryId);
+    } else if (filters.categoryId) {
       query = query.eq("category_id", filters.categoryId);
     }
     if (filters.brandId) {
       query = query.eq("brand_id", filters.brandId);
+    }
+    if (filters.condition) {
+      query = query.eq("condition", filters.condition);
+    }
+    if (filters.discountOnly) {
+      // Pendekatan sama dengan catatan minPrice/maxPrice di atas: PostgREST tidak
+      // bisa bandingkan dua kolom (sale_price < base_price) langsung, jadi dipakai
+      // proksi "sale_price terisi" — cukup akurat karena sale_price hanya diisi saat diskon aktif.
+      query = query.not("sale_price", "is", null);
     }
     if (filters.minPrice != null) {
       query = query.gte("base_price", filters.minPrice);

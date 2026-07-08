@@ -44,7 +44,7 @@ export const fetchFlashSalePageData = cache(async (id: string): Promise<FlashSal
          product_variants:variant_id (
            id, price, name,
            products:product_id (
-             id, name, slug, average_rating, review_count, total_sold,
+             id, name, slug, average_rating, review_count, total_sold, condition,
              brands:brand_id(name),
              categories:category_id(name),
              product_images(url, is_primary, sort_order, alt_text)
@@ -70,6 +70,7 @@ export const fetchFlashSalePageData = cache(async (id: string): Promise<FlashSal
             average_rating: number | null;
             review_count: number | null;
             total_sold: number | null;
+            condition: string | null;
             brands: { name: string } | { name: string }[] | null;
             categories: { name: string } | { name: string }[] | null;
             product_images: { url: string; is_primary: boolean | null; sort_order: number | null; alt_text: string | null }[] | null;
@@ -102,6 +103,9 @@ export const fetchFlashSalePageData = cache(async (id: string): Promise<FlashSal
         rating: Number(pr.average_rating ?? 0),
         reviewCount: pr.review_count ?? 0,
         soldCount: r.sold ?? 0,
+        categoryName: cat?.name ?? null,
+        brandName: brand?.name ?? null,
+        condition: pr.condition === "new" || pr.condition === "second" ? pr.condition : null,
       });
     }
 

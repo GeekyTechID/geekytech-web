@@ -50,6 +50,11 @@ export function HomeProductTile({ product, className, layout = "default", compac
             Tanpa gambar
           </div>
         )}
+        {showCompare && (
+          <span className="absolute right-1.5 top-1.5 rounded bg-brand px-2 py-1 text-xs font-bold text-white">
+            {discountPct}%
+          </span>
+        )}
       </Link>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3">
@@ -67,12 +72,9 @@ export function HomeProductTile({ product, className, layout = "default", compac
         <div className="mt-auto space-y-0.5">
           <p className="text-sm font-bold text-foreground">{formatRupiah(product.currentPrice)}</p>
           {showCompare && (
-            <div className="flex items-center gap-1.5">
-              <p className="text-xs text-muted-foreground/70 line-through">
-                {formatRupiah(product.compareAtPrice!)}
-              </p>
-              <span className="text-xs font-bold text-[#EA5329]">{discountPct}%</span>
-            </div>
+            <p className="text-xs text-muted-foreground/70 line-through">
+              {formatRupiah(product.compareAtPrice!)}
+            </p>
           )}
         </div>
         {!compact && (

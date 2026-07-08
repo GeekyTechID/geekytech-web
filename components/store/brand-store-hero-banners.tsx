@@ -6,10 +6,11 @@ import {
   STORE_BANNER_SURFACE_CLASS,
 } from "@/lib/constants/store-banner";
 import type { StoreBanner } from "@/lib/data/home-storefront";
+import { cn } from "@/lib/utils";
 
 function BannerFigure({ banner }: { banner: StoreBanner }) {
   const inner = (
-    <div className={STORE_BANNER_MEDIA_CLASS}>
+    <div className={cn(STORE_BANNER_MEDIA_CLASS, "h-[230px] sm:h-[390px]")}>
       {/* eslint-disable-next-line @next/next/no-img-element -- URL dari admin */}
       <img
         src={banner.image_url}
