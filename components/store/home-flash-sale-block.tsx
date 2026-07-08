@@ -46,9 +46,9 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
           </Link>
           <Link
             href={getFlashSaleLink(block.saleId)}
-            className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+            className="shrink-0 text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
           >
-            Lihat Semua
+            View All
           </Link>
         </div>
 

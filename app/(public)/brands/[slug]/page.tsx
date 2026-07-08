@@ -24,7 +24,17 @@ import { fetchTemplateBanners } from "@/lib/data/home-storefront";
 export const dynamic = "force-dynamic";
 
 type PageParams = Promise<{ slug: string }>;
-type SearchParams = Promise<{ page?: string; q?: string; category?: string; sort?: string }>;
+type SearchParams = Promise<{
+  page?: string;
+  q?: string;
+  category?: string;
+  condition?: string;
+  discount?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  rating?: string;
+  sort?: string;
+}>;
 
 export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
   const { slug } = await params;
@@ -48,6 +58,11 @@ export default async function BrandProductListPage({
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const q = sp.q ?? "";
   const categoryId = sp.category ?? "";
+  const condition = sp.condition?.trim() ?? "";
+  const discountOnly = sp.discount === "1";
+  const minPrice = sp.minPrice?.trim() ?? "";
+  const maxPrice = sp.maxPrice?.trim() ?? "";
+  const rating = sp.rating?.trim() ?? "";
   const sort = sp.sort ?? "latest";
 
   const brand = await fetchBrandBySlugForStore(slug);
@@ -72,6 +87,11 @@ export default async function BrandProductListPage({
       page,
       q,
       categoryId: categoryId || null,
+      condition: condition || null,
+      discountOnly,
+      minPrice: minPrice ? Number(minPrice) : null,
+      maxPrice: maxPrice ? Number(maxPrice) : null,
+      minRating: rating ? Number(rating) : null,
       sort,
     }),
     fetchPreFooterBanners(),
@@ -118,6 +138,11 @@ export default async function BrandProductListPage({
             totalCount={listResult.totalCount}
             q={q}
             categoryId={categoryId}
+            condition={condition}
+            discount={discountOnly}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            rating={rating}
             sort={sort}
           />
         </div>

@@ -51,9 +51,9 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
                 {block.linkUrl ? (
                   <Link
                     href={block.linkUrl}
-                    className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+                    className="shrink-0 text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
                   >
-                    Lihat Semua
+                    View All
                   </Link>
                 ) : null}
               </div>
