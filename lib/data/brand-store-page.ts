@@ -194,6 +194,11 @@ export async function fetchBrandProductsPage(params: {
   page: number;
   q: string;
   categoryId: string | null;
+  condition: string | null;
+  discountOnly: boolean;
+  minPrice: number | null;
+  maxPrice: number | null;
+  minRating: number | null;
   sort: string;
 }): Promise<BrandProductsPageResult> {
   const page = Math.max(1, params.page);
@@ -217,6 +222,23 @@ export async function fetchBrandProductsPage(params: {
     }
     if (categoryId) {
       query = query.eq("category_id", categoryId);
+    }
+    if (params.condition) {
+      query = query.eq("condition", params.condition);
+    }
+    if (params.discountOnly) {
+      // Proksi "sale_price terisi" — sama seperti fetchProductsCatalogPage,
+      // PostgREST tidak bisa bandingkan sale_price < base_price langsung.
+      query = query.not("sale_price", "is", null);
+    }
+    if (params.minPrice != null) {
+      query = query.gte("base_price", params.minPrice);
+    }
+    if (params.maxPrice != null) {
+      query = query.lte("base_price", params.maxPrice);
+    }
+    if (params.minRating != null) {
+      query = query.gte("average_rating", params.minRating);
     }
 
     switch (sort) {

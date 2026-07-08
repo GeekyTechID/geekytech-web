@@ -4,27 +4,34 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { BRAND_STORE_PRODUCTS_PER_PAGE } from "@/lib/data/brand-store-page";
 import { cn } from "@/lib/utils";
 
-type BrandStorePaginationProps = {
-  basePath: string;
-  currentPage: number;
-  totalCount: number;
+export type BrandStorePaginationFilters = {
   q: string;
   categoryId: string;
+  condition: string;
+  discount: boolean;
+  minPrice: string;
+  maxPrice: string;
+  rating: string;
   sort: string;
 };
 
-function buildHref(
-  basePath: string,
-  page: number,
-  q: string,
-  categoryId: string,
-  sort: string,
-): string {
+type BrandStorePaginationProps = BrandStorePaginationFilters & {
+  basePath: string;
+  currentPage: number;
+  totalCount: number;
+};
+
+function buildHref(basePath: string, page: number, filters: BrandStorePaginationFilters): string {
   const p = new URLSearchParams();
   if (page > 1) p.set("page", String(page));
-  if (q.trim()) p.set("q", q.trim());
-  if (categoryId) p.set("category", categoryId);
-  if (sort && sort !== "latest") p.set("sort", sort);
+  if (filters.q.trim()) p.set("q", filters.q.trim());
+  if (filters.categoryId) p.set("category", filters.categoryId);
+  if (filters.condition) p.set("condition", filters.condition);
+  if (filters.discount) p.set("discount", "1");
+  if (filters.minPrice) p.set("minPrice", filters.minPrice);
+  if (filters.maxPrice) p.set("maxPrice", filters.maxPrice);
+  if (filters.rating) p.set("rating", filters.rating);
+  if (filters.sort && filters.sort !== "latest") p.set("sort", filters.sort);
   const qs = p.toString();
   return qs ? `${basePath}?${qs}` : basePath;
 }
@@ -33,9 +40,7 @@ export function BrandStorePagination({
   basePath,
   currentPage,
   totalCount,
-  q,
-  categoryId,
-  sort,
+  ...filters
 }: BrandStorePaginationProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / BRAND_STORE_PRODUCTS_PER_PAGE));
   if (totalPages <= 1) return null;
@@ -45,7 +50,7 @@ export function BrandStorePagination({
 
   const windowSize = 5;
   let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
-  let end = Math.min(totalPages, start + windowSize - 1);
+  const end = Math.min(totalPages, start + windowSize - 1);
   start = Math.max(1, end - windowSize + 1);
   const pages: number[] = [];
   for (let i = start; i <= end; i += 1) pages.push(i);
@@ -56,7 +61,7 @@ export function BrandStorePagination({
       aria-label="Navigasi halaman produk"
     >
       <Link
-        href={buildHref(basePath, prev, q, categoryId, sort)}
+        href={buildHref(basePath, prev, filters)}
         aria-disabled={currentPage <= 1}
         className={cn(
           "flex h-10 w-10 items-center justify-center rounded-full border border-[#e0e0e0] bg-white text-[#1d1d1f] transition hover:border-[#EA5329]/40",
@@ -70,7 +75,7 @@ export function BrandStorePagination({
       {pages.map((n) => (
         <Link
           key={n}
-          href={buildHref(basePath, n, q, categoryId, sort)}
+          href={buildHref(basePath, n, filters)}
           className={cn(
             "flex h-10 min-w-10 items-center justify-center rounded-md border px-2 text-sm font-medium transition",
             n === currentPage
@@ -84,7 +89,7 @@ export function BrandStorePagination({
       ))}
 
       <Link
-        href={buildHref(basePath, next, q, categoryId, sort)}
+        href={buildHref(basePath, next, filters)}
         aria-disabled={currentPage >= totalPages}
         className={cn(
           "flex h-10 w-10 items-center justify-center rounded-full border border-[#e0e0e0] bg-white text-[#1d1d1f] transition hover:border-[#EA5329]/40",

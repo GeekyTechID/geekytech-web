@@ -19,7 +19,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   if (!block || block.products.length === 0) {
     if (hideWhenEmpty) return null;
     return (
-      <section className="border-b border-neutral-200 bg-background py-8 sm:py-10">
+      <section className="border-b border-neutral-200 bg-background py-6 sm:py-8">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <p className="text-sm leading-relaxed text-muted-foreground">
             Flash sale{" "}
@@ -33,7 +33,7 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
   }
 
   return (
-    <section className="bg-background py-8 sm:py-10">
+    <section className="bg-background py-6 sm:py-8">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4 sm:items-end">
           <Link
@@ -46,9 +46,9 @@ export function HomeFlashSaleBlock({ block, hideWhenEmpty }: HomeFlashSaleBlockP
           </Link>
           <Link
             href={getFlashSaleLink(block.saleId)}
-            className="shrink-0 text-sm font-semibold text-brand transition hover:text-[#d44820]"
+            className="shrink-0 text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
           >
-            Lihat Semua
+            View All
           </Link>
         </div>
 
