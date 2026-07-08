@@ -105,7 +105,7 @@ export default async function BrandProductListPage({
               <div className="mb-8 h-11 w-full max-w-xl animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />
             }
           >
-            <BrandStoreCatalogFilters categories={categories} />
+            <BrandStoreCatalogFilters categories={categories} totalCount={listResult.totalCount} />
           </Suspense>
 
           <div className="mt-8">

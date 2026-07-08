@@ -28,7 +28,7 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
       {blocks.map((block, blockIndex) => (
         <section
           key={`${block.sectionKey}-${blockIndex}`}
-          className="bg-background py-8 sm:py-10 [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
+          className="bg-background py-6 sm:py-8 [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
         >
           <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
             {block.banners.length > 0 ? (

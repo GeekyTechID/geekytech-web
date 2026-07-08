@@ -17,7 +17,7 @@ export function ShopByBrandSection({ brands, showSeeAllLink = true, limit }: Sho
   return (
     <section className="bg-background py-12">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
-        <div className="flex items-start justify-between gap-3">
+        <div className={`flex items-start gap-3 ${showSeeAllLink ? "justify-between" : "justify-center"}`}>
           <h2 className="text-base font-bold leading-snug text-foreground sm:text-lg">
             Brand Focus
           </h2>
@@ -34,7 +34,7 @@ export function ShopByBrandSection({ brands, showSeeAllLink = true, limit }: Sho
         {visibleBrands.length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">Belum ada merek aktif.</p>
         ) : (
-          <div className="mt-10 grid justify-start items-start grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-10 grid justify-start items-start grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
             {visibleBrands.map((b) => (
               <Link
                 key={b.id}

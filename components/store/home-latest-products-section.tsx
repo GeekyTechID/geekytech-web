@@ -15,7 +15,7 @@ export function HomeLatestProductsSection({ products }: HomeLatestProductsSectio
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-background py-8 sm:py-10">
+    <section className="bg-background py-6 sm:py-8">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <div className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
           <h3 className="text-base font-bold leading-snug text-foreground sm:text-lg">
