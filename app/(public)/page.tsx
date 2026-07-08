@@ -5,12 +5,10 @@ import { HomeDynamicPromoBlocksFetcher } from "@/components/store/home-dynamic-p
 import { HomeFlashSaleBlock } from "@/components/store/home-flash-sale-block";
 import { HomeLatestProductsSection } from "@/components/store/home-latest-products-section";
 import { HomeMainHero } from "@/components/store/home-main-hero";
-import { ShopByBrandSection } from "@/components/store/shop-by-brand-section";
 import {
   fetchLatestHomeProducts,
   fetchMainHeroBanners,
   fetchPrimaryHomeFlashSaleBlock,
-  fetchShopBrands,
 } from "@/lib/data/home-storefront";
 
 export const metadata: Metadata = {
@@ -25,7 +23,6 @@ export default async function HomePage() {
   const loaded = await Promise.all([
     fetchMainHeroBanners(),
     fetchPrimaryHomeFlashSaleBlock(),
-    fetchShopBrands(),
     fetchLatestHomeProducts(18),
   ]).catch(() => null);
 
@@ -37,13 +34,12 @@ export default async function HomePage() {
     );
   }
 
-  const [heroBanners, flashSaleBlock, brands, latestProducts] = loaded;
+  const [heroBanners, flashSaleBlock, latestProducts] = loaded;
   const excludeFlashSaleIds = flashSaleBlock?.saleId ? [flashSaleBlock.saleId] : [];
 
   return (
     <div className="bg-white">
       <HomeMainHero banners={heroBanners} />
-      <ShopByBrandSection brands={brands} limit={10} />
       <HomeFlashSaleBlock block={flashSaleBlock} />
       <HomeLatestProductsSection products={latestProducts} />
       <Suspense>

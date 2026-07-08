@@ -66,7 +66,30 @@ type SearchResult = {
   image: string | null;
 };
 
-export type StoreHeaderCategory = { id: string; name: string; slug: string };
+type StoreHeaderNavItem = { label: string; href: string };
+
+/** Nav tetap di bawah header — bukan daftar kategori DB, tapi jalur belanja pilihan. */
+function buildStoreHeaderNavItems(secondHandPromoId: string | null): StoreHeaderNavItem[] {
+  const items: StoreHeaderNavItem[] = [
+    { label: "Smartwatch", href: "/products?category=smartwatch" },
+    { label: "Headset", href: "/products?category=headphone,earphone" },
+    { label: "Speaker", href: "/products?category=speaker" },
+    { label: "Shops by Brand", href: "/brands" },
+  ];
+  if (secondHandPromoId) {
+    items.push({ label: "Second Hand", href: `/promo/${secondHandPromoId}` });
+  }
+  return items;
+}
+
+function isStoreHeaderNavItemActive(href: string, pathname: string, categoryParam: string | null): boolean {
+  const [hrefPath, hrefQuery] = href.split("?");
+  if (hrefQuery) {
+    const category = new URLSearchParams(hrefQuery).get("category");
+    return pathname === hrefPath && category !== null && category === categoryParam;
+  }
+  return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
+}
 
 /** URL avatar: profil DB dulu, lalu metadata OAuth (picture). */
 function resolveStoreHeaderAvatarUrl(
@@ -85,7 +108,8 @@ function resolveStoreHeaderAvatarUrl(
 }
 
 type StoreHeaderProps = {
-  categories: StoreHeaderCategory[];
+  /** ID promosi "Produk Second" aktif — dipakai link "Second Hand" di nav. Item disembunyikan jika null. */
+  secondHandPromoId?: string | null;
   initialCartCount?: number;
   /** Default true — matikan jika header dibungkus sticky di parent (mis. layout dashboard). */
   sticky?: boolean;
@@ -96,7 +120,7 @@ const searchInputClass =
   "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-sm shadow-none focus-visible:ring-0";
 
 export function StoreHeader({
-  categories,
+  secondHandPromoId = null,
   initialCartCount = 0,
   sticky = true,
   className,
@@ -104,7 +128,9 @@ export function StoreHeader({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeCategorySlug = pathname === "/products" ? searchParams.get("category") : null;
+  const categoryParam = pathname === "/products" ? searchParams.get("category") : null;
+  const hideCategoryNav = pathname?.startsWith("/promo/") || pathname?.startsWith("/flash-sale/");
+  const navItems = buildStoreHeaderNavItems(secondHandPromoId);
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
   const { reset } = useAuthStore();
   const cartCount = useCartStore((s) => s.cartCount);
@@ -432,27 +458,26 @@ export function StoreHeader({
             {searchDropdown}
           </form>
 
-          <nav
-            aria-label="Kategori produk"
-            className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:justify-center sm:px-6"
-          >
-            {categories.length === 0 ? (
-              <span className="text-xs font-medium uppercase text-muted-foreground">Kategori segera hadir</span>
-            ) : (
-              categories.map((c) => (
+          {hideCategoryNav ? null : (
+            <nav
+              aria-label="Kategori produk"
+              className="scrollbar-none -mx-4 flex gap-4 overflow-x-auto scroll-py-2 px-4 py-3 text-sm font-medium text-black sm:-mx-6 sm:justify-center sm:px-6"
+            >
+              {navItems.map((item) => (
                 <Link
-                  key={c.id}
-                  href={`/products?category=${encodeURIComponent(c.slug)}`}
+                  key={item.href}
+                  href={item.href}
                   className={cn(
                     "shrink-0 whitespace-nowrap border-b-2 border-transparent pb-[13px] -mb-[13px] transition hover:text-brand",
-                    c.slug === activeCategorySlug && "border-current font-bold",
+                    isStoreHeaderNavItemActive(item.href, pathname ?? "", categoryParam) &&
+                      "border-current font-bold",
                   )}
                 >
-                  {c.name}
+                  {item.label}
                 </Link>
-              ))
-            )}
-          </nav>
+              ))}
+            </nav>
+          )}
         </div>
       </header>
 
@@ -473,8 +498,8 @@ export function StoreHeader({
           <nav className="flex-1 overflow-y-auto px-3 py-4">
             <p className="mb-2 px-2 text-[10px] font-semibold uppercase text-muted-foreground">Kategori</p>
             <ul className="space-y-0.5">
-              {categories.map((c) => (
-                <li key={c.id}>
+              {navItems.map((item) => (
+                <li key={item.href}>
                   <Button
                     asChild
                     variant="ghost"
@@ -482,12 +507,13 @@ export function StoreHeader({
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Link
-                      href={`/products?category=${encodeURIComponent(c.slug)}`}
+                      href={item.href}
                       className={cn(
-                        c.slug === activeCategorySlug && "font-bold underline underline-offset-4",
+                        isStoreHeaderNavItemActive(item.href, pathname ?? "", categoryParam) &&
+                          "font-bold underline underline-offset-4",
                       )}
                     >
-                      {c.name}
+                      {item.label}
                     </Link>
                   </Button>
                 </li>

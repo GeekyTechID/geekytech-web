@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ListFilter, Search, X } from "lucide-react";
+import { ListFilter, X } from "lucide-react";
 
 import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,15 @@ const SORT_OPTIONS: { value: ProductsCatalogSortKey; label: string }[] = [
 ];
 
 const RATING_OPTIONS = [
-  { value: "", label: "Semua rating" },
+  { value: "", label: "Rating" },
   { value: "4", label: "4 bintang & ke atas" },
   { value: "3", label: "3 bintang & ke atas" },
+];
+
+const CONDITION_OPTIONS = [
+  { value: "", label: "Kondisi" },
+  { value: "new", label: "Baru" },
+  { value: "second", label: "Bekas" },
 ];
 
 const filterTriggerClass = "h-11 min-h-11 w-full rounded-md bg-white sm:w-auto";
@@ -54,9 +60,7 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [qInput, setQInput] = useState(searchParams.get("q") ?? "");
   const [minPriceInput, setMinPriceInput] = useState(searchParams.get("minPrice") ?? "");
   const [maxPriceInput, setMaxPriceInput] = useState(searchParams.get("maxPrice") ?? "");
 
@@ -67,16 +71,9 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
   const [syncedKey, setSyncedKey] = useState(searchParamsKey);
   if (syncedKey !== searchParamsKey) {
     setSyncedKey(searchParamsKey);
-    setQInput(searchParams.get("q") ?? "");
     setMinPriceInput(searchParams.get("minPrice") ?? "");
     setMaxPriceInput(searchParams.get("maxPrice") ?? "");
   }
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
 
   const pushParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
@@ -88,33 +85,21 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
     [router, pathname, searchParams],
   );
 
-  const scheduleSearch = useCallback(
-    (value: string) => {
-      setQInput(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        pushParams((p) => {
-          if (value.trim()) p.set("q", value.trim());
-          else p.delete("q");
-        });
-      }, 320);
-    },
-    [pushParams],
-  );
-
   const categorySlug = searchParams.get("category") ?? "";
   const brandSlug = searchParams.get("brand") ?? "";
+  const condition = searchParams.get("condition") ?? "";
+  const discountOnly = searchParams.get("discount") === "1";
   const sort = (searchParams.get("sort") ?? "latest") as ProductsCatalogSortKey;
   const rating = searchParams.get("rating") ?? "";
   const minPrice = searchParams.get("minPrice") ?? "";
   const maxPrice = searchParams.get("maxPrice") ?? "";
 
   const categoryOptions = [
-    { value: "", label: "Semua kategori" },
+    { value: "", label: "Kategori" },
     ...categories.map((c) => ({ value: c.slug, label: c.name })),
   ];
   const brandOptions = [
-    { value: "", label: "Semua brand" },
+    { value: "", label: "Brand" },
     ...brands.map((b) => ({ value: b.slug, label: b.name })),
   ];
 
@@ -135,15 +120,17 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
       : "Harga";
 
   const hasFilters = Boolean(
-    qInput.trim() || categorySlug || brandSlug || minPrice || maxPrice || rating || sort !== "latest",
+    categorySlug || brandSlug || condition || discountOnly || minPrice || maxPrice || rating || sort !== "latest",
   );
 
   const clearAll = useCallback(() => {
-    setQInput("");
     setMinPriceInput("");
     setMaxPriceInput("");
-    router.push(pathname);
-  }, [router, pathname]);
+    const next = new URLSearchParams();
+    const category = searchParams.get("category");
+    if (category) next.set("category", category);
+    router.push(`${pathname}${buildQueryString(next)}`);
+  }, [router, pathname, searchParams]);
 
   const filterControls = (
     <>
@@ -152,7 +139,7 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
         className={filterTriggerClass}
         value={categorySlug}
         options={categoryOptions}
-        active={Boolean(categorySlug)}
+        active={categoryOptions.some((o) => o.value === categorySlug)}
         onValueChange={(v) =>
           pushParams((p) => {
             if (v) p.set("category", v);
@@ -173,6 +160,34 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
           })
         }
       />
+      <FilterDropdown
+        aria-label="Kondisi produk"
+        className={filterTriggerClass}
+        value={condition}
+        options={CONDITION_OPTIONS}
+        active={Boolean(condition)}
+        onValueChange={(v) =>
+          pushParams((p) => {
+            if (v) p.set("condition", v);
+            else p.delete("condition");
+          })
+        }
+      />
+      <Button
+        type="button"
+        variant={discountOnly ? "dark" : "table-action"}
+        size="sm"
+        style={discountOnly ? { backgroundColor: "#1d1d1f", color: "#fff", borderColor: "transparent" } : undefined}
+        className={filterTriggerClass}
+        onClick={() =>
+          pushParams((p) => {
+            if (!discountOnly) p.set("discount", "1");
+            else p.delete("discount");
+          })
+        }
+      >
+        Sedang diskon
+      </Button>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -268,24 +283,6 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-6">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-0 flex-1 sm:max-w-xs">
-            <label htmlFor="products-catalog-search" className="sr-only">
-              Cari produk
-            </label>
-            <div className="flex h-11 items-center rounded-md border border-[#e0e0e0] bg-[#fafafc] pl-4 pr-3 focus-within:border-foreground">
-              <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-              <Input
-                id="products-catalog-search"
-                type="search"
-                value={qInput}
-                onChange={(e) => scheduleSearch(e.target.value)}
-                placeholder="Cari produk, brand, atau kategori..."
-                className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground focus-visible:ring-0"
-                autoComplete="off"
-              />
-            </div>
-          </div>
-
           <Sheet>
             <SheetTrigger asChild>
               <Button type="button" variant="dark" size="default" className="relative shrink-0 sm:hidden">
@@ -316,7 +313,7 @@ export function ProductsCatalogFilters({ categories, brands, totalCount }: Produ
             </SheetContent>
           </Sheet>
 
-          {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar search+filter satu baris di sm+ */}
+          {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar filter satu baris di sm+ */}
           <div className="hidden sm:contents">
             {filterControls}
             {hasFilters ? (

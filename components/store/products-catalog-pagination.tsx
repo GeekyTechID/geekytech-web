@@ -5,9 +5,10 @@ import { PRODUCTS_CATALOG_PER_PAGE } from "@/lib/data/products-catalog-page";
 import { cn } from "@/lib/utils";
 
 export type ProductsCatalogPaginationFilters = {
-  q: string;
   category: string;
   brand: string;
+  condition: string;
+  discount: boolean;
   sort: string;
   minPrice: string;
   maxPrice: string;
@@ -22,9 +23,10 @@ type ProductsCatalogPaginationProps = ProductsCatalogPaginationFilters & {
 function buildHref(page: number, filters: ProductsCatalogPaginationFilters): string {
   const p = new URLSearchParams();
   if (page > 1) p.set("page", String(page));
-  if (filters.q.trim()) p.set("q", filters.q.trim());
   if (filters.category) p.set("category", filters.category);
   if (filters.brand) p.set("brand", filters.brand);
+  if (filters.condition) p.set("condition", filters.condition);
+  if (filters.discount) p.set("discount", "1");
   if (filters.sort && filters.sort !== "latest") p.set("sort", filters.sort);
   if (filters.minPrice) p.set("minPrice", filters.minPrice);
   if (filters.maxPrice) p.set("maxPrice", filters.maxPrice);

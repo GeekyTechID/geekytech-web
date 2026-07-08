@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 type SearchParams = Promise<{
   category?: string;
   brand?: string;
-  q?: string;
+  condition?: string;
+  discount?: string;
   sort?: string;
   minPrice?: string;
   maxPrice?: string;
@@ -23,15 +24,25 @@ type SearchParams = Promise<{
   page?: string;
 }>;
 
+function parseCategorySlugs(raw: string | undefined): string[] {
+  return (raw ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
   const sp = await searchParams;
-  const categorySlug = sp.category?.trim();
+  const categorySlugs = parseCategorySlugs(sp.category);
   const brandSlug = sp.brand?.trim();
 
-  if (categorySlug) {
-    const cat = await fetchCategoryBySlugForStore(categorySlug);
-    if (cat) {
-      return { title: `${cat.name} — GeekyTech`, description: `Telusuri produk ${cat.name} di GeekyTech.` };
+  if (categorySlugs.length > 0) {
+    const cats = (await Promise.all(categorySlugs.map((slug) => fetchCategoryBySlugForStore(slug)))).filter(
+      (c): c is NonNullable<typeof c> => c !== null,
+    );
+    if (cats.length > 0) {
+      const name = cats.map((c) => c.name).join(" & ");
+      return { title: `${name} — GeekyTech`, description: `Telusuri produk ${name} di GeekyTech.` };
     }
   }
   if (brandSlug) {
@@ -48,21 +59,23 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 
 export default async function ProductsHubPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
-  const categorySlug = sp.category?.trim() ?? "";
+  const categorySlugs = parseCategorySlugs(sp.category);
   const brandSlug = sp.brand?.trim() ?? "";
-  const q = sp.q?.trim() ?? "";
+  const condition = sp.condition?.trim() ?? "";
+  const discountOnly = sp.discount === "1";
   const sort = sp.sort?.trim() ?? "latest";
   const minPrice = sp.minPrice?.trim() ?? "";
   const maxPrice = sp.maxPrice?.trim() ?? "";
   const rating = sp.rating?.trim() ?? "";
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const [category, brand] = await Promise.all([
-    categorySlug ? fetchCategoryBySlugForStore(categorySlug) : Promise.resolve(null),
+  const [categoryResults, brand] = await Promise.all([
+    Promise.all(categorySlugs.map((slug) => fetchCategoryBySlugForStore(slug))),
     brandSlug ? fetchBrandBySlugForStore(brandSlug) : Promise.resolve(null),
   ]);
+  const resolvedCategories = categoryResults.filter((c): c is NonNullable<typeof c> => c !== null);
 
-  if (categorySlug && !category) notFound();
+  if (categorySlugs.length > 0 && resolvedCategories.length === 0) notFound();
   if (brandSlug && !brand) notFound();
 
   const [categories, brands, listResult] = await Promise.all([
@@ -70,9 +83,10 @@ export default async function ProductsHubPage({ searchParams }: { searchParams: 
     fetchActiveBrandsForCatalog(),
     fetchProductsCatalogPage({
       page,
-      q,
-      categoryId: category?.id ?? null,
+      categoryId: resolvedCategories.length > 0 ? resolvedCategories.map((c) => c.id) : null,
       brandId: brand?.id ?? null,
+      condition: condition || null,
+      discountOnly,
       sort,
       minPrice: minPrice ? Number(minPrice) : null,
       maxPrice: maxPrice ? Number(maxPrice) : null,
@@ -80,11 +94,13 @@ export default async function ProductsHubPage({ searchParams }: { searchParams: 
     }),
   ]);
 
-  const hasActiveFilters = Boolean(q || categorySlug || brandSlug || minPrice || maxPrice || rating);
-  const title = category?.name ?? brand?.name ?? "Semua Produk";
+  const hasActiveFilters = Boolean(
+    categorySlugs.length || brandSlug || condition || discountOnly || minPrice || maxPrice || rating,
+  );
+  const title = resolvedCategories.length > 0 ? resolvedCategories.map((c) => c.name).join(" & ") : (brand?.name ?? "Semua Produk");
   const breadcrumbItems = [
     { label: "Home", href: "/" },
-    ...(category || brand ? [{ label: "Produk", href: "/products" }] : []),
+    ...(resolvedCategories.length > 0 || brand ? [{ label: "Produk", href: "/products" }] : []),
     { label: title },
   ];
 
@@ -134,9 +150,10 @@ export default async function ProductsHubPage({ searchParams }: { searchParams: 
           <ProductsCatalogPagination
             currentPage={page}
             totalCount={listResult.totalCount}
-            q={q}
-            category={categorySlug}
+            category={categorySlugs.join(",")}
             brand={brandSlug}
+            condition={condition}
+            discount={discountOnly}
             sort={sort}
             minPrice={minPrice}
             maxPrice={maxPrice}

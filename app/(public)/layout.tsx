@@ -6,7 +6,7 @@ import { BottomNavBar } from "@/components/layout/bottom-nav-bar";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { MaintenancePage } from "@/components/layout/maintenance-page";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
-import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
+import { fetchStoreHeaderCartCount, fetchStoreHeaderSecondHandPromoId } from "@/lib/data/store-header-server";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
 
 async function getMaintenanceMode(): Promise<boolean> {
@@ -31,9 +31,9 @@ export default async function PublicLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [isMaintenance, categories, initialCartCount, profile] = await Promise.all([
+  const [isMaintenance, secondHandPromoId, initialCartCount, profile] = await Promise.all([
     getMaintenanceMode(),
-    fetchStoreHeaderCategories().catch(() => []),
+    fetchStoreHeaderSecondHandPromoId().catch(() => null),
     fetchStoreHeaderCartCount().catch(() => 0),
     user ? fetchUserProfile(user.id).catch(() => null) : Promise.resolve(null),
   ]);
@@ -46,7 +46,7 @@ export default async function PublicLayout({
     <div className="flex min-h-screen flex-col bg-white">
       <InitAuthStore user={user} profile={profile} />
       <AnnouncementBarServer />
-      <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+      <StoreHeader secondHandPromoId={secondHandPromoId} initialCartCount={initialCartCount} />
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">{children}</main>
       <StoreFooter />
       <BottomNavBar />

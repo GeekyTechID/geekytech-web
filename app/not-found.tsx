@@ -9,7 +9,7 @@ import { StoreFooter } from "@/components/store/store-footer";
 import { StoreHeader } from "@/components/store/store-header";
 import { Button } from "@/components/ui/button";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
-import { fetchStoreHeaderCartCount, fetchStoreHeaderCategories } from "@/lib/data/store-header-server";
+import { fetchStoreHeaderCartCount, fetchStoreHeaderSecondHandPromoId } from "@/lib/data/store-header-server";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/types/supabase";
 
@@ -35,7 +35,7 @@ function StoreHeaderFallback() {
 async function fetchLayoutData(): Promise<{
   user: User | null;
   profile: Tables<"profiles"> | null;
-  categories: Awaited<ReturnType<typeof fetchStoreHeaderCategories>>;
+  secondHandPromoId: string | null;
   initialCartCount: number;
 }> {
   try {
@@ -44,27 +44,27 @@ async function fetchLayoutData(): Promise<{
       data: { user },
     } = await supabase.auth.getUser();
 
-    const [categories, initialCartCount, profile] = await Promise.all([
-      fetchStoreHeaderCategories().catch(() => [] as Awaited<ReturnType<typeof fetchStoreHeaderCategories>>),
+    const [secondHandPromoId, initialCartCount, profile] = await Promise.all([
+      fetchStoreHeaderSecondHandPromoId().catch(() => null),
       fetchStoreHeaderCartCount().catch(() => 0),
       user ? fetchUserProfile(user.id).catch(() => null) : Promise.resolve(null),
     ]);
 
-    return { user, profile, categories, initialCartCount };
+    return { user, profile, secondHandPromoId, initialCartCount };
   } catch {
-    return { user: null, profile: null, categories: [], initialCartCount: 0 };
+    return { user: null, profile: null, secondHandPromoId: null, initialCartCount: 0 };
   }
 }
 
 export default async function NotFound() {
-  const { user, profile, categories, initialCartCount } = await fetchLayoutData();
+  const { user, profile, secondHandPromoId, initialCartCount } = await fetchLayoutData();
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <InitAuthStore user={user} profile={profile} />
       <AnnouncementBarServer />
       <Suspense fallback={<StoreHeaderFallback />}>
-        <StoreHeader categories={categories} initialCartCount={initialCartCount} />
+        <StoreHeader secondHandPromoId={secondHandPromoId} initialCartCount={initialCartCount} />
       </Suspense>
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <section className="flex min-h-[70vh] w-full items-center justify-center bg-white px-6 py-20">
