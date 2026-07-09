@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -19,19 +18,17 @@ const FOOTER_DISCOVER = [
 ] as const;
 
 const FOOTER_SOCIAL = [
-  { label: "geekytech.id", href: "https://instagram.com/geekytech.id", logo: "/socialmedia/instagram.webp" },
-  { label: "@geekytech.id", href: "https://tiktok.com/@geekytech.id", logo: "/socialmedia/tiktok.png" },
-  { label: "Geekytech", href: "https://x.com/geekytech", logo: "/socialmedia/x.png" },
+  { label: "Instagram", href: "https://instagram.com/geekytech.id" },
+  { label: "Tiktok", href: "https://tiktok.com/@geekytech.id" },
+  { label: "Youtube", href: "https://youtube.com/@geekyhubid?si=E3oBV_1iD5RBi0vs" },
 ] as const;
 
-/** `scale`: file logo tiap marketplace punya padding transparan yang beda-beda di dalam kanvasnya,
- * jadi walau ditampilkan di kotak yang sama persis, mereknya sendiri terlihat lebih kecil. Nilai ini
- * mengompensasi supaya ukuran visual merek kira-kira sama besar dengan logo Shopee (paling penuh/tanpa padding). */
 const FOOTER_MARKETPLACES = [
-  { label: "Tokopedia", href: "https://tokopedia.com", logo: "/marketplace/tokopedia.png", scale: 2 },
-  { label: "Shopee", href: "https://shopee.co.id", logo: "/marketplace/shopee.png", scale: 1 },
-  { label: "Blibli", href: "https://blibli.com", logo: "/marketplace/blibli.webp", scale: 1.5 },
-  { label: "TikTok shop", href: "https://www.tiktok.com", logo: "/marketplace/tiktokshop.webp", scale: 2.75 },
+  { label: "Tokopedia", href: "https://tokopedia.com" },
+  { label: "Shopee", href: "https://shopee.co.id" },
+  { label: "Blibli", href: "https://blibli.com" },
+  { label: "TikTok shop", href: "https://www.tiktok.com" },
+  { label: "Lazada", href: "https://www.lazada.co.id/shop/geekytech-store/?path=index.htm" },
 ] as const;
 
 export async function StoreFooter() {
@@ -134,11 +131,8 @@ export async function StoreFooter() {
                       href={l.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition hover:text-brand"
+                      className="transition hover:text-brand"
                     >
-                      <span className="relative size-5 shrink-0 overflow-hidden rounded">
-                        <Image src={l.logo} alt="" fill className="object-contain" sizes="20px" />
-                      </span>
                       {l.label}
                     </a>
                   </li>
@@ -154,18 +148,8 @@ export async function StoreFooter() {
                       href={l.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition hover:text-brand"
+                      className="transition hover:text-brand"
                     >
-                      <span className="relative size-5 shrink-0 overflow-hidden rounded">
-                        <Image
-                          src={l.logo}
-                          alt=""
-                          fill
-                          className="object-contain"
-                          style={{ transform: `scale(${l.scale})` }}
-                          sizes="20px"
-                        />
-                      </span>
                       {l.label}
                     </a>
                   </li>

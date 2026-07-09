@@ -116,7 +116,7 @@ export function HomeMainHero({ banners, hideNav = false }: HomeMainHeroProps) {
           {n > 1 && !hideNav ? (
             <>
               <div
-                className="pointer-events-none col-start-1 row-start-1 z-20 flex w-full min-h-0 items-center justify-between self-stretch px-3 sm:px-4 md:px-5"
+                className="pointer-events-none col-start-1 row-start-1 z-20 flex w-full min-h-0 items-center justify-between self-stretch px-3 opacity-0 transition-opacity duration-200 group-hover/hero:opacity-100 group-focus-within/hero:opacity-100 sm:px-4 md:px-5"
                 aria-hidden
               >
                 <CarouselNavButton
