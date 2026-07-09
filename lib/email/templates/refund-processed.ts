@@ -29,7 +29,7 @@ export function refundProcessedHtml(params: {
       Jika dana belum masuk setelah 14 hari kerja, silakan hubungi CS kami dengan menyertakan nomor pesanan di atas.
     </p>
 
-    ${ctaButton(`${params.appUrl}/contact`, "Hubungi CS")}
+    ${ctaButton(`${params.appUrl}/about#kontak`, "Hubungi CS")}
 
     <p style="margin:8px 0 0;font-size:13px;color:#6e6e73;line-height:1.6;">
       Terima kasih atas kesabaranmu. Maaf atas ketidaknyamanan yang dialami.

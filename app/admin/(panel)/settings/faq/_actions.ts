@@ -32,7 +32,7 @@ export async function createFaq(
 
   if (error) return { error: error.message };
   revalidatePath("/admin/settings/faq");
-  revalidatePath("/faq");
+  revalidatePath("/syarat-ketentuan");
   return { id: faq.id };
 }
 
@@ -57,7 +57,7 @@ export async function updateFaq(
 
   if (error) return { error: error.message };
   revalidatePath("/admin/settings/faq");
-  revalidatePath("/faq");
+  revalidatePath("/syarat-ketentuan");
   return {};
 }
 
@@ -67,7 +67,7 @@ export async function deleteFaq(id: string): Promise<{ error?: string }> {
 
   if (error) return { error: error.message };
   revalidatePath("/admin/settings/faq");
-  revalidatePath("/faq");
+  revalidatePath("/syarat-ketentuan");
   return {};
 }
 
@@ -83,6 +83,6 @@ export async function toggleFaqActive(
 
   if (error) return { error: error.message };
   revalidatePath("/admin/settings/faq");
-  revalidatePath("/faq");
+  revalidatePath("/syarat-ketentuan");
   return {};
 }
