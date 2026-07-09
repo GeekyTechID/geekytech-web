@@ -79,6 +79,7 @@ function buildStoreHeaderNavItems(secondHandPromoId: string | null): StoreHeader
   if (secondHandPromoId) {
     items.push({ label: "Second Hand", href: `/promo/${secondHandPromoId}` });
   }
+  items.push({ label: "Others", href: "/products" });
   return items;
 }
 
@@ -87,6 +88,9 @@ function isStoreHeaderNavItemActive(href: string, pathname: string, categoryPara
   if (hrefQuery) {
     const category = new URLSearchParams(hrefQuery).get("category");
     return pathname === hrefPath && category !== null && category === categoryParam;
+  }
+  if (hrefPath === "/products") {
+    return pathname === hrefPath && categoryParam === null;
   }
   return pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
 }
