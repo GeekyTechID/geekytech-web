@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { CreditCard, Heart, MessageCircle, Share2, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 import { addVariantToCart, toggleWishlistProduct } from "@/app/(public)/products/_actions/product-detail-actions";
@@ -25,6 +25,8 @@ import { ChoiceChip } from "@/components/ui/choice-chip";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductShareDialog } from "@/components/store/product-share-dialog";
+import { ProductShippingDialog } from "@/components/store/product-shipping-dialog";
+import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
 
@@ -76,6 +78,7 @@ export function ProductDetailClient({
   const [inWishlist, setInWishlist] = useState(initialInWishlist ?? false);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [shareOpen, setShareOpen] = useState(false);
+  const [shippingDialogOpen, setShippingDialogOpen] = useState(false);
   const thumbContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch wishlist state client-side so the product page can be ISR-cached
@@ -215,12 +218,12 @@ export function ProductDetailClient({
       {/* Atas: kiri info + galeri, kanan kartu belanja */}
       <section className="py-8">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
-          <div className="flex flex-col lg:flex-row justify-between gap-10">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-10">
             <div className="min-w-0 ">
-              <div className="flex flex-col lg:flex-row lg:h-full lg:items-stretch justify-between gap-8 sm:items-start">
+              <div className="flex flex-col lg:flex-row justify-between gap-8 items-start">
                 {/* Galeri */}
-                <div className="mx-auto min-w-0 w-full max-w-[280px] sm:mx-0 sm:max-w-[380px] md:max-w-[440px] lg:flex lg:max-w-[480px] lg:flex-col">
-                  <div className="relative aspect-square w-full overflow-hidden lg:aspect-auto lg:min-h-0 lg:flex-1">
+                <div className="mx-auto min-w-0 w-full max-w-[196px] sm:mx-0 sm:max-w-[266px] md:max-w-[308px] lg:flex lg:max-w-[336px] lg:flex-col">
+                  <div className="group/mainimg relative aspect-square w-full overflow-hidden">
                     {currentImage.url ? (
                       <Image
                         key={currentImage.url}
@@ -236,14 +239,32 @@ export function ProductDetailClient({
                         Tanpa gambar
                       </div>
                     )}
+                    {images.length > 1 ? (
+                      <>
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center p-2 opacity-0 transition-opacity duration-200 group-hover/mainimg:opacity-100 focus-within:opacity-100">
+                          <CarouselNavButton
+                            direction="prev"
+                            surface="on-photo"
+                            disabled={safeImgIndex === 0}
+                            onClick={() => setImgIndex((i) => Math.max(0, i - 1))}
+                            className="pointer-events-auto scale-90"
+                          />
+                        </div>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center p-2 opacity-0 transition-opacity duration-200 group-hover/mainimg:opacity-100 focus-within:opacity-100">
+                          <CarouselNavButton
+                            direction="next"
+                            surface="on-photo"
+                            disabled={safeImgIndex === images.length - 1}
+                            onClick={() => setImgIndex((i) => Math.min(images.length - 1, i + 1))}
+                            className="pointer-events-auto scale-90"
+                          />
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                   {images.length > 1 ? (
-                    <div className="mt-3 flex items-center gap-2">
-                      <CarouselNavButton
-                        direction="prev"
-                        onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
-                      />
-                      <div ref={thumbContainerRef} className="flex flex-1 gap-2 overflow-x-auto scrollbar-none">
+                    <div className="mt-3">
+                      <div ref={thumbContainerRef} className="relative flex gap-2 overflow-x-auto scrollbar-none">
                         {images.map((im, i) => {
                           const isActive = i === safeImgIndex;
                           return (
@@ -254,8 +275,8 @@ export function ProductDetailClient({
                               size="icon-sm"
                               onClick={() => setImgIndex(i)}
                               className={cn(
-                                "relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-[#f5f5f7] p-0",
-                                isActive ? "border-[#EA5329] ring-2 ring-[#EA5329]/25" : "border-[#e0e0e0]",
+                                "relative h-16 w-16 shrink-0 overflow-hidden rounded-none border-2 bg-transparent p-0",
+                                isActive ? "border-[#EA5329]" : "border-transparent",
                               )}
                               aria-label={`Gambar ${i + 1}`}
                               aria-current={isActive ? "true" : undefined}
@@ -267,45 +288,30 @@ export function ProductDetailClient({
                           );
                         })}
                       </div>
-                      <CarouselNavButton
-                        direction="next"
-                        onClick={() => setImgIndex((i) => (i + 1) % images.length)}
-                      />
                     </div>
                   ) : null}
                 </div>
 
                 {/* Judul, kategori, varian, rating, harga */}
                 <div className="min-w-0 space-y-3">
-                  <h1 className="text-xl font-semibold leading-snug">
+                  <h1 className="text-lg font-semibold leading-snug">
                     {product.name}
                     {variant ? ` - ${variant.name}` : ""}
                   </h1>
-                  {product.category ? (
-                    <p className="text-[17px] text-[#7a7a7a]">{product.category.name}</p>
-                  ) : null}
 
-                  {product.variants.length > 1 ? (
-                    <div>
-                      <p className="mb-2 text-xs font-semibold uppercase text-[#7a7a7a]">Varian</p>
-                      <div className="flex flex-wrap gap-2">
-                        {product.variants.map((v) => (
-                          <ChoiceChip
-                            key={v.id}
-                            selected={v.id === variant?.id}
-                            disabled={v.stock < 1}
-                            onClick={() => {
-                              setVariantId(v.id);
-                              setQty((q) => clampQty(q));
-                              const targetIndex = images.findIndex((img) => img.id === v.imageId);
-                              if (targetIndex !== -1) setImgIndex(targetIndex);
-                            }}
-                          >
-                            {v.name}
-                          </ChoiceChip>
-                        ))}
-                      </div>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-semibold text-[#EA5329]">
+                    <div className="flex items-center gap-1.5">
+                      <Truck className="h-4 w-4 shrink-0" aria-hidden />
+                      Bebas Ongkir
                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <CreditCard className="h-4 w-4 shrink-0" aria-hidden />
+                      Cicilan 0%
+                    </div>
+                  </div>
+
+                  {product.category ? (
+                    <p className="text-sm text-[#1d1d1f]">{product.category.name}</p>
                   ) : null}
 
                   <div className="flex flex-wrap items-center gap-2 text-sm text-[#7a7a7a]">
@@ -320,11 +326,11 @@ export function ProductDetailClient({
                         <span className="text-[#d4d4d4]">·</span>
                       </>
                     ) : null}
-                    <span>{product.totalSold} terjual</span>
+                    <span className="text-[#1d1d1f]">{product.totalSold} terjual</span>
                   </div>
 
-                  <div className="space-y-2 border-t border-[#f0f0f0] pt-5">
-                    <p className="text-xl font-bold">{formatRupiah(unitPrice)}</p>
+                  <div className="space-y-2 py-2">
+                    <p className="text-4xl font-bold">{formatRupiah(unitPrice)}</p>
                     {discountPercent != null && discountPercent > 0 ? (
                       <div className="flex flex-wrap items-center gap-2 text-[17px]">
                         <span className="text-[#7a7a7a] line-through">{formatRupiah(listPrice)}</span>
@@ -335,7 +341,24 @@ export function ProductDetailClient({
                     ) : null}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 border-t border-[#f0f0f0] pt-5 text-sm sm:max-w-sm">
+                  <div className="border-t border-[#f0f0f0] pt-5 pb-2 sm:max-w-sm">
+                    <p className="text-sm font-bold text-[#1d1d1f]">Detail Produk</p>
+                    <p className="mt-2 line-clamp-3 text-sm text-[#1d1d1f]">
+                      {description || "Belum ada deskripsi untuk produk ini."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDetailTab("detail");
+                        document.getElementById("detail-produk-tabs")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="mt-2 text-xs font-semibold text-[#EA5329]"
+                    >
+                      Lihat Selengkapnya
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 border-t border-[#f0f0f0] pt-2 text-sm sm:max-w-sm">
                     <div>
                       <p className="text-[#7a7a7a]">Kondisi</p>
                       <p className="font-medium">{product.condition === "second" ? "Second" : "Baru"}</p>
@@ -357,15 +380,66 @@ export function ProductDetailClient({
                       </div>
                     ) : null}
                   </div>
+
+                  <div className="border-t border-[#f0f0f0] pt-5 sm:max-w-sm">
+                    <button
+                      type="button"
+                      onClick={() => setShippingDialogOpen(true)}
+                      className="flex w-full items-center justify-between gap-3 text-left"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#1d1d1f]">Pilihan Pengiriman</p>
+                        <div className="mt-2 flex items-center gap-2.5">
+                          {BITESHIP_COURIER_BRANDS.filter((b) => b.logo && !b.onDemand)
+                            .slice(0, 6)
+                            .map((b) => (
+                              <img
+                                key={b.code}
+                                src={b.logo}
+                                alt={b.name}
+                                className="h-5 w-auto max-w-[44px] shrink-0 object-contain"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            ))}
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-xs font-semibold text-[#EA5329]">Lihat Selengkapnya</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Kartu belanja */}
             <aside className="w-full shrink-0 lg:min-w-[19rem] lg:max-w-[21rem] xl:min-w-[20rem] xl:max-w-[22rem]">
-              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-5 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-6 lg:p-6">
-                <div className="flex items-center gap-3 border-b border-[#eadfd8] pb-5">
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[#e0e0e0] bg-white">
+              <div className="rounded-[18px] border border-[#f0e8e4] bg-[#faf5f3] p-5 pb-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:p-6 md:pb-5 lg:p-6 lg:pb-5">
+                {product.variants.length > 1 ? (
+                  <div className="pb-3">
+                    <p className="mb-2 text-xs font-semibold text-[#1d1d1f]">Pilih Varian</p>
+                    <div className="flex flex-wrap gap-2">
+                      {product.variants.map((v) => (
+                        <ChoiceChip
+                          key={v.id}
+                          selected={v.id === variant?.id}
+                          disabled={v.stock < 1}
+                          onClick={() => {
+                            setVariantId(v.id);
+                            setQty((q) => clampQty(q));
+                            const targetIndex = images.findIndex((img) => img.id === v.imageId);
+                            if (targetIndex !== -1) setImgIndex(targetIndex);
+                          }}
+                        >
+                          {v.name}
+                        </ChoiceChip>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className={cn("flex items-center gap-3 border-b border-[#eadfd8] pb-5", product.variants.length > 1 && "pt-3")}>
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
                     {variantImage?.url ? (
                       <Image src={variantImage.url} alt={variantImage.alt ?? product.name} fill className="object-contain p-1" sizes="56px" />
                     ) : null}
@@ -387,7 +461,7 @@ export function ProductDetailClient({
                     onDecrease={() => setQty((q) => clampQty(q - 1))}
                     onIncrease={() => setQty((q) => clampQty(q + 1))}
                   />
-                  <p className="max-w-[14rem] text-right text-xs leading-snug text-[#7a7a7a]">
+                  <p className="max-w-[14rem] text-right text-xs leading-snug text-[#1d1d1f]">
                     {maxQty < 1
                       ? "Stok habis untuk varian ini."
                       : maxQty <= 20
@@ -396,11 +470,11 @@ export function ProductDetailClient({
                   </p>
                 </div>
 
-                <div className="mt-5 space-y-2 border-t border-[#eadfd8] pt-4">
-                  <p className="text-sm text-[#7a7a7a]">
-                    Subtotal{" "}
+                <div className="mt-5 space-y-2 border-t border-[#eadfd8] pt-5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-sm text-[#7a7a7a]">Subtotal</p>
                     <span className="text-xl font-bold text-[#1d1d1f]">{formatRupiah(subtotal)}</span>
-                  </p>
+                  </div>
                   {discountPercent != null && discountPercent > 0 ? (
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="text-[#7a7a7a] line-through">{formatRupiah(subtotalList)}</span>
@@ -433,7 +507,7 @@ export function ProductDetailClient({
                   </Button>
                 </div>
 
-                <div className="mt-6 flex flex-nowrap items-center justify-center gap-x-2 border-t border-[#eadfd8] pt-6 text-xs font-medium">
+                <div className="mt-2 flex flex-nowrap items-center justify-center gap-x-2 text-xs font-medium">
                   <Button
                     type="button"
                     variant="link"
@@ -491,6 +565,17 @@ export function ProductDetailClient({
                 </div>
               </div>
             </aside>
+
+            {variant ? (
+              <ProductShippingDialog
+                open={shippingDialogOpen}
+                onOpenChange={setShippingDialogOpen}
+                isAuthenticated={isAuthenticated}
+                loginHref={`/login?redirectTo=${encodeURIComponent(pathname)}`}
+                variantId={variant.id}
+                qty={qty}
+              />
+            ) : null}
           </div>
         </div>
       </section>
@@ -499,7 +584,7 @@ export function ProductDetailClient({
       <section className="py-12 md:py-16">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
           <div className="grid gap-12 md:grid-cols-2 md:gap-10 lg:gap-16">
-            <div>
+            <div id="detail-produk-tabs" className="scroll-mt-20">
               <Tabs
                 value={detailTab}
                 onValueChange={(v) => setDetailTab(v as "detail" | "extra")}
@@ -507,7 +592,7 @@ export function ProductDetailClient({
               >
                 <TabsList
                   variant="line"
-                  className="h-auto w-full justify-start gap-8 rounded-none border-b border-[#e0e0e0] bg-transparent p-0"
+                  className="h-auto w-full justify-start gap-8 rounded-none bg-transparent p-0"
                 >
                   <TabsTrigger
                     value="detail"
