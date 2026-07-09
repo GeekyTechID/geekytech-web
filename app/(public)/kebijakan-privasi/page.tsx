@@ -179,7 +179,7 @@ export default async function KebijakanPrivasiPage() {
                 Hubungi tim customer service kami dan kami akan membantu menjawab pertanyaanmu.
               </p>
               <Button asChild variant="primary">
-                <Link href="/contact">Hubungi Customer Service</Link>
+                <Link href="/about">Hubungi Customer Service</Link>
               </Button>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default async function KebijakanPrivasiPage() {
               {
                 title: "Hubungi Kami",
                 desc: "Ada pertanyaan? Hubungi tim support kami sekarang.",
-                href: "/contact",
+                href: "/about",
               },
             ].map((link, idx) => (
               <a

@@ -124,7 +124,7 @@ export default async function KebijakanPengembalianPage() {
                 Hubungi tim customer service kami dan kami akan bantu proses pengajuannya.
               </p>
               <Button asChild variant="primary">
-                <Link href="/contact">Hubungi Customer Service</Link>
+                <Link href="/about">Hubungi Customer Service</Link>
               </Button>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default async function KebijakanPengembalianPage() {
               {
                 title: "Hubungi Kami",
                 desc: "Ada pertanyaan? Hubungi tim support kami sekarang.",
-                href: "/contact",
+                href: "/about",
               },
             ].map((link, idx) => (
               <a
