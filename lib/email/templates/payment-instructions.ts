@@ -94,7 +94,7 @@ export function paymentInstructionsHtml(params: {
     ${ctaButton(orderUrl, "Lihat Detail Pesanan")}
 
     <p style="margin:8px 0 0;font-size:13px;color:#6e6e73;line-height:1.6;">
-      Jika mengalami kendala, hubungi CS kami melalui <a href="${params.appUrl}/contact" style="color:#EA5329;text-decoration:none;">halaman kontak</a>.
+      Jika mengalami kendala, hubungi CS kami melalui <a href="${params.appUrl}/about#kontak" style="color:#EA5329;text-decoration:none;">halaman kontak</a>.
     </p>`;
 
   return emailShell({

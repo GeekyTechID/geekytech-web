@@ -50,7 +50,7 @@ export function paymentConfirmedHtml(params: {
     ${ctaButton(orderUrl, "Pantau Status Pesanan")}
 
     <p style="margin:8px 0 0;font-size:13px;color:#6e6e73;line-height:1.6;">
-      Ada pertanyaan? Hubungi kami di <a href="${params.appUrl}/contact" style="color:#EA5329;text-decoration:none;">halaman kontak</a>.
+      Ada pertanyaan? Hubungi kami di <a href="${params.appUrl}/about#kontak" style="color:#EA5329;text-decoration:none;">halaman kontak</a>.
     </p>`;
 
   return emailShell({

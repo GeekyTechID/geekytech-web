@@ -88,7 +88,7 @@ export function welcomeEmailHtml({
 
               <p style="margin:0;font-size:14px;color:#6e6e73;line-height:1.6;">
                 Ada pertanyaan? Hubungi kami di
-                <a href="${appUrl}/contact" style="color:#EA5329;text-decoration:none;">halaman kontak</a>
+                <a href="${appUrl}/about#kontak" style="color:#EA5329;text-decoration:none;">halaman kontak</a>
                 atau WhatsApp CS kami.
               </p>
             </td>
@@ -101,7 +101,7 @@ export function welcomeEmailHtml({
               <p style="margin:0;font-size:11px;color:#8e8e93;">
                 <a href="${appUrl}" style="color:#8e8e93;text-decoration:none;">geeky.id</a>
                 &nbsp;&middot;&nbsp;
-                <a href="${appUrl}/contact" style="color:#8e8e93;text-decoration:none;">Bantuan</a>
+                <a href="${appUrl}/about#kontak" style="color:#8e8e93;text-decoration:none;">Bantuan</a>
                 &nbsp;&middot;&nbsp;
                 <a href="${appUrl}/dashboard/orders" style="color:#8e8e93;text-decoration:none;">Pesanan Saya</a>
               </p>

@@ -79,7 +79,7 @@ export function emailShell(opts: {
               <p style="margin:0;font-size:11px;color:#8e8e93;">
                 <a href="${opts.appUrl}" style="color:#8e8e93;text-decoration:none;">geeky.id</a>
                 &nbsp;&middot;&nbsp;
-                <a href="${opts.appUrl}/contact" style="color:#8e8e93;text-decoration:none;">Bantuan</a>
+                <a href="${opts.appUrl}/about#kontak" style="color:#8e8e93;text-decoration:none;">Bantuan</a>
                 &nbsp;&middot;&nbsp;
                 <a href="${opts.appUrl}/dashboard/orders" style="color:#8e8e93;text-decoration:none;">Pesanan Saya</a>
               </p>

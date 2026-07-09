@@ -47,7 +47,7 @@ export function orderCancelledHtml(params: {
     ${ctaButton(`${params.appUrl}/products`, "Belanja Lagi")}
 
     <p style="margin:8px 0 0;font-size:13px;color:#6e6e73;line-height:1.6;">
-      Perlu bantuan? <a href="${params.appUrl}/contact" style="color:#EA5329;text-decoration:none;">Hubungi CS kami</a>.
+      Perlu bantuan? <a href="${params.appUrl}/about#kontak" style="color:#EA5329;text-decoration:none;">Hubungi CS kami</a>.
     </p>`;
 
   return emailShell({

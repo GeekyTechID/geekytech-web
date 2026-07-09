@@ -28,7 +28,10 @@ export function CarouselNavButton({
       type="button"
       variant={surface === "on-photo" ? "icon-chip" : "pearl"}
       size={surface === "on-photo" ? "icon" : "icon-sm"}
-      onClick={onClick}
+      onClick={(e) => {
+        onClick?.(e);
+        e.currentTarget.blur();
+      }}
       disabled={disabled}
       aria-label={ariaLabel ?? (direction === "prev" ? "Sebelumnya" : "Berikutnya")}
       className={cn(
