@@ -3,18 +3,15 @@ import { ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fetchShopBrands } from "@/lib/data/home-storefront";
 import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
 import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
-import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 
-const FOOTER_DISCOVER = [
-  { label: "Tentang kami", href: "/about" },
-  { label: "Kontak", href: "/contact" },
-  { label: "Syarat & Ketentuan", href: "/syarat-ketentuan" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Kebijakan privasi", href: "/kebijakan-privasi" },
-  { label: "Kebijakan pengembalian", href: "/kebijakan-pengembalian" },
+const FOOTER_ABOUT = [
+  { label: "Our Story", href: "/about" },
+  { label: "Blog & News", href: "/blog" },
+  { label: "Privacy Policy", href: "/kebijakan-privasi" },
+  { label: "Terms & Conditions", href: "/syarat-ketentuan" },
+  { label: "Return Policy", href: "/kebijakan-pengembalian" },
 ] as const;
 
 const FOOTER_SOCIAL = [
@@ -32,11 +29,7 @@ const FOOTER_MARKETPLACES = [
 ] as const;
 
 export async function StoreFooter() {
-  const [brands, storeOrigin, whatsappCs] = await Promise.all([
-    fetchShopBrands(),
-    getStoreOrigin(),
-    getWhatsappCs(),
-  ]);
+  const [storeOrigin, whatsappCs] = await Promise.all([getStoreOrigin(), getWhatsappCs()]);
   const year = new Date().getFullYear();
   const fullAddress = getStoreOriginFullAddress(storeOrigin);
 
@@ -78,7 +71,7 @@ export async function StoreFooter() {
             </form>
 
             <div className="relative z-10 mt-14 space-y-1.5 text-xs text-white/45">
-              <p>© {year} GeekyTech by {LEGAL_ENTITY_NAME}. All rights reserved.</p>
+              <p>© {year} GeekyTech. All rights reserved.</p>
               {fullAddress && <p>{fullAddress}</p>}
               {whatsappCs && (
                 <p>
@@ -96,24 +89,11 @@ export async function StoreFooter() {
             </div>
           </div>
 
-          <div className="min-w-0 grid gap-10 grid-cols-2 sm:grid-cols-4">
+          <div className="min-w-0 grid gap-10 grid-cols-2 sm:grid-cols-3">
             <div>
-              <p className="mb-4 text-[10px] font-semibold uppercase text-white/45">Brand</p>
+              <p className="mb-4 text-[10px] font-semibold uppercase text-white/45">About</p>
               <ul className="space-y-2.5 text-sm text-white/90">
-                {brands.slice(0, 12).map((b) => (
-                  <li key={b.id}>
-                    <Link href={`/brands/${encodeURIComponent(b.slug)}`} className="transition hover:text-brand">
-                      {b.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-4 text-[10px] font-semibold uppercase text-white/45">Discover</p>
-              <ul className="space-y-2.5 text-sm text-white/90">
-                {FOOTER_DISCOVER.map((l) => (
+                {FOOTER_ABOUT.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} className="transition hover:text-brand">
                       {l.label}

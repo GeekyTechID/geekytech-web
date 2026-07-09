@@ -31,32 +31,18 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
           className="bg-background py-6 sm:py-8 [content-visibility:auto] [contain-intrinsic-size:auto_400px]"
         >
           <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
-            {block.banners.length > 0 ? (
-              <HomePromoBannerStrip banners={block.banners} className="mb-6 sm:mb-8" />
-            ) : null}
-
-            <div className="mb-6 mt-4 space-y-2 sm:mt-5">
-              <div className="flex items-start justify-between gap-3">
-                {block.linkUrl ? (
-                  <Link href={block.linkUrl} className="group inline-block">
-                    <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
-                      {block.title}
-                    </h3>
-                  </Link>
-                ) : (
-                  <h3 className="text-base font-bold leading-snug text-foreground sm:text-lg">
+            <div className="mb-4 space-y-2 sm:mb-5">
+              {block.linkUrl ? (
+                <Link href={block.linkUrl} className="group inline-block">
+                  <h3 className="text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg">
                     {block.title}
                   </h3>
-                )}
-                {block.linkUrl ? (
-                  <Link
-                    href={block.linkUrl}
-                    className="shrink-0 text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
-                  >
-                    View All
-                  </Link>
-                ) : null}
-              </div>
+                </Link>
+              ) : (
+                <h3 className="text-base font-bold leading-snug text-foreground sm:text-lg">
+                  {block.title}
+                </h3>
+              )}
               {block.subtitle ? (
                 <p className="max-w-2xl text-base font-normal leading-relaxed text-muted-foreground sm:text-lg">
                   {block.subtitle}
@@ -64,31 +50,47 @@ export function HomeDynamicPromoBlocks({ blocks }: { blocks: DynamicPromoBlock[]
               ) : null}
             </div>
 
+            {block.banners.length > 0 ? (
+              <HomePromoBannerStrip banners={block.banners} className="mb-6 sm:mb-8" />
+            ) : null}
+
             {block.products.length > 0 ? (
-              <HorizontalScrollRow
-                gapClass="gap-3 sm:gap-4"
-                fillRow={block.products.length <= 6}
-                itemsPerSlide={6}
-              >
-                {block.products.length <= 6 ? (
-                  <>
-                    {block.products.map((p) => (
+              <>
+                {block.linkUrl ? (
+                  <div className="mb-3 flex justify-end sm:mb-4">
+                    <Link
+                      href={block.linkUrl}
+                      className="shrink-0 text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
+                    >
+                      View All
+                    </Link>
+                  </div>
+                ) : null}
+                <HorizontalScrollRow
+                  gapClass="gap-3 sm:gap-4"
+                  fillRow={block.products.length <= 6}
+                  itemsPerSlide={6}
+                >
+                  {block.products.length <= 6 ? (
+                    <>
+                      {block.products.map((p) => (
+                        <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
+                          <HomeProductTile product={p} layout="fluidRow" compact />
+                        </div>
+                      ))}
+                      {Array.from({ length: 6 - block.products.length }, (_, i) => (
+                        <div key={`pad-${blockIndex}-${i}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS} aria-hidden />
+                      ))}
+                    </>
+                  ) : (
+                    block.products.map((p) => (
                       <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                        <HomeProductTile product={p} layout="fluidRow" compact />
+                        <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
                       </div>
-                    ))}
-                    {Array.from({ length: 6 - block.products.length }, (_, i) => (
-                      <div key={`pad-${blockIndex}-${i}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS} aria-hidden />
-                    ))}
-                  </>
-                ) : (
-                  block.products.map((p) => (
-                    <div key={`${p.productId}-${p.variantId}`} className={HOME_PRODUCT_RESPONSIVE_ROW_SLOT_CLASS}>
-                      <HomeProductTile product={p} layout="promoRow" className="h-full" compact />
-                    </div>
-                  ))
-                )}
-              </HorizontalScrollRow>
+                    ))
+                  )}
+                </HorizontalScrollRow>
+              </>
             ) : null}
           </div>
         </section>

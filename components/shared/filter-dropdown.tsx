@@ -58,7 +58,7 @@ export function FilterDropdown({
           <ChevronDown className={cn("size-4 shrink-0", active ? "opacity-70" : "opacity-50")} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="min-w-[var(--radix-dropdown-menu-trigger-width)]">
+      <DropdownMenuContent align={align} className="w-auto">
         <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>
           {options.map((opt) => (
             <DropdownMenuRadioItem key={opt.value} value={opt.value}>
