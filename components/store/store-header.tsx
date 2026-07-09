@@ -74,7 +74,7 @@ function buildStoreHeaderNavItems(secondHandPromoId: string | null): StoreHeader
     { label: "Smartwatch", href: "/products?category=smartwatch" },
     { label: "Headset", href: "/products?category=headphone,earphone" },
     { label: "Speaker", href: "/products?category=speaker" },
-    { label: "Shops by Brand", href: "/brands" },
+    { label: "Shop by Brand", href: "/brands" },
   ];
   if (secondHandPromoId) {
     items.push({ label: "Second Hand", href: `/promo/${secondHandPromoId}` });
@@ -133,7 +133,9 @@ export function StoreHeader({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const categoryParam = pathname === "/products" ? searchParams.get("category") : null;
-  const hideCategoryNav = pathname?.startsWith("/promo/") || pathname?.startsWith("/flash-sale/");
+  const isSecondHandPromoPage = Boolean(secondHandPromoId) && pathname === `/promo/${secondHandPromoId}`;
+  const hideCategoryNav =
+    !isSecondHandPromoPage && (pathname?.startsWith("/promo/") || pathname?.startsWith("/flash-sale/"));
   const navItems = buildStoreHeaderNavItems(secondHandPromoId);
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
   const { reset } = useAuthStore();
