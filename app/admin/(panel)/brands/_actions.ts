@@ -10,23 +10,10 @@ const brandSchema = z.object({
     .string()
     .min(1, "Slug wajib diisi")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug: huruf kecil, angka, dan tanda hubung"),
-  description: z.preprocess(
-    (v) => (v === "" ? null : v),
-    z.string().max(500, "Deskripsi max 500 karakter").nullable(),
-  ),
   logo_url: z.preprocess(
     (v) => (v === "" ? null : v),
     z.string().url("URL logo tidak valid").nullable(),
   ),
-  banner_url: z.preprocess(
-    (v) => (v === "" ? null : v),
-    z.string().url("URL banner utama tidak valid").nullable(),
-  ),
-  banner_secondary_url: z.preprocess(
-    (v) => (v === "" ? null : v),
-    z.string().url("URL banner kedua tidak valid").nullable(),
-  ),
-  sort_order: z.coerce.number().int().min(0),
   is_active: z.boolean(),
 });
 
@@ -45,11 +32,7 @@ export async function createBrand(data: BrandInput): Promise<ActionResult> {
     .insert({
       name: parsed.data.name,
       slug: parsed.data.slug,
-      description: parsed.data.description,
       logo_url: parsed.data.logo_url,
-      banner_url: parsed.data.banner_url,
-      banner_secondary_url: parsed.data.banner_secondary_url,
-      sort_order: parsed.data.sort_order,
       is_active: parsed.data.is_active,
     })
     .select("id")
@@ -79,11 +62,7 @@ export async function updateBrand(
     .update({
       name: parsed.data.name,
       slug: parsed.data.slug,
-      description: parsed.data.description,
       logo_url: parsed.data.logo_url,
-      banner_url: parsed.data.banner_url,
-      banner_secondary_url: parsed.data.banner_secondary_url,
-      sort_order: parsed.data.sort_order,
       is_active: parsed.data.is_active,
     })
     .eq("id", id);

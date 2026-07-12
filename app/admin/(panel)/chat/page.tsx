@@ -31,9 +31,11 @@ export default async function AdminChatPage() {
   const sessions = await fetchAllSessions();
 
   return (
-    <div className="w-full">
-      <p className="text-[10px] font-bold uppercase text-muted-foreground">Admin</p>
-      <h1 className="mb-6 mt-2 text-2xl font-bold sm:text-3xl">Chat Inbox</h1>
+    <div className="w-full space-y-6">
+      <div>
+        <p className="text-swiss-eyebrow">Dukungan</p>
+        <h1 className="text-[34px] font-semibold uppercase text-foreground">Chat Inbox</h1>
+      </div>
       <AdminChatInbox initialSessions={sessions} />
     </div>
   );

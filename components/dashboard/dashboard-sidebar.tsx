@@ -4,7 +4,6 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   Bell,
   Gift,
@@ -15,11 +14,9 @@ import {
   LogOut,
   MapPin,
   MessageCircle,
-  Moon,
   Package,
   Settings,
   ShoppingCart,
-  Sun,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -80,31 +77,6 @@ const NAV_STORE: NavItem[] = [
   { label: "Ke Web GeekyTech", href: "/", icon: Globe },
   { label: "Keranjang", href: "/cart", icon: ShoppingCart },
 ];
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted ? theme === "dark" : false;
-
-  return (
-    <SidebarMenu className="gap-1">
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          tooltip={isDark ? "Mode Terang" : "Mode Gelap"}
-        >
-          {isDark ? <Sun /> : <Moon />}
-          <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
-}
 
 function NavUser() {
   const { profile, user } = useAuth();
@@ -330,7 +302,6 @@ export function DashboardSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <ThemeToggle />
         <NavUser />
       </SidebarFooter>
 

@@ -34,12 +34,12 @@ export function ShopByBrandSection({ brands, showSeeAllLink = true, limit }: Sho
         {visibleBrands.length === 0 ? (
           <p className="mt-8 text-sm text-muted-foreground">Belum ada merek aktif.</p>
         ) : (
-          <div className="mt-10 grid justify-start items-start grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+          <div className="mt-10 grid justify-start items-start grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:grid-cols-6">
             {visibleBrands.map((b) => (
               <Link
                 key={b.id}
                 href={`/brands/${encodeURIComponent(b.slug)}`}
-                className="cursor-pointer group flex flex-col items-center justify-center gap-[35px] overflow-hidden transition hover:border-brand/40"
+                className="cursor-pointer group flex flex-col items-center justify-center gap-[35px] overflow-hidden pb-2 transition hover:border-brand/40"
               >
                 {b.logo_url ? (
                   <div className="relative h-8 w-full sm:h-10 transition group-hover:grayscale-0">

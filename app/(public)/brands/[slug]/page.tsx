@@ -1,32 +1,25 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { BrandStoreBrandOverview } from "@/components/store/brand-store-brand-overview";
 import { BrandStoreCatalogFilters } from "@/components/store/brand-store-catalog-filters";
-import { BrandStoreHeroBanners } from "@/components/store/brand-store-hero-banners";
 import { BrandStorePagination } from "@/components/store/brand-store-pagination";
 import { BrandStoreProductGrid } from "@/components/store/brand-store-product-grid";
 import { HomePromoBannerStrip } from "@/components/store/home-promo-banner-strip";
-import { brandMainBannersTemplate, brandSecondaryBannersTemplate } from "@/lib/brand-page-banner-template";
 import {
-  brandHeroBannersFromTable,
-  brandSecondaryBannersFromTable,
-  fetchBrandAggregateFromProducts,
-  fetchBrandBestSellers,
   fetchBrandBySlugForStore,
   fetchBrandCategoryFilters,
   fetchBrandProductsPage,
   fetchPreFooterBanners,
+  type BrandStorePublicBrand,
 } from "@/lib/data/brand-store-page";
-import { fetchTemplateBanners } from "@/lib/data/home-storefront";
 
 export const dynamic = "force-dynamic";
 
 type PageParams = Promise<{ slug: string }>;
 type SearchParams = Promise<{
   page?: string;
-  q?: string;
   category?: string;
   condition?: string;
   discount?: string;
@@ -36,13 +29,41 @@ type SearchParams = Promise<{
   sort?: string;
 }>;
 
+function BrandBreadcrumbs({ brand }: { brand: BrandStorePublicBrand }) {
+  return (
+    <nav aria-label="Breadcrumb" className="text-[14px] text-[#7a7a7a]">
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <li>
+          <Link href="/" className="transition hover:text-[#EA5329]">
+            Home
+          </Link>
+        </li>
+        <li aria-hidden className="text-[#d4d4d4]">
+          /
+        </li>
+        <li>
+          <Link href="/brands" className="transition hover:text-[#EA5329]">
+            Brand
+          </Link>
+        </li>
+        <li aria-hidden className="text-[#d4d4d4]">
+          /
+        </li>
+        <li className="max-w-[min(100%,28rem)] truncate font-medium text-[#1d1d1f]" aria-current="page">
+          {brand.name}
+        </li>
+      </ol>
+    </nav>
+  );
+}
+
 export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
   const { slug } = await params;
   const brand = await fetchBrandBySlugForStore(slug);
   if (!brand) return { title: "Brand tidak ditemukan" };
   return {
     title: `${brand.name} — Produk`,
-    description: brand.description ?? `Katalog produk ${brand.name} di GeekyTech.`,
+    description: `Katalog produk ${brand.name} di GeekyTech.`,
   };
 }
 
@@ -56,7 +77,6 @@ export default async function BrandProductListPage({
   const { slug } = await params;
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const q = sp.q ?? "";
   const categoryId = sp.category ?? "";
   const condition = sp.condition?.trim() ?? "";
   const discountOnly = sp.discount === "1";
@@ -68,24 +88,11 @@ export default async function BrandProductListPage({
   const brand = await fetchBrandBySlugForStore(slug);
   if (!brand) notFound();
 
-  const [
-    heroFromTemplate,
-    secondaryFromTemplate,
-    aggregate,
-    bestSellers,
-    categories,
-    listResult,
-    preFooterBanners,
-  ] = await Promise.all([
-    fetchTemplateBanners(brandMainBannersTemplate(brand.slug)),
-    fetchTemplateBanners(brandSecondaryBannersTemplate(brand.slug)),
-    fetchBrandAggregateFromProducts(brand.id),
-    fetchBrandBestSellers(brand.id, 5),
+  const [categories, listResult, preFooterBanners] = await Promise.all([
     fetchBrandCategoryFilters(brand.id),
     fetchBrandProductsPage({
       brandId: brand.id,
       page,
-      q,
       categoryId: categoryId || null,
       condition: condition || null,
       discountOnly,
@@ -97,29 +104,18 @@ export default async function BrandProductListPage({
     fetchPreFooterBanners(),
   ]);
 
-  const heroBanners =
-    heroFromTemplate.length > 0 ? heroFromTemplate : brandHeroBannersFromTable(brand);
-  const secondaryBanners =
-    secondaryFromTemplate.length > 0 ? secondaryFromTemplate : brandSecondaryBannersFromTable(brand);
-
   const basePath = `/brands/${encodeURIComponent(brand.slug)}`;
 
   return (
     <div className="bg-white text-[#1d1d1f]">
-      <div className="mx-auto max-w-[1440px] px-4 pt-6 sm:px-6 lg:px-24">
-        <BrandStoreHeroBanners banners={heroBanners} />
+      <div className="border-b border-[#e0e0e0] py-4">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
+          <BrandBreadcrumbs brand={brand} />
+        </div>
       </div>
-
-      <BrandStoreBrandOverview brand={brand} aggregate={aggregate} bestSellers={bestSellers} />
 
       <section className="bg-white py-10">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
-          {secondaryBanners.length > 0 ? (
-            <div className="mb-10">
-              <HomePromoBannerStrip banners={secondaryBanners} />
-            </div>
-          ) : null}
-
           <Suspense
             fallback={
               <div className="mb-8 h-11 w-full max-w-xl animate-pulse rounded-full bg-[#f5f5f7]" aria-hidden />
@@ -136,7 +132,6 @@ export default async function BrandProductListPage({
             basePath={basePath}
             currentPage={page}
             totalCount={listResult.totalCount}
-            q={q}
             categoryId={categoryId}
             condition={condition}
             discount={discountOnly}

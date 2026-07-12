@@ -12,7 +12,7 @@ export function ProductDetailMoreChoicesSection({ products }: ProductDetailMoreC
     <section className="bg-white pb-14 md:py-10" aria-labelledby="more-choices-heading">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
         <h2 id="more-choices-heading" className="mb-10 text-[clamp(1.25rem,3vw,1.5rem)] font-semibold text-[#1d1d1f]">
-          Pilihan lainnya untuk kamu
+          Mungkin kamu suka ini!
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-5 md:gap-5">
           {products.map((p) => (

@@ -56,3 +56,14 @@ export function formatRelativeDate(dateStr: string): string {
   if (days < 30) return `${days} hari lalu`;
   return formatDate(dateStr);
 }
+
+/** Inisial dari nama (mis. "Budi Santoso" -> "BS") buat avatar fallback. */
+export function getInitials(name: string | null | undefined): string {
+  const trimmed = name?.trim();
+  if (!trimmed) return "?";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const initials = parts.length === 1
+    ? parts[0]!.slice(0, 2)
+    : `${parts[0]![0]}${parts[parts.length - 1]![0]}`;
+  return initials.toUpperCase();
+}

@@ -5,7 +5,6 @@ import { BRAND_STORE_PRODUCTS_PER_PAGE } from "@/lib/data/brand-store-page";
 import { cn } from "@/lib/utils";
 
 export type BrandStorePaginationFilters = {
-  q: string;
   categoryId: string;
   condition: string;
   discount: boolean;
@@ -24,7 +23,6 @@ type BrandStorePaginationProps = BrandStorePaginationFilters & {
 function buildHref(basePath: string, page: number, filters: BrandStorePaginationFilters): string {
   const p = new URLSearchParams();
   if (page > 1) p.set("page", String(page));
-  if (filters.q.trim()) p.set("q", filters.q.trim());
   if (filters.categoryId) p.set("category", filters.categoryId);
   if (filters.condition) p.set("condition", filters.condition);
   if (filters.discount) p.set("discount", "1");

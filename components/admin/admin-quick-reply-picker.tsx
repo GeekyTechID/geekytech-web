@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatQuickReply } from "@/types/chat";
 
 type Props = {
@@ -29,7 +30,7 @@ export function AdminQuickReplyPicker({ replies, onSelect, onClose }: Props) {
       <p className="border-b border-border px-3 py-1.5 text-[10px] font-bold uppercase text-muted-foreground">
         Quick Replies
       </p>
-      <div className="max-h-48 overflow-y-auto">
+      <ScrollArea className="max-h-48">
         {replies.map((r) => (
           <button
             key={r.id}
@@ -41,7 +42,7 @@ export function AdminQuickReplyPicker({ replies, onSelect, onClose }: Props) {
             <span className="truncate text-xs text-muted-foreground">{r.content}</span>
           </button>
         ))}
-      </div>
+      </ScrollArea>
     </div>
   );
 }

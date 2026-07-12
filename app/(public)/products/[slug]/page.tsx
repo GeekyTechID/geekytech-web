@@ -4,14 +4,12 @@ import { notFound } from "next/navigation";
 
 import { ProductDetailClient } from "@/components/store/product-detail-client";
 import {
-  fetchOtherBrandProductsGrouped,
   fetchProductDetailBySlug,
   fetchProductReviewsForStore,
-  fetchRandomProductPicks,
   fetchRatingHistogram,
+  fetchSameCategoryProducts,
 } from "@/lib/data/product-detail-page";
 import { ProductDetailMoreChoicesSection } from "@/components/store/product-detail-more-choices-section";
-import { ProductDetailOtherBrandsSection } from "@/components/store/product-detail-other-brands-section";
 import type { ProductDetailPublic } from "@/lib/types/product-detail";
 
 // ISR: revalidate every 60s per CLAUDE.md — wishlist state is fetched client-side
@@ -84,24 +82,15 @@ export default async function ProductDetailPage({ params }: { params: PageParams
   const product = await fetchProductDetailBySlug(slug);
   if (!product) notFound();
 
-  const [reviews, histogram, otherBrandGroups] = await Promise.all([
+  const [reviews, histogram, moreChoices] = await Promise.all([
     fetchProductReviewsForStore(product.id, 40),
     fetchRatingHistogram(product.id),
-    fetchOtherBrandProductsGrouped({
-      productId: product.id,
-      brandId: product.brandId,
+    fetchSameCategoryProducts({
+      currentProductId: product.id,
       categoryId: product.categoryId,
+      limit: 5,
     }),
   ]);
-
-  // flatMap replaces the double loop (js-flatmap-filter)
-  const excludeRandomIds = otherBrandGroups.flatMap((g) => g.products.map((p) => p.productId));
-
-  const moreChoices = await fetchRandomProductPicks({
-    currentProductId: product.id,
-    excludeProductIds: excludeRandomIds,
-    limit: 5,
-  });
 
   // Wishlist state is fetched client-side via /api/wishlist/check so this page
   // can stay ISR-cached. No auth cookie read here = no force-dynamic needed.
@@ -120,7 +109,6 @@ export default async function ProductDetailPage({ params }: { params: PageParams
         histogram={histogram}
         siteBaseUrl={siteBaseUrl}
       />
-      <ProductDetailOtherBrandsSection groups={otherBrandGroups} />
       <ProductDetailMoreChoicesSection products={moreChoices} />
     </div>
   );

@@ -5,7 +5,6 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   BarChart3,
   Bell,
@@ -20,14 +19,12 @@ import {
   Layers,
   LogOut,
   MessageSquare,
-  Moon,
   Package,
   RotateCcw,
   PackageSearch,
   Settings,
   ShoppingBag,
   Star,
-  Sun,
   Tag,
   Ticket,
   Users,
@@ -147,31 +144,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted ? theme === "dark" : false;
-
-  return (
-    <SidebarMenu className="gap-1">
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          tooltip={isDark ? "Mode Terang" : "Mode Gelap"}
-        >
-          {isDark ? <Sun /> : <Moon />}
-          <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
-}
 
 function NavAdmin() {
   const { profile, user } = useAuth();
@@ -513,7 +485,6 @@ export function AdminSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <ThemeToggle />
         <NavAdmin />
       </SidebarFooter>
     </Sidebar>

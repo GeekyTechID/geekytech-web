@@ -26,7 +26,6 @@ export type BrandRow = {
   name: string;
   slug: string;
   logo_url: string | null;
-  sort_order: number;
   is_active: boolean;
   created_at: string;
 };
@@ -98,9 +97,6 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
                 <th className="hidden px-4 py-3 text-left text-[10px] font-semibold uppercase text-foreground sm:table-cell">
                   Slug
                 </th>
-                <th className="hidden px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground md:table-cell">
-                  Urutan
-                </th>
                 <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase text-foreground">
                   Status
                 </th>
@@ -135,10 +131,6 @@ export function BrandTable({ brands, page, totalPages, totalCount, perPage }: Br
 
                   <td className="hidden px-4 py-3 sm:table-cell">
                     <span className="font-mono text-[11px] text-foreground">/{brand.slug}</span>
-                  </td>
-
-                  <td className="hidden px-4 py-3 text-center md:table-cell">
-                    <span className="text-xs text-foreground">{brand.sort_order}</span>
                   </td>
 
                   <td className="px-4 py-3 text-center">
