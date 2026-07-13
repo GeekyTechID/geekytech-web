@@ -17,7 +17,10 @@ export function AdminChatInbox({ initialSessions }: Props) {
   const fetchSessions = useCallback(async () => {
     const res = await fetch("/api/admin/chat/sessions");
     const json = await res.json();
-    if (json.success) setSessions(json.data);
+    if (json.success) {
+      setSessions(json.data);
+      window.dispatchEvent(new Event("chat-unread-changed"));
+    }
   }, []);
 
   useAdminChatRealtime(fetchSessions);
@@ -29,13 +32,21 @@ export function AdminChatInbox({ initialSessions }: Props) {
     setSelected((prev) => (prev ? { ...prev, ...patch } : prev));
   }
 
+  function handleSelect(session: ChatSession) {
+    const readSession = { ...session, unread_count: 0 };
+    setSessions((prev) =>
+      prev.map((item) => (item.id === session.id ? readSession : item)),
+    );
+    setSelected(readSession);
+  }
+
   return (
-    <div className="flex h-[calc(100vh-12rem)] overflow-hidden rounded-xl border border-border">
+    <div className="flex h-[calc(100vh-12rem)] overflow-hidden rounded-xl border border-gray-300">
       <div className="w-72 shrink-0">
         <AdminChatSessionList
           sessions={sessions}
           selectedId={selected?.id ?? null}
-          onSelect={setSelected}
+          onSelect={handleSelect}
           filter={filter}
           onFilterChange={setFilter}
         />

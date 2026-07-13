@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   MessageCircle,
   Search,
@@ -14,12 +14,13 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChatMessageItem } from "@/components/chat/chat-message-item";
 import { ChatInput } from "@/components/chat/chat-input";
-import { ChatTypingIndicator } from "@/components/chat/chat-typing-indicator";
+import { ChatMessageStream } from "@/components/chat/chat-message-stream";
 import { useChatRealtime } from "@/lib/chat/use-chat-realtime";
 import { useChatPresence } from "@/lib/chat/use-chat-presence";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { SidebarNotificationBadge } from "@/components/shared/sidebar-notification-badge";
 import type { ChatSession, ChatMessage, PendingAttachment } from "@/types/chat";
 
 type Props = { userId: string; initialSessions: ChatSession[] };
@@ -46,11 +47,10 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
     initialSessions[0]?.id ?? null,
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(initialSessions.length > 0);
   const [isRemoteTyping, setIsRemoteTyping] = useState(false);
   const [search, setSearch] = useState("");
   const [panel, setPanel] = useState<"list" | "chat">("list");
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   const selectedSession = sessions.find((s) => s.id === selectedId) ?? null;
   const filtered = sessions.filter((s) =>
@@ -59,21 +59,57 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
 
   // Fetch messages + mark read when selected session changes
   useEffect(() => {
-    if (!selectedId) { setMessages([]); return; }
-    setLoading(true);
-    setMessages([]);
+    if (!selectedId) return;
     fetch(`/api/chat/sessions/${selectedId}/messages`)
       .then((r) => r.json())
       .then((json) => { if (json.success) setMessages(json.data as ChatMessage[]); })
       .catch(() => toast.error("Gagal memuat pesan"))
       .finally(() => setLoading(false));
-    fetch(`/api/chat/sessions/${selectedId}/read`, { method: "PATCH" });
+    fetch(`/api/chat/sessions/${selectedId}/read`, { method: "PATCH" })
+      .then((response) => {
+        if (!response.ok) return;
+        setSessions((prev) =>
+          prev.map((session) =>
+            session.id === selectedId ? { ...session, unread_count: 0 } : session,
+          ),
+        );
+        window.dispatchEvent(new Event("chat-unread-changed"));
+      });
   }, [selectedId]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isRemoteTyping]);
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`user-chat-session-list-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages" },
+        (payload) => {
+          const message = payload.new as ChatMessage;
+          if (message.sender_role !== "admin") return;
+          if (message.session_id === selectedId) {
+            void fetch(`/api/chat/sessions/${message.session_id}/read`, { method: "PATCH" })
+              .then((response) => {
+                if (response.ok) window.dispatchEvent(new Event("chat-unread-changed"));
+              });
+            return;
+          }
+          setSessions((prev) =>
+            prev.map((session) =>
+              session.id === message.session_id
+                ? { ...session, unread_count: (session.unread_count ?? 0) + 1 }
+                : session,
+            ),
+          );
+          window.dispatchEvent(new Event("chat-unread-changed"));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [selectedId, userId]);
 
   // Stable callbacks for realtime hooks
   const onNewMessage = useCallback((msg: ChatMessage) => {
@@ -106,7 +142,16 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
   });
 
   function selectSession(id: string) {
-    if (id !== selectedId) setSelectedId(id);
+    if (id !== selectedId) {
+      setLoading(true);
+      setMessages([]);
+      setSelectedId(id);
+    }
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === id ? { ...session, unread_count: 0 } : session,
+      ),
+    );
     setPanel("chat");
   }
 
@@ -213,7 +258,9 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
                   onClick={() => selectSession(s.id)}
                   className={cn(
                     "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors",
-                    isActive ? "bg-[#fdf4f1]" : "hover:bg-[#faf8f4]",
+                    (s.unread_count ?? 0) > 0 && "bg-[#EA5329]/10 hover:bg-[#EA5329]/15",
+                    isActive && "bg-[#f5f5f7]",
+                    !isActive && (s.unread_count ?? 0) === 0 && "hover:bg-[#faf8f4]",
                   )}
                 >
                   <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1d1d1f] text-[11px] font-bold text-white">
@@ -221,12 +268,18 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="truncate text-[12.5px] font-semibold text-[#1d1d1f]">
+                      <p className={cn(
+                        "truncate text-[12.5px] font-semibold text-[#1d1d1f]",
+                        (s.unread_count ?? 0) > 0 && "font-bold",
+                      )}>
                         {s.subject}
                       </p>
-                      <span className="shrink-0 text-[10.5px] text-[#b0b0b0]">
-                        {relativeTime(s.updated_at)}
-                      </span>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <span className="text-[10.5px] text-[#b0b0b0]">
+                          {relativeTime(s.updated_at)}
+                        </span>
+                        <SidebarNotificationBadge count={s.unread_count ?? 0} />
+                      </div>
                     </div>
                     <Badge className={cn("mt-1.5 px-1.5 py-0 text-[10px] font-medium", cfg.cls)}>
                       {cfg.label}
@@ -288,35 +341,25 @@ export function DashboardChatShell({ userId, initialSessions }: Props) {
             </div>
 
             {/* messages */}
-            <div className="flex-1 overflow-y-auto px-3 py-3">
-              {loading ? (
-                <div className="flex h-full items-center justify-center">
-                  <RefreshCw className="h-5 w-5 animate-spin text-[#b0b0b0]" />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center gap-2">
-                  <Clock className="h-7 w-7 text-[#d0d0d0]" />
-                  <p className="text-[13px] text-[#b0b0b0]">Belum ada pesan</p>
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg) => (
-                    <ChatMessageItem
-                      key={msg.id}
-                      message={msg}
-                      myUserId={userId}
-                      onReact={handleReact}
-                    />
-                  ))}
-                  {isRemoteTyping && (
-                    <div className="mb-2">
-                      <ChatTypingIndicator />
-                    </div>
-                  )}
-                </>
-              )}
-              <div ref={bottomRef} />
-            </div>
+            <ChatMessageStream
+              key={selectedId}
+              messages={messages}
+              myUserId={userId}
+              onReact={handleReact}
+              isRemoteTyping={isRemoteTyping}
+              fallback={
+                loading ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    <RefreshCw className="size-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2">
+                    <Clock className="size-7 text-muted-foreground" />
+                    <p className="text-[13px] text-muted-foreground">Belum ada pesan</p>
+                  </div>
+                )
+              }
+            />
 
             {/* input / resolved notice */}
             {isResolved ? (

@@ -11,6 +11,7 @@ export type ChatSession = {
   created_at: string;
   updated_at: string;
   closed_at: string | null;
+  unread_count?: number;
   // joined from profiles
   profile?: { full_name: string | null; avatar_url: string | null };
 };

@@ -108,18 +108,24 @@ export function DashboardShell({
   sidebarDefaultOpen = true,
 }: DashboardShellProps) {
   return (
-    <SidebarProvider defaultOpen={sidebarDefaultOpen}>
-      <DashboardSidebar unreadNotifications={unreadNotifications} />
-      <SidebarInset className="bg-[#fafafa]">
-        <header className="flex h-11 shrink-0 items-center gap-2.5 bg-[#fafafa] px-4">
-          <SidebarTrigger className="-ml-1 text-[#5c5c5c] hover:text-[#1d1d1f]" />
-          <span className="select-none text-[#d4d4d4] text-sm">|</span>
-          <DashboardBreadcrumb />
-        </header>
-        <div className="w-full flex-1 px-4 pb-12 pt-5 sm:px-5 md:px-6">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-24">
+      <SidebarProvider
+        defaultOpen={sidebarDefaultOpen}
+        className="!min-h-0 items-start gap-5 bg-transparent py-6 lg:gap-7 lg:py-8"
+        style={{ "--sidebar-width": "18.5rem" } as React.CSSProperties}
+      >
+        <DashboardSidebar unreadNotifications={unreadNotifications} />
+        <SidebarInset className="min-w-0 overflow-hidden rounded-md border border-black/5 bg-white">
+          <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-[#ececea] bg-white px-5 sm:px-6">
+            <SidebarTrigger className="-ml-1 text-[#5c5c5c] hover:bg-[#f3f3f1] hover:text-[#1d1d1f]" />
+            <span className="select-none text-[#d4d4d4] text-sm">|</span>
+            <DashboardBreadcrumb />
+          </header>
+          <div className="w-full flex-1 p-5 sm:p-7 lg:p-8">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

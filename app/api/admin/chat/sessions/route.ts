@@ -1,4 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { withSessionUnreadCounts } from "@/lib/chat/with-session-unread-counts";
+import type { ChatSession } from "@/types/chat";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from("profiles").select("role").eq("id", userId).single();
@@ -28,8 +30,13 @@ export async function GET(req: Request) {
       query = query.eq("status", status);
     }
 
-    const { data } = await query;
-    return Response.json({ success: true, data: data ?? [] });
+    const { data, error } = await query;
+    if (error) throw error;
+    const sessions = await withSessionUnreadCounts(
+      (data ?? []) as unknown as ChatSession[],
+      "user",
+    );
+    return Response.json({ success: true, data: sessions });
   } catch {
     return Response.json({ success: false, error: "Server error" }, { status: 500 });
   }

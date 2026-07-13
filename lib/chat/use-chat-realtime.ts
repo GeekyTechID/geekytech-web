@@ -85,6 +85,11 @@ export function useAdminChatRealtime(onSessionChange: () => void) {
         { event: "*", schema: "public", table: "chat_sessions" },
         () => onSessionChangeRef.current(),
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_messages" },
+        () => onSessionChangeRef.current(),
+      )
       .subscribe();
 
     return () => {

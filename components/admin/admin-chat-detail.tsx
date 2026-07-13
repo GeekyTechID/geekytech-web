@@ -4,10 +4,8 @@ import { AlertCircle, Paperclip, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChatMessageItem } from "@/components/chat/chat-message-item";
-import { ChatTypingIndicator } from "@/components/chat/chat-typing-indicator";
+import { ChatMessageStream } from "@/components/chat/chat-message-stream";
 import { ChatAttachmentPreview } from "@/components/chat/chat-attachment-preview";
 import { AdminChatStatusBadge } from "./admin-chat-status-badge";
 import { AdminQuickReplyPicker } from "./admin-quick-reply-picker";
@@ -39,7 +37,6 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
   const [isRemoteTyping, setIsRemoteTyping] = useState(false);
   const [quickReplies, setQuickReplies] = useState<ChatQuickReply[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
@@ -47,7 +44,10 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
     fetch(`/api/chat/sessions/${session.id}/messages`)
       .then((r) => r.json())
       .then((json) => { if (json.success) setMessages(json.data); });
-    fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" });
+    fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" })
+      .then((response) => {
+        if (response.ok) window.dispatchEvent(new Event("chat-unread-changed"));
+      });
   }, [session.id]);
 
   useEffect(() => {
@@ -56,14 +56,13 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
       .then((json) => { if (json.success) setQuickReplies(json.data); });
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isRemoteTyping]);
-
   const handleNewMessage = useCallback((msg: ChatMessage) => {
     setMessages((prev) => [...prev, msg]);
     if (msg.sender_id !== user?.id) {
-      fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" });
+      fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" })
+        .then((response) => {
+          if (response.ok) window.dispatchEvent(new Event("chat-unread-changed"));
+        });
     }
   }, [user?.id, session.id]);
 
@@ -146,7 +145,7 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-300 px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar size="sm">
             <AvatarImage src={session.profile?.avatar_url ?? undefined} alt="" />
@@ -169,23 +168,20 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
         </div>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="px-3 py-2">
-          {messages.map((msg) => (
-            <ChatMessageItem key={msg.id} message={msg} myUserId={user?.id ?? ""} onReact={handleReact} />
-          ))}
-          {isRemoteTyping && <div className="mb-2"><ChatTypingIndicator /></div>}
-          <div ref={bottomRef} />
-        </div>
-      </ScrollArea>
+      <ChatMessageStream
+        messages={messages}
+        myUserId={user?.id ?? ""}
+        onReact={handleReact}
+        isRemoteTyping={isRemoteTyping}
+      />
 
       {isResolved ? (
-        <div className="flex shrink-0 items-center gap-2 border-t border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2 border-t border-gray-300 bg-muted/40 p-3 text-xs text-muted-foreground">
           <AlertCircle size={14} className="shrink-0" />
           Sesi ini telah ditutup.
         </div>
       ) : (
-        <div className="relative shrink-0 border-t border-border bg-background p-3">
+        <div className="relative shrink-0 border-t border-gray-300 bg-background p-3">
           {pending && (
             <div className="mb-2">
               <ChatAttachmentPreview
@@ -227,7 +223,7 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
                 rows={1}
                 disabled={sending}
                 className={cn(
-                  "w-full resize-none rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm",
+                  "w-full resize-none rounded-2xl border border-gray-300 bg-muted/40 px-3 py-2 text-sm",
                   "placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary max-h-28 overflow-y-auto",
                 )}
                 onInput={(e) => { const el = e.currentTarget; el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 112)}px`; }}

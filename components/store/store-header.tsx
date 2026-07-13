@@ -117,6 +117,8 @@ type StoreHeaderProps = {
   initialCartCount?: number;
   /** Default true — matikan jika header dibungkus sticky di parent (mis. layout dashboard). */
   sticky?: boolean;
+  showCategoryNav?: boolean;
+  showBorder?: boolean;
   className?: string;
 };
 
@@ -127,6 +129,8 @@ export function StoreHeader({
   secondHandPromoId = null,
   initialCartCount = 0,
   sticky = true,
+  showCategoryNav = true,
+  showBorder = true,
   className,
 }: StoreHeaderProps) {
   const router = useRouter();
@@ -135,7 +139,8 @@ export function StoreHeader({
   const categoryParam = pathname === "/products" ? searchParams.get("category") : null;
   const isSecondHandPromoPage = Boolean(secondHandPromoId) && pathname === `/promo/${secondHandPromoId}`;
   const hideCategoryNav =
-    !isSecondHandPromoPage && (pathname?.startsWith("/promo/") || pathname?.startsWith("/flash-sale/"));
+    !showCategoryNav ||
+    (!isSecondHandPromoPage && (pathname?.startsWith("/promo/") || pathname?.startsWith("/flash-sale/")));
   const navItems = buildStoreHeaderNavItems(secondHandPromoId);
   const { user, profile, isAuthenticated, isAdmin } = useAuth();
   const { reset } = useAuthStore();
@@ -280,7 +285,8 @@ export function StoreHeader({
     <>
       <header
         className={cn(
-          "w-full border-b border-neutral-200 bg-white",
+          "w-full bg-white",
+          showBorder && "border-b border-neutral-200",
           sticky && "sticky top-0 z-40 bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/90",
           className,
         )}

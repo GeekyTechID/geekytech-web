@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { AdminChatInbox } from "@/components/admin/admin-chat-inbox";
 import type { ChatSession } from "@/types/chat";
+import { withSessionUnreadCounts } from "@/lib/chat/with-session-unread-counts";
 
 export const metadata: Metadata = { title: "Chat Inbox" };
 
@@ -13,7 +14,7 @@ async function fetchAllSessions(): Promise<ChatSession[]> {
     .select("*, profile:profiles!chat_sessions_user_id_fkey(full_name, avatar_url)")
     .order("updated_at", { ascending: false })
     .limit(100);
-  return (data ?? []) as unknown as ChatSession[];
+  return withSessionUnreadCounts((data ?? []) as unknown as ChatSession[], "user");
 }
 
 export default async function AdminChatPage() {

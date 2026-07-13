@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AdminChatStatusBadge } from "./admin-chat-status-badge";
+import { SidebarNotificationBadge } from "@/components/shared/sidebar-notification-badge";
 import type { ChatSession } from "@/types/chat";
 
 type Filter = "all" | "open" | "resolved";
@@ -40,8 +41,8 @@ export function AdminChatSessionList({
   const filtered = filter === "all" ? sessions : sessions.filter((s) => s.status === filter);
 
   return (
-    <div className="flex h-full flex-col border-r border-border">
-      <div className="shrink-0 border-b border-border p-2">
+    <div className="flex h-full flex-col border-r border-gray-300">
+      <div className="shrink-0 border-b border-gray-300 p-2">
         <Tabs value={filter} onValueChange={(v) => onFilterChange(v as Filter)}>
           <TabsList variant="line" className="w-full">
             {FILTER_TABS.map((tab) => (
@@ -66,8 +67,10 @@ export function AdminChatSessionList({
               type="button"
               onClick={() => onSelect(session)}
               className={cn(
-                "flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left transition-colors",
-                selectedId === session.id ? "bg-primary/5" : "hover:bg-muted/40",
+                "flex w-full items-start gap-3 border-b border-gray-300 px-4 py-3 text-left transition-colors",
+                (session.unread_count ?? 0) > 0 && "bg-[#EA5329]/10 hover:bg-[#EA5329]/15",
+                selectedId === session.id && "bg-muted/60",
+                selectedId !== session.id && (session.unread_count ?? 0) === 0 && "hover:bg-muted/40",
               )}
             >
               <Avatar size="sm" className="mt-0.5">
@@ -79,12 +82,18 @@ export function AdminChatSessionList({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="truncate text-sm font-medium">
+                  <span className={cn(
+                    "truncate text-sm font-medium",
+                    (session.unread_count ?? 0) > 0 && "font-semibold text-foreground",
+                  )}>
                     {session.profile?.full_name ?? "User"}
                   </span>
-                  <span className="shrink-0 text-[10px] text-muted-foreground">
-                    {timeAgo(session.updated_at)}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground">
+                      {timeAgo(session.updated_at)}
+                    </span>
+                    <SidebarNotificationBadge count={session.unread_count ?? 0} />
+                  </div>
                 </div>
                 <p className="truncate text-xs text-muted-foreground">{session.subject}</p>
                 <AdminChatStatusBadge status={session.status} className="mt-1.5" />

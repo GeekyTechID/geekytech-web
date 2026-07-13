@@ -7,6 +7,9 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
+import { StoreHeader } from "@/components/store/store-header";
+import { fetchStoreHeaderCartCount } from "@/lib/data/store-header-server";
+import { StoreFooter } from "@/components/store/store-footer";
 
 async function getUnreadNotificationsCount(userId: string): Promise<number> {
   try {
@@ -32,20 +35,27 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   const cookieStore = await cookies();
   const sidebarDefaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
-  const [unreadNotifications, profile] = await Promise.all([
+  const [unreadNotifications, profile, initialCartCount] = await Promise.all([
     user ? getUnreadNotificationsCount(user.id) : Promise.resolve(0),
     user ? fetchUserProfile(user.id) : Promise.resolve(null),
+    fetchStoreHeaderCartCount().catch(() => 0),
   ]);
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col bg-[#f8f8f6]">
       <InitAuthStore user={user} profile={profile} />
+      <StoreHeader
+        initialCartCount={initialCartCount}
+        showCategoryNav={false}
+        showBorder={false}
+      />
       <DashboardShell
         unreadNotifications={unreadNotifications}
         sidebarDefaultOpen={sidebarDefaultOpen}
       >
         {children}
       </DashboardShell>
+      <StoreFooter />
       <div data-no-print>
         <ChatWidget />
       </div>

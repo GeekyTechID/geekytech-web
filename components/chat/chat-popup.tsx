@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +8,8 @@ import {
   HeaderDropdownPanelHeader,
 } from "@/components/shared/header-dropdown-panel";
 import { Button } from "@/components/ui/button";
-import { ChatMessageItem } from "./chat-message-item";
 import { ChatInput } from "./chat-input";
-import { ChatTypingIndicator } from "./chat-typing-indicator";
+import { ChatMessageStream } from "./chat-message-stream";
 import { useChatStore } from "@/store/chat-store";
 import { useChatRealtime } from "@/lib/chat/use-chat-realtime";
 import { useChatPresence } from "@/lib/chat/use-chat-presence";
@@ -25,7 +24,6 @@ export function ChatPopup() {
     activeSession,
     messages,
     isRemoteTyping,
-    setActiveSession,
     setMessages,
     addMessage,
     updateMessage,
@@ -34,7 +32,6 @@ export function ChatPopup() {
     setUnreadCount,
   } = useChatStore();
 
-  const bottomRef = useRef<HTMLDivElement>(null);
   const myRole = profile?.role === "admin" ? "admin" : "user";
   const sessionId = activeSession?.id ?? null;
 
@@ -46,10 +43,6 @@ export function ChatPopup() {
     fetch(`/api/chat/sessions/${sessionId}/read`, { method: "PATCH" });
     setUnreadCount(0); // Reset badge when popup opens
   }, [sessionId, setMessages, setUnreadCount]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isRemoteTyping]);
 
   const handleNewMessage = useCallback(
     (msg: ChatMessage) => {
@@ -151,13 +144,13 @@ export function ChatPopup() {
       />
 
       <HeaderDropdownPanelBody className="flex min-h-0 flex-1 flex-col">
-      <div className="flex-1 overflow-y-auto px-3 py-2">
-        {messages.map((msg) => (
-          <ChatMessageItem key={msg.id} message={msg} myUserId={user?.id ?? ""} onReact={handleReact} />
-        ))}
-        {isRemoteTyping && <div className="mb-2"><ChatTypingIndicator /></div>}
-        <div ref={bottomRef} />
-      </div>
+      <ChatMessageStream
+        key={sessionId ?? "empty"}
+        messages={messages}
+        myUserId={user?.id ?? ""}
+        onReact={handleReact}
+        isRemoteTyping={isRemoteTyping}
+      />
 
       {isResolved ? (
         <div className="flex shrink-0 items-center gap-2 border-t border-[#e0e0e0] bg-[#f5f5f7] p-3 text-xs text-[#7a7a7a]">
