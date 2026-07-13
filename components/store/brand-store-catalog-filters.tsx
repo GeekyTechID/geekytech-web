@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ListFilter, Search, X } from "lucide-react";
+import { ListFilter, X } from "lucide-react";
 
 import { FilterDropdown } from "@/components/shared/filter-dropdown";
 import { Button } from "@/components/ui/button";
@@ -59,9 +59,7 @@ export function BrandStoreCatalogFilters({ categories, totalCount }: BrandStoreC
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [qInput, setQInput] = useState(searchParams.get("q") ?? "");
   const [minPriceInput, setMinPriceInput] = useState(searchParams.get("minPrice") ?? "");
   const [maxPriceInput, setMaxPriceInput] = useState(searchParams.get("maxPrice") ?? "");
 
@@ -72,16 +70,9 @@ export function BrandStoreCatalogFilters({ categories, totalCount }: BrandStoreC
   const [syncedKey, setSyncedKey] = useState(searchParamsKey);
   if (syncedKey !== searchParamsKey) {
     setSyncedKey(searchParamsKey);
-    setQInput(searchParams.get("q") ?? "");
     setMinPriceInput(searchParams.get("minPrice") ?? "");
     setMaxPriceInput(searchParams.get("maxPrice") ?? "");
   }
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
 
   const pushParams = useCallback(
     (mutate: (p: URLSearchParams) => void) => {
@@ -91,20 +82,6 @@ export function BrandStoreCatalogFilters({ categories, totalCount }: BrandStoreC
       router.push(`${pathname}${buildQueryString(next)}`);
     },
     [router, pathname, searchParams],
-  );
-
-  const scheduleSearch = useCallback(
-    (value: string) => {
-      setQInput(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        pushParams((p) => {
-          if (value.trim()) p.set("q", value.trim());
-          else p.delete("q");
-        });
-      }, 320);
-    },
-    [pushParams],
   );
 
   const categoryId = searchParams.get("category") ?? "";
@@ -291,24 +268,6 @@ export function BrandStoreCatalogFilters({ categories, totalCount }: BrandStoreC
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 flex-1 sm:max-w-xs">
-          <label htmlFor="brand-catalog-search" className="sr-only">
-            Cari produk
-          </label>
-          <div className="flex h-11 items-center rounded-md border border-[#e0e0e0] bg-[#fafafc] pl-4 pr-3 focus-within:border-[#1d1d1f]">
-            <Search className="mr-2 h-4 w-4 shrink-0 text-[#7a7a7a]" aria-hidden />
-            <Input
-              id="brand-catalog-search"
-              type="search"
-              value={qInput}
-              onChange={(e) => scheduleSearch(e.target.value)}
-              placeholder="Cari produkmu di sini..."
-              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#1d1d1f] shadow-none placeholder:text-[#7a7a7a] focus-visible:ring-0"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-
         <Sheet>
           <SheetTrigger asChild>
             <Button type="button" variant="dark" size="default" className="relative shrink-0 sm:hidden">
@@ -339,7 +298,7 @@ export function BrandStoreCatalogFilters({ categories, totalCount }: BrandStoreC
           </SheetContent>
         </Sheet>
 
-        {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar search+filter+sort satu baris di sm+ */}
+        {/* display:contents — kontrol jadi flex item langsung dari baris di atas, biar filter+sort satu baris di sm+ */}
         <div className="hidden sm:contents">
           {filterControls}
           {hasFilters ? (

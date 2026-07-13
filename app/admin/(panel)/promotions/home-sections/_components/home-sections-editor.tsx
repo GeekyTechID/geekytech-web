@@ -125,6 +125,15 @@ const SECTION_META: Record<HomeSectionKey, {
 
 const CLEAR_VALUE = "__clear__";
 
+type OptionItem = {
+  value: string;
+  label: string;
+  sub: string;
+  expired: boolean;
+  upcoming: boolean;
+  inactive: boolean;
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────
 function isExpired(endsAt: string | null | undefined): boolean {
   return !!endsAt && new Date(endsAt) < new Date();
@@ -145,6 +154,19 @@ function StatusBadge({ className, children }: { className: string; children: Rea
   );
 }
 
+function StatusDot({ tone }: { tone: "red" | "amber" | "zinc" }) {
+  return (
+    <span
+      className={cn(
+        "size-1.5 shrink-0 rounded-full",
+        tone === "red" && "bg-red-500",
+        tone === "amber" && "bg-amber-500",
+        tone === "zinc" && "bg-zinc-400",
+      )}
+    />
+  );
+}
+
 // ── Section card ──────────────────────────────────────────────────────────
 function SectionCard({
   section,
@@ -160,11 +182,7 @@ function SectionCard({
   section: HomeSection;
   index: number;
   totalCount: number;
-  availableOptions: null | {
-    flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
-    second: { value: string; label: string; sub: string; inactive: boolean }[];
-    featured: { value: string; label: string; sub: string; inactive: boolean }[];
-  } | { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
+  availableOptions: null | { flash: OptionItem[]; second: OptionItem[]; featured: OptionItem[] } | OptionItem[];
   warningBadge: React.ReactNode;
   onSelect: (value: string) => void;
   onToggle: () => void;
@@ -176,16 +194,12 @@ function SectionCard({
 
   // Typed options (flash_sale / second / featured — single flat array)
   const typedOptions = !isGeneric && availableOptions !== null
-    ? availableOptions as { value: string; label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean }[]
+    ? availableOptions as OptionItem[]
     : null;
 
   // Generic options (grouped)
   const groupedOptions = isGeneric && availableOptions !== null
-    ? availableOptions as {
-        flash: { value: string; label: string; sub: string; expired: boolean; upcoming: boolean; inactive: boolean }[];
-        second: { value: string; label: string; sub: string; inactive: boolean }[];
-        featured: { value: string; label: string; sub: string; inactive: boolean }[];
-      }
+    ? availableOptions as { flash: OptionItem[]; second: OptionItem[]; featured: OptionItem[] }
     : null;
 
   const hasAnyOptions = typedOptions
@@ -193,6 +207,13 @@ function SectionCard({
     : groupedOptions
       ? groupedOptions.flash.length + groupedOptions.second.length + groupedOptions.featured.length > 0
       : false;
+
+  // Flat lookup buat render ringkas nilai terpilih di trigger (beda dari ItemLabel dua baris di list)
+  const flatOptions = typedOptions
+    ?? (groupedOptions ? [...groupedOptions.flash, ...groupedOptions.second, ...groupedOptions.featured] : []);
+  const selectedOption = section.selected_id
+    ? flatOptions.find((o) => o.value === section.selected_id)
+    : undefined;
 
   return (
     <div className={cn(
@@ -257,10 +278,23 @@ function SectionCard({
                   value={section.selected_id ?? ""}
                   onValueChange={onSelect}
                 >
-                  <SelectTrigger className="h-8 w-full max-w-xs text-sm">
-                    <SelectValue placeholder="Pilih promosi..." />
+                  <SelectTrigger className="h-8 w-full max-w-sm text-sm">
+                    <SelectValue placeholder="Pilih promosi...">
+                      {selectedOption && (
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          {selectedOption.expired ? (
+                            <StatusDot tone="red" />
+                          ) : selectedOption.upcoming ? (
+                            <StatusDot tone="amber" />
+                          ) : selectedOption.inactive ? (
+                            <StatusDot tone="zinc" />
+                          ) : null}
+                          <span className="truncate">{selectedOption.label}</span>
+                        </span>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
-                  <SelectContent position="popper" align="start" className="min-w-[300px]">
+                  <SelectContent position="popper" align="start" className="min-w-[320px]">
                     {/* Clear */}
                     <SelectGroup>
                       <SelectItem value={CLEAR_VALUE} className="text-muted-foreground">
@@ -278,7 +312,7 @@ function SectionCard({
                       <SelectGroup>
                         <SelectLabel>Tersedia</SelectLabel>
                         {typedOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
+                          <SelectItem key={opt.value} value={opt.value} className="py-2">
                             <ItemLabel opt={opt} />
                           </SelectItem>
                         ))}
@@ -292,7 +326,7 @@ function SectionCard({
                           <SelectGroup>
                             <SelectLabel>Flash Sale</SelectLabel>
                             {groupedOptions.flash.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>
+                              <SelectItem key={opt.value} value={opt.value} className="py-2">
                                 <ItemLabel opt={opt} />
                               </SelectItem>
                             ))}
@@ -304,7 +338,7 @@ function SectionCard({
                             <SelectGroup>
                               <SelectLabel>Produk Second</SelectLabel>
                               {groupedOptions.second.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
+                                <SelectItem key={opt.value} value={opt.value} className="py-2">
                                   <ItemLabel opt={opt} />
                                 </SelectItem>
                               ))}
@@ -317,7 +351,7 @@ function SectionCard({
                             <SelectGroup>
                               <SelectLabel>Rekomendasi Produk</SelectLabel>
                               {groupedOptions.featured.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
+                                <SelectItem key={opt.value} value={opt.value} className="py-2">
                                   <ItemLabel opt={opt} />
                                 </SelectItem>
                               ))}
@@ -370,12 +404,10 @@ function SectionCard({
   );
 }
 
-function ItemLabel({ opt }: {
-  opt: { label: string; sub: string; expired?: boolean; upcoming?: boolean; inactive: boolean };
-}) {
+function ItemLabel({ opt }: { opt: OptionItem }) {
   return (
-    <span className="flex flex-col gap-0.5">
-      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+    <span className="flex flex-col gap-1">
+      <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-foreground">
         {opt.label}
         {opt.expired && (
           <span className="rounded-full bg-red-100 px-1.5 py-px text-[9px] font-semibold uppercase text-red-700">
@@ -487,6 +519,8 @@ export function HomeSectionsEditor({
             sub: p.selection_mode === "manual"
               ? `Per Produk · ${p.product_count} produk`
               : `Per Brand · ${p.brand_count} brand`,
+            expired: false,
+            upcoming: false,
             inactive: !p.is_active,
           })),
         featured: featuredPromos
@@ -497,6 +531,8 @@ export function HomeSectionsEditor({
             sub: p.selection_mode === "manual"
               ? `Per Produk · ${p.product_count} produk`
               : `Per Brand · ${p.brand_count} brand`,
+            expired: false,
+            upcoming: false,
             inactive: !p.is_active,
           })),
       };

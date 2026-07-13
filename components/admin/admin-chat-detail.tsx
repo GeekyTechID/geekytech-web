@@ -2,15 +2,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, Paperclip, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ChatMessageItem } from "@/components/chat/chat-message-item";
-import { ChatTypingIndicator } from "@/components/chat/chat-typing-indicator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChatMessageStream } from "@/components/chat/chat-message-stream";
 import { ChatAttachmentPreview } from "@/components/chat/chat-attachment-preview";
+import { AdminChatStatusBadge } from "./admin-chat-status-badge";
 import { AdminQuickReplyPicker } from "./admin-quick-reply-picker";
 import { useChatRealtime } from "@/lib/chat/use-chat-realtime";
 import { useChatPresence } from "@/lib/chat/use-chat-presence";
 import { useAuthStore } from "@/store/auth-store";
+import { getInitials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   ALLOWED_CHAT_FILE_TYPES,
@@ -35,7 +37,6 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
   const [isRemoteTyping, setIsRemoteTyping] = useState(false);
   const [quickReplies, setQuickReplies] = useState<ChatQuickReply[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,7 +44,10 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
     fetch(`/api/chat/sessions/${session.id}/messages`)
       .then((r) => r.json())
       .then((json) => { if (json.success) setMessages(json.data); });
-    fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" });
+    fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" })
+      .then((response) => {
+        if (response.ok) window.dispatchEvent(new Event("chat-unread-changed"));
+      });
   }, [session.id]);
 
   useEffect(() => {
@@ -52,14 +56,13 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
       .then((json) => { if (json.success) setQuickReplies(json.data); });
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isRemoteTyping]);
-
   const handleNewMessage = useCallback((msg: ChatMessage) => {
     setMessages((prev) => [...prev, msg]);
     if (msg.sender_id !== user?.id) {
-      fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" });
+      fetch(`/api/chat/sessions/${session.id}/read`, { method: "PATCH" })
+        .then((response) => {
+          if (response.ok) window.dispatchEvent(new Event("chat-unread-changed"));
+        });
     }
   }, [user?.id, session.id]);
 
@@ -142,15 +145,21 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{session.profile?.full_name ?? "User"}</p>
-          <p className="truncate text-xs text-muted-foreground">{session.subject}</p>
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-300 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar size="sm">
+            <AvatarImage src={session.profile?.avatar_url ?? undefined} alt="" />
+            <AvatarFallback className="text-[10px] font-semibold">
+              {getInitials(session.profile?.full_name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{session.profile?.full_name ?? "User"}</p>
+            <p className="truncate text-xs text-muted-foreground">{session.subject}</p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Badge variant={isResolved ? "secondary" : "default"} className="text-[10px]">
-            {isResolved ? "Selesai" : "Aktif"}
-          </Badge>
+          <AdminChatStatusBadge status={session.status} />
           {!isResolved && (
             <Button size="sm" variant="outline" onClick={handleCloseSession} className="h-7 text-xs">
               Tutup Sesi
@@ -159,21 +168,20 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-2">
-        {messages.map((msg) => (
-          <ChatMessageItem key={msg.id} message={msg} myUserId={user?.id ?? ""} onReact={handleReact} />
-        ))}
-        {isRemoteTyping && <div className="mb-2"><ChatTypingIndicator /></div>}
-        <div ref={bottomRef} />
-      </div>
+      <ChatMessageStream
+        messages={messages}
+        myUserId={user?.id ?? ""}
+        onReact={handleReact}
+        isRemoteTyping={isRemoteTyping}
+      />
 
       {isResolved ? (
-        <div className="flex shrink-0 items-center gap-2 border-t border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center gap-2 border-t border-gray-300 bg-muted/40 p-3 text-xs text-muted-foreground">
           <AlertCircle size={14} className="shrink-0" />
           Sesi ini telah ditutup.
         </div>
       ) : (
-        <div className="relative shrink-0 border-t border-border bg-background p-3">
+        <div className="relative shrink-0 border-t border-gray-300 bg-background p-3">
           {pending && (
             <div className="mb-2">
               <ChatAttachmentPreview
@@ -191,9 +199,14 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
           )}
           <div className="flex items-end gap-2">
             <input ref={fileRef} type="file" className="hidden" accept={ALLOWED_CHAT_FILE_TYPES.join(",")} onChange={handleFileChange} />
-            <button type="button" onClick={() => fileRef.current?.click()} disabled={!!pending} className="shrink-0 rounded-full p-2 text-muted-foreground hover:bg-muted disabled:opacity-50" aria-label="Lampirkan file">
-              <Paperclip size={18} />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={!!pending} className="shrink-0 rounded-full p-2 text-muted-foreground hover:bg-muted disabled:opacity-50" aria-label="Lampirkan file">
+                  <Paperclip size={18} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Lampirkan file</TooltipContent>
+            </Tooltip>
             <div className="relative flex-1">
               <textarea
                 ref={textRef}
@@ -210,15 +223,20 @@ export function AdminChatDetail({ session, onSessionUpdate }: Props) {
                 rows={1}
                 disabled={sending}
                 className={cn(
-                  "w-full resize-none rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm",
+                  "w-full resize-none rounded-2xl border border-gray-300 bg-muted/40 px-3 py-2 text-sm",
                   "placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary max-h-28 overflow-y-auto",
                 )}
                 onInput={(e) => { const el = e.currentTarget; el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 112)}px`; }}
               />
             </div>
-            <Button size="icon" onClick={handleSend} disabled={(!content.trim() && !pending) || sending} className="shrink-0 rounded-full" aria-label="Kirim">
-              <Send size={16} />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" onClick={handleSend} disabled={(!content.trim() && !pending) || sending} className="shrink-0 rounded-full" aria-label="Kirim">
+                  <Send size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Kirim (Enter)</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       )}

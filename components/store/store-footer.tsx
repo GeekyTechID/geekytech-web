@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { getStoreOrigin, getWhatsappCs } from "@/lib/settings/queries";
-import { getStoreOriginFullAddress } from "@/lib/settings/store-origin";
+const FOOTER_ADDRESS =
+  "Bellezza Shopping Arcade Unit GSA-037, Grogol Utara, Kebayoran Lama, Jakarta Selatan 12210.";
+const FOOTER_MAPS_URL = "https://maps.app.goo.gl/mHDWtvoTMQ8hfxQh8";
 
 const FOOTER_ABOUT = [
   { label: "Our Story", href: "/about" },
@@ -28,64 +26,31 @@ const FOOTER_MARKETPLACES = [
   { label: "Lazada", href: "https://www.lazada.co.id/shop/geekytech-store/?path=index.htm" },
 ] as const;
 
-export async function StoreFooter() {
-  const [storeOrigin, whatsappCs] = await Promise.all([getStoreOrigin(), getWhatsappCs()]);
+export function StoreFooter() {
   const year = new Date().getFullYear();
-  const fullAddress = getStoreOriginFullAddress(storeOrigin);
 
   return (
-    <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 text-white">
+    <footer className="relative mt-auto overflow-hidden bg-gradient-to-br from-[#121212] via-[#121212] to-[#121212]/90 pt-12 text-white">
       <div className="relative z-10 mx-auto max-w-[1440px] px-4 py-14 sm:px-6 lg:px-24 lg:py-16">
         <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-20">
           <div className="min-w-0 space-y-4 lg:max-w-xl">
             <h2 className="text-2xl font-black leading-tight text-white md:text-3xl">
-              Mau Jadi yang Pertama Tahu? <br /> Daftar Newsletter Kami!
+              Experience it in person!
             </h2>
 
-            <p className="max-w-sm text-sm leading-relaxed text-white/60">
-              Dapatkan info produk rating tertinggi dan promo eksklusif Gebyar Merdeka langsung di inbox-mu.
-            </p>
-            
-            <form className="mt-2 max-w-md" action="#" method="post">
-              <label htmlFor="footer-newsletter" className="sr-only">
-                Email newsletter
-              </label>
-              <div className="flex h-12 items-center gap-1 rounded-full border border-white/25 bg-transparent pl-5 pr-1.5 focus-within:border-white focus-within:ring-3 focus-within:ring-white/30">
-                <Input
-                  id="footer-newsletter"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Email kamu.."
-                  className="h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm text-white shadow-none placeholder:text-white/45 focus-visible:border-transparent focus-visible:ring-0"
-                />
-                <Button
-                  type="submit"
-                  size="icon-sm"
-                  className="size-9 shrink-0 rounded-full border-0 bg-white p-0 text-black hover:bg-white/90"
-                  aria-label="Daftar newsletter"
-                >
-                  <ChevronRight className="size-4" strokeWidth={2.25} aria-hidden />
-                </Button>
-              </div>
-            </form>
-
-            <div className="relative z-10 mt-14 space-y-1.5 text-xs text-white/45">
+            <div className="relative z-10 mt-6 space-y-1.5 text-xs text-white/45">
               <p>© {year} GeekyTech. All rights reserved.</p>
-              {fullAddress && <p>{fullAddress}</p>}
-              {whatsappCs && (
-                <p>
-                  WhatsApp:{" "}
-                  <a
-                    href={`https://wa.me/${whatsappCs}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline-offset-2 hover:text-white hover:underline"
-                  >
-                    +{whatsappCs}
-                  </a>
-                </p>
-              )}
+              <p>{FOOTER_ADDRESS}</p>
+              <p>
+                <a
+                  href={FOOTER_MAPS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-white/70 underline underline-offset-2 transition-colors hover:text-white"
+                >
+                  View Maps
+                </a>
+              </p>
             </div>
           </div>
 

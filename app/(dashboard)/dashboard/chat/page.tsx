@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ChatSession } from "@/types/chat";
 import { DashboardChatShell } from "@/components/dashboard/chat-dashboard-shell";
+import { withSessionUnreadCounts } from "@/lib/chat/with-session-unread-counts";
 
 export const metadata: Metadata = {
   title: "Chat CS",
@@ -16,7 +17,7 @@ async function fetchUserSessions(userId: string): Promise<ChatSession[]> {
     .select("*")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
-  return (data ?? []) as ChatSession[];
+  return withSessionUnreadCounts((data ?? []) as ChatSession[], "admin");
 }
 
 export default async function DashboardChatPage() {

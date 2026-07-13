@@ -2,6 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { FileText, Check, CheckCheck } from "lucide-react";
+import {
+  Message,
+  MessageContent,
+  MessageFooter,
+  MessageGroup,
+} from "@/components/ui/message";
 import { cn } from "@/lib/utils";
 import { EmojiReactionPicker } from "./emoji-reaction-picker";
 import type { ChatMessage } from "@/types/chat";
@@ -39,11 +45,13 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
 
   if (message.sender_role === "system") {
     return (
-      <div className="flex justify-center my-2">
-        <span className="rounded-full bg-muted px-3 py-1 text-[10px] text-muted-foreground">
-          {message.content}
-        </span>
-      </div>
+      <Message className="justify-center py-1">
+        <MessageContent className="w-auto flex-none">
+          <div className="rounded-full bg-muted px-3 py-1 text-[10px] text-muted-foreground">
+            {message.content}
+          </div>
+        </MessageContent>
+      </Message>
     );
   }
 
@@ -54,13 +62,9 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
   const hasReactions = Object.keys(reactions).length > 0;
 
   return (
-    <div
-      className={cn(
-        "group flex flex-col gap-0.5 my-1",
-        isMine ? "items-end" : "items-start",
-      )}
-    >
-      <div className="relative max-w-[75%]">
+    <Message align={isMine ? "end" : "start"} className="py-1">
+      <MessageContent className="max-w-[75%] gap-1">
+        <MessageGroup className="group relative gap-0.5">
         {/* Reaction picker trigger */}
         <button
           type="button"
@@ -143,7 +147,7 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
           )}
         </div>
-      </div>
+        </MessageGroup>
 
       {/* Reactions display */}
       {hasReactions && (
@@ -172,12 +176,7 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
       )}
 
       {/* Timestamp + read receipt */}
-      <div
-        className={cn(
-          "flex items-center gap-1 px-1",
-          isMine ? "flex-row-reverse" : "flex-row",
-        )}
-      >
+      <MessageFooter className="gap-1 px-1">
         <span className="text-[10px] text-muted-foreground">
           {formatTime(message.created_at)}
         </span>
@@ -188,7 +187,8 @@ export function ChatMessageItem({ message, myUserId, onReact }: Props) {
             <Check size={12} className="text-muted-foreground" />
           )
         )}
-      </div>
-    </div>
+      </MessageFooter>
+      </MessageContent>
+    </Message>
   );
 }

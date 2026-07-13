@@ -36,10 +36,9 @@ export default async function AdminBrandsPage({
 
   let query = supabase
     .from("brands")
-    .select("id, name, slug, logo_url, sort_order, is_active, created_at", {
+    .select("id, name, slug, logo_url, is_active, created_at", {
       count: "exact",
     })
-    .order("sort_order", { ascending: true })
     .order("name", { ascending: true });
 
   if (q) query = query.ilike("name", `%${q}%`);

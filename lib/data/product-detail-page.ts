@@ -199,92 +199,48 @@ export async function fetchRatingHistogram(productId: string): Promise<RatingHis
   }
 }
 
-export type OtherBrandCategoryGroup = {
-  categoryName: string;
-  categorySlug: string;
-  products: HomeShelfProduct[];
-};
-
 const OTHER_SHELF_SELECT = `id, category_id, name, slug, created_at, average_rating, review_count, total_sold, base_price, sale_price, condition,
   brands:brand_id(name),
   categories:category_id(name, slug),
   product_images(url, is_primary, sort_order, alt_text),
   product_variants(id, price, name, is_active)`;
 
-const OTHER_FETCH_CAP = 48;
-const OTHER_SHOW_TOTAL = 10;
+const SAME_CATEGORY_DEFAULT_LIMIT = 5;
+const SAME_CATEGORY_MAX_LIMIT = 10;
 
-type CategoryRelSlug = { name: string; slug: string } | null;
-
-export async function fetchOtherBrandProductsGrouped(params: {
-  productId: string;
-  brandId: string | null;
+/** Produk lain di kategori yang sama, buat section "Mungkin kamu suka ini!" di halaman detail produk. */
+export async function fetchSameCategoryProducts(params: {
+  currentProductId: string;
   categoryId: string | null;
-}): Promise<OtherBrandCategoryGroup[]> {
+  limit?: number;
+}): Promise<HomeShelfProduct[]> {
+  if (!params.categoryId) return [];
+  const limit = Math.min(Math.max(params.limit ?? SAME_CATEGORY_DEFAULT_LIMIT, 1), SAME_CATEGORY_MAX_LIMIT);
+
   try {
     const supabase = createServiceClient();
-    let query = supabase
+    const { data, error } = await supabase
       .from("products")
       .select(OTHER_SHELF_SELECT)
-      .neq("id", params.productId)
+      .eq("category_id", params.categoryId)
+      .neq("id", params.currentProductId)
       .eq("is_active", true)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(OTHER_FETCH_CAP);
+      .limit(limit);
 
-    if (params.brandId) {
-      query = query.neq("brand_id", params.brandId);
-    }
-
-    const { data, error } = await query;
     if (error || !data?.length) return [];
 
-    type Raw = Record<string, unknown> & { category_id?: string | null };
-
-    type Cand = {
-      categoryName: string;
-      categorySlug: string;
-      sameCategory: boolean;
-      shelf: HomeShelfProduct;
-    };
-
-    const cands: Cand[] = [];
-    for (const raw of data as Raw[]) {
+    const shelves: HomeShelfProduct[] = [];
+    for (const raw of data) {
       const shelf = productRowToShelf(raw as unknown as ProductQueryRow);
-      if (!shelf) continue;
-      const cat = firstRel(raw.categories as CategoryRelSlug | CategoryRelSlug[] | null);
-      const categoryName = cat?.name?.trim() || "Tanpa kategori";
-      const categorySlug = cat?.slug?.trim() || "lainnya";
-      const cid = raw.category_id != null ? String(raw.category_id) : null;
-      const sameCategory = Boolean(params.categoryId && cid && cid === params.categoryId);
-      cands.push({ categoryName, categorySlug, sameCategory, shelf });
+      if (shelf) shelves.push(shelf);
     }
-
-    cands.sort((a, b) => {
-      if (a.sameCategory !== b.sameCategory) return a.sameCategory ? -1 : 1;
-      return 0;
-    });
-
-    const picked = cands.slice(0, OTHER_SHOW_TOTAL);
-    if (picked.length === 0) return [];
-
-    const groups: OtherBrandCategoryGroup[] = [];
-    for (const p of picked) {
-      let g = groups.find((x) => x.categorySlug === p.categorySlug);
-      if (!g) {
-        g = { categoryName: p.categoryName, categorySlug: p.categorySlug, products: [] };
-        groups.push(g);
-      }
-      g.products.push(p.shelf);
-    }
-    return groups;
+    return shelves;
   } catch {
     return [];
   }
 }
-
-const RANDOM_PICK_POOL = 48;
-const RANDOM_PICK_DEFAULT = 5;
 
 function shuffleInPlace<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -295,42 +251,6 @@ function shuffleInPlace<T>(arr: T[]): void {
       arr[i] = b;
       arr[j] = a;
     }
-  }
-}
-
-/** Produk acak lintas kategori; `excludeProductIds` wajib memuat `currentProductId` + id lain yang tidak boleh tampil. */
-export async function fetchRandomProductPicks(params: {
-  currentProductId: string;
-  excludeProductIds?: string[];
-  limit?: number;
-}): Promise<HomeShelfProduct[]> {
-  const limit = Math.min(Math.max(params.limit ?? RANDOM_PICK_DEFAULT, 1), RANDOM_PICK_DEFAULT);
-  const exclude = new Set<string>([params.currentProductId, ...(params.excludeProductIds ?? [])]);
-
-  try {
-    const supabase = createServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(OTHER_SHELF_SELECT)
-      .neq("id", params.currentProductId)
-      .eq("is_active", true)
-      .is("deleted_at", null)
-      .limit(RANDOM_PICK_POOL);
-
-    if (error || !data?.length) return [];
-
-    const shelves: HomeShelfProduct[] = [];
-    for (const raw of data) {
-      const id = (raw as { id: string }).id;
-      if (exclude.has(id)) continue;
-      const shelf = productRowToShelf(raw as unknown as ProductQueryRow);
-      if (shelf) shelves.push(shelf);
-    }
-
-    shuffleInPlace(shelves);
-    return shelves.slice(0, limit);
-  } catch {
-    return [];
   }
 }
 

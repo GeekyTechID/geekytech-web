@@ -5,7 +5,6 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   BarChart3,
   Bell,
@@ -20,14 +19,12 @@ import {
   Layers,
   LogOut,
   MessageSquare,
-  Moon,
   Package,
   RotateCcw,
   PackageSearch,
   Settings,
   ShoppingBag,
   Star,
-  Sun,
   Tag,
   Ticket,
   Users,
@@ -42,6 +39,9 @@ import { useAuthStore } from "@/store/auth-store";
 import { useAdminOrdersStore } from "@/store/admin-orders-store";
 import { useAdminReviewsStore } from "@/store/admin-reviews-store";
 import { createClient } from "@/lib/supabase/client";
+import { useChatUnreadCount } from "@/lib/chat/use-chat-unread-count";
+import { useAdminSidebarCounts } from "@/lib/admin/use-admin-sidebar-counts";
+import { SidebarNotificationBadge } from "@/components/shared/sidebar-notification-badge";
 import {
   HEADER_DROPDOWN_MENU_CONTENT_CLASS,
   HEADER_DROPDOWN_MENU_ITEM_CLASS,
@@ -147,31 +147,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
-
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted ? theme === "dark" : false;
-
-  return (
-    <SidebarMenu className="gap-1">
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          tooltip={isDark ? "Mode Terang" : "Mode Gelap"}
-        >
-          {isDark ? <Sun /> : <Moon />}
-          <span>{isDark ? "Mode Terang" : "Mode Gelap"}</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
-}
 
 function NavAdmin() {
   const { profile, user } = useAuth();
@@ -393,6 +368,8 @@ export function AdminSidebar({
   const pathname = usePathname();
   const unviewedCount = useUnviewedOrdersCount();
   const unreadReviewsCount = useUnviewedReviewsCount();
+  const unreadChatCount = useChatUnreadCount("admin");
+  const workloadCounts = useAdminSidebarCounts();
 
   const isActive = (href: string, exact = false) =>
     exact
@@ -480,9 +457,23 @@ export function AdminSidebar({
                   const Icon = item.icon;
                   const isOrders = item.href === "/admin/orders";
                   const isReviews = item.href === "/admin/reviews";
+                  const isChat = item.href === "/admin/chat";
+                  const isComplaints = item.href === "/admin/complaints";
+                  const isReturns = item.href === "/admin/returns";
+                  const isStock = item.href === "/admin/stock";
+                  const isNotifications = item.href === "/admin/notifications";
                   const badge =
                     (isOrders && unviewedCount > 0 ? unviewedCount : null) ??
-                    (isReviews && unreadReviewsCount > 0 ? unreadReviewsCount : null);
+                    (isReviews && unreadReviewsCount > 0 ? unreadReviewsCount : null) ??
+                    (isChat && unreadChatCount > 0 ? unreadChatCount : null) ??
+                    (isComplaints && workloadCounts.complaints > 0
+                      ? workloadCounts.complaints
+                      : null) ??
+                    (isReturns && workloadCounts.returns > 0 ? workloadCounts.returns : null) ??
+                    (isStock && workloadCounts.stock > 0 ? workloadCounts.stock : null) ??
+                    (isNotifications && workloadCounts.notifications > 0
+                      ? workloadCounts.notifications
+                      : null);
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
@@ -496,11 +487,7 @@ export function AdminSidebar({
                         >
                           <Icon />
                           <span>{item.label}</span>
-                          {badge !== null && (
-                            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EA5329] px-1 text-[10px] font-bold leading-none text-white tabular-nums">
-                              {badge > 99 ? "99+" : badge}
-                            </span>
-                          )}
+                          {badge !== null && <SidebarNotificationBadge count={badge} />}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -513,7 +500,6 @@ export function AdminSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <ThemeToggle />
         <NavAdmin />
       </SidebarFooter>
     </Sidebar>

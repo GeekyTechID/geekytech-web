@@ -16,18 +16,6 @@ export type BrandStorePublicBrand = {
   id: string;
   name: string;
   slug: string;
-  logo_url: string | null;
-  description: string | null;
-  /** Banner hero dari Admin → Brand (fallback jika tidak ada baris `banners` template `brand_main:{slug}`). */
-  banner_url: string | null;
-  /** Banner promosi tengah (fallback jika tidak ada template `brand_secondary:{slug}`). */
-  banner_secondary_url: string | null;
-};
-
-export type BrandStoreAggregate = {
-  avgRating: number;
-  totalReviews: number;
-  totalSold: number;
 };
 
 export type { BrandStoreCategoryOption, BrandStoreSortKey } from "@/lib/types/brand-store-catalog";
@@ -57,7 +45,7 @@ export async function fetchBrandBySlugForStore(slug: string): Promise<BrandStore
     const supabase = createServiceClient();
     const { data, error } = await supabase
       .from("brands")
-      .select("id, name, slug, logo_url, description, banner_url, banner_secondary_url")
+      .select("id, name, slug")
       .eq("slug", slug)
       .eq("is_active", true)
       .maybeSingle();
@@ -66,96 +54,9 @@ export async function fetchBrandBySlugForStore(slug: string): Promise<BrandStore
       id: data.id,
       name: data.name,
       slug: data.slug,
-      logo_url: data.logo_url,
-      description: data.description ?? null,
-      banner_url: data.banner_url ?? null,
-      banner_secondary_url: data.banner_secondary_url ?? null,
     };
   } catch {
     return null;
-  }
-}
-
-/** Fallback hero: gambar dari kolom `brands.banner_url` (satu strip). */
-export function brandHeroBannersFromTable(brand: BrandStorePublicBrand): StoreBanner[] {
-  const url = brand.banner_url?.trim();
-  if (!url) return [];
-  return [
-    {
-      id: `${brand.id}-table-banner-main`,
-      title: brand.name,
-      subtitle: null,
-      image_url: url,
-      link_url: null,
-    },
-  ];
-}
-
-/** Fallback tengah: gambar dari `brands.banner_secondary_url`. */
-export function brandSecondaryBannersFromTable(brand: BrandStorePublicBrand): StoreBanner[] {
-  const url = brand.banner_secondary_url?.trim();
-  if (!url) return [];
-  return [
-    {
-      id: `${brand.id}-table-banner-secondary`,
-      title: brand.name,
-      subtitle: null,
-      image_url: url,
-      link_url: null,
-    },
-  ];
-}
-
-export async function fetchBrandAggregateFromProducts(brandId: string): Promise<BrandStoreAggregate> {
-  try {
-    const supabase = createServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select("average_rating, review_count, total_sold")
-      .eq("brand_id", brandId)
-      .eq("is_active", true)
-      .is("deleted_at", null);
-    if (error || !data?.length) {
-      return { avgRating: 0, totalReviews: 0, totalSold: 0 };
-    }
-    let weighted = 0;
-    let reviews = 0;
-    let sold = 0;
-    for (const row of data) {
-      const rc = row.review_count ?? 0;
-      weighted += Number(row.average_rating ?? 0) * rc;
-      reviews += rc;
-      sold += row.total_sold ?? 0;
-    }
-    const avgRating = reviews > 0 ? weighted / reviews : 0;
-    return { avgRating, totalReviews: reviews, totalSold: sold };
-  } catch {
-    return { avgRating: 0, totalReviews: 0, totalSold: 0 };
-  }
-}
-
-export async function fetchBrandBestSellers(brandId: string, limit: number): Promise<HomeShelfProduct[]> {
-  if (limit <= 0) return [];
-  try {
-    const supabase = createServiceClient();
-    const { data, error } = await supabase
-      .from("products")
-      .select(PRODUCT_SHELF_SELECT)
-      .eq("brand_id", brandId)
-      .eq("is_active", true)
-      .is("deleted_at", null)
-      .order("total_sold", { ascending: false })
-      .limit(limit);
-    if (error || !data) return [];
-    const rows = data as unknown as ProductQueryRow[];
-    const out: HomeShelfProduct[] = [];
-    for (const row of rows) {
-      const shelf = productRowToShelf(row);
-      if (shelf) out.push(shelf);
-    }
-    return out;
-  } catch {
-    return [];
   }
 }
 
@@ -192,7 +93,6 @@ export type BrandProductsPageResult = {
 export async function fetchBrandProductsPage(params: {
   brandId: string;
   page: number;
-  q: string;
   categoryId: string | null;
   condition: string | null;
   discountOnly: boolean;
@@ -203,7 +103,6 @@ export async function fetchBrandProductsPage(params: {
 }): Promise<BrandProductsPageResult> {
   const page = Math.max(1, params.page);
   const sort = normalizeSort(params.sort);
-  const q = params.q.trim();
   const categoryId = params.categoryId?.trim() || null;
   const from = (page - 1) * BRAND_STORE_PRODUCTS_PER_PAGE;
   const to = from + BRAND_STORE_PRODUCTS_PER_PAGE - 1;
@@ -217,9 +116,6 @@ export async function fetchBrandProductsPage(params: {
       .eq("is_active", true)
       .is("deleted_at", null);
 
-    if (q.length > 0) {
-      query = query.ilike("name", `%${q}%`);
-    }
     if (categoryId) {
       query = query.eq("category_id", categoryId);
     }
