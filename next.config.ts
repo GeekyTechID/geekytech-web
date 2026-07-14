@@ -1,7 +1,24 @@
 import path from "path";
+import { execFileSync } from "node:child_process";
 import type { NextConfig } from "next";
 
+function getDeploymentId(): string {
+  if (process.env.NEXT_DEPLOYMENT_ID) {
+    return process.env.NEXT_DEPLOYMENT_ID;
+  }
+
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: __dirname,
+      encoding: "utf8",
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+}
+
 const nextConfig: NextConfig = {
+  deploymentId: getDeploymentId(),
   outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ["lightningcss"],
   // Dev pakai `next dev --webpack` — bundler Turbopack default sering bentrok dengan lightningcss (Tailwind v4).

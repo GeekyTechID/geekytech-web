@@ -23,7 +23,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   orders: "Pesanan",
   wishlist: "Wishlist",
   notifications: "Notifikasi",
-  chat: "Chat CS",
   addresses: "Alamat",
   profile: "Profil",
   vouchers: "Voucher",

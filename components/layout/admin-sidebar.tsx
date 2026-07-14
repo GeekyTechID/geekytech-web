@@ -18,7 +18,6 @@ import {
   LayoutList,
   Layers,
   LogOut,
-  MessageSquare,
   Package,
   RotateCcw,
   PackageSearch,
@@ -39,7 +38,6 @@ import { useAuthStore } from "@/store/auth-store";
 import { useAdminOrdersStore } from "@/store/admin-orders-store";
 import { useAdminReviewsStore } from "@/store/admin-reviews-store";
 import { createClient } from "@/lib/supabase/client";
-import { useChatUnreadCount } from "@/lib/chat/use-chat-unread-count";
 import { useAdminSidebarCounts } from "@/lib/admin/use-admin-sidebar-counts";
 import { SidebarNotificationBadge } from "@/components/shared/sidebar-notification-badge";
 import {
@@ -114,7 +112,6 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Konten",
     items: [
-      { label: "Chat", href: "/admin/chat", icon: MessageSquare },
       { label: "Ulasan", href: "/admin/reviews", icon: Star },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
       { label: "Retur", href: "/admin/returns", icon: RotateCcw },
@@ -368,7 +365,6 @@ export function AdminSidebar({
   const pathname = usePathname();
   const unviewedCount = useUnviewedOrdersCount();
   const unreadReviewsCount = useUnviewedReviewsCount();
-  const unreadChatCount = useChatUnreadCount("admin");
   const workloadCounts = useAdminSidebarCounts();
 
   const isActive = (href: string, exact = false) =>
@@ -457,7 +453,6 @@ export function AdminSidebar({
                   const Icon = item.icon;
                   const isOrders = item.href === "/admin/orders";
                   const isReviews = item.href === "/admin/reviews";
-                  const isChat = item.href === "/admin/chat";
                   const isComplaints = item.href === "/admin/complaints";
                   const isReturns = item.href === "/admin/returns";
                   const isStock = item.href === "/admin/stock";
@@ -465,7 +460,6 @@ export function AdminSidebar({
                   const badge =
                     (isOrders && unviewedCount > 0 ? unviewedCount : null) ??
                     (isReviews && unreadReviewsCount > 0 ? unreadReviewsCount : null) ??
-                    (isChat && unreadChatCount > 0 ? unreadChatCount : null) ??
                     (isComplaints && workloadCounts.complaints > 0
                       ? workloadCounts.complaints
                       : null) ??

@@ -11,9 +11,6 @@ const TYPE_LABELS: Record<string, string> = {
   payment_refunded: "Pembayaran",
   payment_issue: "Pembayaran",
   payment_expired: "Pembayaran",
-  chat_message: "Chat",
-  chat_message_user: "Chat",
-  chat_session_closed: "Chat",
   welcome: "Akun",
 };
 
@@ -33,11 +30,6 @@ type NotifDisplayInput = {
 export function formatNotificationBody(notif: NotifDisplayInput): string {
   const body = notif.body.trim();
   if (!body) return "";
-
-  if (notif.type === "chat_message" || notif.type === "chat_message_user") {
-    if (body === "[file]") return "Admin mengirim lampiran.";
-    return body.length > 120 ? `${body.slice(0, 117)}…` : body;
-  }
 
   if (body === notif.title.trim()) return "";
 

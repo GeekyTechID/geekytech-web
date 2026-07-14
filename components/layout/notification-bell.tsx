@@ -20,7 +20,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useChatStore } from "@/store/chat-store";
 import { useNotificationStore, type StoreNotifItem } from "@/store/notification-store";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
@@ -37,18 +36,12 @@ type NotifItem = {
   data: NotifData;
 };
 
-type NotifAction =
-  | { kind: "url"; href: string }
-  | { kind: "chat" };
+type NotifAction = { kind: "url"; href: string };
 
 function resolveNotifAction(notif: NotifItem): NotifAction {
   const orderId = notif.data?.orderId as string | undefined;
 
   switch (notif.type) {
-    case "chat_message":
-    case "chat_message_user":
-    case "chat_session_closed":
-      return { kind: "chat" };
     case "order_shipped":
     case "order_in_transit":
       return {
@@ -117,7 +110,6 @@ function NotificationListItemContent({ notif }: { notif: NotifItem }) {
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const setChatOpen = useChatStore((s) => s.setOpen);
 
   // ── Shared notification store ──────────────────────────────────────────────
   const items = useNotificationStore((s) => s.items);
@@ -191,12 +183,8 @@ export function NotificationBell() {
         void markNotificationReadAction(notif.id);
       }
       setOpen(false);
-      const action = resolveNotifAction(notif);
-      if (action.kind === "chat") {
-        setChatOpen(true);
-      }
     },
-    [setChatOpen, storeMarkRead],
+    [storeMarkRead],
   );
 
   return (
@@ -266,20 +254,6 @@ export function NotificationBell() {
                   NOTIF_ITEM_CLASS,
                   !notif.is_read ? "bg-[#fff8f5] hover:bg-[#f5f5f7]" : "bg-white hover:bg-[#f5f5f7]",
                 );
-
-                if (action.kind === "chat") {
-                  return (
-                    <button
-                      key={notif.id}
-                      type="button"
-                      role="listitem"
-                      className={itemClass}
-                      onClick={() => handleNotifClick(notif)}
-                    >
-                      <NotificationListItemContent notif={notif} />
-                    </button>
-                  );
-                }
 
                 return (
                   <Link

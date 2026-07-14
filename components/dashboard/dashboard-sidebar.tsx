@@ -10,12 +10,10 @@ import {
   Home,
   KeyRound,
   MapPin,
-  MessageCircle,
   Package,
   User,
 } from "lucide-react";
 
-import { useChatUnreadCount } from "@/lib/chat/use-chat-unread-count";
 import { SidebarNotificationBadge } from "@/components/shared/sidebar-notification-badge";
 import {
   Sidebar,
@@ -66,12 +64,6 @@ const NAV_PRIMARY: NavItem[] = [
     href: "/dashboard/notifications",
     icon: Bell,
   },
-  {
-    label: "Chat CS",
-    description: "Hubungi tim dukungan",
-    href: "/dashboard/chat",
-    icon: MessageCircle,
-  },
 ];
 
 const NAV_SECONDARY: NavItem[] = [
@@ -98,14 +90,12 @@ const NAV_SECONDARY: NavItem[] = [
 type DashboardNavGroupProps = {
   items: NavItem[];
   unreadNotifications: number;
-  unreadChatCount: number;
   isActive: (href: string, exact?: boolean) => boolean;
 };
 
 function DashboardNavGroup({
   items,
   unreadNotifications,
-  unreadChatCount,
   isActive,
 }: DashboardNavGroupProps) {
   return (
@@ -114,12 +104,9 @@ function DashboardNavGroup({
         const active = isActive(item.href, item.exact);
         const Icon = item.icon;
         const badge =
-          (item.href === "/dashboard/notifications" && unreadNotifications > 0
+          item.href === "/dashboard/notifications" && unreadNotifications > 0
             ? unreadNotifications
-            : null) ??
-          (item.href === "/dashboard/chat" && unreadChatCount > 0
-            ? unreadChatCount
-            : null);
+            : null;
 
         return (
           <SidebarMenuItem key={item.href}>
@@ -127,7 +114,7 @@ function DashboardNavGroup({
               asChild
               tooltip={item.label}
               isActive={active}
-              className="h-auto min-h-16 items-start gap-3 rounded-xl px-3 py-3 text-[#1d1d1f] transition-colors hover:bg-[#f5f5f3] data-active:bg-[#f1f1ef] data-active:text-[#1d1d1f] group-data-[collapsible=icon]:min-h-0"
+              className="h-auto min-h-16 items-start gap-3 rounded-xl px-3 py-3 text-[#1d1d1f] transition-colors hover:bg-[#f5f5f3] data-active:bg-[#f1f1ef] data-active:text-[#1d1d1f] group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:!items-center group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:!p-0"
             >
               <Link href={item.href} aria-current={active ? "page" : undefined}>
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-transparent text-[#303030] group-data-[collapsible=icon]:size-[22px]">
@@ -157,7 +144,6 @@ export function DashboardSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & { unreadNotifications?: number }) {
   const pathname = usePathname();
-  const unreadChatCount = useChatUnreadCount("user");
 
   const isActive = (href: string, exact = false) =>
     exact
@@ -176,7 +162,6 @@ export function DashboardSidebar({
           <DashboardNavGroup
             items={NAV_PRIMARY}
             unreadNotifications={unreadNotifications}
-            unreadChatCount={unreadChatCount}
             isActive={isActive}
           />
         </SidebarGroup>
@@ -185,7 +170,6 @@ export function DashboardSidebar({
           <DashboardNavGroup
             items={NAV_SECONDARY}
             unreadNotifications={unreadNotifications}
-            unreadChatCount={unreadChatCount}
             isActive={isActive}
           />
         </SidebarGroup>
