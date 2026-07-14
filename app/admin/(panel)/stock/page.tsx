@@ -217,6 +217,14 @@ export default async function AdminStockPage({
         </div>
       ) : null}
 
+      <div className="admin-utility-card flex items-start gap-3 border-amber-200 bg-amber-50/70 px-4 py-3">
+        <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-700" aria-hidden />
+        <p className="text-sm leading-5 text-amber-950">
+          Stok kurang dari <span className="font-semibold">5 unit</span> akan ditandai sebagai stok kritis dan
+          menampilkan badge pada menu Stok.
+        </p>
+      </div>
+
       <Suspense>
         <StockVariantsTable
           variants={stockRows}

@@ -35,7 +35,7 @@ export async function GET() {
         .from("product_variants")
         .select("id", { count: "exact", head: true })
         .eq("is_active", true)
-        .lte("stock", 5),
+        .lt("stock", 5),
       service
         .from("admin_notifications")
         .select("id", { count: "exact", head: true })

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { CreditCard, Heart, MessageCircle, Share2, Truck } from "lucide-react";
+import { CreditCard, Heart, Share2, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 import { addVariantToCart, toggleWishlistProduct } from "@/app/(public)/products/_actions/product-detail-actions";
@@ -16,7 +16,6 @@ import type { ProductDetailPublic, ProductReviewPublic, RatingHistogramRow } fro
 import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
-import { useChatStore } from "@/store/chat-store";
 import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -59,8 +58,6 @@ export function ProductDetailClient({
   const [cartPending, startCartTransition] = useTransition();
   const [wishlistPending, startWishlistTransition] = useTransition();
   const incrementCart = useCartStore((s) => s.incrementCart);
-  const setOpenChat = useChatStore((s) => s.setOpen);
-  const setProductContext = useChatStore((s) => s.setProductContext);
   const defaultId = useMemo(
     () => pickDefaultVariantId(product.variants, product.basePrice, product.salePrice),
     [product.variants, product.basePrice, product.salePrice],
@@ -507,31 +504,7 @@ export function ProductDetailClient({
                   </Button>
                 </div>
 
-                <div className="mt-2 flex flex-nowrap items-center justify-center gap-x-2 text-xs font-medium">
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="xs"
-                    onClick={() => {
-                      if (!isAuthenticated) {
-                        router.push(`/login?redirectTo=${encodeURIComponent(pathname)}`);
-                        return;
-                      }
-                      setProductContext({
-                        name: product.name,
-                        imageUrl: images[0]?.url ?? null,
-                        slug: product.slug,
-                      });
-                      setOpenChat(true);
-                    }}
-                    className="gap-1 whitespace-nowrap px-0 text-[#EA5329]"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-                    Chat
-                  </Button>
-                  <span className="text-[#e0e0e0]" aria-hidden>
-                    |
-                  </span>
+                <div className="mt-2 flex justify-center text-xs font-medium">
                   <Button
                     type="button"
                     variant="link"

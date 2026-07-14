@@ -90,7 +90,7 @@ export function AdminNotificationsPanel({ items }: { items: Row[] }) {
           Tandai semua dibaca
         </Button>
       </div>
-      <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+      <ul className="divide-y divide-[#e0e0e0] rounded-xl border border-[#e0e0e0] bg-card">
         {items.map((n) => {
           const url = getAdminNotificationUrl(n.type, n.data);
           return (

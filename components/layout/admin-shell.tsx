@@ -41,7 +41,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   stock: "Stok",
   notifications: "Notifikasi",
   settings: "Pengaturan",
-  chat: "Chat",
   new: "Baru",
   edit: "Edit",
 };

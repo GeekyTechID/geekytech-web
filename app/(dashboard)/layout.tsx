@@ -5,11 +5,11 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { InitAuthStore } from "@/components/providers/init-auth-store";
-import { ChatWidget } from "@/components/chat/chat-widget";
 import { fetchUserProfile } from "@/lib/data/dashboard-user";
 import { StoreHeader } from "@/components/store/store-header";
 import { fetchStoreHeaderCartCount } from "@/lib/data/store-header-server";
 import { StoreFooter } from "@/components/store/store-footer";
+import { WhatsAppButton } from "@/components/layout/whatsapp-button";
 
 async function getUnreadNotificationsCount(userId: string): Promise<number> {
   try {
@@ -56,9 +56,7 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         {children}
       </DashboardShell>
       <StoreFooter />
-      <div data-no-print>
-        <ChatWidget />
-      </div>
+      <WhatsAppButton className="bottom-[max(1rem,env(safe-area-inset-bottom,0px))]" />
     </div>
   );
 }

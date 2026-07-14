@@ -22,7 +22,7 @@ function applyStockFilters(query: any, filters: StockListFilters) {
   let next = query.eq("is_active", true);
 
   if (filters.alertOnly) {
-    next = next.lte("stock", 5);
+    next = next.lt("stock", 5);
   }
 
   if (filters.brandId) {
