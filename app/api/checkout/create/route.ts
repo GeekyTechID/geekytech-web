@@ -17,6 +17,7 @@ import {
   isWithinSameDayWindow,
   parseOriginCoords,
 } from "@/lib/shipping/on-demand-coords";
+import { getSnapPaymentConfig } from "@/lib/midtrans/snap-payment-config";
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -334,13 +335,17 @@ export async function POST(req: Request) {
           };
         };
 
+        const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
         const snap = new Midtrans.Snap({
-          isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
+          isProduction,
           serverKey,
           clientKey,
         });
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
+        const orderUrl = appUrl
+          ? `${appUrl}/dashboard/orders/${order.id}`
+          : null;
 
         const snapRes = await snap.createTransaction({
           transaction_details: {
@@ -360,14 +365,15 @@ export async function POST(req: Request) {
             email: user.email ?? "customer@geekytech.local",
             phone: address.phone.replace(/\D/g, "").slice(0, 20) || "081000000000",
           },
-          ...(appUrl
+          ...getSnapPaymentConfig(isProduction),
+          ...(orderUrl
             ? {
                 callbacks: {
-                  finish: `${appUrl}/dashboard/orders/${order.id}`,
+                  finish: orderUrl,
                 },
                 gopay: {
                   enable_callback: true,
-                  callback_url: `${appUrl}/dashboard/orders/${order.id}`,
+                  callback_url: orderUrl,
                 },
               }
             : {}),
