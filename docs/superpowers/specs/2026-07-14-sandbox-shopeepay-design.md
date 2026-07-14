@@ -35,7 +35,7 @@ Dengan pemisahan ini, ShopeePay Sandbox dapat diuji tanpa mendahului atau memeng
 
 ## Callback
 
-Jika `NEXT_PUBLIC_APP_URL` tersedia, request menyertakan callback ShopeePay menuju halaman detail order. Callback GoPay dan finish URL yang sudah ada dipertahankan.
+Request tidak mengirim object callback khusus ShopeePay. Midtrans menolak object tersebut ketika channel ShopeePay belum account-enabled, meskipun `shopeepay` diterima di allowlist Sandbox. Snap menggunakan finish URL umum; callback GoPay dan finish URL yang sudah ada tetap dipertahankan.
 
 ## Struktur Kode
 
@@ -49,8 +49,7 @@ Pengujian unit mencakup:
 
 1. Mode Sandbox menghasilkan `enabled_payments` yang memuat `shopeepay` dan metode lama lainnya.
 2. Mode Production tidak menghasilkan `enabled_payments`.
-3. Callback ShopeePay dihasilkan ketika app URL tersedia.
-4. Callback tidak dihasilkan ketika app URL kosong.
+3. Object callback khusus ShopeePay tidak pernah dihasilkan.
 
 Verifikasi akhir mencakup lint, typecheck/build, dan probe Snap Sandbox. Probe tidak mencetak server key atau Snap token.
 

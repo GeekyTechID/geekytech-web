@@ -21,33 +21,21 @@ test("Sandbox includes ShopeePay with the existing payment methods", () => {
     "credit_card",
   ]);
 
-  assert.deepEqual(getSnapPaymentConfig(false, null), {
+  assert.deepEqual(getSnapPaymentConfig(false), {
     enabled_payments: [...MIDTRANS_SANDBOX_ENABLED_PAYMENTS],
   });
 });
 
 test("Production remains controlled by Snap Preferences", () => {
   assert.equal(
-    Object.hasOwn(getSnapPaymentConfig(true, null), "enabled_payments"),
+    Object.hasOwn(getSnapPaymentConfig(true), "enabled_payments"),
     false,
   );
 });
 
-test("ShopeePay callback points back to the order page", () => {
-  assert.deepEqual(
-    getSnapPaymentConfig(false, "https://geeky.id/dashboard/orders/order-1"),
-    {
-      enabled_payments: [...MIDTRANS_SANDBOX_ENABLED_PAYMENTS],
-      shopeepay: {
-        callback_url: "https://geeky.id/dashboard/orders/order-1",
-      },
-    },
-  );
-});
-
-test("Empty order URL omits the ShopeePay callback", () => {
+test("ShopeePay callback is omitted when the channel is not account-enabled", () => {
   assert.equal(
-    Object.hasOwn(getSnapPaymentConfig(false, null), "shopeepay"),
+    Object.hasOwn(getSnapPaymentConfig(false), "shopeepay"),
     false,
   );
 });

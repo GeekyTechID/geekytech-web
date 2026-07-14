@@ -4,7 +4,7 @@
 
 **Goal:** Menampilkan ShopeePay bersama metode pembayaran lain di Snap Sandbox tanpa mengubah daftar channel Snap Production.
 
-**Architecture:** Ekstrak konfigurasi channel Snap menjadi helper server-side murni yang mengembalikan allowlist hanya pada mode Sandbox dan callback ShopeePay jika URL order tersedia. Route checkout menggabungkan hasil helper ke payload `snap.createTransaction`, sementara Production tetap tanpa `enabled_payments` agar mengikuti Snap Preferences.
+**Architecture:** Ekstrak konfigurasi channel Snap menjadi helper server-side murni yang mengembalikan allowlist hanya pada mode Sandbox. Route checkout menggabungkan hasil helper ke payload `snap.createTransaction`, sementara Production tetap tanpa `enabled_payments` agar mengikuti Snap Preferences. Object callback khusus ShopeePay tidak dikirim karena ditolak Midtrans sebelum channel account-enabled; Snap memakai finish URL umum.
 
 **Tech Stack:** Next.js 16 App Router, TypeScript strict, `midtrans-client`, Node.js 24 built-in test runner.
 
@@ -21,8 +21,8 @@
 
 ## File Structure
 
-- Create: `lib/midtrans/snap-payment-config.ts` — constant allowlist Sandbox dan helper pembentuk parameter channel/callback.
-- Create: `lib/midtrans/snap-payment-config.test.mts` — pengujian perilaku Sandbox, Production, dan callback menggunakan `node:test`.
+- Create: `lib/midtrans/snap-payment-config.ts` — constant allowlist Sandbox dan helper pembentuk parameter channel.
+- Create: `lib/midtrans/snap-payment-config.test.mts` — pengujian perilaku Sandbox, Production, dan absennya callback khusus ShopeePay menggunakan `node:test`.
 - Modify: `app/api/checkout/create/route.ts` — memanggil helper dan menggabungkan hasilnya ke payload Snap.
 - Modify: `package.json` — menambahkan script test terfokus tanpa dependency baru.
 - Modify: `tsconfig.json` — mengizinkan test TypeScript mengimpor file `.ts` secara eksplisit pada mode `noEmit`.
@@ -36,8 +36,8 @@
 - Modify: `tsconfig.json`
 
 **Interfaces:**
-- Consumes: `isProduction: boolean` dan `orderUrl: string | null`.
-- Produces: `getSnapPaymentConfig(isProduction, orderUrl): SnapPaymentConfig`.
+- Consumes: `isProduction: boolean`.
+- Produces: `getSnapPaymentConfig(isProduction): SnapPaymentConfig`.
 - Produces: `MIDTRANS_SANDBOX_ENABLED_PAYMENTS: readonly string[]`.
 
 - [ ] **Step 1: Tambahkan script test dan tulis failing test**
@@ -80,33 +80,21 @@ test("Sandbox includes ShopeePay with the existing payment methods", () => {
     "credit_card",
   ]);
 
-  assert.deepEqual(getSnapPaymentConfig(false, null), {
+  assert.deepEqual(getSnapPaymentConfig(false), {
     enabled_payments: [...MIDTRANS_SANDBOX_ENABLED_PAYMENTS],
   });
 });
 
 test("Production remains controlled by Snap Preferences", () => {
   assert.equal(
-    Object.hasOwn(getSnapPaymentConfig(true, null), "enabled_payments"),
+    Object.hasOwn(getSnapPaymentConfig(true), "enabled_payments"),
     false,
   );
 });
 
-test("ShopeePay callback points back to the order page", () => {
-  assert.deepEqual(
-    getSnapPaymentConfig(false, "https://geeky.id/dashboard/orders/order-1"),
-    {
-      enabled_payments: [...MIDTRANS_SANDBOX_ENABLED_PAYMENTS],
-      shopeepay: {
-        callback_url: "https://geeky.id/dashboard/orders/order-1",
-      },
-    },
-  );
-});
-
-test("Empty order URL omits the ShopeePay callback", () => {
+test("ShopeePay callback is omitted when the channel is not account-enabled", () => {
   assert.equal(
-    Object.hasOwn(getSnapPaymentConfig(false, null), "shopeepay"),
+    Object.hasOwn(getSnapPaymentConfig(false), "shopeepay"),
     false,
   );
 });
@@ -143,26 +131,15 @@ export const MIDTRANS_SANDBOX_ENABLED_PAYMENTS = [
 
 type SnapPaymentConfig = {
   enabled_payments?: string[];
-  shopeepay?: {
-    callback_url: string;
-  };
 };
 
 export function getSnapPaymentConfig(
   isProduction: boolean,
-  orderUrl: string | null,
 ): SnapPaymentConfig {
   return {
     ...(isProduction
       ? {}
       : { enabled_payments: [...MIDTRANS_SANDBOX_ENABLED_PAYMENTS] }),
-    ...(orderUrl
-      ? {
-          shopeepay: {
-            callback_url: orderUrl,
-          },
-        }
-      : {}),
   };
 }
 ```
@@ -175,7 +152,7 @@ Run:
 npm run test:midtrans
 ```
 
-Expected: 4 tests PASS, 0 failures.
+Expected: 3 tests PASS, 0 failures.
 
 - [ ] **Step 5: Commit helper dan test**
 
@@ -191,8 +168,8 @@ git commit -m "feat: configure ShopeePay for Snap sandbox"
 - Modify: `app/api/checkout/create/route.ts:337-374`
 
 **Interfaces:**
-- Consumes: `getSnapPaymentConfig(isProduction, orderUrl)` dari Task 1.
-- Produces: payload Snap Sandbox dengan allowlist dan callback ShopeePay; payload Production tanpa allowlist.
+- Consumes: `getSnapPaymentConfig(isProduction)` dari Task 1.
+- Produces: payload Snap Sandbox dengan allowlist tanpa callback khusus ShopeePay; payload Production tanpa allowlist.
 
 - [ ] **Step 1: Tambahkan import helper**
 
@@ -225,7 +202,7 @@ const orderUrl = appUrl
 Pada object `snap.createTransaction`, pertahankan `transaction_details`, `item_details`, dan `customer_details`, lalu ubah block callback menjadi:
 
 ```typescript
-...getSnapPaymentConfig(isProduction, orderUrl),
+...getSnapPaymentConfig(isProduction),
 ...(orderUrl
   ? {
       callbacks: {
@@ -248,7 +225,7 @@ npm run test:midtrans
 npx eslint lib/midtrans/snap-payment-config.ts lib/midtrans/snap-payment-config.test.mts app/api/checkout/create/route.ts
 ```
 
-Expected: 4 tests PASS dan ESLint exit 0.
+Expected: 3 tests PASS dan ESLint exit 0.
 
 - [ ] **Step 5: Jalankan verifikasi TypeScript/build**
 

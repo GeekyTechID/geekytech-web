@@ -365,7 +365,7 @@ export async function POST(req: Request) {
             email: user.email ?? "customer@geekytech.local",
             phone: address.phone.replace(/\D/g, "").slice(0, 20) || "081000000000",
           },
-          ...getSnapPaymentConfig(isProduction, orderUrl),
+          ...getSnapPaymentConfig(isProduction),
           ...(orderUrl
             ? {
                 callbacks: {
