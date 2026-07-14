@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:midtrans": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test lib/midtrans/*.test.mts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
