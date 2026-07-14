@@ -3,12 +3,14 @@ import { execFileSync } from "node:child_process";
 import type { NextConfig } from "next";
 
 function getDeploymentId(): string {
-  if (process.env.NEXT_DEPLOYMENT_ID) {
-    return process.env.NEXT_DEPLOYMENT_ID;
+  const configuredDeploymentId = process.env.NEXT_DEPLOYMENT_ID;
+
+  if (configuredDeploymentId) {
+    return configuredDeploymentId.slice(0, 12);
   }
 
   try {
-    return execFileSync("git", ["rev-parse", "HEAD"], {
+    return execFileSync("git", ["rev-parse", "--short=12", "HEAD"], {
       cwd: __dirname,
       encoding: "utf8",
     }).trim();
