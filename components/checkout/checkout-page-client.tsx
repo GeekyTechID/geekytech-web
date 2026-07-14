@@ -472,7 +472,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
 
         <div className="mt-6 md:mt-8 md:grid md:grid-cols-12 md:items-start md:gap-6 lg:gap-8">
           <div className="md:col-span-7">
-            <div className="rounded-2xl border border-[#e8e4dc] bg-white p-4 sm:p-6">
+            <div className="rounded-md border border-[#e8e4dc] bg-white p-4 sm:p-6">
               <h1 className="text-xl font-bold text-[#1d1d1f] sm:text-2xl">Checkout</h1>
               <p className="mt-1 text-sm text-[#5c5c5c]">Periksa barang sebelum memilih pengiriman dan pembayaran.</p>
               <ul className="mt-8 space-y-10">
@@ -494,7 +494,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
           </div>
 
           <aside className="mt-6 space-y-4 md:col-span-5 md:mt-0">
-            <div className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm">
+            <div className="overflow-hidden rounded-md border border-[#e0e0e0] bg-white shadow-sm">
               <div className="flex items-center justify-between bg-[#2a2a2c] px-4 py-3 text-white">
                 <span className="text-sm font-semibold uppercase">Pilih alamat</span>
                 <ChevronDown className="h-4 w-4 opacity-80" aria-hidden />
@@ -540,7 +540,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
             <Collapsible
               open={shippingOpen}
               onOpenChange={setShippingOpen}
-              className="overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white shadow-sm"
+              className="overflow-hidden rounded-md border border-[#e0e0e0] bg-white shadow-sm"
             >
               <CollapsibleTrigger asChild>
                 <Button
@@ -626,7 +626,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </CollapsibleContent>
             </Collapsible>
 
-            <div className="overflow-hidden rounded-2xl border border-[#1a1a1a]/40 bg-[#1a1a1a] text-white shadow-lg">
+            <div className="overflow-hidden rounded-md border border-[#1a1a1a]/40 bg-[#1a1a1a] text-white shadow-lg">
               <div className="px-5 pt-5">
                 <h2 className="text-lg font-bold">Ringkasan pesanan</h2>
                 <dl className="mt-5 space-y-3 border-b border-white/15 pb-5 text-sm">
@@ -756,7 +756,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[#e8e4dc] bg-white p-5 shadow-sm">
+            <div className="rounded-md border border-[#e8e4dc] bg-white p-5 shadow-sm">
               <Button
                 type="button"
                 variant="primary"
@@ -800,7 +800,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
               {couponEligibilityList.map(({ c, notEligible }) => (
                 <li key={c.id}>
                   <div className={cn(
-                    "overflow-hidden rounded-[18px] border bg-white transition",
+                    "overflow-hidden rounded-md border bg-white transition",
                     notEligible ? "border-[#e0e0e0] opacity-60" : "border-[#e0e0e0]",
                   )}>
                     {c.image_url && (
