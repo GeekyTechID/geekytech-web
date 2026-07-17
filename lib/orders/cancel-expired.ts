@@ -26,8 +26,16 @@ export async function cancelExpiredOrder(orderDbId: string): Promise<void> {
 
   if (!order || order.status !== "pending_payment") return;
 
-  // 1. Update order status
-  await svc.from("orders").update({ status: "cancelled" }).eq("id", order.id);
+  // 1. Claim cancellation atomically. pg_cron, Midtrans webhook, and lazy
+  // cancellation may arrive together; only winner may run side effects below.
+  const { data: cancelledOrder } = await svc
+    .from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", order.id)
+    .eq("status", "pending_payment")
+    .select("id")
+    .maybeSingle();
+  if (!cancelledOrder) return;
 
   // 2. Log history
   await svc.from("order_status_history").insert({

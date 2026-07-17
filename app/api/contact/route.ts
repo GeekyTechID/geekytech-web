@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { sendContactMessage } from "@/lib/email/send-contact-message";
+
 const contactFormSchema = z.object({
   name: z.string().min(3).max(100),
   email: z.string().email(),
@@ -14,27 +16,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = contactFormSchema.parse(body);
 
-    // TODO: Simpan ke database atau kirim email via Resend
-    // const supabase = await createServerClient();
-    // await supabase.from("contact_messages").insert({
-    //   name: data.name,
-    //   email: data.email,
-    //   phone: data.phone,
-    //   subject: data.subject,
-    //   message: data.message,
-    //   status: "new",
-    //   created_at: new Date().toISOString(),
-    // });
-
-    // TODO: Kirim email notifikasi ke admin
-    // await resend.emails.send({
-    //   from: "noreply@geekytech.com",
-    //   to: "support@geekytech.com",
-    //   subject: `Pesan Kontak Baru: ${data.subject}`,
-    //   html: `...`,
-    // });
-
-    console.log("Contact form submission:", data);
+    const result = await sendContactMessage(data);
+    if (result.error) {
+      return NextResponse.json(
+        { success: false, error: "Gagal mengirim pesan. Coba lagi nanti." },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json(
       { success: true, message: "Pesan berhasil dikirim" },

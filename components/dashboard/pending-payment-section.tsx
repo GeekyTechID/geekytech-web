@@ -8,21 +8,9 @@ import { Button } from "@/components/ui/button";
 import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 import { createClient } from "@/lib/supabase/client";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
+import { PAYMENT_METHOD_LOGOS } from "@/lib/constants/payment-method-logos";
 import { formatRupiah } from "@/lib/format";
 import type { PendingOrderPreview } from "@/lib/data/dashboard-user";
-
-const PAYMENT_LOGOS: Record<string, string> = {
-  gopay: "/payments/gopay_horizontal.svg",
-  shopeepay: "/payments/shopeepay_rectangle_orange.svg",
-  qris: "/payments/qris.png",
-  bca_va: "/payments/bca.png",
-  bni_va: "/payments/bni.png",
-  bri_va: "/payments/bri.png",
-  permata_va: "/payments/permata_bank.png",
-  echannel: "/payments/mandiri.png",
-  indomaret: "/payments/indomaret.png",
-  alfamart: "/payments/alfamart.png",
-};
 
 type Props = { initialOrders: PendingOrderPreview[]; userId: string };
 
@@ -96,7 +84,7 @@ export function PendingPaymentSection({ initialOrders, userId }: Props) {
               ? "Kode pembayaran"
               : null;
           const methodLabel = o.paymentType ? (PAYMENT_METHOD_LABELS[o.paymentType] ?? o.paymentType) : null;
-          const logoSrc = o.paymentType ? (PAYMENT_LOGOS[o.paymentType] ?? null) : null;
+          const logoSrc = o.paymentType ? (PAYMENT_METHOD_LOGOS[o.paymentType] ?? null) : null;
           return (
             <li
               key={o.id}

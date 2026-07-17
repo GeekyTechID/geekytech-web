@@ -141,7 +141,10 @@ export function CartClientShell({ lines }: { lines: CartLineView[] }) {
               disabled={checkoutPending}
               onClick={() => startCheckoutTransition(() => router.push(`/checkout?items=${[...selectedIds].join(",")}`))}
             >
-              Beli sekarang ({selectedIds.size} produk)
+              <span className="inline-flex items-center gap-1.5">
+                <span>Beli sekarang</span>
+                <span>({selectedIds.size} produk)</span>
+              </span>
             </Button>
           )}
         </div>

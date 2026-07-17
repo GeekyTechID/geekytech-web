@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/supabase";
+import { syncProductRating } from "@/lib/products/sync-product-rating";
 
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
 import { createNotification } from "@/lib/notifications/create-notification";
@@ -315,6 +316,13 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
     });
     if (insErr) return { success: false, error: insErr.message };
 
+    // Safety net for databases that have not yet received the rating trigger.
+    // The same calculation is also enforced by migration 028 at database level.
+    const ratingSync = await syncProductRating(productId);
+    if (!ratingSync.success) {
+      console.error("[submitProductReviewAction] Rating summary sync failed:", ratingSync.error);
+    }
+
     // Jika pesanan masih "delivered", tandai selesai setelah user memberi ulasan
     if (order.status === "delivered") {
       await supabase
@@ -341,6 +349,8 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
     if (productRow?.slug) {
       revalidatePath(`/products/${productRow.slug}`);
     }
+    revalidatePath("/");
+    revalidatePath("/products");
 
     revalidatePath("/dashboard/orders");
     revalidatePath(`/dashboard/orders/${orderId}`);

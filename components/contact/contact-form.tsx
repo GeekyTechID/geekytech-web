@@ -31,6 +31,7 @@ type ContactFormData = z.infer<typeof contactFormSchema>;
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -42,6 +43,7 @@ export function ContactForm() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsLoading(true);
+    setSubmitError(null);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -49,13 +51,17 @@ export function ContactForm() {
         body: JSON.stringify(data),
       });
 
-      if (res.ok) {
-        setSubmitted(true);
-        reset();
-        setTimeout(() => setSubmitted(false), 5000);
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+        setSubmitError(payload?.error ?? "Gagal mengirim pesan. Coba lagi nanti.");
+        return;
       }
-    } catch (error) {
-      console.error("Error:", error);
+
+      setSubmitted(true);
+      reset();
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch {
+      setSubmitError("Gagal mengirim pesan. Periksa koneksi lalu coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -166,6 +172,12 @@ export function ContactForm() {
       <Button type="submit" variant="primary" loading={isLoading} className="w-full">
         Kirim Pesan
       </Button>
+
+      {submitError && (
+        <p role="alert" className="text-center text-[12px] text-[#d32f2f]">
+          {submitError}
+        </p>
+      )}
 
       <p className="text-[12px] text-[#7a7a7a][#cccccc] text-center">
         Kami akan merespon dalam waktu 1-24 jam kerja.

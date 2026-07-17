@@ -17,6 +17,7 @@ import {
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
+import { PAYMENT_METHOD_LOGOS } from "@/lib/constants/payment-method-logos";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { OrderToolbar } from "@/components/dashboard/order-toolbar";
 import type { Database } from "@/types/supabase";
@@ -172,6 +173,9 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
 
   // Most recent pending payment, fallback to any payment record
   const pendingPayment = payments.find((p) => p.status === "pending") ?? payments[0] ?? null;
+  const pendingPaymentLogo = pendingPayment?.payment_type
+    ? (PAYMENT_METHOD_LOGOS[pendingPayment.payment_type] ?? null)
+    : null;
   // Expiry fallback: created_at + 24 hours to match Midtrans default window
   const expiryFallback = new Date(new Date(order.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString();
   const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
@@ -228,8 +232,16 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                   <dt className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
                     Metode pembayaran
                   </dt>
-                  <dd className="mt-1.5 text-[14px] font-semibold text-[#1d1d1f]">
-                    {PAYMENT_METHOD_LABELS[pendingPayment.payment_type] ?? pendingPayment.payment_type}
+                  <dd className="mt-1.5 flex items-center gap-2 text-[14px] font-semibold text-[#1d1d1f]">
+                    {pendingPaymentLogo && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={pendingPaymentLogo}
+                        alt=""
+                        className="h-5 w-auto max-w-[52px] shrink-0 object-contain"
+                      />
+                    )}
+                    <span>{PAYMENT_METHOD_LABELS[pendingPayment.payment_type] ?? pendingPayment.payment_type}</span>
                   </dd>
                 </div>
               ) : null}
