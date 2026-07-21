@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,11 +16,24 @@ import { AUTH_INPUT_CLASS } from "@/lib/auth/auth-field-classes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TurnstileWidgetLazy } from "@/components/auth/turnstile-widget-lazy";
+import { isTurnstileRequired } from "@/lib/auth/turnstile-config";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [sentEmail, setSentEmail] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
+  }, []);
 
   const {
     register,
@@ -31,15 +44,26 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (values: ForgotPasswordFormValues) => {
+    if (isTurnstileRequired() && !turnstileToken) {
+      toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+        captchaToken: turnstileToken ?? undefined,
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(
+          error.message.toLowerCase().includes("captcha")
+            ? "Verifikasi keamanan gagal. Coba lagi."
+            : error.message,
+        );
+        resetTurnstile();
         return;
       }
 
@@ -47,6 +71,7 @@ export default function ForgotPasswordPage() {
       setIsSent(true);
     } catch {
       toast.error("Terjadi kesalahan. Coba lagi.");
+      resetTurnstile();
     } finally {
       setIsLoading(false);
     }
@@ -54,19 +79,32 @@ export default function ForgotPasswordPage() {
 
   const handleResend = async () => {
     if (!sentEmail) return;
+    if (isTurnstileRequired() && !turnstileToken) {
+      toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.resetPasswordForEmail(sentEmail, {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+        captchaToken: turnstileToken ?? undefined,
       });
       if (error) {
-        toast.error(error.message);
+        toast.error(
+          error.message.toLowerCase().includes("captcha")
+            ? "Verifikasi keamanan gagal. Coba lagi."
+            : error.message,
+        );
+        resetTurnstile();
         return;
       }
       toast.success("Link reset password berhasil dikirim ulang.");
+      resetTurnstile();
     } catch {
       toast.error("Terjadi kesalahan. Coba lagi.");
+      resetTurnstile();
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +127,12 @@ export default function ForgotPasswordPage() {
             folder spam kamu.
           </p>
         </div>
+
+        <TurnstileWidgetLazy
+          key={turnstileKey}
+          onVerify={handleTurnstileVerify}
+          onExpire={() => setTurnstileToken(null)}
+        />
 
         <div className="space-y-3">
           <Button type="button" variant="primary" onClick={handleResend} loading={isLoading} className="w-full">
@@ -137,6 +181,12 @@ export default function ForgotPasswordPage() {
             <p className="text-[14px] text-destructive">{errors.email.message}</p>
           )}
         </div>
+
+        <TurnstileWidgetLazy
+          key={turnstileKey}
+          onVerify={handleTurnstileVerify}
+          onExpire={() => setTurnstileToken(null)}
+        />
 
         <Button type="submit" variant="primary" loading={isLoading} className="w-full">
           Kirim Link Reset

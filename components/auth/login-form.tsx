@@ -43,6 +43,7 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   const {
     register,
@@ -60,6 +61,11 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
     setTurnstileToken(token);
   }, []);
 
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
+  }, []);
+
   const onSubmit = async (values: LoginFormValues) => {
     if (isTurnstileRequired() && !turnstileToken) {
       toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
@@ -75,6 +81,7 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
         supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
+          options: { captchaToken: turnstileToken ?? undefined },
         }),
         timeout,
       ]);
@@ -89,9 +96,12 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
               onClick: () => router.push("/verify-email"),
             },
           });
+        } else if (error.message.toLowerCase().includes("captcha")) {
+          toast.error("Verifikasi keamanan gagal. Coba lagi.");
         } else {
           toast.error(error.message);
         }
+        resetTurnstile();
         return;
       }
 
@@ -104,6 +114,7 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
       } else {
         toast.error("Terjadi kesalahan. Coba lagi.");
       }
+      resetTurnstile();
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +224,11 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
           </Link>
         </div>
 
-        <TurnstileWidgetLazy onVerify={handleTurnstileVerify} />
+        <TurnstileWidgetLazy
+          key={turnstileKey}
+          onVerify={handleTurnstileVerify}
+          onExpire={() => setTurnstileToken(null)}
+        />
 
         <Button type="submit" variant="primary" loading={isLoading} className="w-full">
           Masuk

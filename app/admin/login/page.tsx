@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordVisibilityToggle } from "@/components/ui/password-visibility-toggle";
 import { SiteLogo } from "@/components/shared/site-logo";
+import { TurnstileWidgetLazy } from "@/components/auth/turnstile-widget-lazy";
+import { isTurnstileRequired } from "@/lib/auth/turnstile-config";
 import {
   Form,
   FormControl,
@@ -25,12 +27,23 @@ import {
 function AdminLoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const searchParams = useSearchParams();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     const err = searchParams.get("error");
@@ -40,23 +53,34 @@ function AdminLoginContent() {
   }, [searchParams]);
 
   const onSubmit = async (values: LoginFormValues) => {
+    if (isTurnstileRequired() && !turnstileToken) {
+      toast.error("Selesaikan verifikasi keamanan terlebih dahulu.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await fetch("/api/auth/admin-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ email: values.email, password: values.password }),
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+          turnstileToken: turnstileToken ?? undefined,
+        }),
       });
       const json = (await res.json()) as { success: boolean; error?: string };
       if (!json.success) {
         toast.error(json.error ?? "Login gagal.");
+        resetTurnstile();
         return;
       }
       toast.success("Selamat datang di Admin Panel.");
       window.location.href = "/admin";
     } catch {
       toast.error("Terjadi kesalahan tidak terduga. Coba lagi.");
+      resetTurnstile();
     } finally {
       setIsLoading(false);
     }
@@ -153,6 +177,12 @@ function AdminLoginContent() {
                     <FormMessage className="text-[12px]" />
                   </FormItem>
                 )}
+              />
+
+              <TurnstileWidgetLazy
+                key={turnstileKey}
+                onVerify={handleTurnstileVerify}
+                onExpire={() => setTurnstileToken(null)}
               />
 
               {/* Submit */}

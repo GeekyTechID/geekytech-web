@@ -27,6 +27,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   const {
     register,
@@ -38,6 +39,11 @@ export function RegisterForm() {
 
   const handleTurnstileVerify = useCallback((token: string) => {
     setTurnstileToken(token);
+  }, []);
+
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
   }, []);
 
   const onSubmit = async (values: RegisterFormValues) => {
@@ -71,12 +77,14 @@ export function RegisterForm() {
         } else {
           toast.error(json.error ?? "Terjadi kesalahan. Coba lagi.");
         }
+        resetTurnstile();
         return;
       }
 
       router.push("/verify-email?email=" + encodeURIComponent(values.email.trim()));
     } catch {
       toast.error("Terjadi kesalahan. Coba lagi.");
+      resetTurnstile();
     } finally {
       setIsLoading(false);
     }
@@ -258,7 +266,7 @@ export function RegisterForm() {
           </div>
         </div>
 
-        <TurnstileWidgetLazy onVerify={handleTurnstileVerify} />
+        <TurnstileWidgetLazy key={turnstileKey} onVerify={handleTurnstileVerify} />
 
         <p className="text-[12px] font-normal leading-relaxed text-[#7a7a7a]">
           Dengan mendaftar, kamu setuju dengan{" "}
