@@ -1,14 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { loginSchema } from "@/lib/validations/auth";
 import type { Database } from "@/types/supabase";
 
+const bodySchema = loginSchema.extend({
+  turnstileToken: z.string().optional(),
+});
+
 export async function POST(request: Request) {
   try {
     const body: unknown = await request.json();
-    const parsed = loginSchema.safeParse(body);
+    const parsed = bodySchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -39,6 +44,7 @@ export async function POST(request: Request) {
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
+      options: { captchaToken: parsed.data.turnstileToken },
     });
 
     if (authError) {
@@ -48,6 +54,8 @@ export async function POST(request: Request) {
         errorMsg = "Email atau password salah.";
       } else if (msg.includes("email not confirmed")) {
         errorMsg = "Email belum dikonfirmasi. Cek inbox Anda.";
+      } else if (msg.includes("captcha")) {
+        errorMsg = "Verifikasi keamanan gagal. Coba lagi.";
       }
       return NextResponse.json({ success: false, error: errorMsg }, { status: 401 });
     }
