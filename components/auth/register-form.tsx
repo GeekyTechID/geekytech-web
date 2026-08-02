@@ -266,7 +266,12 @@ export function RegisterForm() {
           </div>
         </div>
 
-        <TurnstileWidgetLazy key={turnstileKey} onVerify={handleTurnstileVerify} />
+        <TurnstileWidgetLazy
+          key={turnstileKey}
+          onVerify={handleTurnstileVerify}
+          onExpire={resetTurnstile}
+          onError={resetTurnstile}
+        />
 
         <p className="text-[12px] font-normal leading-relaxed text-[#7a7a7a]">
           Dengan mendaftar, kamu setuju dengan{" "}

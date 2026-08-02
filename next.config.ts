@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
   deploymentId: getDeploymentId(),
   outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ["lightningcss"],
+  // geekytech.local → hosts-file alias buat localhost, dipakai supaya Cloudflare
+  // Turnstile bisa di-whitelist (widget butuh domain valid, bukan "localhost" polos).
+  allowedDevOrigins: ["geekytech.local"],
   // Dev pakai `next dev --webpack` — bundler Turbopack default sering bentrok dengan lightningcss (Tailwind v4).
   webpack: (config) => {
     config.externals = [...(config.externals ?? []), "lightningcss"];

@@ -227,7 +227,8 @@ export function LoginForm({ redirectTo, urlError, urlMessage }: LoginFormProps) 
         <TurnstileWidgetLazy
           key={turnstileKey}
           onVerify={handleTurnstileVerify}
-          onExpire={() => setTurnstileToken(null)}
+          onExpire={resetTurnstile}
+          onError={resetTurnstile}
         />
 
         <Button type="submit" variant="primary" loading={isLoading} className="w-full">
