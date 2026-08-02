@@ -367,6 +367,7 @@ export async function submitComplaintAction(input: {
   reason: string;
   description: string | null;
   mediaUrls: string[];
+  type: "product" | "return";
 }): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const {
@@ -422,11 +423,14 @@ export async function submitComplaintAction(input: {
   if (!VALID_CATEGORIES.includes(input.category)) {
     return { success: false, error: "Kategori tidak valid." };
   }
+  if (input.type !== "product" && input.type !== "return") {
+    return { success: false, error: "Tipe komplain tidak valid." };
+  }
 
   const { error } = await supabase.from("complaints").insert({
     order_id: input.orderId,
     user_id: user.id,
-    type: "product",
+    type: input.type,
     category: input.category,
     reason: input.reason.trim(),
     description: input.description,
@@ -542,19 +546,27 @@ export async function sendComplaintMessageAction(
 
   const { data: complaint } = await supabase
     .from("complaints")
-    .select("id")
+    .select("id, order_id")
     .eq("id", complaintId)
     .eq("user_id", user.id)
     .single();
   if (!complaint) return { success: false, error: "Komplain tidak ditemukan." };
 
+  const trimmedMessage = message.trim();
   const { error } = await supabase.from("complaint_messages").insert({
     complaint_id: complaintId,
     sender_id: user.id,
     sender_role: "user",
-    message: message.trim(),
+    message: trimmedMessage,
   });
   if (error) return { success: false, error: error.message };
+
+  await createAdminNotification({
+    title: "Balasan Komplain Baru",
+    body: `Pelanggan membalas komplain: "${trimmedMessage.slice(0, 100)}"`,
+    type: "complaint_reply",
+    data: { complaintId, orderId: complaint.order_id },
+  });
 
   revalidatePath(`/dashboard/orders`);
   return { success: true };
@@ -564,6 +576,7 @@ export async function submitReturnAWBAction(
   returnId: string,
   returnAwb: string,
   returnCourier: string,
+  proofImages: string[],
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -571,7 +584,7 @@ export async function submitReturnAWBAction(
 
   const { data: ret } = await supabase
     .from("returns")
-    .select("id, status")
+    .select("id, status, order_id, complaint_id")
     .eq("id", returnId)
     .eq("user_id", user.id)
     .single();
@@ -580,16 +593,36 @@ export async function submitReturnAWBAction(
     return { success: false, error: "Pengajuan retur tidak ditemukan atau sudah diproses." };
   }
 
-  const { error } = await supabase
+  // Service client: `returns` only has a SELECT RLS policy, so a user-scoped
+  // UPDATE silently matches 0 rows (PostgREST returns no error) and the resi
+  // would never be saved. Ownership + status are already verified above, so
+  // this is the same pattern the admin return actions use.
+  const svc = createServiceClient();
+  const { data: updated, error } = await svc
     .from("returns")
     .update({
       return_awb: returnAwb.trim(),
       return_courier: returnCourier.trim(),
+      proof_images: proofImages,
       status: "shipped_back",
       updated_at: new Date().toISOString(),
     })
-    .eq("id", returnId);
+    .eq("id", returnId)
+    .eq("status", "pending_shipback")
+    .select("id");
 
   if (error) return { success: false, error: error.message };
+  if (!updated?.length) {
+    return { success: false, error: "Pengajuan retur sudah diproses. Muat ulang halaman." };
+  }
+
+  await createAdminNotification({
+    title: "Barang Retur Dikirim Pembeli",
+    body: `Pembeli mengirim balik barang via ${returnCourier.trim()} — resi ${returnAwb.trim()}.`,
+    type: "return_shipped_back",
+    data: { returnId, orderId: ret.order_id, complaintId: ret.complaint_id },
+  });
+
+  revalidatePath(`/dashboard/orders`);
   return { success: true };
 }

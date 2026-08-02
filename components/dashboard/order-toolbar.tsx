@@ -20,6 +20,7 @@ export function OrderToolbar({
   paymentType,
   savedBank,
   allReviewed,
+  hasOpenComplaint,
 }: {
   orderId: string;
   orderNumber: string;
@@ -31,14 +32,15 @@ export function OrderToolbar({
     bank_account_number: string | null;
   } | null;
   allReviewed: boolean;
+  hasOpenComplaint?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [cancelOpen, setCancelOpen] = useState(false);
   const router = useRouter();
 
   const canCancel = status === "pending_payment" || status === "paid";
-  const canConfirm = status === "delivered" && !allReviewed;
-  const canReview = status === "completed" && !allReviewed;
+  const canConfirm = status === "delivered" && !allReviewed && !hasOpenComplaint;
+  const canReview = status === "completed" && !allReviewed && !hasOpenComplaint;
 
   const onConfirm = () => {
     toast("Konfirmasi barang sudah diterima?", {
@@ -64,7 +66,7 @@ export function OrderToolbar({
     });
   };
 
-  if (!canCancel && !canConfirm && !canReview) {
+  if (!canCancel && !canConfirm && !canReview && !hasOpenComplaint) {
     return null;
   }
 
@@ -82,7 +84,11 @@ export function OrderToolbar({
             Batalkan pesanan
           </Button>
         ) : null}
-        {canConfirm ? (
+        {hasOpenComplaint ? (
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/dashboard/orders/${orderId}/complaint`}>Lihat Komplain</Link>
+          </Button>
+        ) : canConfirm ? (
           <Button
             type="button"
             variant="primary"

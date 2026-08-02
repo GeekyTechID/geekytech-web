@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { SendHorizonal } from "lucide-react";
 import { formatDate } from "@/lib/format";
@@ -8,18 +8,44 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { sendComplaintMessageAction } from "@/app/(dashboard)/dashboard/orders/_actions";
 import type { ComplaintMessage } from "@/lib/data/complaints";
+import { createClient } from "@/lib/supabase/client";
 
 export function ComplaintThread({
   complaintId,
-  messages,
+  messages: initialMessages,
   currentUserId,
 }: {
   complaintId: string;
   messages: ComplaintMessage[];
   currentUserId: string;
 }) {
+  const [messages, setMessages] = useState(initialMessages);
   const [text, setText] = useState("");
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`complaint-messages-${complaintId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "complaint_messages",
+          filter: `complaint_id=eq.${complaintId}`,
+        },
+        (payload) => {
+          const msg = payload.new as ComplaintMessage;
+          setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [complaintId]);
 
   function send() {
     if (!text.trim()) return;

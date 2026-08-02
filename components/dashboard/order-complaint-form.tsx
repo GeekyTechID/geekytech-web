@@ -38,6 +38,7 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [category, setCategory] = useState("");
+  const [resolutionType, setResolutionType] = useState<"product" | "return">("product");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -97,6 +98,7 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
             reason,
             description: description.trim() || null,
             mediaUrls,
+            type: resolutionType,
           });
           if (res.success) {
             toast.success("Komplain diajukan. Tim kami akan meninjau.");
@@ -121,6 +123,34 @@ export function OrderComplaintForm({ orderId }: { orderId: string }) {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs font-semibold uppercase text-[#7a7a7a]">
+          Apa yang kamu inginkan?
+        </Label>
+        <div className="mt-2 space-y-2">
+          <label className="flex items-center gap-2 text-sm text-[#1d1d1f]">
+            <input
+              type="radio"
+              name="resolutionType"
+              value="return"
+              checked={resolutionType === "return"}
+              onChange={() => setResolutionType("return")}
+            />
+            Tukar / kembalikan barang
+          </label>
+          <label className="flex items-center gap-2 text-sm text-[#1d1d1f]">
+            <input
+              type="radio"
+              name="resolutionType"
+              value="product"
+              checked={resolutionType === "product"}
+              onChange={() => setResolutionType("product")}
+            />
+            Lainnya (tanpa tukar barang)
+          </label>
+        </div>
       </div>
 
       <div>

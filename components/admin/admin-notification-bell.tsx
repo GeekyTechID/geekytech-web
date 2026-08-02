@@ -29,7 +29,10 @@ type NotifItem = {
 
 function getAdminNotificationUrl(type: string, data: Record<string, unknown> | null): string | null {
   const orderId = data?.orderId as string | undefined;
+  const complaintId = data?.complaintId as string | undefined;
   switch (type) {
+    case "return_shipped_back":
+      return complaintId ? `/admin/complaints/${complaintId}` : "/admin/returns";
     case "new_order":
     case "payment_confirmed":
     case "payment_issue":
@@ -37,6 +40,7 @@ function getAdminNotificationUrl(type: string, data: Record<string, unknown> | n
     case "order_cancelled":
       return orderId ? `/admin/orders/${orderId}` : "/admin/orders";
     case "new_complaint":
+    case "complaint_reply":
       return orderId ? `/admin/orders/${orderId}` : "/admin/complaints";
     case "new_review":
       return "/admin/reviews";
@@ -67,6 +71,8 @@ const TYPE_LABEL: Record<string, string> = {
   payment_expired: "Pembayaran",
   low_stock: "Stok",
   new_complaint: "Komplain",
+  complaint_reply: "Komplain",
+  return_shipped_back: "Retur",
   new_review: "Ulasan",
 };
 

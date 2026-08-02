@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { updateComplaintStatus, updateAdminNote, type ComplaintStatus } from "../../_actions";
+import { updateComplaintStatus, updateAdminNote } from "../../_actions";
+import type { ComplaintStatus } from "@/lib/constants/complaint-status";
 import { AdminComplaintThread } from "./admin-complaint-thread";
 import { ReturnManager } from "./return-manager";
 
@@ -21,6 +22,10 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   in_review: {
     label: "Ditinjau",
     className: "bg-muted text-foreground",
+  },
+  return_approved: {
+    label: "Retur Disetujui",
+    className: "bg-amber-500/15 text-amber-800",
   },
   resolved: {
     label: "Selesai",
@@ -34,8 +39,14 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 
 const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
+const RESOLUTION_TYPE_LABEL: Record<string, string> = {
+  return: "Tukar barang",
+  product: "Lainnya",
+};
+
 export type ComplaintDetail = {
   id: string;
+  complaint_number: string;
   type: string;
   category: string | null;
   reason: string;
@@ -50,6 +61,7 @@ export type ComplaintDetail = {
     id: string;
     order_number: string;
     shipping_address: string | null;
+    shipping_postal: string | null;
     recipient_phone: string | null;
     recipient_name: string | null;
     order_items: {
@@ -72,6 +84,7 @@ export type ComplaintDetail = {
     status: string;
     return_awb: string | null;
     return_courier: string | null;
+    proof_images: string[];
     return_shipments: {
       awb_number: string | null;
       courier: string | null;
@@ -121,6 +134,9 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
         <div>
           <p className="text-swiss-eyebrow">Layanan</p>
           <h1 className="text-[34px] font-semibold uppercase text-foreground">Detail Komplain</h1>
+          <p className="mt-1 font-mono text-[15px] font-semibold text-foreground">
+            {complaint.complaint_number}
+          </p>
           <p className="mt-1 text-[17px] leading-[1.47] text-muted-foreground">
             Dibuat {formatDate(complaint.created_at)}
           </p>
@@ -144,8 +160,8 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-2 gap-4 text-[17px] leading-[1.47]">
                 <div>
-                  <p className={cn(labelClass, "mb-1")}>Tipe</p>
-                  <p className="capitalize">{complaint.type.replace(/_/g, " ")}</p>
+                  <p className={cn(labelClass, "mb-1")}>Permintaan Pembeli</p>
+                  <p className="capitalize">{RESOLUTION_TYPE_LABEL[complaint.type] ?? complaint.type}</p>
                 </div>
                 <div>
                   <p className={cn(labelClass, "mb-1")}>No. Order</p>
@@ -271,31 +287,34 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                 </Button>
               )}
 
+              {(complaint.status === "open" ||
+                complaint.status === "in_review" ||
+                complaint.status === "return_approved") && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleStatusUpdate("resolved")}
+                  loading={isPending}
+                >
+                  <CheckCircle2 size={14} />
+                  Tandai Selesai
+                </Button>
+              )}
+
               {(complaint.status === "open" || complaint.status === "in_review") && (
-                <>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleStatusUpdate("resolved")}
-                    loading={isPending}
-                  >
-                    <CheckCircle2 size={14} />
-                    Tandai Selesai
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive-ghost"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleStatusUpdate("rejected")}
-                    loading={isPending}
-                  >
-                    <XCircle size={14} />
-                    Tolak Komplain
-                  </Button>
-                </>
+                <Button
+                  type="button"
+                  variant="destructive-ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleStatusUpdate("rejected")}
+                  loading={isPending}
+                >
+                  <XCircle size={14} />
+                  Tolak Komplain
+                </Button>
               )}
 
               {(complaint.status === "resolved" || complaint.status === "rejected") && (
@@ -313,7 +332,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
             </div>
           </div>
 
-          {complaint.type === "return" && (
+          {(complaint.status === "in_review" || complaint.returns) && (
             <div className="admin-utility-card overflow-hidden p-0">
               <div className="admin-utility-card-header">
                 <h2 className="admin-section-title">Retur</h2>
@@ -329,6 +348,7 @@ export function ComplaintDetailView({ complaint }: ComplaintDetailProps) {
                           id: complaint.orders.id,
                           order_number: complaint.orders.order_number,
                           shipping_address: complaint.orders.shipping_address ?? "",
+                          shipping_postal: complaint.orders.shipping_postal ?? "",
                           shipping_phone: complaint.orders.recipient_phone ?? "",
                           shipping_name: complaint.orders.recipient_name ?? "",
                           order_items: (complaint.orders.order_items ?? []).map((item) => ({

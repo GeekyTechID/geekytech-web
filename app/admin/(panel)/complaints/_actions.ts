@@ -4,15 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
-
-export const COMPLAINT_STATUSES = [
-  "open",
-  "in_review",
-  "resolved",
-  "rejected",
-] as const;
-
-export type ComplaintStatus = (typeof COMPLAINT_STATUSES)[number];
+import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
+import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
+import type { CheckoutShippingOption } from "@/lib/shipping/checkout-shipping-options";
+import { COMPLAINT_STATUSES, type ComplaintStatus } from "@/lib/constants/complaint-status";
 
 export async function updateComplaintStatus(
   complaintId: string,
@@ -74,13 +70,29 @@ export async function sendAdminComplaintMessage(
   if (!user) return { error: "Tidak terautentikasi." };
 
   const supabase = await createServiceClient();
+  const trimmedMessage = message.trim();
   const { error } = await supabase.from("complaint_messages").insert({
     complaint_id: complaintId,
     sender_id: user.id,
     sender_role: "admin",
-    message: message.trim(),
+    message: trimmedMessage,
   });
   if (error) return { error: error.message };
+
+  const { data: complaint } = await supabase
+    .from("complaints")
+    .select("user_id, order_id")
+    .eq("id", complaintId)
+    .maybeSingle();
+  if (complaint) {
+    await createNotification({
+      userId: complaint.user_id,
+      title: "Balasan Komplain Baru",
+      body: `Tim GeekyTech membalas komplain kamu: "${trimmedMessage.slice(0, 100)}"`,
+      type: "complaint_reply",
+      data: { complaintId, orderId: complaint.order_id },
+    });
+  }
 
   revalidatePath(`/admin/complaints/${complaintId}`);
   return {};
@@ -153,6 +165,69 @@ export async function confirmReturnReceived(
 
   revalidatePath(`/admin/complaints/${complaintId}`);
   return {};
+}
+
+export type ReplacementShippingOption = CheckoutShippingOption;
+
+/**
+ * Ongkir untuk kiriman produk pengganti (gudang → alamat pembeli).
+ * Reuse mesin rates yang sama dengan checkout: kurir aktif + origin toko dari
+ * `settings`, sehingga opsi yang muncul di admin identik dengan yang dipakai
+ * pembeli saat checkout.
+ */
+export async function fetchReplacementShippingRates(input: {
+  destinationPostalCode: number;
+  items: { name: string; value: number; quantity: number; weight: number }[];
+}): Promise<{ ok: true; options: ReplacementShippingOption[] } | { ok: false; error: string }> {
+  if (!Number.isFinite(input.destinationPostalCode) || input.destinationPostalCode <= 0) {
+    return { ok: false, error: "Kode pos tujuan tidak valid." };
+  }
+  if (input.items.length === 0) {
+    return { ok: false, error: "Pilih minimal satu item." };
+  }
+
+  const svc = createServiceClient();
+  const [courierResult, originResult] = await Promise.all([
+    svc.from("settings").select("value").eq("key", "active_courier_codes").single(),
+    svc.from("settings").select("value").eq("key", "store_origin").single(),
+  ]);
+
+  const activeCodes = Array.isArray(courierResult.data?.value)
+    ? (courierResult.data.value as string[]).filter((c) => typeof c === "string" && c)
+    : [];
+  if (activeCodes.length === 0) {
+    return { ok: false, error: "Belum ada kurir aktif. Atur di Pengaturan → Pengiriman." };
+  }
+
+  const storeOrigin = originResult.data?.value as
+    | { postal_code?: string; lat?: string; lng?: string }
+    | null;
+  const originRaw =
+    storeOrigin?.postal_code?.trim() || process.env.BITESHIP_ORIGIN_POSTAL?.trim() || "10110";
+  const originPostal = parseInt(originRaw.replace(/\D/g, "").slice(0, 5), 10);
+  if (!Number.isFinite(originPostal)) {
+    return { ok: false, error: "Kode pos gudang belum dikonfigurasi." };
+  }
+
+  const originCoords = parseOriginCoords(storeOrigin);
+  const hasOnDemand =
+    originCoords !== null && activeCodes.some((c) => ON_DEMAND_COURIERS.has(c.toLowerCase()));
+  const destCoords = hasOnDemand
+    ? await fetchCoordinatesFromPostal(String(input.destinationPostalCode))
+    : null;
+
+  const rates = await fetchBiteshipCourierRates({
+    originPostal,
+    destinationPostal: input.destinationPostalCode,
+    items: input.items,
+    couriers: activeCodes.join(","),
+    originLat: originCoords?.lat,
+    originLng: originCoords?.lng,
+    destLat: destCoords?.lat,
+    destLng: destCoords?.lng,
+  });
+
+  return rates.ok ? { ok: true, options: rates.options } : { ok: false, error: rates.error };
 }
 
 export async function createReplacementShipment(input: {

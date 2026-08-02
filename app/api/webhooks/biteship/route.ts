@@ -113,6 +113,11 @@ export async function POST(req: Request) {
 
     const svc = createServiceClient();
 
+    const newShipStatus = mapShipmentStatus(rawStatus);
+    const awb = body.courier_waybill_id ?? body.courier?.waybill_id ?? null;
+    const courierName = body.courier_driver_name ?? body.courier?.name ?? null;
+    const at = body.updated_at ?? new Date().toISOString();
+
     const { data: shipment } = await svc
       .from("shipments")
       .select("id, order_id, status, tracking_history")
@@ -120,13 +125,49 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (!shipment) {
-      return Response.json({ ok: true }); // unknown order, silently accept
-    }
+      // Not a regular order shipment — this Biteship order may be a return/replacement
+      // shipment instead (tracked in return_shipments, a separate table).
+      const { data: returnShipment } = await svc
+        .from("return_shipments")
+        .select("id, return_id")
+        .eq("biteship_order_id", biteshipOrderId)
+        .maybeSingle();
 
-    const newShipStatus = mapShipmentStatus(rawStatus);
-    const awb = body.courier_waybill_id ?? body.courier?.waybill_id ?? null;
-    const courierName = body.courier_driver_name ?? body.courier?.name ?? null;
-    const at = body.updated_at ?? new Date().toISOString();
+      if (!returnShipment) {
+        return Response.json({ ok: true }); // unknown order, silently accept
+      }
+
+      const returnShipmentUpdate: Database["public"]["Tables"]["return_shipments"]["Update"] = {
+        status: newShipStatus,
+      };
+      if (awb) returnShipmentUpdate.awb_number = awb;
+      await svc.from("return_shipments").update(returnShipmentUpdate).eq("id", returnShipment.id);
+
+      if (newShipStatus === "delivered") {
+        const { data: returnRow } = await svc
+          .from("returns")
+          .select("id, user_id, order_id")
+          .eq("id", returnShipment.return_id)
+          .maybeSingle();
+
+        if (returnRow) {
+          await svc
+            .from("returns")
+            .update({ status: "completed", updated_at: new Date().toISOString() })
+            .eq("id", returnRow.id);
+
+          await createNotification({
+            userId: returnRow.user_id,
+            title: "Retur Selesai",
+            body: "Produk pengganti telah sampai di tujuan. Terima kasih atas kesabarannya!",
+            type: "return_completed",
+            data: { returnId: returnRow.id, orderId: returnRow.order_id },
+          });
+        }
+      }
+
+      return Response.json({ ok: true });
+    }
 
     // ── Append ke tracking_history (dedup entri identik terakhir) ──
     const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)

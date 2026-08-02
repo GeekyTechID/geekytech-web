@@ -10,7 +10,13 @@ type Params = Promise<{ id: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
-  return { title: `Komplain #${id.slice(0, 8)} — Admin GeekyTech` };
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("complaints")
+    .select("complaint_number")
+    .eq("id", id)
+    .maybeSingle();
+  return { title: `${data?.complaint_number ?? `Komplain #${id.slice(0, 8)}`} — Admin GeekyTech` };
 }
 
 export default async function AdminComplaintDetailPage({ params }: { params: Params }) {
@@ -20,11 +26,11 @@ export default async function AdminComplaintDetailPage({ params }: { params: Par
   const { data: complaint } = await supabase
     .from("complaints")
     .select(
-      `id, type, category, reason, description, status, admin_note, images, created_at, resolved_at, user_id,
-       orders:order_id (id, order_number, shipping_address, recipient_phone, recipient_name, order_items(product_name, price, quantity, variant_id, weight)),
+      `id, complaint_number, type, category, reason, description, status, admin_note, images, created_at, resolved_at, user_id,
+       orders:order_id (id, order_number, shipping_address, shipping_postal, recipient_phone, recipient_name, order_items(product_name, price, quantity, variant_id, weight)),
        profiles:user_id (full_name, phone),
        complaint_messages(id, sender_id, sender_role, message, created_at),
-       returns(id, status, return_awb, return_courier, created_at, updated_at, return_shipments(id, awb_number, courier, status))`
+       returns(id, status, return_awb, return_courier, proof_images, created_at, updated_at, return_shipments(id, awb_number, courier, status))`
     )
     .eq("id", id)
     .single();

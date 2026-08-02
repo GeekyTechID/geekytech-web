@@ -350,6 +350,7 @@ export type Database = {
         Row: {
           admin_note: string | null
           category: string
+          complaint_number: string
           created_at: string
           description: string | null
           id: string
@@ -365,6 +366,7 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           category?: string
+          complaint_number?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -380,6 +382,7 @@ export type Database = {
         Update: {
           admin_note?: string | null
           category?: string
+          complaint_number?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -1496,6 +1499,7 @@ export type Database = {
           created_at: string
           id: string
           order_id: string
+          proof_images: Json
           return_awb: string | null
           return_courier: string | null
           status: string
@@ -1508,6 +1512,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id: string
+          proof_images?: Json
           return_awb?: string | null
           return_courier?: string | null
           status?: string
@@ -1520,6 +1525,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id?: string
+          proof_images?: Json
           return_awb?: string | null
           return_courier?: string | null
           status?: string

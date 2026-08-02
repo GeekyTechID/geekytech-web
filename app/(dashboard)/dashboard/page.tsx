@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, ShoppingBag, Tag, Truck, CheckCircle } from "lucide-react";
+import { AlertTriangle, Bell, ShoppingBag, Tag, Truck, CheckCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +18,7 @@ import {
   fetchUserNotifications,
   fetchPendingReviewsCount,
 } from "@/lib/data/dashboard-user";
+import { fetchOpenComplaintOrderIds } from "@/lib/data/complaints";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { orderStatusLabel, type OrderStatus } from "@/lib/constants/order-status-labels";
 import { cn } from "@/lib/utils";
@@ -105,6 +106,8 @@ export default async function DashboardOverviewPage() {
       fetchUserNotifications(user.id, 5),
       fetchPendingReviewsCount(user.id),
     ]);
+
+  const complaintOrderIds = await fetchOpenComplaintOrderIds(recentOrders.map((o) => o.id));
 
   const firstName =
     profile?.full_name?.trim().split(/\s+/)[0] ?? user.email?.split("@")[0] ?? "kamu";
@@ -245,7 +248,14 @@ export default async function DashboardOverviewPage() {
         ) : (
           <ul className="mt-6 flex flex-col divide-y divide-[#f0f0f0] overflow-hidden rounded-2xl border border-[#e0e0e0] bg-white">
             {recentOrders.map((o) => (
-              <li key={o.id} className="flex flex-row items-center gap-3 px-4 py-3 motion-safe:transition-colors motion-safe:duration-150 hover:bg-[#fafafa] sm:gap-4 sm:px-5 sm:py-4">
+              <li key={o.id} className="flex flex-col gap-2 px-4 py-3 motion-safe:transition-colors motion-safe:duration-150 hover:bg-[#fafafa] sm:px-5 sm:py-4">
+                {complaintOrderIds.has(o.id) && (
+                  <div className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    Pesanan ini sementara sedang dikomplain
+                  </div>
+                )}
+                <div className="flex flex-row items-center gap-3 sm:gap-4">
                 {/* Thumbnail */}
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#e0e0e0] bg-[#f5f5f7] sm:h-16 sm:w-16">
                   {o.previewImage ? (
@@ -302,6 +312,7 @@ export default async function DashboardOverviewPage() {
                       </span>
                     </Link>
                   </Button>
+                </div>
                 </div>
               </li>
             ))}

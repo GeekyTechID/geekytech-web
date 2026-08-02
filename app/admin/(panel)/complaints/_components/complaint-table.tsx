@@ -8,6 +8,11 @@ import { cn } from "@/lib/utils";
 import { AdminTableDetailLink } from "@/components/admin/admin-table-row-actions";
 import { Button } from "@/components/ui/button";
 
+const RESOLUTION_TYPE_LABEL: Record<string, string> = {
+  return: "Tukar barang",
+  product: "Lainnya",
+};
+
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   open: {
     label: "Baru",
@@ -112,8 +117,8 @@ export function ComplaintTable({ complaints, page, totalPages }: ComplaintTableP
                     </td>
 
                     <td className="hidden px-4 py-3 md:table-cell">
-                      <span className="text-xs capitalize text-foreground">
-                        {complaint.type.replace(/_/g, " ")}
+                      <span className="text-xs text-foreground">
+                        {RESOLUTION_TYPE_LABEL[complaint.type] ?? complaint.type}
                       </span>
                     </td>
 

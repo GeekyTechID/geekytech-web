@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { notFound, redirect } from "next/navigation";
-import { Clock, MapPin, Package, Truck } from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Package, Truck } from "lucide-react";
 import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 
 import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
@@ -14,6 +14,7 @@ import {
   fetchReviewsForOrder,
   type DashboardOrderItemRow,
 } from "@/lib/data/dashboard-user";
+import { fetchComplaintForOrder, OPEN_COMPLAINT_STATUSES } from "@/lib/data/complaints";
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
@@ -107,7 +108,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirectTo=/dashboard/orders/${id}`);
 
-  const [detail, reviewedIds, existingReviews, profileRow] = await Promise.all([
+  const [detail, reviewedIds, existingReviews, profileRow, complaint] = await Promise.all([
     fetchOrderDetailForUser(user.id, id),
     fetchReviewedProductIdsForOrder(user.id, id),
     fetchReviewsForOrder(user.id, id),
@@ -117,8 +118,13 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
       .eq("id", user.id)
       .maybeSingle()
       .then((r) => r.data),
+    fetchComplaintForOrder(id),
   ]);
   if (!detail) notFound();
+
+  const hasOpenComplaint =
+    complaint != null &&
+    (OPEN_COMPLAINT_STATUSES as readonly string[]).includes(complaint.status);
 
   const { order, items, shipments } = detail;
   const payments = [...detail.payments];
@@ -319,6 +325,27 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
         </div>
       )}
 
+      {/* ── Komplain sedang berjalan ── */}
+      {hasOpenComplaint && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[14px] font-semibold text-amber-900">
+              Pesanan ini sementara sedang dikomplain
+            </p>
+            <p className="mt-0.5 text-[13px] leading-relaxed text-amber-800">
+              Tim GeekyTech sedang meninjau komplain untuk pesanan ini.{" "}
+              <Link
+                href={`/dashboard/orders/${id}/complaint`}
+                className="font-semibold underline underline-offset-2"
+              >
+                Lihat detail komplain
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Header card ── */}
       <div className="rounded-xl border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -388,6 +415,7 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             paymentType={paidPayment?.payment_type}
             savedBank={profileRow}
             allReviewed={allReviewed}
+            hasOpenComplaint={hasOpenComplaint}
           />
         </div>
       </div>

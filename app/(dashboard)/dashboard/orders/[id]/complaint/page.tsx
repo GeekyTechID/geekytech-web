@@ -79,6 +79,10 @@ export default async function OrderComplaintPage({ params }: { params: Promise<{
         </div>
         <div className="grid grid-cols-2 gap-4 text-[14px]">
           <div>
+            <p className="text-[11px] font-semibold uppercase text-[#7a7a7a]">No. Komplain</p>
+            <p className="mt-0.5 font-mono font-semibold">{complaint.complaint_number}</p>
+          </div>
+          <div>
             <p className="text-[11px] font-semibold uppercase text-[#7a7a7a]">Kategori</p>
             <p className="mt-0.5">{CATEGORY_LABELS[complaint.category] ?? complaint.category}</p>
           </div>
@@ -124,7 +128,7 @@ export default async function OrderComplaintPage({ params }: { params: Promise<{
             <p className="mt-1">{returnAddress}</p>
             <p className="mt-2 text-[12px]">Biaya pengiriman ditanggung pembeli. Setelah mengirim, masukkan nomor resi di bawah.</p>
           </div>
-          <ReturnAwbForm returnId={ret.id} />
+          <ReturnAwbForm returnId={ret.id} orderId={detail.order.id} />
         </div>
       )}
 
