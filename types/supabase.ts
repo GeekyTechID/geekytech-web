@@ -1112,6 +1112,7 @@ export type Database = {
           height: number
           id: string
           image_id: string | null
+          image_url: string | null
           is_active: boolean
           length: number
           name: string
@@ -1129,6 +1130,7 @@ export type Database = {
           height?: number
           id?: string
           image_id?: string | null
+          image_url?: string | null
           is_active?: boolean
           length?: number
           name: string
@@ -1146,6 +1148,7 @@ export type Database = {
           height?: number
           id?: string
           image_id?: string | null
+          image_url?: string | null
           is_active?: boolean
           length?: number
           name?: string

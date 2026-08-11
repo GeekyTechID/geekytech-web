@@ -64,12 +64,11 @@ export function ProductDetailClient({
   );
   const [variantId, setVariantId] = useState<string | null>(defaultId);
   const [qty, setQty] = useState(product.minOrderQty);
-  const [imgIndex, setImgIndex] = useState(() => {
-    const defaultVariant = product.variants.find((v) => v.id === defaultId) ?? product.variants[0] ?? null;
-    if (!defaultVariant) return 0;
-    const idx = product.images.findIndex((img) => img.id === defaultVariant.imageId);
-    return idx !== -1 ? idx : 0;
-  });
+  const [imgIndex, setImgIndex] = useState(0);
+  // Foto varian tidak masuk galeri/carousel. Saat true, foto utama menampilkan
+  // foto varian yang dipilih; begitu pembeli menggeser carousel atau klik
+  // thumbnail, tampilan pindah ke galeri foto produk.
+  const [showVariantImage, setShowVariantImage] = useState(true);
   const [descExpanded, setDescExpanded] = useState(false);
   const [detailTab, setDetailTab] = useState<"detail" | "extra">("detail");
   const [inWishlist, setInWishlist] = useState(initialInWishlist ?? false);
@@ -119,9 +118,43 @@ export function ProductDetailClient({
   const subtotal = unitPrice * qty;
   const subtotalList = listPrice * qty;
 
-  const images = product.images.length > 0 ? product.images : [{ id: "", url: "", alt: product.name, sortOrder: 0 }];
+  const images = useMemo(
+    () => (product.images.length > 0 ? product.images : [{ id: "", url: "", alt: product.name, sortOrder: 0 }]),
+    [product.images, product.name],
+  );
   const safeImgIndex = Math.min(imgIndex, Math.max(0, images.length - 1));
-  const currentImage = images[safeImgIndex];
+
+  const variantImageUrl = variant?.imageUrl ?? null;
+  // Foto varian diperlakukan sebagai slot virtual di depan galeri: foto utama
+  // saja, tidak pernah muncul sebagai thumbnail.
+  const activeVariantImage =
+    showVariantImage && variantImageUrl
+      ? { url: variantImageUrl, alt: variant ? `${product.name} - ${variant.name}` : product.name }
+      : null;
+  const currentImage = activeVariantImage ?? images[safeImgIndex];
+  // Galeri bisa kosong (semua fotonya dipakai varian) — nav dihitung dari galeri
+  // asli supaya panah tidak menggeser ke slot placeholder.
+  const galleryCount = product.images.length;
+  const canGoPrev = activeVariantImage ? false : safeImgIndex > 0 || !!variantImageUrl;
+  const canGoNext = activeVariantImage ? galleryCount > 0 : safeImgIndex < galleryCount - 1;
+  const showNav = galleryCount > 1 || (!!variantImageUrl && galleryCount > 0);
+
+  const goPrev = () => {
+    if (safeImgIndex === 0 && variantImageUrl) {
+      setShowVariantImage(true);
+      return;
+    }
+    setImgIndex((i) => Math.max(0, i - 1));
+  };
+
+  const goNext = () => {
+    if (activeVariantImage) {
+      setShowVariantImage(false);
+      setImgIndex(0);
+      return;
+    }
+    setImgIndex((i) => Math.min(images.length - 1, i + 1));
+  };
 
   // Scroll active thumbnail into view within the strip — uses container.scrollTo to avoid
   // propagating to the window scroll (scrollIntoView with block:"nearest" can scroll the page
@@ -137,9 +170,10 @@ export function ProductDetailClient({
   }, [safeImgIndex]);
 
   const variantImage = useMemo(() => {
-    if (!variant?.imageId) return images[0] ?? null;
-    return images.find((img) => img.id === variant.imageId) ?? images[0] ?? null;
-  }, [variant, images]);
+    if (variantImageUrl) return { url: variantImageUrl, alt: variant?.name ?? product.name };
+    const fallback = images[0] ?? null;
+    return fallback ? { url: fallback.url, alt: fallback.alt ?? product.name } : null;
+  }, [variantImageUrl, variant?.name, images, product.name]);
   const description = product.description?.trim() ?? "";
   const showDescToggle = description.length > DESCRIPTION_PREVIEW_CHARS;
   const descriptionPreview = descExpanded ? description : description.slice(0, DESCRIPTION_PREVIEW_CHARS);
@@ -236,14 +270,14 @@ export function ProductDetailClient({
                         Tanpa gambar
                       </div>
                     )}
-                    {images.length > 1 ? (
+                    {showNav ? (
                       <>
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center p-2 opacity-0 transition-opacity duration-200 group-hover/mainimg:opacity-100 focus-within:opacity-100">
                           <CarouselNavButton
                             direction="prev"
                             surface="on-photo"
-                            disabled={safeImgIndex === 0}
-                            onClick={() => setImgIndex((i) => Math.max(0, i - 1))}
+                            disabled={!canGoPrev}
+                            onClick={goPrev}
                             className="pointer-events-auto scale-90"
                           />
                         </div>
@@ -251,8 +285,8 @@ export function ProductDetailClient({
                           <CarouselNavButton
                             direction="next"
                             surface="on-photo"
-                            disabled={safeImgIndex === images.length - 1}
-                            onClick={() => setImgIndex((i) => Math.min(images.length - 1, i + 1))}
+                            disabled={!canGoNext}
+                            onClick={goNext}
                             className="pointer-events-auto scale-90"
                           />
                         </div>
@@ -263,14 +297,17 @@ export function ProductDetailClient({
                     <div className="mt-3">
                       <div ref={thumbContainerRef} className="relative flex gap-2 overflow-x-auto scrollbar-none">
                         {images.map((im, i) => {
-                          const isActive = i === safeImgIndex;
+                          const isActive = !activeVariantImage && i === safeImgIndex;
                           return (
                             <Button
                               key={`${im.url}-${i}`}
                               type="button"
                               variant="ghost"
                               size="icon-sm"
-                              onClick={() => setImgIndex(i)}
+                              onClick={() => {
+                                setShowVariantImage(false);
+                                setImgIndex(i);
+                              }}
                               className={cn(
                                 "relative h-16 w-16 shrink-0 overflow-hidden rounded-none border-2 bg-transparent p-0",
                                 isActive ? "border-[#EA5329]" : "border-transparent",
@@ -424,8 +461,7 @@ export function ProductDetailClient({
                           onClick={() => {
                             setVariantId(v.id);
                             setQty((q) => clampQty(q));
-                            const targetIndex = images.findIndex((img) => img.id === v.imageId);
-                            if (targetIndex !== -1) setImgIndex(targetIndex);
+                            if (v.imageUrl) setShowVariantImage(true);
                           }}
                         >
                           {v.name}

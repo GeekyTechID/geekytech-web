@@ -46,6 +46,8 @@ type VariantRow = {
   weight: number;
   reserved: number | null;
   is_active: boolean | null;
+  image_url: string | null;
+  /** Deprecated — hanya untuk data lama yang belum punya image_url. */
   image_id: string | null;
 };
 type TagRow = { tag: string };
@@ -79,7 +81,7 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
          brands:brand_id(name, slug),
          categories:category_id(name, slug),
          product_images(id, url, alt_text, sort_order, is_primary),
-         product_variants(id, name, sku, price, stock, weight, reserved, is_active, image_id),
+         product_variants(id, name, sku, price, stock, weight, reserved, is_active, image_url, image_id),
          product_tags(tag)`,
       )
       .eq("slug", trimmed)
@@ -91,10 +93,14 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
 
     const brand = firstRel(data.brands as BrandRow | BrandRow[] | null);
     const category = firstRel(data.categories as CategoryRow | CategoryRow[] | null);
-    const images = mapImages(data.product_images as ImageRow[] | null);
+    const allImages = mapImages(data.product_images as ImageRow[] | null);
     const variantRows = (data.product_variants as VariantRow[] | null)?.filter((v) => v.is_active !== false) ?? [];
     const tagRows = (data.product_tags as TagRow[] | null) ?? [];
     const tags = [...new Set(tagRows.map((t) => t.tag).filter(Boolean))];
+
+    // Data lama: varian belum punya image_url, masih menunjuk row product_images
+    // lewat image_id (deprecated). Resolve supaya produk existing tetap normal.
+    const legacyUrlByImageId = new Map(allImages.map((img) => [img.id, img.url]));
 
     const variants: ProductDetailVariant[] = variantRows.map((v) => ({
       id: v.id,
@@ -103,8 +109,14 @@ export const fetchProductDetailBySlug = cache(async function fetchProductDetailB
       price: Number(v.price),
       stock: Math.max(0, v.stock - (v.reserved ?? 0)),
       weight: Number(v.weight),
-      imageId: v.image_id,
+      imageUrl: v.image_url ?? (v.image_id ? legacyUrlByImageId.get(v.image_id) ?? null : null),
     }));
+
+    // Foto varian tidak boleh muncul di galeri/carousel foto produk. Untuk data
+    // lama foto varian masih berupa row product_images, jadi disaring di sini
+    // berdasarkan URL — bukan cuma mengandalkan aturan input di form admin.
+    const variantImageUrls = new Set(variants.map((v) => v.imageUrl).filter((u): u is string => !!u));
+    const images = allImages.filter((img) => !variantImageUrls.has(img.url));
 
     return {
       id: data.id,

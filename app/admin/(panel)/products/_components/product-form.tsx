@@ -614,13 +614,11 @@ export function ProductForm({
                           className="sm:col-span-2 lg:col-span-3"
                         >
                           <VariantImagePicker
-                            images={images}
                             value={watch(`variants.${i}.image_url`)}
                             hasError={!!variantErrors?.image_url}
-                            onSelect={(url) =>
+                            onChange={(url) =>
                               setValue(`variants.${i}.image_url`, url, { shouldValidate: true })
                             }
-                            onUploadNew={(item) => setImages((prev) => [...prev, item])}
                           />
                         </Field>
                         <Field label="Nama Varian" error={variantErrors?.name?.message} required>

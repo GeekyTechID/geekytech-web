@@ -25,7 +25,7 @@ export default async function EditProductPage({
         `id, name, slug, description, base_price, sale_price, min_order_qty,
          category_id, brand_id, condition, is_active, is_featured, meta_title, meta_description, deleted_at,
          product_images(id, url, is_primary, alt_text, sort_order),
-         product_variants(id, name, sku, price, stock, weight, length, width, height, is_active, image_id),
+         product_variants(id, name, sku, price, stock, weight, length, width, height, is_active, image_url, image_id),
          product_tags(tag)`,
       )
       .eq("id", id)
@@ -47,7 +47,9 @@ export default async function EditProductPage({
       alt_text: img.alt_text ?? "",
     }));
 
-  const imageUrlById = new Map<string, string>(
+  // Fallback data lama: varian yang masih menunjuk ke row product_images
+  // (kolom image_id, deprecated) — dipakai sampai admin mengedit produknya.
+  const legacyImageUrlById = new Map<string, string>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (product.product_images ?? []).map((img: any) => [img.id, img.url]),
   );
@@ -65,7 +67,7 @@ export default async function EditProductPage({
       width: v.width ?? 0,
       height: v.height ?? 0,
       is_active: v.is_active,
-      image_url: imageUrlById.get(v.image_id) ?? "",
+      image_url: v.image_url ?? legacyImageUrlById.get(v.image_id) ?? "",
     }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

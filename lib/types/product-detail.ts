@@ -5,7 +5,8 @@ export type ProductDetailVariant = {
   price: number;
   stock: number;
   weight: number;
-  imageId: string | null;
+  /** Foto khusus varian — bukan bagian dari `images` (galeri/carousel produk). */
+  imageUrl: string | null;
 };
 
 export type ProductDetailImage = {
