@@ -25,8 +25,12 @@ export function ConfirmPickupButton({ orderId }: ConfirmPickupButtonProps) {
           const result = await confirmReadyForPickup(orderId);
           if (result.error) {
             toast.error(result.error);
+          } else if (result.awb) {
+            toast.success(`Paket dikonfirmasi siap pickup. Nomor resi: ${result.awb}`);
           } else {
-            toast.success("Paket dikonfirmasi siap pickup. Kurir akan datang sesuai jadwal.");
+            toast.success(
+              "Paket dikonfirmasi siap pickup. Nomor resi belum terbit dari Biteship, gunakan tombol sinkron.",
+            );
           }
         });
       }}

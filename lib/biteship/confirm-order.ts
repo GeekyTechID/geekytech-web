@@ -1,5 +1,5 @@
 type ConfirmBiteshipOrderResult =
-  | { ok: true; status: string }
+  | { ok: true; status: string; waybillId: string | null }
   | { ok: false; error: string };
 
 export async function confirmBiteshipOrder(
@@ -32,7 +32,11 @@ export async function confirmBiteshipOrder(
       return { ok: false, error: errMsg };
     }
 
-    return { ok: true, status: (json.status as string) ?? "confirmed" };
+    // Biteship menerbitkan waybill saat order dikonfirmasi, sebelum kurir dialokasikan.
+    const courier = json.courier as Record<string, unknown> | undefined;
+    const waybillId = (courier?.waybill_id as string | null | undefined) ?? null;
+
+    return { ok: true, status: (json.status as string) ?? "confirmed", waybillId };
   } catch (err) {
     console.error("[Biteship confirmOrder] network error", { biteshipOrderId, err });
     return { ok: false, error: "Jaringan ke Biteship gagal." };

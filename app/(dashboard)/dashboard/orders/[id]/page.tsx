@@ -7,7 +7,8 @@ import { StarRatingDisplay } from "@/components/shared/star-rating-display";
 
 import { PaymentCountdown } from "@/components/dashboard/payment-countdown";
 
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { reconcileMayarPayment } from "@/lib/payments/reconcile-mayar";
 import {
   fetchOrderDetailForUser,
   fetchReviewedProductIdsForOrder,
@@ -65,43 +66,14 @@ const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
   refunded:        "bg-[#f5f5f7] text-[#5c5c5c] ring-1 ring-[#e0e0e0]",
 };
 
-async function fetchMidtransVA(orderNumber: string): Promise<{
-  va_number: string | null;
-  payment_code: string | null;
-  expiry_time: string | null;
-  midtrans_transaction_id: string | null;
-} | null> {
-  const serverKey = process.env.MIDTRANS_SERVER_KEY?.trim();
-  if (!serverKey) return null;
-  const isProd = process.env.MIDTRANS_IS_PRODUCTION === "true";
-  const base = isProd ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
-  const creds = Buffer.from(`${serverKey}:`).toString("base64");
-  try {
-    const res = await fetch(`${base}/v2/${encodeURIComponent(orderNumber)}/status`, {
-      headers: { Authorization: `Basic ${creds}`, Accept: "application/json" },
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      va_numbers?: { bank: string; va_number: string }[];
-      payment_code?: string;
-      expiry_time?: string;
-      transaction_id?: string;
-    };
-    const rawExpiry = data.expiry_time ?? null;
-    return {
-      va_number: data.va_numbers?.[0]?.va_number ?? null,
-      payment_code: data.payment_code ?? null,
-      expiry_time: rawExpiry ? rawExpiry.replace(" ", "T") + "+07:00" : null,
-      midtrans_transaction_id: data.transaction_id ?? null,
-    };
-  } catch {
-    return null;
-  }
-}
-
-export default async function DashboardOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function DashboardOrderDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ payment?: string }>;
+}) {
+  const [{ id }, { payment: paymentParam }] = await Promise.all([params, searchParams]);
   const supabase = await createClient();
   const {
     data: { user },
@@ -133,33 +105,13 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
     ? detail.statusHistory.slice().reverse().find((h) => h.status === "cancelled")?.note ?? null
     : null;
 
-  // Sync VA/payment code from Midtrans if still pending and not yet stored
-  if (order.status === "pending_payment") {
-    const ppIdx = payments.findIndex((p) => p.status === "pending");
-    if (ppIdx !== -1) {
-      const pp = payments[ppIdx]!;
-      if (!pp.va_number && !pp.payment_code) {
-        const synced = await fetchMidtransVA(order.order_number);
-        if (synced && (synced.va_number ?? synced.payment_code ?? synced.midtrans_transaction_id)) {
-          const svc = createServiceClient();
-          await svc
-            .from("payments")
-            .update({
-              va_number: synced.va_number,
-              payment_code: synced.payment_code,
-              expiry_time: synced.expiry_time ?? pp.expiry_time,
-              midtrans_transaction_id: synced.midtrans_transaction_id,
-            })
-            .eq("id", pp.id);
-          payments[ppIdx] = {
-            ...pp,
-            va_number: synced.va_number,
-            payment_code: synced.payment_code,
-            expiry_time: synced.expiry_time ?? pp.expiry_time,
-            midtrans_transaction_id: synced.midtrans_transaction_id,
-          };
-        }
-      }
+  // Returning from the Mayar payment page: re-check status right away instead of
+  // waiting for the webhook (which also cannot reach localhost in development).
+  if (order.status === "pending_payment" && paymentParam === "return") {
+    const pp = payments.find((p) => p.status === "pending" && p.mayar_payment_id);
+    if (pp) {
+      const result = await reconcileMayarPayment(pp);
+      if (result.status === "paid") redirect(`/dashboard/orders/${id}`);
     }
   }
 
@@ -182,8 +134,8 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
   const pendingPaymentLogo = pendingPayment?.payment_type
     ? (PAYMENT_METHOD_LOGOS[pendingPayment.payment_type] ?? null)
     : null;
-  // Expiry fallback: created_at + 24 hours to match Midtrans default window
-  const expiryFallback = new Date(new Date(order.created_at).getTime() + 24 * 60 * 60 * 1000).toISOString();
+  // Expiry fallback: created_at + 3 hours, same window pg_cron uses to cancel unpaid orders
+  const expiryFallback = new Date(new Date(order.created_at).getTime() + 3 * 60 * 60 * 1000).toISOString();
   const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
   // Payment window already closed — hide the "Menunggu pembayaran" block.
   // The cron /api/cron/expire-orders will cancel the order asynchronously.
@@ -267,10 +219,8 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
               </div>
             </dl>
 
-            {/* VA / payment code / transaction ID — prominent copy chip */}
-            {(pendingPayment?.va_number ||
-              pendingPayment?.payment_code ||
-              pendingPayment?.midtrans_transaction_id) && (
+            {/* VA / payment code — prominent copy chip (legacy Midtrans orders only) */}
+            {(pendingPayment?.va_number || pendingPayment?.payment_code) && (
               <div className="mt-4">
                 {pendingPayment.va_number ? (
                   <>
@@ -296,30 +246,19 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                       <span className="shrink-0 text-[11px] text-[#aaa]">tap untuk salin</span>
                     </div>
                   </>
-                ) : pendingPayment.midtrans_transaction_id ? (
-                  <>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#7a7a7a]">
-                      No. Transaksi
-                    </p>
-                    <div className="mt-1.5 flex items-center gap-2 rounded-xl bg-white px-4 py-3 ring-1 ring-[#EA5329]/15">
-                      <span className="min-w-0 flex-1 select-all truncate font-mono text-sm font-bold text-[#1d1d1f]">
-                        {pendingPayment.midtrans_transaction_id}
-                      </span>
-                    </div>
-                  </>
                 ) : null}
               </div>
             )}
 
-            {pendingPayment?.pdf_url ? (
-              <a
-                href={pendingPayment.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#EA5329] underline-offset-2 hover:underline"
-              >
-                Unduh instruksi pembayaran (PDF) ↗
-              </a>
+            {pendingPayment?.payment_url ? (
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button asChild variant="primary" className="w-full sm:w-auto">
+                  <a href={pendingPayment.payment_url}>Bayar Sekarang</a>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href={`/dashboard/orders/${id}?payment=return`}>Saya sudah bayar</Link>
+                </Button>
+              </div>
             ) : null}
           </div>
         </div>
@@ -412,7 +351,6 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
             orderId={order.id}
             orderNumber={order.order_number}
             status={order.status}
-            paymentType={paidPayment?.payment_type}
             savedBank={profileRow}
             allReviewed={allReviewed}
             hasOpenComplaint={hasOpenComplaint}
@@ -522,10 +460,12 @@ export default async function DashboardOrderDetailPage({ params }: { params: Pro
                       <dd className="mt-0.5 font-mono text-[#1d1d1f]">{paidPayment.va_number}</dd>
                     </div>
                   ) : null}
-                  {paidPayment.midtrans_transaction_id ? (
+                  {(paidPayment.mayar_transaction_id ?? paidPayment.midtrans_transaction_id) ? (
                     <div>
-                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">ID Transaksi Midtrans</dt>
-                      <dd className="mt-0.5 font-mono text-xs text-[#5c5c5c]">{paidPayment.midtrans_transaction_id}</dd>
+                      <dt className="text-[11px] font-bold uppercase text-[#7a7a7a]">ID Transaksi</dt>
+                      <dd className="mt-0.5 font-mono text-xs text-[#5c5c5c]">
+                        {paidPayment.mayar_transaction_id ?? paidPayment.midtrans_transaction_id}
+                      </dd>
                     </div>
                   ) : null}
                 </dl>

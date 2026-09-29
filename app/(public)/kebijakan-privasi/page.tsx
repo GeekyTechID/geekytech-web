@@ -84,7 +84,7 @@ export default async function KebijakanPrivasiPage() {
       title: "8. Pembagian Data dengan Pihak Ketiga",
       content: [
         "Kami TIDAK menjual atau membagikan data pribadi Anda kepada pihak ketiga untuk keperluan pemasaran tanpa persetujuan eksplisit Anda.",
-        "Data dapat dibagikan dengan mitra layanan kami yang diperlukan untuk memproses transaksi Anda, termasuk: payment gateway (Midtrans), penyedia pengiriman (Biteship, JNE, TIKI, Pos Indonesia), dan penyedia email (Resend).",
+        "Data dapat dibagikan dengan mitra layanan kami yang diperlukan untuk memproses transaksi Anda, termasuk: payment gateway (Mayar), penyedia pengiriman (Biteship, JNE, TIKI, Pos Indonesia), dan penyedia email (Resend).",
         "Partner-partner ini memiliki komitmen privasi serupa dan hanya menggunakan data untuk tujuan yang telah ditentukan.",
         "Kami dapat membagikan data jika diwajibkan oleh hukum, keputusan pengadilan, atau peraturan pemerintah.",
         "Data dapat dibagikan dengan ahli hukum kami untuk keperluan perlindungan legal dan penegakan hak-hak GeekyTech.",

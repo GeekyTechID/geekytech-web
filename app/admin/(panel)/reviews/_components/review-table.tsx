@@ -23,6 +23,7 @@ export type ReviewRow = {
   id: string;
   rating: number;
   comment: string | null;
+  images: string[];
   deleted_at: string | null;
   created_at: string;
   product_id: string;
@@ -216,6 +217,22 @@ export function ReviewTable({ reviews, page, totalPages }: ReviewTableProps) {
                     <p className="line-clamp-2 max-w-xs text-xs text-foreground">
                       {review.comment ?? <span className="italic">Tidak ada komentar</span>}
                     </p>
+                    {review.images.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {review.images.map((url, i) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block h-10 w-10 overflow-hidden rounded-md border border-border"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt={`Foto ulasan ${i + 1}`} className="h-full w-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </td>
 
                   <td className="hidden px-4 py-3 sm:table-cell">

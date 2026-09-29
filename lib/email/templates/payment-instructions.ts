@@ -38,7 +38,7 @@ function paymentBlock(params: {
   }
 
   return `<p style="margin:0 0 24px;font-size:14px;color:#3d3d3d;line-height:1.7;">
-    Selesaikan pembayaran melalui metode yang telah kamu pilih.
+    Klik tombol Bayar Sekarang, lalu pilih metode pembayaran (QRIS, Virtual Account, e-wallet, atau gerai retail) di halaman pembayaran.
   </p>`;
 }
 
@@ -51,7 +51,7 @@ export function paymentInstructionsHtml(params: {
   vaBank: string | null;
   vaNumber: string | null;
   paymentCode: string | null;
-  pdfUrl: string | null;
+  paymentUrl: string | null;
   expiryTime: string | null;
   appUrl: string;
 }): string {
@@ -91,7 +91,7 @@ export function paymentInstructionsHtml(params: {
         : ""
     }
 
-    ${ctaButton(orderUrl, "Lihat Detail Pesanan")}
+    ${params.paymentUrl ? ctaButton(params.paymentUrl, "Bayar Sekarang") : ctaButton(orderUrl, "Lihat Detail Pesanan")}
 
     <p style="margin:8px 0 0;font-size:13px;color:#6e6e73;line-height:1.6;">
       Jika mengalami kendala, hubungi CS kami melalui <a href="${params.appUrl}/about#kontak" style="color:#EA5329;text-decoration:none;">halaman kontak</a>.

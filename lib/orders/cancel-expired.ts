@@ -26,7 +26,7 @@ export async function cancelExpiredOrder(orderDbId: string): Promise<void> {
 
   if (!order || order.status !== "pending_payment") return;
 
-  // 1. Claim cancellation atomically. pg_cron, Midtrans webhook, and lazy
+  // 1. Claim cancellation atomically. pg_cron, Mayar webhook, and lazy
   // cancellation may arrive together; only winner may run side effects below.
   const { data: cancelledOrder } = await svc
     .from("orders")

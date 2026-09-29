@@ -10,19 +10,40 @@ import { syncProductRating } from "@/lib/products/sync-product-rating";
 import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
-import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
-import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
-import { refundDurationText } from "@/lib/midtrans/refund-duration";
+import { closePendingMayarPayments } from "@/lib/payments/close-pending";
+import { MANUAL_REFUND_DURATION } from "@/lib/payments/manual-refund";
+import { REVIEW_IMAGES_MAX, isOwnReviewImageUrl } from "@/lib/constants/review-images";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 export type OrderActionResult = { success: true } | { success: false; error: string };
 
-type BankInfo = {
-  bank_name: string;
-  bank_account_name: string;
-  bank_account_number: string;
-};
+const bankInfoSchema = z.object({
+  bank_name: z.string().trim().min(1).max(60),
+  bank_account_name: z.string().trim().min(1).max(120),
+  bank_account_number: z.string().trim().regex(/^\d{5,30}$/),
+});
+
+type BankInfo = z.infer<typeof bankInfoSchema>;
+
+/**
+ * Catat transisi ke `completed` di riwayat status. RLS order_status_history hanya
+ * mengizinkan admin insert, jadi pakai service client — pemanggil wajib sudah
+ * memverifikasi kepemilikan order.
+ */
+async function recordCompletedHistory(orderId: string, userId: string, note: string): Promise<void> {
+  try {
+    const { error } = await createServiceClient().from("order_status_history").insert({
+      order_id: orderId,
+      status: "completed",
+      note,
+      changed_by: userId,
+    });
+    if (error) console.error("[recordCompletedHistory] insert failed:", error.message);
+  } catch (err) {
+    console.error("[recordCompletedHistory] unexpected error:", err);
+  }
+}
 
 export async function cancelOrderAction(
   orderId: string,
@@ -48,7 +69,18 @@ export async function cancelOrderAction(
       return { success: false, error: "Pesanan ini tidak dapat dibatalkan pada tahap ini." };
     }
 
-    const { error: upErr } = await supabase
+    // Pesanan lunas di-refund manual oleh admin, jadi rekening tujuan wajib ada.
+    if (st === "paid") {
+      const bankParsed = bankInfoSchema.safeParse(bankInfo);
+      if (!bankParsed.success) {
+        return { success: false, error: "Isi data rekening bank untuk pengembalian dana." };
+      }
+      bankInfo = bankParsed.data;
+    } else {
+      bankInfo = undefined;
+    }
+
+    const { data: cancelledRows, error: upErr } = await supabase
       .from("orders")
       .update({
         status: "cancelled",
@@ -62,8 +94,14 @@ export async function cancelOrderAction(
           : {}),
       })
       .eq("id", orderId)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      // Guard against the Mayar webhook settling the order in between.
+      .eq("status", st)
+      .select("id");
     if (upErr) return { success: false, error: upErr.message };
+    if (!cancelledRows?.length) {
+      return { success: false, error: "Status pesanan baru saja berubah. Muat ulang halaman." };
+    }
 
     // Service client diperlukan untuk operasi stok (bypass RLS)
     const svc = createServiceClient();
@@ -154,56 +192,25 @@ export async function cancelOrderAction(
       data: { orderId, orderNumber: row.order_number },
     });
 
-    // Midtrans: cancel/refund best-effort
-    if (row.order_number) {
-      if (st === "pending_payment") {
-        const midtransResult = await cancelMidtransTransaction(row.order_number);
-        if (!midtransResult.ok) {
-          console.error("[cancelOrderAction] Midtrans cancel failed:", midtransResult.error);
-        }
-      } else if (st === "paid" || st === "processing") {
-        const { data: paymentRow } = await svc
-          .from("payments")
-          .select("gross_amount, payment_type")
-          .eq("midtrans_order_id", row.order_number)
-          .maybeSingle();
-        const amount = Number(paymentRow?.gross_amount ?? 0);
-        const midtransResult = await refundMidtransTransaction(
-          row.order_number,
-          "Dibatalkan oleh pelanggan",
-          amount,
-        );
-        if (midtransResult.ok) {
-          await svc
-            .from("payments")
-            .update({ status: "refunded" })
-            .eq("midtrans_order_id", row.order_number);
-          const duration = refundDurationText(paymentRow?.payment_type);
-          await createNotification({
-            userId: user.id,
-            title: "Refund Sedang Diproses",
-            body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${row.order_number} sedang diproses. Estimasi pengembalian: ${duration}.`,
-            type: "payment_refunded",
-            data: { orderId, orderNumber: row.order_number },
-          });
-        } else {
-          // VA/bank transfer: refund manual oleh admin — beri notifikasi yang sesuai
-          const isVA =
-            paymentRow?.payment_type === "bank_transfer" ||
-            (paymentRow?.payment_type ?? "").endsWith("_va");
-          if (isVA && bankInfo) {
-            await createNotification({
-              userId: user.id,
-              title: "Refund Akan Diproses Admin",
-              body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${row.order_number} akan dikembalikan ke rekening ${bankInfo.bank_name} atas nama ${bankInfo.bank_account_name} dalam 3–14 hari kerja.`,
-              type: "payment_refunded",
-              data: { orderId, orderNumber: row.order_number },
-            });
-          } else {
-            console.error("[cancelOrderAction] Midtrans refund failed:", midtransResult.error);
-          }
-        }
-      }
+    // Mayar: tutup link bayar yang masih terbuka, atau siapkan refund manual.
+    // Mayar tidak punya API refund — dana ditransfer admin ke rekening pelanggan.
+    if (st === "pending_payment") {
+      await closePendingMayarPayments(orderId);
+    } else if (bankInfo) {
+      const { data: paymentRow } = await svc
+        .from("payments")
+        .select("gross_amount")
+        .eq("order_id", orderId)
+        .eq("status", "paid")
+        .maybeSingle();
+      const amount = Number(paymentRow?.gross_amount ?? 0);
+      await createNotification({
+        userId: user.id,
+        title: "Refund Akan Diproses Admin",
+        body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${row.order_number} akan dikembalikan ke rekening ${bankInfo.bank_name} atas nama ${bankInfo.bank_account_name} dalam ${MANUAL_REFUND_DURATION}.`,
+        type: "payment_refunded",
+        data: { orderId, orderNumber: row.order_number },
+      });
     }
 
     // Catat di status history
@@ -216,8 +223,11 @@ export async function cancelOrderAction(
 
     // Notifikasi admin
     await createAdminNotification({
-      title: "Pesanan Dibatalkan",
-      body: `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan.`,
+      title: st === "paid" ? "Pesanan Dibatalkan — Perlu Refund" : "Pesanan Dibatalkan",
+      body:
+        st === "paid"
+          ? `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan setelah dibayar. Transfer refund manual ke rekening pelanggan, lalu ubah status ke Dikembalikan.`
+          : `Pesanan ${row.order_number ?? orderId} dibatalkan oleh pelanggan.`,
       type: "order_cancelled",
       data: { orderId, orderNumber: row.order_number },
     });
@@ -257,6 +267,8 @@ export async function confirmOrderReceivedAction(orderId: string): Promise<Order
       .eq("user_id", user.id);
     if (upErr) return { success: false, error: upErr.message };
 
+    await recordCompletedHistory(orderId, user.id, "Pelanggan mengonfirmasi pesanan diterima.");
+
     revalidatePath("/dashboard/orders");
     revalidatePath(`/dashboard/orders/${orderId}`);
     return { success: true };
@@ -270,9 +282,10 @@ const reviewSchema = z.object({
   productId: z.string().uuid(),
   rating: z.coerce.number().int().min(1).max(5),
   comment: z.string().max(2000).optional().nullable(),
+  images: z.array(z.string().url()).max(REVIEW_IMAGES_MAX).optional().default([]),
 });
 
-export async function submitProductReviewAction(input: z.infer<typeof reviewSchema>): Promise<OrderActionResult> {
+export async function submitProductReviewAction(input: z.input<typeof reviewSchema>): Promise<OrderActionResult> {
   try {
     const parsed = reviewSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: "Data ulasan tidak valid." };
@@ -283,7 +296,11 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
     } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
 
-    const { orderId, productId, rating, comment } = parsed.data;
+    const { orderId, productId, rating, comment, images } = parsed.data;
+
+    if (images.some((url) => !isOwnReviewImageUrl(url, user.id))) {
+      return { success: false, error: "Foto ulasan tidak valid. Upload ulang fotonya." };
+    }
 
     const { data: order } = await supabase
       .from("orders")
@@ -312,6 +329,7 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
       user_id: user.id,
       rating,
       comment: comment?.trim() || null,
+      images,
       is_approved: true,
     });
     if (insErr) return { success: false, error: insErr.message };
@@ -325,11 +343,14 @@ export async function submitProductReviewAction(input: z.infer<typeof reviewSche
 
     // Jika pesanan masih "delivered", tandai selesai setelah user memberi ulasan
     if (order.status === "delivered") {
-      await supabase
+      const { error: completeErr } = await supabase
         .from("orders")
         .update({ status: "completed", updated_at: new Date().toISOString() })
         .eq("id", orderId)
         .eq("user_id", user.id);
+      if (!completeErr) {
+        await recordCompletedHistory(orderId, user.id, "Pesanan selesai setelah pelanggan memberi ulasan.");
+      }
     }
 
     await createAdminNotification({
@@ -454,73 +475,7 @@ export async function submitComplaintAction(input: {
 
 /**
  * Bantuan lanjut bayar: tautan WhatsApp CS dengan konteks nomor order.
- * Integrasi Midtrans snap ulang dapat ditambahkan di route API terpisah.
  */
-export async function deleteUnpaidOrderAction(orderId: string): Promise<OrderActionResult> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: "Silakan masuk terlebih dahulu." };
-
-    const { data: row } = await supabase
-      .from("orders")
-      .select("id, status, coupon_id")
-      .eq("id", orderId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!row) return { success: false, error: "Pesanan tidak ditemukan." };
-    if (row.status !== "pending_payment") return { success: false, error: "Pesanan tidak dapat dihapus." };
-
-    const svc = createServiceClient();
-
-    // Release stock reservation
-    const { data: items } = await svc
-      .from("order_items")
-      .select("variant_id, quantity")
-      .eq("order_id", orderId);
-    if (items) {
-      for (const item of items) {
-        if (!item.variant_id) continue;
-        const { data: v } = await svc
-          .from("product_variants")
-          .select("reserved")
-          .eq("id", item.variant_id)
-          .single();
-        if (v) {
-          await svc
-            .from("product_variants")
-            .update({ reserved: Math.max(0, v.reserved - item.quantity) })
-            .eq("id", item.variant_id);
-        }
-      }
-    }
-
-    // Reverse coupon used_count (coupon_usages cascade-deleted with order)
-    if (row.coupon_id) {
-      const { data: coupon } = await svc
-        .from("coupons")
-        .select("used_count")
-        .eq("id", row.coupon_id)
-        .single();
-      if (coupon) {
-        await svc
-          .from("coupons")
-          .update({ used_count: Math.max(0, coupon.used_count - 1) })
-          .eq("id", row.coupon_id);
-      }
-    }
-
-    // Delete order — cascades to order_items, payments, coupon_usages,
-    // order_status_history, shipments, complaints
-    await svc.from("orders").delete().eq("id", orderId);
-
-    revalidatePath("/dashboard/orders");
-    return { success: true };
-  } catch {
-    return { success: false, error: "Terjadi kesalahan. Coba lagi." };
-  }
-}
-
 export async function getRetryPaymentWhatsAppLink(orderNumber: string): Promise<{ success: true; url: string | null } | { success: false; error: string }> {
   try {
     const supabase = await createClient();

@@ -25,6 +25,7 @@ import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductShareDialog } from "@/components/store/product-share-dialog";
 import { ProductShippingDialog } from "@/components/store/product-shipping-dialog";
+import { ReviewPhotos } from "@/components/store/review-photos";
 import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
 
 const DESCRIPTION_PREVIEW_CHARS = 420;
@@ -232,7 +233,6 @@ export function ProductDetailClient({
   const productUrl = buildProductUrl(siteBaseUrl, product.slug);
 
   const currentReview = reviews[reviewIndex] ?? null;
-
   if (product.variants.length === 0) {
     return (
       <div className="bg-white px-4 py-20 text-center text-[#1d1d1f]">
@@ -724,6 +724,11 @@ export function ProductDetailClient({
                   ) : (
                     <p className="mt-4 text-sm italic text-[#7a7a7a]">Tanpa komentar teks.</p>
                   )}
+                  <ReviewPhotos
+                    key={currentReview.id}
+                    images={currentReview.images}
+                    authorName={currentReview.authorName}
+                  />
                 </div>
               ) : (
                 <p className="mt-8 text-sm text-[#7a7a7a]">Belum ada ulasan yang dipublikasikan.</p>

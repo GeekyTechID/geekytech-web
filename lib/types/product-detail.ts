@@ -51,6 +51,7 @@ export type ProductReviewPublic = {
   id: string;
   rating: number;
   comment: string | null;
+  images: string[];
   createdAt: string;
   authorName: string;
 };

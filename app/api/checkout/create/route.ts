@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { createRequire } from "node:module";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import { sendOrderConfirmation } from "@/lib/email/send-order-confirmation";
+import { sendPaymentInstructions } from "@/lib/email/send-payment-instructions";
 import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/user-cart-lines";
 import type { CartLineView } from "@/components/store/cart-line-card";
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
@@ -17,7 +17,17 @@ import {
   isWithinSameDayWindow,
   parseOriginCoords,
 } from "@/lib/shipping/on-demand-coords";
-import { getSnapPaymentConfig } from "@/lib/midtrans/snap-payment-config";
+import { closeMayarPayment, createMayarPayment } from "@/lib/mayar/client";
+
+// pg_cron (migration 029) cancels unpaid orders 3 hours after creation regardless
+// of this setting, so the Mayar link must never outlive that window.
+const MAX_PAYMENT_TIMEOUT_HOURS = 3;
+
+function paymentTimeoutHours(settingValue: unknown): number {
+  const n = Number(settingValue);
+  if (!Number.isFinite(n) || n <= 0) return MAX_PAYMENT_TIMEOUT_HOURS;
+  return Math.min(n, MAX_PAYMENT_TIMEOUT_HOURS);
+}
 
 const bodySchema = z.object({
   addressId: z.string().uuid(),
@@ -78,6 +88,7 @@ async function resolveShippingPrice(params: {
 
 export async function POST(req: Request) {
   let createdOrderId: string | null = null;
+  let createdMayarPaymentId: string | null = null;
   try {
     const json: unknown = await req.json();
     const parsed = bodySchema.safeParse(json);
@@ -310,82 +321,66 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Gagal menyimpan item pesanan." }, { status: 500 });
     }
 
-    const { error: payErr } = await svc.from("payments").insert({
-      order_id: order.id,
-      midtrans_order_id: order.order_number,
-      gross_amount: total,
-      status: "pending",
-      payment_type: null,
-    });
-    if (payErr) {
+    const { data: timeoutRow } = await svc
+      .from("settings")
+      .select("value")
+      .eq("key", "payment_timeout_hours")
+      .maybeSingle();
+    const expiresAt = new Date(Date.now() + paymentTimeoutHours(timeoutRow?.value) * 60 * 60 * 1000);
+
+    const { data: paymentRow, error: payErr } = await svc
+      .from("payments")
+      .insert({
+        order_id: order.id,
+        // Legacy column name — holds the order number as unique payment reference.
+        midtrans_order_id: order.order_number,
+        provider: "mayar",
+        gross_amount: total,
+        status: "pending",
+        payment_type: null,
+        expiry_time: expiresAt.toISOString(),
+      })
+      .select("id")
+      .single();
+    if (payErr || !paymentRow) {
       await svc.from("orders").delete().eq("id", order.id);
       return Response.json({ success: false, error: "Gagal menyimpan pembayaran." }, { status: 500 });
     }
 
-    const serverKey = process.env.MIDTRANS_SERVER_KEY?.trim();
-    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.trim();
-    let snapToken: string | null = null;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
+    const mayar = await createMayarPayment({
+      customerName: address.recipient.slice(0, 80),
+      email: user.email ?? "",
+      mobile: address.phone.replace(/\D/g, "").slice(0, 20),
+      amount: total,
+      description: `Pesanan ${order.order_number} — GeekyTech`,
+      redirectUrl: appUrl ? `${appUrl}/dashboard/orders/${order.id}?payment=return` : null,
+      expiredAt: expiresAt,
+      extraData: { orderNumber: order.order_number, orderId: order.id },
+    });
+    if (!mayar.ok) {
+      await svc.from("orders").delete().eq("id", order.id);
+      return Response.json(
+        { success: false, error: "Gagal membuat sesi pembayaran Mayar. Pesanan dibatalkan." },
+        { status: 502 },
+      );
+    }
+    const paymentUrl = mayar.data.link;
+    createdMayarPaymentId = mayar.data.id;
 
-    if (serverKey && clientKey) {
-      try {
-        const require = createRequire(import.meta.url);
-        const Midtrans = require("midtrans-client") as {
-          Snap: new (options: { isProduction: boolean; serverKey: string; clientKey: string }) => {
-            createTransaction: (parameter: Record<string, unknown>) => Promise<{ token: string }>;
-          };
-        };
-
-        const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
-        const snap = new Midtrans.Snap({
-          isProduction,
-          serverKey,
-          clientKey,
-        });
-
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
-        const orderUrl = appUrl
-          ? `${appUrl}/dashboard/orders/${order.id}`
-          : null;
-
-        const snapRes = await snap.createTransaction({
-          transaction_details: {
-            order_id: order.order_number,
-            gross_amount: total,
-          },
-          item_details: [
-            {
-              id: order.id.slice(0, 12),
-              price: total,
-              quantity: 1,
-              name: `Pesanan ${order.order_number}`,
-            },
-          ],
-          customer_details: {
-            first_name: address.recipient.slice(0, 40),
-            email: user.email ?? "customer@geekytech.local",
-            phone: address.phone.replace(/\D/g, "").slice(0, 20) || "081000000000",
-          },
-          ...getSnapPaymentConfig(isProduction),
-          ...(orderUrl
-            ? {
-                callbacks: {
-                  finish: orderUrl,
-                },
-                gopay: {
-                  enable_callback: true,
-                  callback_url: orderUrl,
-                },
-              }
-            : {}),
-        });
-        snapToken = snapRes.token;
-      } catch {
-        await svc.from("orders").delete().eq("id", order.id);
-        return Response.json(
-          { success: false, error: "Gagal membuat sesi pembayaran Midtrans. Pesanan dibatalkan." },
-          { status: 502 },
-        );
-      }
+    const { error: payLinkErr } = await svc
+      .from("payments")
+      .update({
+        mayar_payment_id: mayar.data.id,
+        mayar_transaction_id: mayar.data.transactionId,
+        payment_url: paymentUrl,
+        ...(mayar.data.expiredAt ? { expiry_time: mayar.data.expiredAt } : {}),
+      })
+      .eq("id", paymentRow.id);
+    if (payLinkErr) {
+      await closeMayarPayment(mayar.data.id);
+      await svc.from("orders").delete().eq("id", order.id);
+      return Response.json({ success: false, error: "Gagal menyimpan pembayaran." }, { status: 500 });
     }
 
     for (const line of orderLines) {
@@ -396,6 +391,7 @@ export async function POST(req: Request) {
         .update({ reserved: reserved + line.qty })
         .eq("id", line.variantId);
       if (rvErr) {
+        await closeMayarPayment(mayar.data.id);
         await svc.from("orders").delete().eq("id", order.id);
         return Response.json({ success: false, error: "Gagal mengunci stok." }, { status: 500 });
       }
@@ -412,6 +408,7 @@ export async function POST(req: Request) {
           const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
           await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
         }
+        await closeMayarPayment(mayar.data.id);
         await svc.from("orders").delete().eq("id", order.id);
         return Response.json({ success: false, error: "Gagal menghapus item dari keranjang." }, { status: 500 });
       }
@@ -434,6 +431,7 @@ export async function POST(req: Request) {
           const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
           await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
         }
+        await closeMayarPayment(mayar.data.id);
         await svc.from("orders").delete().eq("id", order.id);
         return Response.json({ success: false, error: "Gagal mencatat pemakaian kupon." }, { status: 500 });
       }
@@ -453,6 +451,7 @@ export async function POST(req: Request) {
           const reserved = Math.max(0, (v?.reserved ?? 0) - line.qty);
           await svc.from("product_variants").update({ reserved }).eq("id", line.variantId);
         }
+        await closeMayarPayment(mayar.data.id);
         await svc.from("orders").delete().eq("id", order.id);
         return Response.json({ success: false, error: "Gagal memperbarui kupon." }, { status: 500 });
       }
@@ -494,6 +493,20 @@ export async function POST(req: Request) {
         serviceName: ship.serviceName,
         etd: ship.etd,
       }).catch(() => {});
+
+      sendPaymentInstructions({
+        to: user.email,
+        name: address.recipient,
+        orderNumber: order.order_number,
+        orderId: order.id,
+        total,
+        paymentType: null,
+        vaBank: null,
+        vaNumber: null,
+        paymentCode: null,
+        paymentUrl,
+        expiryTime: expiresAt.toISOString(),
+      }).catch(() => {});
     }
 
     return Response.json({
@@ -501,12 +514,13 @@ export async function POST(req: Request) {
       data: {
         orderId: order.id,
         orderNumber: order.order_number,
-        snapToken,
-        clientKey: clientKey ?? null,
-        isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true",
+        paymentUrl,
       },
     });
   } catch {
+    if (createdMayarPaymentId) {
+      await closeMayarPayment(createdMayarPaymentId);
+    }
     if (createdOrderId) {
       try {
         const svc = createServiceClient();

@@ -11,7 +11,7 @@ export async function sendPaymentInstructions(params: {
   vaBank: string | null;
   vaNumber: string | null;
   paymentCode: string | null;
-  pdfUrl: string | null;
+  paymentUrl: string | null;
   expiryTime: string | null;
 }): Promise<void> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id";

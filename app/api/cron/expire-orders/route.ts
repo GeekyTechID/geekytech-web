@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       .lt("expiry_time", now);
 
     // Query 2: pending_payment orders older than 3 hours with no payment record
-    //          (fallback for Snap-initiated but no webhook ever received)
+    //          (fallback for payments never confirmed by the Mayar webhook)
     const { data: oldOrders } = await svc
       .from("orders")
       .select("id")

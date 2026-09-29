@@ -86,7 +86,7 @@ export type OnDemandCoordFields = {
  * couriers, or when origin coordinates are not configured (env var nor store_origin
  * DB setting) — callers then create the order without coordinates.
  *
- * Used by BOTH settlement paths (Midtrans webhook and verify-payment) so they
+ * Used by BOTH settlement paths (Mayar webhook and verify-payment) so they
  * resolve coordinates identically. Keep this the single source of truth.
  */
 export async function resolveOnDemandCoords(

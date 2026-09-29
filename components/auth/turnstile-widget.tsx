@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
@@ -16,8 +16,8 @@ declare global {
         },
       ) => string;
       reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
     };
-    onTurnstileLoad?: () => void;
   }
 }
 
@@ -44,55 +44,57 @@ export function TurnstileWidget({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
-  const handleExpire = useCallback(() => {
-    widgetIdRef.current = null;
-    onExpire?.();
-  }, [onExpire]);
-
-  const handleError = useCallback(() => {
-    widgetIdRef.current = null;
-    onError?.();
-  }, [onError]);
-
-  const renderWidget = useCallback(() => {
-    if (!containerRef.current || !SITE_KEY) return;
-    widgetIdRef.current = window.turnstile.render(containerRef.current, {
-      sitekey: SITE_KEY,
-      callback: onVerify,
-      "expired-callback": handleExpire,
-      "error-callback": handleError,
-      theme,
-    });
-  }, [onVerify, handleExpire, handleError, theme]);
+  // Callback disimpan di ref supaya widget tidak di-render ulang setiap parent
+  // re-render (mis. onExpire inline). Render ulang di tengah challenge membuat
+  // Cloudflare menolak challenge dengan error 600010.
+  const callbacksRef = useRef({ onVerify, onExpire, onError });
+  useEffect(() => {
+    callbacksRef.current = { onVerify, onExpire, onError };
+  }, [onVerify, onExpire, onError]);
 
   useEffect(() => {
     if (!SITE_KEY) return;
 
+    const renderWidget = () => {
+      if (!containerRef.current || widgetIdRef.current) return;
+      widgetIdRef.current = window.turnstile.render(containerRef.current, {
+        sitekey: SITE_KEY,
+        callback: (token) => callbacksRef.current.onVerify(token),
+        "expired-callback": () => callbacksRef.current.onExpire?.(),
+        "error-callback": () => callbacksRef.current.onError?.(),
+        theme,
+      });
+    };
+
+    let script: HTMLScriptElement | null = null;
+
     if (window.turnstile) {
       renderWidget();
-      return;
-    }
-
-    const existingScript = document.getElementById(SCRIPT_ID);
-    if (!existingScript) {
-      window.onTurnstileLoad = renderWidget;
-      const script = document.createElement("script");
-      script.id = SCRIPT_ID;
-      script.src =
-        "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad";
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
     } else {
-      existingScript.addEventListener("load", renderWidget);
+      script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement("script");
+        script.id = SCRIPT_ID;
+        script.src =
+          "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener("load", renderWidget);
     }
 
+    // Strict Mode menjalankan effect dua kali di dev: listener load dilepas dan
+    // widget di-remove (bukan reset) supaya tidak ada render ganda di container
+    // yang sama ("already been rendered").
     return () => {
+      script?.removeEventListener("load", renderWidget);
       if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.reset(widgetIdRef.current);
+        window.turnstile.remove(widgetIdRef.current);
       }
+      widgetIdRef.current = null;
     };
-  }, [renderWidget]);
+  }, [theme]);
 
   if (!SITE_KEY) return null;
 

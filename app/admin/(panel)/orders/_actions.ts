@@ -6,9 +6,10 @@ import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
-import { cancelMidtransTransaction } from "@/lib/midtrans/cancel-transaction";
-import { refundMidtransTransaction } from "@/lib/midtrans/refund-transaction";
-import { refundDurationText } from "@/lib/midtrans/refund-duration";
+import { closePendingMayarPayments } from "@/lib/payments/close-pending";
+import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
+import { getUserEmail } from "@/lib/email/get-user-email";
+import { sendRefundProcessed } from "@/lib/email/send-refund-processed";
 import { ORDER_STATUSES, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
@@ -92,8 +93,8 @@ export async function updateOrderStatus(
         body: `Pesanan ${orderNum} dibatalkan oleh admin. Jika ada pertanyaan, silakan hubungi kami.`,
       },
       refunded: {
-        title: "Pesanan Direfund",
-        body: `Refund untuk pesanan ${orderNum} sedang diproses.`,
+        title: "Dana Sudah Dikembalikan",
+        body: `Refund untuk pesanan ${orderNum} sudah ditransfer ke rekening Anda. Dana masuk sesuai jadwal kliring bank.`,
       },
     };
     const notif = notifMap[newStatus];
@@ -175,40 +176,27 @@ export async function updateOrderStatus(
 
   if (historyError) console.error("history log failed:", historyError.message);
 
-  // Midtrans cancel/refund on cancellation — best-effort
-  if (newStatus === "cancelled" && currentOrder?.order_number) {
+  // Mayar: tutup link bayar pesanan yang belum dibayar. Pesanan lunas yang
+  // dibatalkan di-refund manual (Mayar tidak punya API refund) — admin transfer
+  // ke rekening pelanggan lalu ubah status ke "refunded".
+  if (newStatus === "cancelled" && prevStatus === "pending_payment") {
+    await closePendingMayarPayments(orderId);
+  }
+
+  if (newStatus === "refunded" && currentOrder?.order_number) {
     const orderNum = currentOrder.order_number as string;
-    if (prevStatus === "pending_payment") {
-      const midtransResult = await cancelMidtransTransaction(orderNum);
-      if (!midtransResult.ok) {
-        console.error("[updateOrderStatus] Midtrans cancel failed:", midtransResult.error);
-      }
-    } else if (prevStatus === "paid" || prevStatus === "processing") {
-      const { data: paymentRow } = await supabase
-        .from("payments")
-        .select("gross_amount, payment_type")
-        .eq("midtrans_order_id", orderNum)
-        .maybeSingle();
-      const amount = Number(paymentRow?.gross_amount ?? 0);
-      const midtransResult = await refundMidtransTransaction(orderNum, "Dibatalkan oleh admin", amount);
-      if (midtransResult.ok) {
-        await supabase
-          .from("payments")
-          .update({ status: "refunded" })
-          .eq("midtrans_order_id", orderNum);
-        if (currentOrder?.user_id) {
-          const duration = refundDurationText(paymentRow?.payment_type);
-          await createNotification({
-            userId: currentOrder.user_id as string,
-            title: "Refund Sedang Diproses",
-            body: `Dana Rp${amount.toLocaleString("id-ID")} untuk pesanan ${orderNum} sedang diproses. Estimasi pengembalian: ${duration}.`,
-            type: "payment_refunded",
-            data: { orderId, orderNumber: orderNum },
-          });
+    await supabase
+      .from("payments")
+      .update({ status: "refunded" })
+      .eq("order_id", orderId)
+      .eq("status", "paid");
+
+    if (currentOrder.user_id) {
+      getUserEmail(currentOrder.user_id as string).then((user) => {
+        if (user) {
+          sendRefundProcessed({ to: user.email, name: user.name, orderNumber: orderNum }).catch(() => {});
         }
-      } else {
-        console.error("[updateOrderStatus] Midtrans refund failed:", midtransResult.error);
-      }
+      }).catch(() => {});
     }
   }
 
@@ -313,9 +301,10 @@ export async function syncBiteshipAWB(
     });
   }
 
-  // User notification
+  // User notification — hanya saat tahap pengiriman berubah (sinkron berulang tidak spam)
+  const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
   if (orderRow?.user_id && orderRow.order_number) {
-    if (newShipStatus === "picking_up" || newShipStatus === "picked") {
+    if (notifyStage === "packing") {
       await createNotification({
         userId: orderRow.user_id,
         title: "Pesanan Sedang Dikemas",
@@ -323,7 +312,7 @@ export async function syncBiteshipAWB(
         type: "order_shipped",
         data: { orderId, awb: awb ?? undefined },
       });
-    } else if (newShipStatus === "dropping_off") {
+    } else if (notifyStage === "in_transit") {
       await createNotification({
         userId: orderRow.user_id,
         title: "Pesanan Dalam Perjalanan",
@@ -331,7 +320,7 @@ export async function syncBiteshipAWB(
         type: "order_in_transit",
         data: { orderId, awb: awb ?? undefined },
       });
-    } else if (newShipStatus === "delivered") {
+    } else if (notifyStage === "delivered") {
       await createNotification({
         userId: orderRow.user_id,
         title: "Pesanan Telah Sampai",
@@ -423,7 +412,7 @@ export async function updateOrderAWB(
 
 export async function confirmReadyForPickup(
   orderId: string,
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; awb?: string | null }> {
   const supabase = await createServiceClient();
 
   const { data: shipment } = await supabase
@@ -445,18 +434,32 @@ export async function confirmReadyForPickup(
     return { error: `Gagal konfirmasi ke Biteship: ${confirmResult.error}` };
   }
 
+  // Waybill terbit saat konfirmasi (sebelum kurir dialokasikan). Kalau tidak ikut
+  // di response confirm, ambil dari detail order supaya resi bisa langsung dicetak.
+  let awb = confirmResult.waybillId;
+  if (!awb) {
+    const detail = await getBiteshipOrder(shipment.biteship_order_id);
+    if (detail.ok) awb = detail.order.courier?.waybill_id ?? null;
+  }
+
   await supabase
     .from("shipments")
-    .update({ status: "confirmed", updated_at: new Date().toISOString() })
+    .update({
+      status: "confirmed",
+      ...(awb ? { awb } : {}),
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", shipment.id);
 
   await supabase.from("order_status_history").insert({
     order_id: orderId,
     status: "processing",
-    note: "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
+    note: awb
+      ? `Admin mengonfirmasi paket siap pickup. Nomor resi: ${awb}. Menunggu kurir.`
+      : "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
     changed_by: null,
   });
 
   revalidatePath(`/admin/orders/${orderId}`);
-  return {};
+  return { awb };
 }

@@ -41,16 +41,10 @@ const BANK_OPTIONS = [
   "Lainnya",
 ] as const;
 
-function isVAPayment(paymentType: string | null | undefined): boolean {
-  if (!paymentType) return false;
-  return paymentType === "bank_transfer" || paymentType.endsWith("_va");
-}
-
 type Props = {
   orderId: string;
   orderNumber: string;
   status: "pending_payment" | "paid";
-  paymentType: string | null | undefined;
   savedBank?: {
     bank_name: string | null;
     bank_account_name: string | null;
@@ -64,14 +58,14 @@ export function CancelOrderDialog({
   orderId,
   orderNumber,
   status,
-  paymentType,
   savedBank,
   open,
   onOpenChange,
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const requiresBank = status === "paid" && isVAPayment(paymentType);
+  // Mayar has no refund API — every paid cancellation is refunded by bank transfer.
+  const requiresBank = status === "paid";
   const [step, setStep] = useState<"confirm" | "bank">("confirm");
 
   const [bankName, setBankName] = useState(savedBank?.bank_name ?? "");

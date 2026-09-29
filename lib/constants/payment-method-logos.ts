@@ -7,6 +7,7 @@ export const PAYMENT_METHOD_LOGOS: Record<string, string> = {
   bri_va: "/payments/bri.png",
   permata_va: "/payments/permata_bank.png",
   echannel: "/payments/mandiri.png",
+  mandiri_va: "/payments/mandiri.png",
   indomaret: "/payments/indomaret.png",
   alfamart: "/payments/alfamart.png",
 };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { ChevronRight, MapPin, Package, Phone, User } from "lucide-react";
+import { ChevronRight, MapPin, Package, Phone, Printer, User } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
@@ -249,8 +249,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 {payment.payment_code && (
                   <InfoRow label="Kode Bayar" value={<span className="font-mono">{payment.payment_code}</span>} />
                 )}
-                {payment.midtrans_transaction_id && (
-                  <InfoRow label="Transaction ID" value={<span className="font-mono text-[11px]">{payment.midtrans_transaction_id}</span>} />
+                {(payment.mayar_transaction_id ?? payment.midtrans_transaction_id) && (
+                  <InfoRow
+                    label={payment.provider === "mayar" ? "Mayar Transaction ID" : "Midtrans Transaction ID"}
+                    value={<span className="font-mono text-[11px]">{payment.mayar_transaction_id ?? payment.midtrans_transaction_id}</span>}
+                  />
                 )}
                 <InfoRow label="Jumlah" value={formatRupiah(payment.gross_amount)} />
                 {payment.paid_at && (
@@ -377,7 +380,17 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <InfoRow label="Estimasi" value={`${order.courier_etd} hari`} />
                 )}
                 {shipment?.awb && (
-                  <InfoRow label="Nomor Resi" value={<span className="font-mono font-semibold">{shipment.awb}</span>} />
+                  <>
+                    <InfoRow label="Nomor Resi" value={<span className="font-mono font-semibold">{shipment.awb}</span>} />
+                    <Link
+                      href={`/admin/print/orders/${order.id}/label`}
+                      target="_blank"
+                      className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <Printer size={13} />
+                      Cetak Resi (A5)
+                    </Link>
+                  </>
                 )}
                 {shipment?.status && (
                   <InfoRow label="Status Kurir" value={shipment.status.replace(/_/g, " ").toUpperCase()} />
@@ -443,10 +456,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
                 )}
                 <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
-                  Proses refund manual via{" "}
-                  <strong>Midtrans Dashboard (Production)</strong> → Transactions → {order.order_number} → Refund.
-                  Tombol Refund hanya tersedia di dashboard production, tidak di sandbox.
-                  Transfer langsung ke rekening di atas jika di luar Midtrans.
+                  Mayar tidak menyediakan refund otomatis. Transfer dana manual ke rekening di atas,
+                  lalu ubah status pesanan ke <strong>Dikembalikan</strong> — pelanggan otomatis
+                  menerima notifikasi dan email refund.
                 </p>
               </div>
             </section>

@@ -17,7 +17,6 @@ export function OrderToolbar({
   orderId,
   orderNumber,
   status,
-  paymentType,
   savedBank,
   allReviewed,
   hasOpenComplaint,
@@ -25,7 +24,6 @@ export function OrderToolbar({
   orderId: string;
   orderNumber: string;
   status: OrderStatus;
-  paymentType?: string | null;
   savedBank?: {
     bank_name: string | null;
     bank_account_name: string | null;
@@ -111,7 +109,6 @@ export function OrderToolbar({
           orderId={orderId}
           orderNumber={orderNumber}
           status={status as "pending_payment" | "paid"}
-          paymentType={paymentType}
           savedBank={savedBank}
           open={cancelOpen}
           onOpenChange={setCancelOpen}

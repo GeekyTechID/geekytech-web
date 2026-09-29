@@ -33,7 +33,7 @@ export default async function AdminReviewsPage({
   let query = supabase
     .from("product_reviews")
     .select(
-      `id, rating, comment, deleted_at, created_at, product_id,
+      `id, rating, comment, images, deleted_at, created_at, product_id,
        products:product_id (name, slug),
        profiles:user_id (full_name)`,
       { count: "exact" }

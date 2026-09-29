@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronDown, ChevronUp, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,7 +20,6 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { deleteUnpaidOrderAction } from "@/app/(dashboard)/dashboard/orders/_actions";
 
 type AddressRow = {
   id: string;
@@ -44,22 +42,6 @@ type ShippingOption = {
   price: number;
   etd: string;
 };
-
-declare global {
-  interface Window {
-    snap?: {
-      pay: (
-        token: string,
-        opts: {
-          onSuccess?: (result: unknown) => void;
-          onPending?: (result: unknown) => void;
-          onError?: (result: unknown) => void;
-          onClose?: () => void;
-        },
-      ) => void;
-    };
-  }
-}
 
 export type AvailableCoupon = {
   id: string;
@@ -114,30 +96,6 @@ function CourierLogo({ code, name, className = "h-7 w-auto max-w-[72px]" }: { co
   );
 }
 
-// Defined outside component — stateless, no deps on React state
-function loadSnapScript(clientKey: string, isProduction: boolean): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") return reject(new Error("no window"));
-    if (window.snap) return resolve();
-    const existing = document.querySelector<HTMLScriptElement>('script[data-midtrans-snap="1"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("snap load error")), { once: true });
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = isProduction
-      ? "https://app.midtrans.com/snap/snap.js"
-      : "https://app.sandbox.midtrans.com/snap/snap.js";
-    s.async = true;
-    s.dataset.midtransSnap = "1";
-    s.setAttribute("data-client-key", clientKey);
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("snap load error"));
-    document.body.appendChild(s);
-  });
-}
-
 type CheckoutPageClientProps = {
   lines: CartLineView[];
   addresses: AddressRow[];
@@ -147,7 +105,6 @@ type CheckoutPageClientProps = {
 };
 
 export function CheckoutPageClient({ lines, addresses, initialAddressId, availableCoupons, isBuyNow = false }: CheckoutPageClientProps) {
-  const router = useRouter();
   const [addressId, setAddressId] = useState<string>(initialAddressId ?? addresses[0]?.id ?? "");
   const [shippingOpen, setShippingOpen] = useState(true);
   const [ratesLoading, setRatesLoading] = useState(false);
@@ -159,8 +116,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   const [couponApplying, setCouponApplying] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [doneState, setDoneState] = useState<{ orderId: string; orderNumber: string } | null>(null);
-  const [countdown, setCountdown] = useState(5);
 
   const subtotalGross = useMemo(() => lines.reduce((s, l) => s + l.listPrice * l.qty, 0), [lines]);
   const subtotalNet = useMemo(() => lines.reduce((s, l) => s + l.unitPrice * l.qty, 0), [lines]);
@@ -280,17 +235,6 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
     void loadRates();
   }, [loadRates]);
 
-  useEffect(() => {
-    if (!doneState) return;
-    window.scrollTo({ top: 0, behavior: "instant" });
-    if (countdown <= 0) {
-      router.push(`/dashboard/orders/${doneState.orderId}`);
-      return;
-    }
-    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [doneState, countdown, router]);
-
   const applyCoupon = useCallback(async (overrideCode?: string, silent = false) => {
     const code = (overrideCode ?? couponInput).trim();
     if (!code) {
@@ -376,91 +320,24 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
         data?: {
           orderId: string;
           orderNumber: string;
-          snapToken: string | null;
-          clientKey: string | null;
-          isProduction: boolean;
+          paymentUrl: string;
         };
         error?: string;
       };
       if (!json.success || !json.data) {
         toast.error(json.error ?? "Checkout gagal.");
+        setSubmitting(false);
         return;
       }
 
-      const { orderId, orderNumber, snapToken, clientKey, isProduction } = json.data;
-
-      if (snapToken && clientKey) {
-        await loadSnapScript(clientKey, isProduction);
-        if (!window.snap) {
-          toast.error("Snap Midtrans tidak siap.");
-          router.push(`/dashboard/orders/${orderId}`);
-          return;
-        }
-        let paymentInitiated = false;
-        window.snap.pay(snapToken, {
-          onSuccess: () => {
-            void fetch(`/api/orders/${orderId}/verify-payment`, { method: "POST" });
-            setCountdown(5);
-            setDoneState({ orderId, orderNumber });
-          },
-          onPending: () => {
-            paymentInitiated = true;
-            router.push(`/dashboard/orders/${orderId}`);
-          },
-          onError: () => {
-            toast.error("Pembayaran gagal. Silakan coba lagi atau pilih metode lain.");
-            router.push(`/dashboard/orders/${orderId}`);
-          },
-          onClose: () => {
-            if (!paymentInitiated) {
-              void deleteUnpaidOrderAction(orderId);
-            }
-          },
-        });
-      } else {
-        toast.success("Pesanan dibuat. Lanjutkan pembayaran dari halaman pesanan.");
-        router.push(`/dashboard/orders/${orderId}`);
-      }
+      // Hosted Mayar payment page; Mayar redirects back to the order detail page.
+      // Keep the button in its loading state while the browser navigates away.
+      window.location.assign(json.data.paymentUrl);
     } catch {
       toast.error("Terjadi kesalahan jaringan.");
-    } finally {
       setSubmitting(false);
     }
   };
-
-  if (doneState) {
-    return (
-      <div className="px-4 py-20 text-[#1d1d1f]">
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-24">
-          <div className="py-2 sm:py-3">
-            <CartCheckoutStepper current={4} />
-          </div>
-        </div>
-        <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="w-full max-w-md text-center">
-          <div className="flex justify-center">
-            <CheckCircle2 className="h-16 w-16 text-[#EA5329]" strokeWidth={1.5} />
-          </div>
-          <h1 className="mt-6 text-3xl font-semibold text-[#1d1d1f]">
-            Pembayaran Berhasil
-          </h1>
-          <p className="mt-3 text-[17px] leading-relaxed text-[#5c5c5c]">
-            Pesanan{" "}
-            <span className="font-semibold text-[#1d1d1f]">{doneState.orderNumber}</span>{" "}
-            sudah diterima dan sedang diproses.
-          </p>
-          <p className="mt-5 text-sm text-[#7a7a7a]">
-            Dialihkan ke halaman pesanan dalam{" "}
-            <span className="font-semibold tabular-nums text-[#1d1d1f]">{countdown}</span> detik…
-          </p>
-          <Button asChild variant="primary" className="mt-8">
-            <Link href={`/dashboard/orders/${doneState.orderId}`}>Lihat Pesanan</Link>
-          </Button>
-        </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -768,7 +645,7 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
                 Beli sekarang
               </Button>
               <p className="mt-3 text-center text-[10px] leading-relaxed text-[#9a9590]">
-                Pilih metode pembayaran di langkah berikutnya. Dengan melanjutkan, Anda menyetujui syarat pembayaran Midtrans dan kebijakan toko.
+                Pilih metode pembayaran di langkah berikutnya. Dengan melanjutkan, Anda menyetujui syarat pembayaran Mayar dan kebijakan toko.
               </p>
             </div>
 

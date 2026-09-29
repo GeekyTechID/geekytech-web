@@ -12,6 +12,7 @@ const variantClass = {
   authMobile: "h-8 w-[11rem]",
   adminLogin: "h-9 w-[12rem]",
   maintenance: "h-11 w-[16rem] sm:h-12 sm:w-[18rem] mx-auto",
+  shippingLabel: "h-7 w-[9.5rem]",
 } as const;
 
 export type SiteLogoVariant = keyof typeof variantClass;

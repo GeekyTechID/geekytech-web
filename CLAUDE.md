@@ -20,7 +20,7 @@ Animation           : GSAP
 State Management    : Zustand
 Form & Validasi     : React Hook Form + Zod
 Database            : Supabase (PostgreSQL + Auth + Storage)
-Payment             : Midtrans Snap
+Payment             : Mayar (Headless API V2)
 Shipping            : Biteship
 Email               : Resend
 Analytics           : Google Analytics 4
@@ -111,7 +111,7 @@ refer to .cursor/rules/design.mdc
     /api/orders/...
     /api/cart/...
     /api/checkout/...
-    /api/webhooks/midtrans/route.ts   ← KRITIS: verify signature
+    /api/webhooks/mayar/route.ts      ← KRITIS: verify x-callback-token
     /api/webhooks/biteship/route.ts   ← KRITIS: verify signature
     /api/shipping/rates/route.ts
     /api/shipping/track/route.ts
@@ -137,7 +137,8 @@ refer to .cursor/rules/design.mdc
 
 /lib
   /supabase/                 → client, server, middleware
-  /midtrans/                 → helper create transaction, verify signature
+  /mayar/                    → client Payment Request, verify webhook token
+  /payments/                 → settlement, reconcile, close link
   /biteship/                 → helper check rates, create order, track
   /resend/                   → email templates & sender
   /gsap/                     → animasi reusable
@@ -160,10 +161,10 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=        ← hanya server, jangan expose ke client
 
-# Midtrans
-NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=
-MIDTRANS_SERVER_KEY=              ← hanya server
-MIDTRANS_IS_PRODUCTION=false      ← true saat production
+# Mayar
+MAYAR_API_KEY=                    ← hanya server (Read & Write)
+MAYAR_WEBHOOK_TOKEN=              ← hanya server; dicocokkan dengan header x-callback-token
+MAYAR_IS_PRODUCTION=false         ← true saat production (api.mayar.id), false = sandbox (api.mayar.club)
 
 # Biteship
 BITESHIP_API_KEY=                 ← hanya server
@@ -210,7 +211,7 @@ NEXTAUTH_SECRET=                  ← random string
 ### API Routes
 
 - Semua API route wajib validasi input dengan Zod
-- Webhook Midtrans: **wajib** verify signature sebelum proses apapun
+- Webhook Mayar: **wajib** verify token sebelum proses apapun
 - Webhook Biteship: **wajib** verify signature sebelum proses apapun
 - Rate limiting aktif di semua endpoint publik
 - Return format konsisten:
@@ -221,19 +222,22 @@ NEXTAUTH_SECRET=                  ← random string
   { success: false, error: "pesan error" }
   ```
 
-### Midtrans
+### Mayar
 
-- Pakai **Snap** (bukan Core API)
-- Signature verification: `SHA512(orderId + statusCode + grossAmount + serverKey)`
-- Handle semua status: `pending`, `settlement`, `capture`, `deny`, `expire`, `cancel`, `challenge`
-- Cek idempotency sebelum update database (cegah duplikat proses webhook)
-- Payment timeout: 3 jam (bisa dikonfigurasi dari `settings` table)
+- Pakai **Headless API V2 — Payment Request** (`/hl/v2/payments/create`), user di-redirect ke link bayar Mayar (V1 deprecated 1 Okt 2026)
+- Sandbox `api.mayar.club` (key dari web.mayar.club), production `api.mayar.id` — key tidak bisa dipakai silang
+- Webhook: verifikasi header `x-callback-token` = `MAYAR_WEBHOOK_TOKEN` sebelum proses apapun
+- Payload webhook hanya untuk mencari order — status & nominal **selalu** dicek ulang via API (`GET /payments/{id}`) sebelum settle
+- Hanya event `payment.received` yang diproses; tidak ada event expire/cancel (expiry ditangani pg_cron)
+- Settlement idempotent: transisi `pending_payment → paid` di-claim atomik (`lib/payments/apply-paid-order.ts`)
+- Tidak ada API refund — refund = transfer manual admin ke rekening pelanggan, lalu status order → `refunded`
+- Payment timeout: maks 3 jam (setting `payment_timeout_hours`, dibatasi window pg_cron)
 
 ### Biteship
 
 - Selalu sertakan berat (gram) dan dimensi saat create order
 - Ambil alamat origin dari `settings` table, bukan hardcode
-- Create shipment hanya setelah Midtrans status `settlement`
+- Create shipment hanya setelah pembayaran Mayar terkonfirmasi `paid`
 - Simpan AWB ke tabel `shipments` setelah dapat dari Biteship
 
 ### Stok
@@ -269,7 +273,7 @@ NEXTAUTH_SECRET=                  ← random string
 - RLS aktif di semua tabel Supabase
 - `/dashboard/`* → redirect ke `/login` jika belum login (middleware)
 - `/admin/*` → redirect jika bukan role `admin` (middleware)
-- Midtrans webhook signature diverifikasi
+- Mayar webhook token diverifikasi
 - Biteship webhook signature diverifikasi
 - `SUPABASE_SERVICE_ROLE_KEY` tidak pernah ke client
 - Rate limiting di API routes publik
@@ -350,7 +354,7 @@ Selalu coding di branch `development`. Merge ke `main` hanya setelah QA.
 ## Referensi
 
 - Supabase Docs: [https://supabase.com/docs](https://supabase.com/docs)
-- Midtrans Snap Docs: [https://docs.midtrans.com/reference/snap-js](https://docs.midtrans.com/reference/snap-js)
+- Mayar API Docs: [https://docs.mayar.id/api-reference-v2/introduction](https://docs.mayar.id/api-reference-v2/introduction)
 - Biteship API Docs: [https://biteship.com/id/docs](https://biteship.com/id/docs)
 - Resend Docs: [https://resend.com/docs](https://resend.com/docs)
 - GSAP Docs: [https://gsap.com/docs/v3/](https://gsap.com/docs/v3/)

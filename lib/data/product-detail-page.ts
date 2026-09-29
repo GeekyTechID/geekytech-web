@@ -152,7 +152,7 @@ export async function fetchProductReviewsForStore(
     const supabase = createServiceClient();
     const { data: rows, error } = await supabase
       .from("product_reviews")
-      .select("id, rating, comment, created_at, user_id")
+      .select("id, rating, comment, images, created_at, user_id")
       .eq("product_id", productId)
       .eq("is_approved", true)
       .is("deleted_at", null)
@@ -175,6 +175,7 @@ export async function fetchProductReviewsForStore(
       id: r.id,
       rating: r.rating,
       comment: r.comment,
+      images: r.images ?? [],
       createdAt: r.created_at,
       authorName: nameByUser.get(r.user_id) ?? "Pembeli",
     }));

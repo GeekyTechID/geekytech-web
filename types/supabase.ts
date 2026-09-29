@@ -925,13 +925,17 @@ export type Database = {
           expiry_time: string | null
           gross_amount: number
           id: string
+          mayar_payment_id: string | null
+          mayar_transaction_id: string | null
           midtrans_order_id: string
           midtrans_transaction_id: string | null
           order_id: string
           paid_at: string | null
           payment_code: string | null
           payment_type: string | null
+          payment_url: string | null
           pdf_url: string | null
+          provider: string
           raw_response: Json | null
           status: Database["public"]["Enums"]["payment_status"]
           updated_at: string
@@ -942,13 +946,17 @@ export type Database = {
           expiry_time?: string | null
           gross_amount: number
           id?: string
+          mayar_payment_id?: string | null
+          mayar_transaction_id?: string | null
           midtrans_order_id: string
           midtrans_transaction_id?: string | null
           order_id: string
           paid_at?: string | null
           payment_code?: string | null
           payment_type?: string | null
+          payment_url?: string | null
           pdf_url?: string | null
+          provider?: string
           raw_response?: Json | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
@@ -959,13 +967,17 @@ export type Database = {
           expiry_time?: string | null
           gross_amount?: number
           id?: string
+          mayar_payment_id?: string | null
+          mayar_transaction_id?: string | null
           midtrans_order_id?: string
           midtrans_transaction_id?: string | null
           order_id?: string
           paid_at?: string | null
           payment_code?: string | null
           payment_type?: string | null
+          payment_url?: string | null
           pdf_url?: string | null
+          provider?: string
           raw_response?: Json | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
@@ -1025,6 +1037,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          images: string[]
           is_approved: boolean
           order_id: string | null
           product_id: string
@@ -1037,6 +1050,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          images?: string[]
           is_approved?: boolean
           order_id?: string | null
           product_id: string
@@ -1049,6 +1063,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          images?: string[]
           is_approved?: boolean
           order_id?: string | null
           product_id?: string

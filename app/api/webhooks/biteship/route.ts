@@ -3,6 +3,7 @@ import { createNotification } from "@/lib/notifications/create-notification";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { sendOrderShipped } from "@/lib/email/send-order-shipped";
 import { sendOrderDelivered } from "@/lib/email/send-order-delivered";
+import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import type { Database, Json } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
@@ -222,8 +223,9 @@ export async function POST(req: Request) {
     }
 
     // ── Notifikasi user ──
+    const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
     if (orderRow?.user_id && orderRow.order_number) {
-      if (newShipStatus === "picking_up" || newShipStatus === "picked") {
+      if (notifyStage === "packing") {
         await createNotification({
           userId: orderRow.user_id,
           title: "Pesanan Sedang Dikemas",
@@ -231,7 +233,7 @@ export async function POST(req: Request) {
           type: "order_shipped",
           data: { orderId: shipment.order_id, awb: awb ?? undefined },
         });
-      } else if (newShipStatus === "dropping_off") {
+      } else if (notifyStage === "in_transit") {
         await createNotification({
           userId: orderRow.user_id,
           title: "Pesanan Dalam Perjalanan",
@@ -239,7 +241,7 @@ export async function POST(req: Request) {
           type: "order_in_transit",
           data: { orderId: shipment.order_id, awb: awb ?? undefined },
         });
-      } else if (newShipStatus === "delivered") {
+      } else if (notifyStage === "delivered") {
         await createNotification({
           userId: orderRow.user_id,
           title: "Pesanan Telah Sampai",
