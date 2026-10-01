@@ -1,5 +1,7 @@
 import "server-only";
 
+import { after } from "next/server";
+
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBiteshipOrder } from "@/lib/biteship/create-order";
 import { ON_DEMAND_COURIERS, parseOriginCoords, resolveOnDemandCoords } from "@/lib/shipping/on-demand-coords";
@@ -92,17 +94,19 @@ export async function applyPaidOrder(params: {
       data: { orderId: order.id, orderNumber },
     });
 
-    getUserEmail(order.user_id).then((user) => {
-      if (user) {
-        sendPaymentConfirmed({
-          to: user.email,
-          name: user.name,
-          orderNumber,
-          orderId: order.id,
-          total: order.total,
-        }).catch(() => {});
-      }
-    }).catch(() => {});
+    const userId = order.user_id;
+    // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
+    after(async () => {
+      const user = await getUserEmail(userId).catch(() => null);
+      if (!user) return;
+      await sendPaymentConfirmed({
+        to: user.email,
+        name: user.name,
+        orderNumber,
+        orderId: order.id,
+        total: order.total,
+      }).catch(() => {});
+    });
   }
 
   await createAdminNotification({
@@ -144,13 +148,14 @@ export async function applyPaidOrder(params: {
           type: "low_stock",
           data: { variantId: item.variant_id, stock: newStock, orderId: order.id },
         });
-        sendLowStockAlert({
+        const lowStock = {
           productName: item.product_name,
           variantName: item.variant_name,
           sku: item.sku ?? null,
           stock: newStock,
           orderNumber,
-        }).catch(() => {});
+        };
+        after(() => sendLowStockAlert(lowStock).catch(() => {}));
       }
       await svc.from("stock_history").insert({
         variant_id: item.variant_id,

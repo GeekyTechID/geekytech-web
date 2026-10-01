@@ -1,3 +1,5 @@
+import { after } from "next/server";
+
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getUserEmail } from "@/lib/email/get-user-email";
@@ -225,6 +227,7 @@ export async function POST(req: Request) {
     // ── Notifikasi user ──
     const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
     if (orderRow?.user_id && orderRow.order_number) {
+      const userId = orderRow.user_id;
       if (notifyStage === "packing") {
         await createNotification({
           userId: orderRow.user_id,
@@ -257,32 +260,33 @@ export async function POST(req: Request) {
         newShipStatus === "picked" ||
         newShipStatus === "dropping_off"
       ) {
-        getUserEmail(orderRow.user_id).then((user) => {
-          if (user) {
-            sendOrderShipped({
-              to: user.email,
-              name: user.name,
-              orderNumber: orderRow.order_number!,
-              orderId: orderRow.id,
-              awb: awb ?? undefined,
-              courierCompany: body.courier_company ?? undefined,
-              trackingUrl: body.courier_link ?? undefined,
-            }).catch(() => {});
-          }
-        }).catch(() => {});
+        // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
+        after(async () => {
+          const user = await getUserEmail(userId).catch(() => null);
+          if (!user) return;
+          await sendOrderShipped({
+            to: user.email,
+            name: user.name,
+            orderNumber: orderRow.order_number!,
+            orderId: orderRow.id,
+            awb: awb ?? undefined,
+            courierCompany: body.courier_company ?? undefined,
+            trackingUrl: body.courier_link ?? undefined,
+          }).catch(() => {});
+        });
       }
 
       if (newShipStatus === "delivered") {
-        getUserEmail(orderRow.user_id).then((user) => {
-          if (user) {
-            sendOrderDelivered({
-              to: user.email,
-              name: user.name,
-              orderNumber: orderRow.order_number!,
-              orderId: orderRow.id,
-            }).catch(() => {});
-          }
-        }).catch(() => {});
+        after(async () => {
+          const user = await getUserEmail(userId).catch(() => null);
+          if (!user) return;
+          await sendOrderDelivered({
+            to: user.email,
+            name: user.name,
+            orderNumber: orderRow.order_number!,
+            orderId: orderRow.id,
+          }).catch(() => {});
+        });
       }
     }
 

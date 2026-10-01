@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { z } from "zod";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
@@ -472,41 +473,46 @@ export async function POST(req: Request) {
       data: { orderId: order.id, orderNumber: order.order_number },
     });
 
-    if (user.email) {
-      sendOrderConfirmation({
-        to: user.email,
-        name: address.recipient,
-        orderNumber: order.order_number,
-        orderId: order.id,
-        items: orderLines.map((l) => ({
-          name: l.productName,
-          variantName: l.variantName,
-          qty: l.qty,
-          unitPrice: Math.round(l.unitPrice),
-        })),
-        subtotal: subtotalRounded,
-        discount: discountAmount,
-        shipping: shippingCost,
-        fee: APP_SERVICE_FEE,
-        total,
-        courierName: ship.courierName,
-        serviceName: ship.serviceName,
-        etd: ship.etd,
-      }).catch(() => {});
+    // after(): Vercel membekukan fungsi setelah response terkirim — email tanpa
+    // after() terputus di tengah jalan ("Unable to fetch data").
+    const email = user.email;
+    if (email) {
+      after(async () => {
+        await sendOrderConfirmation({
+          to: email,
+          name: address.recipient,
+          orderNumber: order.order_number,
+          orderId: order.id,
+          items: orderLines.map((l) => ({
+            name: l.productName,
+            variantName: l.variantName,
+            qty: l.qty,
+            unitPrice: Math.round(l.unitPrice),
+          })),
+          subtotal: subtotalRounded,
+          discount: discountAmount,
+          shipping: shippingCost,
+          fee: APP_SERVICE_FEE,
+          total,
+          courierName: ship.courierName,
+          serviceName: ship.serviceName,
+          etd: ship.etd,
+        }).catch(() => {});
 
-      sendPaymentInstructions({
-        to: user.email,
-        name: address.recipient,
-        orderNumber: order.order_number,
-        orderId: order.id,
-        total,
-        paymentType: null,
-        vaBank: null,
-        vaNumber: null,
-        paymentCode: null,
-        paymentUrl,
-        expiryTime: expiresAt.toISOString(),
-      }).catch(() => {});
+        await sendPaymentInstructions({
+          to: email,
+          name: address.recipient,
+          orderNumber: order.order_number,
+          orderId: order.id,
+          total,
+          paymentType: null,
+          vaBank: null,
+          vaNumber: null,
+          paymentCode: null,
+          paymentUrl,
+          expiryTime: expiresAt.toISOString(),
+        }).catch(() => {});
+      });
     }
 
     return Response.json({

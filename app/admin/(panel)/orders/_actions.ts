@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
@@ -192,11 +193,13 @@ export async function updateOrderStatus(
       .eq("status", "paid");
 
     if (currentOrder.user_id) {
-      getUserEmail(currentOrder.user_id as string).then((user) => {
-        if (user) {
-          sendRefundProcessed({ to: user.email, name: user.name, orderNumber: orderNum }).catch(() => {});
-        }
-      }).catch(() => {});
+      const userId = currentOrder.user_id as string;
+      // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
+      after(async () => {
+        const user = await getUserEmail(userId).catch(() => null);
+        if (!user) return;
+        await sendRefundProcessed({ to: user.email, name: user.name, orderNumber: orderNum }).catch(() => {});
+      });
     }
   }
 

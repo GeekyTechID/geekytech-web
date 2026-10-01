@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { after, NextResponse, type NextRequest } from "next/server";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
@@ -74,9 +74,13 @@ export async function GET(request: NextRequest) {
           user.user_metadata?.full_name ??
           user.user_metadata?.name ??
           user.email;
-        sendWelcomeEmail({ to: user.email, name }).catch((err) => {
-          console.error("[auth/callback] sendWelcomeEmail error:", err);
-        });
+        const email = user.email;
+        // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
+        after(() =>
+          sendWelcomeEmail({ to: email, name }).catch((err) => {
+            console.error("[auth/callback] sendWelcomeEmail error:", err);
+          }),
+        );
       }
       return response;
     }
