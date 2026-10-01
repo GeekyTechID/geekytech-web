@@ -45,20 +45,6 @@ function orderNumberFromExtraData(data: Record<string, unknown>): string | null 
 
 export async function POST(req: Request) {
   if (!verifyMayarWebhookToken(req.headers)) {
-    // TEMP diagnostic (sandbox webhook test): names only, never header/token values.
-    let bodyKeys: string[] = [];
-    try {
-      const body: unknown = await req.clone().json();
-      if (body && typeof body === "object") bodyKeys = Object.keys(body);
-    } catch {
-      bodyKeys = ["<non-json>"];
-    }
-    console.warn("[mayar-webhook] 401", {
-      envTokenSet: !!process.env.MAYAR_WEBHOOK_TOKEN?.trim(),
-      hasCallbackTokenHeader: req.headers.has("x-callback-token"),
-      headerNames: [...req.headers.keys()],
-      bodyKeys,
-    });
     return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
