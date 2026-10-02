@@ -11,6 +11,7 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp-link";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import { closePendingMayarPayments } from "@/lib/payments/close-pending";
+import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { MANUAL_REFUND_DURATION } from "@/lib/payments/manual-refund";
 import { REVIEW_IMAGES_MAX, isOwnReviewImageUrl } from "@/lib/constants/review-images";
 
@@ -165,6 +166,30 @@ export async function cancelOrderAction(
             .from("products")
             .update({ total_sold: Math.max(0, p.total_sold - qty) })
             .eq("id", productId);
+        }
+      }
+    }
+
+    // Pesanan lunas sudah punya order Biteship (dibuat saat settlement) — batalkan
+    // juga di Biteship, sama seperti pembatalan dari admin. Best-effort.
+    if (st === "paid") {
+      const { data: shipment } = await svc
+        .from("shipments")
+        .select("biteship_order_id, status")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      if (
+        shipment?.biteship_order_id &&
+        !["delivered", "cancelled", "returned"].includes(shipment.status ?? "")
+      ) {
+        const biteshipResult = await cancelBiteshipOrder(shipment.biteship_order_id);
+        if (biteshipResult.ok) {
+          await svc
+            .from("shipments")
+            .update({ status: "cancelled", updated_at: new Date().toISOString() })
+            .eq("order_id", orderId);
+        } else {
+          console.error("[cancelOrderAction] Biteship cancel failed:", biteshipResult.error);
         }
       }
     }
