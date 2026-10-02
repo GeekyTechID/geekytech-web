@@ -18,3 +18,13 @@ export const VALID_TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
   shipped: ["delivered"],
   delivered: ["completed"],
 };
+
+/**
+ * Status tujuan yang boleh dipilih admin. Pesanan batal yang sudah lunas
+ * di-refund manual (Mayar tidak punya API refund), lalu admin menandainya
+ * "refunded" — hanya kalau memang ada pembayaran `paid`.
+ */
+export function allowedNextStatuses(current: OrderStatus, hasPaidPayment: boolean): OrderStatus[] {
+  if (current === "cancelled") return hasPaidPayment ? ["refunded"] : [];
+  return VALID_TRANSITIONS[current] ?? [];
+}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/supabase";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type PromotionType = "second_products" | "featured_products";
 
@@ -45,6 +46,7 @@ function revalidatePromotion(type: PromotionType, id?: string) {
 export async function createPromotion(
   data: PromotionFormData
 ): Promise<{ error?: string; id?: string }> {
+  await requireAdmin();
   if (!data.title.trim()) return { error: "Judul promosi wajib diisi." };
   if (data.max_items < 1) return { error: "Jumlah item harus minimal 1." };
 
@@ -97,6 +99,7 @@ export async function updatePromotion(
   id: string,
   data: PromotionFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.title.trim()) return { error: "Judul promosi wajib diisi." };
   if (data.max_items < 1) return { error: "Jumlah item harus minimal 1." };
 
@@ -149,6 +152,7 @@ export async function togglePromotionActive(
   type: PromotionType,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("promotions")
@@ -164,6 +168,7 @@ export async function deletePromotion(
   id: string,
   type: PromotionType
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase.from("promotions").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -175,6 +180,7 @@ export async function createPromotionBannerInline(
   promotionType: PromotionType,
   formData: FormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return {};
 

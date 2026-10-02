@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { syncProductRating } from "@/lib/products/sync-product-rating";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export async function deleteReview(reviewId: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { data: review, error: reviewError } = await supabase
     .from("product_reviews")
@@ -38,6 +40,7 @@ const updateReviewSchema = z.object({
 });
 
 export async function updateReview(input: z.infer<typeof updateReviewSchema>): Promise<{ error?: string }> {
+  await requireAdmin();
   const parsed = updateReviewSchema.safeParse(input);
   if (!parsed.success) return { error: "Data tidak valid." };
 

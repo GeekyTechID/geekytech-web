@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type SimpleActionResult = { success: true } | { success: false; error: string };
 
@@ -23,6 +24,7 @@ async function getAdminUser() {
 }
 
 export async function markAdminNotificationReadAction(notificationId: string): Promise<SimpleActionResult> {
+  await requireAdmin();
   try {
     const parsed = z.string().uuid().safeParse(notificationId);
     if (!parsed.success) return { success: false, error: "Notifikasi tidak valid." };
@@ -45,6 +47,7 @@ export async function markAdminNotificationReadAction(notificationId: string): P
 }
 
 export async function markAllAdminNotificationsReadAction(): Promise<SimpleActionResult> {
+  await requireAdmin();
   try {
     const ctx = await getAdminUser();
     if (!ctx) return { success: false, error: "Akses ditolak." };

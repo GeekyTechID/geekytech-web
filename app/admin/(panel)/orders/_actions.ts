@@ -11,7 +11,8 @@ import { closePendingMayarPayments } from "@/lib/payments/close-pending";
 import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { sendRefundProcessed } from "@/lib/email/send-refund-processed";
-import { ORDER_STATUSES, type OrderStatus } from "./_constants";
+import { requireAdmin } from "@/lib/auth/require-admin";
+import { ORDER_STATUSES, allowedNextStatuses, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
@@ -46,6 +47,7 @@ export async function updateOrderStatus(
   newStatus: OrderStatus,
   note?: string
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!(ORDER_STATUSES as readonly string[]).includes(newStatus)) {
     return { error: "Status tidak valid." };
   }
@@ -54,9 +56,15 @@ export async function updateOrderStatus(
 
   const { data: currentOrder } = await supabase
     .from("orders")
-    .select("status, user_id, order_number")
+    .select("status, user_id, order_number, payments(status)")
     .eq("id", orderId)
     .single();
+  if (!currentOrder) return { error: "Pesanan tidak ditemukan." };
+
+  const hasPaidPayment = (currentOrder.payments ?? []).some((p) => p.status === "paid");
+  if (!allowedNextStatuses(currentOrder.status as OrderStatus, hasPaidPayment).includes(newStatus)) {
+    return { error: "Perubahan status ini tidak diizinkan." };
+  }
 
   const { error } = await supabase
     .from("orders")
@@ -235,6 +243,7 @@ export async function updateOrderStatus(
 export async function syncBiteshipAWB(
   orderId: string,
 ): Promise<{ error?: string; awb?: string | null; status?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { data: shipment } = await supabase
@@ -345,6 +354,7 @@ export async function updateOrderAWB(
   orderId: string,
   awb: string
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const trimmed = awb.trim();
   if (!trimmed) return { error: "Nomor AWB tidak boleh kosong." };
 
@@ -416,6 +426,7 @@ export async function updateOrderAWB(
 export async function confirmReadyForPickup(
   orderId: string,
 ): Promise<{ error?: string; awb?: string | null }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { data: shipment } = await supabase

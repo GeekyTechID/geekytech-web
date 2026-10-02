@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 const categorySchema = z.object({
   name: z.string().min(1, "Nama wajib diisi").max(100, "Nama max 100 karakter"),
@@ -27,6 +28,7 @@ export type CategoryInput = z.infer<typeof categorySchema>;
 type ActionResult = { error: string } | { id: string };
 
 export async function createCategory(data: CategoryInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = categorySchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -58,6 +60,7 @@ export async function updateCategory(
   id: string,
   data: CategoryInput
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = categorySchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -90,6 +93,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { count: childCount } = await supabase
@@ -122,6 +126,7 @@ export async function toggleCategoryStatus(
   id: string,
   is_active: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase

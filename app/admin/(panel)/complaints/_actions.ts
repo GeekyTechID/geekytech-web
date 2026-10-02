@@ -9,12 +9,14 @@ import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
 import { ON_DEMAND_COURIERS, parseOriginCoords } from "@/lib/shipping/on-demand-coords";
 import type { CheckoutShippingOption } from "@/lib/shipping/checkout-shipping-options";
 import { COMPLAINT_STATUSES, type ComplaintStatus } from "@/lib/constants/complaint-status";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export async function updateComplaintStatus(
   complaintId: string,
   newStatus: ComplaintStatus,
   adminNote?: string
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!(COMPLAINT_STATUSES as readonly string[]).includes(newStatus)) {
     return { error: "Status tidak valid." };
   }
@@ -46,6 +48,7 @@ export async function updateAdminNote(
   complaintId: string,
   adminNote: string
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase
@@ -64,6 +67,7 @@ export async function sendAdminComplaintMessage(
   complaintId: string,
   message: string,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const { createClient: createAuthClient } = await import("@/lib/supabase/server");
   const authClient = await createAuthClient();
   const { data: { user } } = await authClient.auth.getUser();
@@ -101,6 +105,7 @@ export async function sendAdminComplaintMessage(
 export async function approveReturn(
   complaintId: string,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { data: complaint } = await supabase
@@ -153,6 +158,7 @@ export async function confirmReturnReceived(
   returnId: string,
   complaintId: string,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase
@@ -179,6 +185,7 @@ export async function fetchReplacementShippingRates(input: {
   destinationPostalCode: number;
   items: { name: string; value: number; quantity: number; weight: number }[];
 }): Promise<{ ok: true; options: ReplacementShippingOption[] } | { ok: false; error: string }> {
+  await requireAdmin();
   if (!Number.isFinite(input.destinationPostalCode) || input.destinationPostalCode <= 0) {
     return { ok: false, error: "Kode pos tujuan tidak valid." };
   }
@@ -243,6 +250,7 @@ export async function createReplacementShipment(input: {
   courierType: string;
   userId: string;
 }): Promise<{ error?: string }> {
+  await requireAdmin();
   const result = await createBiteshipOrder({
     destinationName: input.destinationName,
     destinationPhone: input.destinationPhone,

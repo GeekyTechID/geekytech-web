@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/supabase";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type HomeSectionKey =
   | "main_banner"
@@ -22,6 +23,7 @@ export type HomeSection = {
 };
 
 export async function saveHomeSections(sections: HomeSection[]): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("settings")

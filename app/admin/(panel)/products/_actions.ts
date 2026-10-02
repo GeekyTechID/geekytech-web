@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type ImageInput = {
   url: string;
@@ -68,6 +69,7 @@ function findDuplicateSku(variants: VariantInput[]) {
 }
 
 export async function createProduct(data: ProductInput): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const duplicateSkuError = findDuplicateSku(data.variants);
   if (duplicateSkuError) return { error: duplicateSkuError };
@@ -164,6 +166,7 @@ export async function updateProduct(
   id: string,
   data: ProductInput
 ): Promise<ActionResult> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const duplicateSkuError = findDuplicateSku(data.variants);
   if (duplicateSkuError) return { error: duplicateSkuError };
@@ -345,6 +348,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase
@@ -361,6 +365,7 @@ export async function toggleProductStatus(
   id: string,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase
@@ -374,6 +379,7 @@ export async function toggleProductStatus(
 }
 
 export async function bulkDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!ids.length) return {};
   const supabase = await createServiceClient();
 
@@ -391,6 +397,7 @@ export async function bulkSetBrand(
   ids: string[],
   brandId: string | null,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!ids.length) return {};
   const supabase = await createServiceClient();
 
@@ -409,6 +416,7 @@ export async function bulkSetStatus(
   ids: string[],
   isActive: boolean,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!ids.length) return {};
   const supabase = await createServiceClient();
 
@@ -426,6 +434,7 @@ export async function bulkSetCondition(
   ids: string[],
   condition: "new" | "second",
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!ids.length) return {};
   const supabase = await createServiceClient();
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type FaqFormData = {
   question: string;
@@ -14,6 +15,7 @@ export type FaqFormData = {
 export async function createFaq(
   data: FaqFormData
 ): Promise<{ error?: string; id?: string }> {
+  await requireAdmin();
   if (!data.question.trim()) return { error: "Pertanyaan wajib diisi." };
   if (!data.answer.trim()) return { error: "Jawaban wajib diisi." };
 
@@ -40,6 +42,7 @@ export async function updateFaq(
   id: string,
   data: FaqFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.question.trim()) return { error: "Pertanyaan wajib diisi." };
   if (!data.answer.trim()) return { error: "Jawaban wajib diisi." };
 
@@ -62,6 +65,7 @@ export async function updateFaq(
 }
 
 export async function deleteFaq(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase.from("faqs").delete().eq("id", id);
 
@@ -75,6 +79,7 @@ export async function toggleFaqActive(
   id: string,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("faqs")

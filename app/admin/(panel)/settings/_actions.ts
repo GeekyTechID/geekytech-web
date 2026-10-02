@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/supabase";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export async function saveSetting(key: string, value: unknown): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("settings")

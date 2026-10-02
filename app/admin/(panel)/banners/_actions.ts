@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { parseFlashSaleIdFromBannerTemplate } from "@/app/admin/(panel)/promotions/flash-sale/_lib/flash-sale-banner-template";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 function revalidateBannerRelatedPaths(template: string | null) {
   revalidatePath("/admin/banners");
@@ -27,6 +28,7 @@ export type BannerFormData = {
 };
 
 export async function createBanner(data: BannerFormData): Promise<{ error?: string; id?: string }> {
+  await requireAdmin();
   if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
   const supabase = await createServiceClient();
@@ -55,6 +57,7 @@ export async function updateBanner(
   id: string,
   data: BannerFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
   const supabase = await createServiceClient();
@@ -82,6 +85,7 @@ export async function toggleBannerActive(
   id: string,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { data: row } = await supabase.from("banners").select("template").eq("id", id).maybeSingle();
 
@@ -96,6 +100,7 @@ export async function toggleBannerActive(
 }
 
 export async function deleteBanner(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { data: row } = await supabase.from("banners").select("template").eq("id", id).maybeSingle();
 

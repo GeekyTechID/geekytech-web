@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type CouponFormData = {
   code: string;
@@ -23,6 +24,7 @@ export type CouponFormData = {
 export async function createCoupon(
   data: CouponFormData
 ): Promise<{ error?: string; id?: string }> {
+  await requireAdmin();
   if (!data.code.trim()) return { error: "Kode kupon wajib diisi." };
   if (data.value <= 0) return { error: "Nilai diskon harus lebih dari 0." };
   if (data.type === "percentage" && data.value > 100) {
@@ -72,6 +74,7 @@ export async function updateCoupon(
   id: string,
   data: CouponFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.code.trim()) return { error: "Kode kupon wajib diisi." };
   if (data.value <= 0) return { error: "Nilai diskon harus lebih dari 0." };
   if (data.type === "percentage" && data.value > 100) {
@@ -122,6 +125,7 @@ export async function toggleCouponActive(
   id: string,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("coupons")
@@ -134,6 +138,7 @@ export async function toggleCouponActive(
 }
 
 export async function deleteCoupon(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase.from("coupons").delete().eq("id", id);
 

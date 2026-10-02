@@ -16,22 +16,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import { updateOrderStatus } from "../../_actions";
-import { VALID_TRANSITIONS, type OrderStatus } from "../../_constants";
+import { allowedNextStatuses, type OrderStatus } from "../../_constants";
 
 const labelClass = "text-[11px] font-semibold uppercase text-muted-foreground";
 
 interface StatusUpdaterProps {
   orderId: string;
   currentStatus: OrderStatus;
+  hasPaidPayment: boolean;
 }
 
-export function StatusUpdater({ orderId, currentStatus }: StatusUpdaterProps) {
+export function StatusUpdater({ orderId, currentStatus, hasPaidPayment }: StatusUpdaterProps) {
   const [open, setOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | "">("");
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const validNext = VALID_TRANSITIONS[currentStatus] ?? [];
+  const validNext = allowedNextStatuses(currentStatus, hasPaidPayment);
   const canUpdate = validNext.length > 0;
 
   const handleSubmit = () => {

@@ -483,6 +483,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               <StatusUpdater
                 orderId={order.id}
                 currentStatus={order.status as OrderStatus}
+                hasPaidPayment={(order.payments ?? []).some((p) => p.status === "paid")}
               />
             </div>
           </section>

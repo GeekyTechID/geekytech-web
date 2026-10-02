@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type BannerRow = {
   id: string;
@@ -22,6 +23,7 @@ export type AddBannerData = {
 };
 
 export async function addBanner(data: AddBannerData): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
   const supabase = createServiceClient();
@@ -43,6 +45,7 @@ export async function addBanner(data: AddBannerData): Promise<{ error?: string }
 }
 
 export async function listBanners(): Promise<BannerRow[]> {
+  await requireAdmin();
   const supabase = createServiceClient();
   const { data } = await supabase
     .from("banners")
@@ -65,6 +68,7 @@ export async function updateBanner(
   id: string,
   data: UpdateBannerData,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.image_url.trim()) return { error: "Gambar banner wajib diisi." };
 
   const supabase = createServiceClient();
@@ -86,6 +90,7 @@ export async function updateBanner(
 }
 
 export async function deleteBanner(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = createServiceClient();
   const { error } = await supabase.from("banners").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -98,6 +103,7 @@ export async function toggleBannerStatus(
   id: string,
   isActive: boolean,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = createServiceClient();
   const { error } = await supabase
     .from("banners")

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 const updateCustomerSchema = z.object({
   full_name: z.preprocess(
@@ -25,6 +26,7 @@ export async function updateCustomer(
   id: string,
   data: UpdateCustomerInput,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const parsed = updateCustomerSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -45,6 +47,7 @@ export async function updateCustomer(
 }
 
 export async function deleteCustomer(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = createServiceClient();
 
   // Guard: jangan hapus admin

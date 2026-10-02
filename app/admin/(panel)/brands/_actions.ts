@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 const brandSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi").max(100, "Nama max 100 karakter"),
@@ -22,6 +23,7 @@ export type BrandInput = z.infer<typeof brandSchema>;
 type ActionResult = { error: string } | { id: string };
 
 export async function createBrand(data: BrandInput): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = brandSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -52,6 +54,7 @@ export async function updateBrand(
   id: string,
   data: BrandInput,
 ): Promise<ActionResult> {
+  await requireAdmin();
   const parsed = brandSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -79,6 +82,7 @@ export async function updateBrand(
 }
 
 export async function deleteBrand(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { count: productCount } = await supabase
@@ -106,6 +110,7 @@ export async function toggleBrandStatus(
   id: string,
   is_active: boolean,
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
 
   const { error } = await supabase

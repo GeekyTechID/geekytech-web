@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServiceClient } from "@/lib/supabase/server";
 import { flashSaleBannerTemplate } from "./_lib/flash-sale-banner-template";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export type FlashSaleFormData = {
   name: string;
@@ -22,6 +23,7 @@ export type FlashSaleProductFormData = {
 export async function createFlashSale(
   data: FlashSaleFormData
 ): Promise<{ error?: string; id?: string }> {
+  await requireAdmin();
   if (!data.name.trim()) return { error: "Nama flash sale wajib diisi." };
   if (!data.starts_at) return { error: "Waktu mulai wajib diisi." };
   if (!data.ends_at) return { error: "Waktu berakhir wajib diisi." };
@@ -52,6 +54,7 @@ export async function updateFlashSale(
   id: string,
   data: FlashSaleFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (!data.name.trim()) return { error: "Nama flash sale wajib diisi." };
   if (new Date(data.ends_at) <= new Date(data.starts_at)) {
     return { error: "Waktu berakhir harus setelah waktu mulai." };
@@ -80,6 +83,7 @@ export async function toggleFlashSaleActive(
   id: string,
   isActive: boolean
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("flash_sales")
@@ -93,6 +97,7 @@ export async function toggleFlashSaleActive(
 }
 
 export async function deleteFlashSale(id: string): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase.from("flash_sales").delete().eq("id", id);
 
@@ -107,6 +112,7 @@ export async function deleteFlashSale(id: string): Promise<{ error?: string }> {
 export async function addFlashSaleProduct(
   data: FlashSaleProductFormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (data.sale_price <= 0) return { error: "Harga flash sale harus lebih dari 0." };
   if (data.quota <= 0) return { error: "Kuota harus lebih dari 0." };
 
@@ -139,6 +145,7 @@ export async function updateFlashSaleProduct(
   salePrice: number,
   quota: number
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (salePrice <= 0) return { error: "Harga flash sale harus lebih dari 0." };
   if (quota <= 0) return { error: "Kuota harus lebih dari 0." };
 
@@ -157,6 +164,7 @@ export async function bulkAddFlashSaleProducts(
   flashSaleId: string,
   entries: { variant_id: string; sale_price: number }[]
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   if (entries.length === 0) return {};
 
   const supabase = await createServiceClient();
@@ -189,6 +197,7 @@ export async function createFlashSaleBannerInline(
   flashSaleId: string,
   formData: FormData
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return {};
 
@@ -221,6 +230,7 @@ export async function removeFlashSaleProduct(
   id: string,
   flashSaleId: string
 ): Promise<{ error?: string }> {
+  await requireAdmin();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("flash_sale_products")
