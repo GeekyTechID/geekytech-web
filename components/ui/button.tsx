@@ -138,9 +138,12 @@ function Button({
       data-loading={loading ? "" : undefined}
       aria-busy={loading || undefined}
       disabled={isDisabled}
+      // className terakhir: posisi dari pemanggil (mis. `absolute` tombol close dialog)
+      // harus menang atas `relative` milik ripple.
       className={cn(
-        buttonVariants({ variant: resolved, size, className }),
+        buttonVariants({ variant: resolved, size }),
         withRipple && "relative overflow-hidden",
+        className,
       )}
       {...props}
     >
