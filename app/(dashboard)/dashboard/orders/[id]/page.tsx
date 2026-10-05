@@ -21,6 +21,7 @@ import { orderStatusLabel } from "@/lib/constants/order-status-labels";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 import { PAYMENT_METHOD_LOGOS } from "@/lib/constants/payment-method-logos";
 import { formatDate, formatRupiah } from "@/lib/format";
+import { nowMs } from "@/lib/utils";
 import { OrderToolbar } from "@/components/dashboard/order-toolbar";
 import type { Database } from "@/types/supabase";
 
@@ -139,7 +140,7 @@ export default async function DashboardOrderDetailPage({
   const paymentExpiry = pendingPayment?.expiry_time ?? expiryFallback;
   // Payment window already closed — hide the "Menunggu pembayaran" block.
   // The cron /api/cron/expire-orders will cancel the order asynchronously.
-  const paymentExpired = new Date(paymentExpiry).getTime() <= Date.now();
+  const paymentExpired = new Date(paymentExpiry).getTime() <= nowMs();
 
   // Lazy-cancel: jika user membuka halaman ini saat waktu bayar sudah habis,
   // langsung batalkan di DB dan redirect agar status tampil "Dibatalkan".

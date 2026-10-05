@@ -7,7 +7,7 @@ import { ChevronRight, MapPin, Package, Phone, Printer, User } from "lucide-reac
 import { createClient } from "@/lib/supabase/server";
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
 import { formatRupiah, formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { cn, nowMs } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
 import { StatusUpdater } from "./_components/status-updater";
@@ -85,8 +85,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     payment?.expiry_time ??
     new Date(new Date(order.created_at).getTime() + THREE_HOURS_MS).toISOString();
   const adminPaymentExpired =
-    order.status === "pending_payment" &&
-    new Date(adminPaymentExpiry).getTime() <= Date.now();
+    order.status === "pending_payment" && new Date(adminPaymentExpiry).getTime() <= nowMs();
 
   // Lazy-cancel: admin membuka halaman → cancel langsung → redirect ke halaman segar
   if (adminPaymentExpired) {
@@ -409,7 +408,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     <SyncBiteshipButton orderId={order.id} />
                   </div>
                 )}
-                {shipment && !shipment.awb && shipment.biteship_order_id && (
+                {shipment && !shipment.awb && shipment.biteship_order_id && shipment.status !== "cancelled" && (
                   <div className="space-y-2 pt-1">
                     {order.status === "paid" && shipment.status === "pending" ? (
                       <>
@@ -441,8 +440,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             </section>
           )}
 
-          {/* Refund bank info — shown if order cancelled and bank data exists */}
-          {order.status === "cancelled" && order.refund_bank_name && (
+          {/* Refund bank info — shown if order cancelled/refunded and bank data exists */}
+          {(order.status === "cancelled" || order.status === "refunded") && order.refund_bank_name && (
             <section className="admin-utility-card overflow-hidden p-0">
               <div className="admin-utility-card-header">
                 <h2 className="admin-section-title">Info Rekening Refund</h2>
@@ -455,11 +454,17 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 {order.refund_account_number && (
                   <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
                 )}
-                <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
-                  Mayar tidak menyediakan refund otomatis. Transfer dana manual ke rekening di atas,
-                  lalu ubah status pesanan ke <strong>Dikembalikan</strong> — pelanggan otomatis
-                  menerima notifikasi dan email refund.
-                </p>
+                {order.status === "refunded" ? (
+                  <p className="mt-1 rounded-md bg-emerald-50 px-2.5 py-2 text-[11px] leading-relaxed text-emerald-800">
+                    Dana sudah dikembalikan ke rekening di atas.
+                  </p>
+                ) : (
+                  <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
+                    Mayar tidak menyediakan refund otomatis. Transfer dana manual ke rekening di atas,
+                    lalu ubah status pesanan ke <strong>Dikembalikan</strong> — pelanggan otomatis
+                    menerima notifikasi dan email refund.
+                  </p>
+                )}
               </div>
             </section>
           )}

@@ -64,7 +64,7 @@ export function ProductDetailClient({
     [product.variants, product.basePrice, product.salePrice],
   );
   const [variantId, setVariantId] = useState<string | null>(defaultId);
-  const [qty, setQty] = useState(product.minOrderQty);
+  const [rawQty, setQty] = useState(product.minOrderQty);
   const [imgIndex, setImgIndex] = useState(0);
   // Foto varian tidak masuk galeri/carousel. Saat true, foto utama menampilkan
   // foto varian yang dipilih; begitu pembeli menggeser carousel atau klik
@@ -112,9 +112,8 @@ export function ProductDetailClient({
     [maxQty, minQty],
   );
 
-  useEffect(() => {
-    setQty((q) => clampQty(q));
-  }, [variant?.id, clampQty]);
+  // Derived instead of synced in an effect: switching variant re-clamps to its stock.
+  const qty = clampQty(rawQty);
 
   const subtotal = unitPrice * qty;
   const subtotalList = listPrice * qty;

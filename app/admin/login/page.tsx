@@ -77,7 +77,7 @@ function AdminLoginContent() {
         return;
       }
       toast.success("Selamat datang di Admin Panel.");
-      window.location.href = "/admin";
+      window.location.assign("/admin");
     } catch {
       toast.error("Terjadi kesalahan tidak terduga. Coba lagi.");
       resetTurnstile();

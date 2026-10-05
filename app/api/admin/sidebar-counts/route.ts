@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     const service = createServiceClient();
-    const [complaints, returns, stock, notifications] = await Promise.all([
+    const [complaints, returns, pendingRefunds, stock, notifications] = await Promise.all([
       service
         .from("complaints")
         .select("id", { count: "exact", head: true })
@@ -31,6 +31,12 @@ export async function GET() {
         .from("returns")
         .select("id", { count: "exact", head: true })
         .neq("status", "completed"),
+      // Pesanan batal yang sudah dibayar, menunggu transfer refund manual.
+      service
+        .from("orders")
+        .select("id, payments!inner(status)", { count: "exact", head: true })
+        .eq("status", "cancelled")
+        .eq("payments.status", "paid"),
       service
         .from("product_variants")
         .select("id", { count: "exact", head: true })
@@ -42,14 +48,15 @@ export async function GET() {
         .eq("is_read", false),
     ]);
 
-    const error = complaints.error ?? returns.error ?? stock.error ?? notifications.error;
+    const error =
+      complaints.error ?? returns.error ?? pendingRefunds.error ?? stock.error ?? notifications.error;
     if (error) throw error;
 
     return Response.json({
       success: true,
       counts: {
         complaints: complaints.count ?? 0,
-        returns: returns.count ?? 0,
+        returns: (returns.count ?? 0) + (pendingRefunds.count ?? 0),
         stock: stock.count ?? 0,
         notifications: notifications.count ?? 0,
       },

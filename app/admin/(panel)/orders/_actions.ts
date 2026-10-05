@@ -66,15 +66,22 @@ export async function updateOrderStatus(
     return { error: "Perubahan status ini tidak diizinkan." };
   }
 
-  const { error } = await supabase
+  const { data: updatedRows, error } = await supabase
     .from("orders")
     .update({
       status: newStatus,
       ...(newStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
     })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    // Guard against the Mayar webhook / pg_cron changing the order in between,
+    // otherwise the stock side effects below would run against a stale status.
+    .eq("status", currentOrder.status)
+    .select("id");
 
   if (error) return { error: error.message };
+  if (!updatedRows?.length) {
+    return { error: "Status pesanan baru saja berubah. Muat ulang halaman." };
+  }
 
   // Notify customer on relevant status changes
   if (currentOrder?.user_id && currentOrder?.order_number) {
@@ -118,8 +125,32 @@ export async function updateOrderStatus(
     }
   }
 
-  // Jika dibatalkan setelah pembayaran settlement, kembalikan stok & kurangi total_sold
   const prevStatus = currentOrder?.status;
+
+  // Dibatalkan sebelum bayar: stok belum dipotong, cukup lepas reserved.
+  if (newStatus === "cancelled" && prevStatus === "pending_payment") {
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("variant_id, quantity")
+      .eq("order_id", orderId);
+
+    for (const item of items ?? []) {
+      if (!item.variant_id) continue;
+      const { data: v } = await supabase
+        .from("product_variants")
+        .select("reserved")
+        .eq("id", item.variant_id)
+        .single();
+      if (!v) continue;
+      await supabase
+        .from("product_variants")
+        .update({ reserved: Math.max(0, v.reserved - item.quantity) })
+        .eq("id", item.variant_id);
+    }
+  }
+
+  // Jika dibatalkan setelah pembayaran settlement, kembalikan stok & kurangi total_sold.
+  // Reserved sudah dilepas saat settlement (apply-paid-order), jadi tidak disentuh lagi.
   const wasAlreadyPaid = prevStatus === "paid" || prevStatus === "processing";
   if (newStatus === "cancelled" && wasAlreadyPaid) {
     const { data: items } = await supabase
@@ -134,16 +165,13 @@ export async function updateOrderStatus(
         if (!item.variant_id) continue;
         const { data: v } = await supabase
           .from("product_variants")
-          .select("stock, reserved, product_id")
+          .select("stock, product_id")
           .eq("id", item.variant_id)
           .single();
         if (!v) continue;
         await supabase
           .from("product_variants")
-          .update({
-            stock: v.stock + item.quantity,
-            reserved: Math.max(0, v.reserved - item.quantity),
-          })
+          .update({ stock: v.stock + item.quantity })
           .eq("id", item.variant_id);
         await supabase.from("stock_history").insert({
           variant_id: item.variant_id,

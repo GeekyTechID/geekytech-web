@@ -438,10 +438,9 @@ export async function bulkSetCondition(
   if (!ids.length) return {};
   const supabase = await createServiceClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await supabase
     .from("products")
-    .update({ condition } as any)
+    .update({ condition })
     .in("id", ids);
 
   if (error) return { error: error.message };

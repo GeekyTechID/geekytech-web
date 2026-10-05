@@ -131,13 +131,11 @@ export async function cancelOrderAction(
             .update({ reserved: Math.max(0, v.reserved - item.quantity) })
             .eq("id", item.variant_id);
         } else {
-          // st === "paid" — stok sudah dipotong saat settlement, kembalikan
+          // st === "paid" — stok sudah dipotong & reserved sudah dilepas saat
+          // settlement (apply-paid-order); cukup kembalikan stok.
           await svc
             .from("product_variants")
-            .update({
-              stock: v.stock + item.quantity,
-              reserved: Math.max(0, v.reserved - item.quantity),
-            })
+            .update({ stock: v.stock + item.quantity })
             .eq("id", item.variant_id);
           if (v.product_id) {
             productQtyMap.set(v.product_id, (productQtyMap.get(v.product_id) ?? 0) + item.quantity);

@@ -114,7 +114,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Ulasan", href: "/admin/reviews", icon: Star },
       { label: "Komplain", href: "/admin/complaints", icon: FileText },
-      { label: "Retur", href: "/admin/returns", icon: RotateCcw },
+      { label: "Retur & Refund", href: "/admin/returns", icon: RotateCcw },
       { label: "Kupon", href: "/admin/coupons", icon: Ticket },
     ],
   },

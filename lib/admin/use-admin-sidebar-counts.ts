@@ -11,6 +11,8 @@ export type AdminSidebarCounts = {
   notifications: number;
 };
 
+const REALTIME_REFRESH_DELAY_MS = 5_000;
+
 const EMPTY_COUNTS: AdminSidebarCounts = {
   complaints: 0,
   returns: 0,
@@ -47,32 +49,44 @@ export function useAdminSidebarCounts() {
     const initialRefresh = window.setTimeout(() => void refresh(), 0);
     const polling = window.setInterval(() => void refresh(), 30_000);
 
+    // Realtime events arrive in bursts (e.g. every stock update on product_variants);
+    // coalesce them into at most one refresh per window instead of one fetch per event.
+    let pendingRefresh: number | null = null;
+    const scheduleRefresh = () => {
+      if (pendingRefresh !== null) return;
+      pendingRefresh = window.setTimeout(() => {
+        pendingRefresh = null;
+        void refresh();
+      }, REALTIME_REFRESH_DELAY_MS);
+    };
+
     channel = supabase
       .channel("admin-sidebar-workload-counts")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "complaints" },
-        () => void refresh(),
+        scheduleRefresh,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "returns" },
-        () => void refresh(),
+        scheduleRefresh,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "product_variants" },
-        () => void refresh(),
+        scheduleRefresh,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "admin_notifications" },
-        () => void refresh(),
+        scheduleRefresh,
       )
       .subscribe();
 
     return () => {
       window.clearTimeout(initialRefresh);
+      if (pendingRefresh !== null) window.clearTimeout(pendingRefresh);
       window.clearInterval(polling);
       if (channel) void supabase.removeChannel(channel);
     };

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local git worktrees (gitignored) contain full copies of the app + their own .next.
+    ".worktrees/**",
+    ".agents/**",
   ]),
 ]);
 

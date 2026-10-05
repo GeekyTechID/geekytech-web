@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
+import { nowMs } from "@/lib/utils";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult, type TrackingStep } from "@/lib/biteship/fetch-tracking";
 import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
@@ -278,8 +279,9 @@ export default async function OrderTrackingPage({
 
   const deliveredAt = order.delivered_at ? new Date(order.delivered_at) : null;
   const deadlineMs = deliveredAt ? deliveredAt.getTime() + 3 * 24 * 60 * 60 * 1000 : null;
-  const canComplain = order.status === "delivered" && deadlineMs !== null && Date.now() < deadlineMs;
-  const hoursLeft = deadlineMs ? Math.max(0, Math.ceil((deadlineMs - Date.now()) / (1000 * 60 * 60))) : 0;
+  const now = nowMs();
+  const canComplain = order.status === "delivered" && deadlineMs !== null && now < deadlineMs;
+  const hoursLeft = deadlineMs ? Math.max(0, Math.ceil((deadlineMs - now) / (1000 * 60 * 60))) : 0;
 
   return (
     <>
