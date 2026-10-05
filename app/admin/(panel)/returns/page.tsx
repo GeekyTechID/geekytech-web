@@ -61,6 +61,12 @@ export default async function AdminReturnsPage({ searchParams }: Props) {
       refundedAt: lastAt("refunded")?.created_at ?? null,
     };
   });
+  // Antrian yang perlu ditransfer dulu, lalu pembatalan terbaru.
+  refunds.sort(
+    (a, b) =>
+      Number(a.status === "refunded") - Number(b.status === "refunded") ||
+      (b.cancelledAt ?? "").localeCompare(a.cancelledAt ?? ""),
+  );
   const pendingRefunds = refunds.filter((r) => r.status === "pending").length;
   const openReturns = (rows ?? []).filter((r) => r.status !== "completed").length;
 

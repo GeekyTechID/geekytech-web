@@ -40,7 +40,8 @@ type MayarEnvelope<T> = { statusCode?: number; messages?: string; data?: T };
 function mayarConfig(): { baseUrl: string; apiKey: string } | null {
   const apiKey = process.env.MAYAR_API_KEY?.trim();
   if (!apiKey) return null;
-  const isProduction = process.env.MAYAR_IS_PRODUCTION === "true";
+  // Case-insensitive: "True"/"TRUE" in .env must not silently fall back to sandbox.
+  const isProduction = process.env.MAYAR_IS_PRODUCTION?.trim().toLowerCase() === "true";
   return {
     baseUrl: isProduction ? "https://api.mayar.id/hl/v2" : "https://api.mayar.club/hl/v2",
     apiKey,

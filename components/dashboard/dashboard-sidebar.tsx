@@ -11,6 +11,7 @@ import {
   KeyRound,
   MapPin,
   Package,
+  RotateCcw,
   User,
 } from "lucide-react";
 
@@ -45,6 +46,12 @@ const NAV_PRIMARY: NavItem[] = [
     description: "Lacak dan kelola pesanan",
     href: "/dashboard/orders",
     icon: Package,
+  },
+  {
+    label: "Retur & Refund",
+    description: "Status retur dan pengembalian dana",
+    href: "/dashboard/returns",
+    icon: RotateCcw,
   },
   {
     label: "Voucher",
