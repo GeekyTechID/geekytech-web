@@ -24,12 +24,9 @@ export function AreaAutocomplete({ onSelect, placeholder = "Cari kelurahan, keca
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Short queries are cleared in the input's onChange; the effect only debounces fetches.
   useEffect(() => {
-    if (query.length < 2) {
-      setAreas([]);
-      setOpen(false);
-      return;
-    }
+    if (query.length < 2) return;
     const t = setTimeout(async () => {
       setLoading(true);
       try {
@@ -59,7 +56,14 @@ export function AreaAutocomplete({ onSelect, placeholder = "Cari kelurahan, keca
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setQuery(value);
+            if (value.length < 2) {
+              setAreas([]);
+              setOpen(false);
+            }
+          }}
           placeholder={placeholder}
           autoComplete="off"
           className="h-11 w-full rounded-lg border border-[#e0e0e0] bg-white pl-9 pr-9 text-sm text-[#1d1d1f] outline-none focus:border-[#EA5329] focus:ring-2 focus:ring-[#EA5329]/20"

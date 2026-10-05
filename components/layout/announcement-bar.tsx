@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,20 +12,31 @@ type AnnouncementBarProps = {
 
 const STORAGE_KEY = "geekytech-announcement-dismissed";
 
-export function AnnouncementBar({ text, link }: AnnouncementBarProps) {
-  const [visible, setVisible] = useState(false);
+const noopSubscribe = () => () => {};
 
-  useEffect(() => {
-    const dismissed = sessionStorage.getItem(STORAGE_KEY);
-    if (!dismissed) setVisible(true);
-  }, []);
+function readDismissed(): boolean {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+export function AnnouncementBar({ text, link }: AnnouncementBarProps) {
+  // Server snapshot = dismissed, so the bar only appears after hydration (as before).
+  const dismissedInSession = useSyncExternalStore(noopSubscribe, readDismissed, () => true);
+  const [dismissedNow, setDismissedNow] = useState(false);
 
   const dismiss = () => {
-    sessionStorage.setItem(STORAGE_KEY, "1");
-    setVisible(false);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, "1");
+    } catch {
+      // Storage unavailable — still hide for this render tree.
+    }
+    setDismissedNow(true);
   };
 
-  if (!visible) return null;
+  if (dismissedInSession || dismissedNow) return null;
 
   const content = (
     <span className="text-xs sm:text-sm font-medium">{text}</span>

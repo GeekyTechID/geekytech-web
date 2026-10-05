@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 
-export async function AnnouncementBarServer() {
+async function fetchAnnouncement(): Promise<{ text: string; link?: string } | null> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -21,10 +21,14 @@ export async function AnnouncementBarServer() {
 
     if (!enabled || enabled === "false" || !text) return null;
 
-    const link = byKey["announcement_link"] as string | undefined;
-
-    return <AnnouncementBar text={text} link={link} />;
+    return { text, link: byKey["announcement_link"] as string | undefined };
   } catch {
     return null;
   }
+}
+
+export async function AnnouncementBarServer() {
+  const announcement = await fetchAnnouncement();
+  if (!announcement) return null;
+  return <AnnouncementBar text={announcement.text} link={announcement.link} />;
 }

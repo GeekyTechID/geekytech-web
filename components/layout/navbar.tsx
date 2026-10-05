@@ -58,11 +58,13 @@ export function Navbar() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Tutup mobile menu saat route berubah
-  useEffect(() => {
+  // Tutup mobile menu saat route berubah (disesuaikan saat render, bukan lewat effect)
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     setMobileMenuOpen(false);
     setSearchOpen(false);
-  }, [pathname]);
+  }
 
   // Focus search input saat dibuka
   useEffect(() => {

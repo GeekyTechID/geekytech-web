@@ -232,6 +232,9 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
   }, [addressId, isBuyNow, lines]);
 
   useEffect(() => {
+    // Fetching on address/lines change is the intended effect; the synchronous
+    // setRatesLoading(true) inside is a loading flag, not derived state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadRates();
   }, [loadRates]);
 
@@ -290,6 +293,8 @@ export function CheckoutPageClient({ lines, addresses, initialAddressId, availab
       return;
     }
     if (!couponInput.trim() || couponDiscount === 0) return;
+    // Re-validate the applied coupon against the new cart lines (server call).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void applyCoupon(couponInput.trim(), true);
   }, [lines, applyCoupon, couponInput, couponDiscount]);
 

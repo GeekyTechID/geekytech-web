@@ -70,7 +70,7 @@ function VerifyEmailContent() {
           .
         </p>
         <p className="text-[15px] font-normal leading-[1.6] text-[#1d1d1f]">
-          Klik tombol <span className="font-semibold">"Aktifkan Akun"</span> di
+          Klik tombol <span className="font-semibold">&ldquo;Aktifkan Akun&rdquo;</span> di
           email tersebut untuk mulai belanja di GeekyTech.
         </p>
         <p className="text-[14px] font-normal leading-[1.43] text-[#7a7a7a]">

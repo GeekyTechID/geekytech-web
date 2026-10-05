@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/hooks/use-hydrated";
 import {
   Area,
   AreaChart,
@@ -50,8 +50,7 @@ function CustomTooltip({
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
   if (!mounted) return <div className="h-48 w-full" />;
 
   return (
@@ -95,8 +94,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
 }
 
 export function OrdersChart({ data }: RevenueChartProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
   if (!mounted) return <div className="h-48 w-full" />;
 
   return (

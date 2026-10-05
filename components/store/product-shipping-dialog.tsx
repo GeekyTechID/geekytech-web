@@ -42,14 +42,19 @@ type Props = {
 
 export function ProductShippingDialog({ open, onOpenChange, isAuthenticated, loginHref, variantId, qty }: Props) {
   const [addresses, setAddresses] = useState<AddressRow[] | null>(null);
-  const [addressesLoading, setAddressesLoading] = useState(false);
   const [addressId, setAddressId] = useState<string>("");
-  const [options, setOptions] = useState<ShippingOption[]>([]);
-  const [ratesLoading, setRatesLoading] = useState(false);
-  const [ratesError, setRatesError] = useState<string | null>(null);
+  // Rates are stored with the request key they belong to; loading/error/options are
+  // derived from it instead of being toggled synchronously inside effects.
+  const [rates, setRates] = useState<{ key: string; options: ShippingOption[]; error: string | null } | null>(null);
+
+  const addressesLoading = open && isAuthenticated && addresses === null;
+  const ratesKey = `${addressId}|${variantId}|${qty}`;
+  const currentRates = rates?.key === ratesKey ? rates : null;
+  const ratesLoading = open && !!addressId && !currentRates;
+  const options = currentRates?.options ?? [];
+  const ratesError = currentRates?.error ?? null;
 
   const loadAddresses = useCallback(() => {
-    setAddressesLoading(true);
     fetch("/api/addresses")
       .then((r) => r.json())
       .then((json: { success: boolean; data?: AddressRow[] }) => {
@@ -58,8 +63,7 @@ export function ProductShippingDialog({ open, onOpenChange, isAuthenticated, log
         const preferred = list.find((a) => a.is_default) ?? list[0] ?? null;
         if (preferred) setAddressId(preferred.id);
       })
-      .catch(() => setAddresses([]))
-      .finally(() => setAddressesLoading(false));
+      .catch(() => setAddresses([]));
   }, []);
 
   useEffect(() => {
@@ -67,9 +71,8 @@ export function ProductShippingDialog({ open, onOpenChange, isAuthenticated, log
     loadAddresses();
   }, [open, isAuthenticated, addresses, loadAddresses]);
 
-  const loadRates = useCallback(() => {
-    setRatesLoading(true);
-    setRatesError(null);
+  const loadRates = useCallback((key: string) => {
+    const failed = (error: string) => setRates({ key, options: [], error });
     fetch("/api/shipping/rates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,23 +81,18 @@ export function ProductShippingDialog({ open, onOpenChange, isAuthenticated, log
       .then((r) => r.json())
       .then((json: { success: boolean; data?: { options: ShippingOption[] }; error?: string }) => {
         if (!json.success || !json.data) {
-          setOptions([]);
-          setRatesError(json.error ?? "Gagal memuat pilihan pengiriman.");
+          failed(json.error ?? "Gagal memuat pilihan pengiriman.");
           return;
         }
-        setOptions(json.data.options);
+        setRates({ key, options: json.data.options, error: null });
       })
-      .catch(() => {
-        setOptions([]);
-        setRatesError("Gagal memuat pilihan pengiriman.");
-      })
-      .finally(() => setRatesLoading(false));
+      .catch(() => failed("Gagal memuat pilihan pengiriman."));
   }, [addressId, variantId, qty]);
 
   useEffect(() => {
-    if (!open || !addressId) return;
-    loadRates();
-  }, [open, addressId, loadRates]);
+    if (!open || !addressId || currentRates) return;
+    loadRates(ratesKey);
+  }, [open, addressId, currentRates, ratesKey, loadRates]);
 
   const selectedAddress = addresses?.find((a) => a.id === addressId) ?? null;
 

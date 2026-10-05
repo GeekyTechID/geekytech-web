@@ -80,8 +80,8 @@ export async function fetchComplaintForOrder(
           proof_images: Array.isArray(returnRes.data.proof_images)
             ? (returnRes.data.proof_images as string[])
             : [],
-          return_shipments: Array.isArray((returnRes.data as any).return_shipments)
-            ? (returnRes.data as any).return_shipments
+          return_shipments: Array.isArray(returnRes.data.return_shipments)
+            ? returnRes.data.return_shipments
             : [],
         }
       : null,
