@@ -1,6 +1,7 @@
 import { Wrench } from "lucide-react";
 
 import { SiteLogo } from "@/components/shared/site-logo";
+import { csWhatsAppDigits } from "@/lib/whatsapp-link";
 
 export function MaintenancePage() {
   return (
@@ -34,7 +35,7 @@ export function MaintenancePage() {
       <p className="text-white/40 text-xs">
         Butuh bantuan mendesak?{" "}
         <a
-          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+          href={`https://wa.me/${csWhatsAppDigits()}`}
           className="text-white/70 hover:text-white underline underline-offset-2 transition-colors"
         >
           Hubungi kami via WhatsApp

@@ -11,6 +11,7 @@ import { formatDate, formatRupiah } from "@/lib/format";
 import { Code128Barcode } from "@/components/shared/code128-barcode";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { PrintPageButton } from "@/components/admin/print-page-button";
+import { csWhatsAppDigits } from "@/lib/whatsapp-link";
 
 export const metadata: Metadata = { title: "Cetak Resi — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -80,7 +81,7 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
     address: process.env.BITESHIP_ORIGIN_ADDRESS?.trim() || "",
     postal: (process.env.BITESHIP_ORIGIN_POSTAL_CODE ?? process.env.BITESHIP_ORIGIN_POSTAL)?.trim() || "",
   };
-  const csWhatsApp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
+  const csWhatsApp = csWhatsAppDigits();
   const host = appHost();
 
   return (
