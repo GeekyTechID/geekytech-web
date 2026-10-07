@@ -15,7 +15,10 @@ import { PrintPageButton } from "@/components/admin/print-page-button";
 export const metadata: Metadata = { title: "Cetak Resi — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ preview_awb?: string }>;
+};
 
 function formatWeight(grams: number): string {
   if (grams < 1000) return `${grams} gram`;
@@ -35,8 +38,9 @@ function appHost(): string {
   }
 }
 
-export default async function ShippingLabelPage({ params }: Props) {
+export default async function ShippingLabelPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { preview_awb: previewAwbParam } = await searchParams;
   // Session client: RLS is_admin() membatasi baca order ke admin (proxy juga menjaga /admin/*).
   const supabase = await createClient();
 
@@ -56,7 +60,10 @@ export default async function ShippingLabelPage({ params }: Props) {
 
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : order.shipments;
   const items = order.order_items ?? [];
-  const awb = shipment?.awb ?? null;
+  // Contoh resi untuk aktivasi Order API Biteship: admin boleh mengisi AWB
+  // contoh lewat ?preview_awb= selama pesanan belum punya resi asli.
+  const previewAwb = previewAwbParam && /^[A-Za-z0-9-]{6,30}$/.test(previewAwbParam) ? previewAwbParam : null;
+  const awb = shipment?.awb ?? previewAwb;
 
   const courierCode = (shipment?.courier_company ?? order.courier_company ?? "").toLowerCase();
   const courierService = (shipment?.courier_service ?? order.courier_service ?? "").toUpperCase();
