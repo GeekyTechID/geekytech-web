@@ -6,6 +6,7 @@ import { ChevronRight, MapPin, Package, Phone, Printer, User } from "lucide-reac
 
 import { createClient } from "@/lib/supabase/server";
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
+import { getRefundProofUrl } from "@/lib/orders/refund-proof";
 import { formatRupiah, formatDate } from "@/lib/format";
 import { cn, nowMs } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
@@ -68,6 +69,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   }
 
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
+  const refundProofUrl = order.status === "refunded" ? await getRefundProofUrl(order.refund_proof_path) : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
 
   let trackingResult: TrackingResult | null = null;
@@ -464,9 +466,25 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   <InfoRow label="No. Rekening" value={<span className="font-mono">{order.refund_account_number}</span>} />
                 )}
                 {order.status === "refunded" ? (
-                  <p className="mt-1 rounded-md bg-emerald-50 px-2.5 py-2 text-[11px] leading-relaxed text-emerald-800">
-                    Dana sudah dikembalikan ke rekening di atas.
-                  </p>
+                  <>
+                    {order.refunded_at && <InfoRow label="Ditransfer" value={formatDate(order.refunded_at)} />}
+                    {order.refund_reference && (
+                      <InfoRow label="No. Referensi" value={<span className="font-mono">{order.refund_reference}</span>} />
+                    )}
+                    {refundProofUrl && (
+                      <a
+                        href={refundProofUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Lihat Bukti Transfer
+                      </a>
+                    )}
+                    <p className="mt-1 rounded-md bg-emerald-50 px-2.5 py-2 text-[11px] leading-relaxed text-emerald-800">
+                      Dana sudah dikembalikan ke rekening di atas.
+                    </p>
+                  </>
                 ) : (
                   <p className="mt-1 rounded-md bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-800">
                     Mayar tidak menyediakan refund otomatis. Transfer dana manual ke rekening di atas,

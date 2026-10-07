@@ -819,6 +819,9 @@ export type Database = {
           refund_account_name: string | null
           refund_account_number: string | null
           refund_bank_name: string | null
+          refund_proof_path: string | null
+          refund_reference: string | null
+          refunded_at: string | null
           shipping_address: string
           shipping_city: string
           shipping_cost: number
@@ -853,6 +856,9 @@ export type Database = {
           refund_account_name?: string | null
           refund_account_number?: string | null
           refund_bank_name?: string | null
+          refund_proof_path?: string | null
+          refund_reference?: string | null
+          refunded_at?: string | null
           shipping_address: string
           shipping_city: string
           shipping_cost?: number
@@ -887,6 +893,9 @@ export type Database = {
           refund_account_name?: string | null
           refund_account_number?: string | null
           refund_bank_name?: string | null
+          refund_proof_path?: string | null
+          refund_reference?: string | null
+          refunded_at?: string | null
           shipping_address?: string
           shipping_city?: string
           shipping_cost?: number

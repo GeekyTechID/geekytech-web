@@ -8,6 +8,7 @@ import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { createShipmentForOrder } from "@/lib/biteship/create-shipment-for-order";
+import { isRefundProofPathForOrder } from "@/lib/orders/refund-proof";
 import { closePendingMayarPayments } from "@/lib/payments/close-pending";
 import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import { getUserEmail } from "@/lib/email/get-user-email";
@@ -46,11 +47,18 @@ function orderStatusFromShipment(s: ShipmentStatus): Database["public"]["Enums"]
 export async function updateOrderStatus(
   orderId: string,
   newStatus: OrderStatus,
-  note?: string
+  note?: string,
+  refund?: { proofPath: string; reference?: string },
 ): Promise<{ error?: string }> {
   await requireAdmin();
   if (!(ORDER_STATUSES as readonly string[]).includes(newStatus)) {
     return { error: "Status tidak valid." };
+  }
+
+  // Refund manual wajib disertai bukti transfer (diupload lewat /api/admin/refund-proof).
+  const refundReference = refund?.reference?.trim().slice(0, 100) || null;
+  if (newStatus === "refunded" && (!refund?.proofPath || !isRefundProofPathForOrder(refund.proofPath, orderId))) {
+    return { error: "Upload bukti transfer refund terlebih dahulu." };
   }
 
   const supabase = await createServiceClient();
@@ -72,6 +80,13 @@ export async function updateOrderStatus(
     .update({
       status: newStatus,
       ...(newStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+      ...(newStatus === "refunded" && refund
+        ? {
+            refund_proof_path: refund.proofPath,
+            refund_reference: refundReference,
+            refunded_at: new Date().toISOString(),
+          }
+        : {}),
     })
     .eq("id", orderId)
     // Guard against the Mayar webhook / pg_cron changing the order in between,
@@ -235,7 +250,12 @@ export async function updateOrderStatus(
       after(async () => {
         const user = await getUserEmail(userId).catch(() => null);
         if (!user) return;
-        await sendRefundProcessed({ to: user.email, name: user.name, orderNumber: orderNum }).catch(() => {});
+        await sendRefundProcessed({
+          to: user.email,
+          name: user.name,
+          orderNumber: orderNum,
+          reference: refundReference,
+        }).catch(() => {});
       });
     }
   }

@@ -7,6 +7,7 @@ import { formatDate, formatRupiah } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 import { MANUAL_REFUND_DURATION } from "@/lib/payments/manual-refund";
+import { getRefundProofUrl } from "@/lib/orders/refund-proof";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ export default async function DashboardReturnsPage({ searchParams }: Props) {
       .select(`
         id, order_number, status, total,
         refund_bank_name, refund_account_name, refund_account_number,
+        refund_proof_path, refund_reference, refunded_at,
         payments!inner(status, payment_type, gross_amount),
         order_status_history(status, created_at)
       `)
@@ -62,7 +64,9 @@ export default async function DashboardReturnsPage({ searchParams }: Props) {
       .order("updated_at", { ascending: false }),
   ]);
 
-  const refunds = (refundOrders ?? []).map((o) => {
+  // Query di atas sudah dibatasi user_id (RLS + filter), jadi signed URL bukti
+  // transfer hanya dibuat untuk pesanan milik pembeli ini.
+  const refunds = await Promise.all((refundOrders ?? []).map(async (o) => {
     const lastAt = (status: string) =>
       (o.order_status_history ?? [])
         .filter((h) => h.status === status)
@@ -78,9 +82,11 @@ export default async function DashboardReturnsPage({ searchParams }: Props) {
       accountName: o.refund_account_name,
       accountNumber: o.refund_account_number,
       cancelledAt: lastAt("cancelled"),
-      refundedAt: lastAt("refunded"),
+      refundedAt: o.refunded_at ?? lastAt("refunded"),
+      refundReference: o.refund_reference,
+      proofUrl: o.status === "refunded" ? await getRefundProofUrl(o.refund_proof_path) : null,
     };
-  });
+  }));
   // Yang masih diproses dulu, lalu pembatalan terbaru.
   refunds.sort(
     (a, b) => Number(a.done) - Number(b.done) || (b.cancelledAt ?? "").localeCompare(a.cancelledAt ?? ""),
@@ -216,9 +222,21 @@ export default async function DashboardReturnsPage({ searchParams }: Props) {
                   <div>
                     <dt className="text-xs text-[#7a7a7a]">Dana dikirim</dt>
                     <dd className="text-[#1d1d1f]">{r.refundedAt ? formatDate(r.refundedAt, DATE_TIME) : "Menunggu transfer"}</dd>
+                    {r.refundReference && (
+                      <dd className="text-xs text-[#5c5c5c]">
+                        No. referensi <span className="font-mono">{r.refundReference}</span>
+                      </dd>
+                    )}
                   </div>
                 </dl>
-                <div className="flex justify-end border-t border-[#f0f0f0] px-4 py-2.5">
+                <div className="flex justify-end gap-2 border-t border-[#f0f0f0] px-4 py-2.5">
+                  {r.proofUrl && (
+                    <Button asChild variant="secondary" size="sm">
+                      <a href={r.proofUrl} target="_blank" rel="noopener noreferrer">
+                        Lihat Bukti Transfer
+                      </a>
+                    </Button>
+                  )}
                   <Button asChild variant="dark" size="sm">
                     <Link href={`/dashboard/orders/${r.id}`}>Lihat Pesanan</Link>
                   </Button>

@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { ReturnsTable } from "./_components/returns-table";
 import { RefundsTable, type RefundRow } from "./_components/refunds-table";
+import { getRefundProofUrl } from "@/lib/orders/refund-proof";
 
 type Props = { searchParams: Promise<{ tab?: string }> };
 
@@ -28,6 +29,7 @@ export default async function AdminReturnsPage({ searchParams }: Props) {
       .select(`
         id, order_number, status, total, recipient_name,
         refund_bank_name, refund_account_name, refund_account_number,
+        refund_proof_path, refund_reference, refunded_at,
         profiles(full_name),
         payments!inner(status, payment_type, gross_amount, paid_at),
         order_status_history(status, note, created_at)
@@ -37,7 +39,7 @@ export default async function AdminReturnsPage({ searchParams }: Props) {
       .order("updated_at", { ascending: false }),
   ]);
 
-  const refunds: RefundRow[] = (refundOrders ?? []).map((o) => {
+  const refunds: RefundRow[] = await Promise.all((refundOrders ?? []).map(async (o) => {
     const history = o.order_status_history ?? [];
     const lastAt = (status: string) =>
       history
@@ -58,9 +60,11 @@ export default async function AdminReturnsPage({ searchParams }: Props) {
       accountNumber: o.refund_account_number,
       cancelledAt: cancelled?.created_at ?? null,
       cancelNote: cancelled?.note ?? null,
-      refundedAt: lastAt("refunded")?.created_at ?? null,
+      refundedAt: o.refunded_at ?? lastAt("refunded")?.created_at ?? null,
+      refundReference: o.refund_reference,
+      proofUrl: o.status === "refunded" ? await getRefundProofUrl(o.refund_proof_path) : null,
     };
-  });
+  }));
   // Antrian yang perlu ditransfer dulu, lalu pembatalan terbaru.
   refunds.sort(
     (a, b) =>

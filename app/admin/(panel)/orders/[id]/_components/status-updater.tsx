@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -30,15 +31,41 @@ export function StatusUpdater({ orderId, currentStatus, hasPaidPayment }: Status
   const [open, setOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | "">("");
   const [note, setNote] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [reference, setReference] = useState("");
   const [isPending, startTransition] = useTransition();
+  const isRefund = selectedStatus === "refunded";
 
   const validNext = allowedNextStatuses(currentStatus, hasPaidPayment);
   const canUpdate = validNext.length > 0;
 
   const handleSubmit = () => {
     if (!selectedStatus) return;
+    if (isRefund && !proofFile) {
+      toast.error("Upload bukti transfer refund terlebih dahulu.");
+      return;
+    }
     startTransition(async () => {
-      const result = await updateOrderStatus(orderId, selectedStatus, note);
+      let refund: { proofPath: string; reference?: string } | undefined;
+      if (isRefund && proofFile) {
+        try {
+          const fd = new FormData();
+          fd.append("orderId", orderId);
+          fd.append("file", proofFile);
+          const res = await fetch("/api/admin/refund-proof", { method: "POST", body: fd });
+          const json = (await res.json()) as { success: boolean; data?: { path: string }; error?: string };
+          if (!json.success || !json.data) {
+            toast.error(json.error ?? "Upload bukti transfer gagal.");
+            return;
+          }
+          refund = { proofPath: json.data.path, reference };
+        } catch {
+          toast.error("Upload bukti transfer gagal. Periksa koneksi lalu coba lagi.");
+          return;
+        }
+      }
+
+      const result = await updateOrderStatus(orderId, selectedStatus, note, refund);
       if (result.error) {
         toast.error(result.error);
       } else {
@@ -46,6 +73,8 @@ export function StatusUpdater({ orderId, currentStatus, hasPaidPayment }: Status
         setOpen(false);
         setSelectedStatus("");
         setNote("");
+        setProofFile(null);
+        setReference("");
       }
     });
   };
@@ -100,6 +129,41 @@ export function StatusUpdater({ orderId, currentStatus, hasPaidPayment }: Status
               </select>
             </div>
 
+            {isRefund && (
+              <div className="space-y-3 rounded-lg border border-[#e0e0e0] bg-muted/40 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Transfer dana ke rekening pembeli dulu, lalu lampirkan buktinya. Bukti bisa dilihat pembeli dan
+                  ikut disebut di email refund.
+                </p>
+                <div className="space-y-1.5">
+                  <Label htmlFor="refund-proof" className={labelClass}>
+                    Bukti Transfer (wajib)
+                  </Label>
+                  <Input
+                    id="refund-proof"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                    className="h-10 rounded-lg border-[#e0e0e0] text-sm file:mr-3 file:text-xs file:font-semibold"
+                  />
+                  <p className="text-[11px] text-muted-foreground">JPG, PNG, WEBP, atau PDF. Maks 5 MB.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="refund-reference" className={labelClass}>
+                    No. Referensi Transfer (opsional)
+                  </Label>
+                  <Input
+                    id="refund-reference"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                    maxLength={100}
+                    placeholder="Contoh: 2610071234567"
+                    className="h-10 rounded-lg border-[#e0e0e0] text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <Label className={labelClass}>Catatan (opsional)</Label>
               <Textarea
@@ -128,7 +192,7 @@ export function StatusUpdater({ orderId, currentStatus, hasPaidPayment }: Status
                 className="flex-1"
                 onClick={handleSubmit}
                 loading={isPending}
-                disabled={!selectedStatus}
+                disabled={!selectedStatus || (isRefund && !proofFile)}
               >
                 Simpan
               </Button>

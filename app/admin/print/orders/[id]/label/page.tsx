@@ -6,7 +6,6 @@ import { ArrowLeft } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
-import { LEGAL_ENTITY_NAME } from "@/lib/constants/business-identity";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { Code128Barcode } from "@/components/shared/code128-barcode";
 import { SiteLogo } from "@/components/shared/site-logo";
@@ -113,7 +112,6 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
         <header className="flex items-center justify-between gap-3 border-b-2 border-black pb-2">
           <div>
             <SiteLogo variant="shippingLabel" asStatic />
-            <p className="mt-1 text-[8px] text-[#333]">{LEGAL_ENTITY_NAME}</p>
           </div>
           <div className="flex items-center gap-2 text-right">
             {brand?.logo && (

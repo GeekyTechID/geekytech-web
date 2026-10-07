@@ -5,6 +5,7 @@ export async function sendRefundProcessed(params: {
   to: string;
   name: string;
   orderNumber: string;
+  reference?: string | null;
 }): Promise<void> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://geeky.id";
 

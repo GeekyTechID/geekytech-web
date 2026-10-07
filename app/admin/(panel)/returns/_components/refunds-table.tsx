@@ -17,6 +17,8 @@ export type RefundRow = {
   cancelledAt: string | null;
   cancelNote: string | null;
   refundedAt: string | null;
+  refundReference: string | null;
+  proofUrl: string | null;
 };
 
 const DATE_TIME = {
@@ -83,6 +85,21 @@ export function RefundsTable({ rows }: { rows: RefundRow[] }) {
                 </span>
                 {r.refundedAt && (
                   <p className="mt-1.5 text-[12px] text-muted-foreground">{formatDate(r.refundedAt, DATE_TIME)}</p>
+                )}
+                {r.refundReference && (
+                  <p className="text-[12px] text-muted-foreground">
+                    Ref. <span className="font-mono">{r.refundReference}</span>
+                  </p>
+                )}
+                {r.proofUrl && (
+                  <a
+                    href={r.proofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-text-link mt-1 inline-block text-[12px]"
+                  >
+                    Bukti transfer ↗
+                  </a>
                 )}
               </td>
               <td className="py-3">
