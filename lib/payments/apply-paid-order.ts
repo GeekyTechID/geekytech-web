@@ -3,8 +3,7 @@ import "server-only";
 import { after } from "next/server";
 
 import { createServiceClient } from "@/lib/supabase/server";
-import { createBiteshipOrder } from "@/lib/biteship/create-order";
-import { ON_DEMAND_COURIERS, parseOriginCoords, resolveOnDemandCoords } from "@/lib/shipping/on-demand-coords";
+import { createShipmentForOrder } from "@/lib/biteship/create-shipment-for-order";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { createAdminNotification } from "@/lib/notifications/create-admin-notification";
 import { getUserEmail } from "@/lib/email/get-user-email";
@@ -186,78 +185,14 @@ export async function applyPaidOrder(params: {
   }
 
   // Create Biteship shipment — only on first settlement transition
-  const { data: existingShipment } = await svc
-    .from("shipments")
-    .select("id")
-    .eq("order_id", order.id)
-    .maybeSingle();
-
-  if (!existingShipment) {
-    const [{ data: orderFull }, { data: settingsRow }] = await Promise.all([
-      svc
-        .from("orders")
-        .select("courier_company, courier_service, recipient_name, recipient_phone, shipping_address, shipping_postal, shipping_lat, shipping_lng")
-        .eq("id", order.id)
-        .single(),
-      svc.from("settings").select("value").eq("key", "store_origin").maybeSingle(),
-    ]);
-    const storeOrigin = (settingsRow?.value ?? null) as { lat?: string; lng?: string } | null;
-
-    if (orderFull?.courier_company && orderFull.courier_service) {
-      const { data: orderItems } = await svc
-        .from("order_items")
-        .select("product_name, price, quantity, weight")
-        .eq("order_id", order.id);
-
-      if (orderItems?.length) {
-        const postalNum = parseInt(orderFull.shipping_postal.replace(/\D/g, ""), 10);
-        const onDemandCoords = await resolveOnDemandCoords(orderFull.courier_company, postalNum, storeOrigin, {
-          lat: orderFull.shipping_lat,
-          lng: orderFull.shipping_lng,
-        });
-        const shipResult = await createBiteshipOrder({
-          destinationName: orderFull.recipient_name,
-          destinationPhone: orderFull.recipient_phone,
-          destinationAddress: orderFull.shipping_address,
-          destinationPostalCode: postalNum,
-          courierCompany: orderFull.courier_company,
-          courierType: orderFull.courier_service,
-          items: orderItems.map((i) => ({
-            name: i.product_name,
-            value: i.price,
-            quantity: i.quantity,
-            weight: Math.round(i.weight / i.quantity),
-          })),
-          orderNote: `GeekyTech Order ${orderNumber}`,
-          ...onDemandCoords,
-        });
-
-        if (shipResult.ok) {
-          await svc.from("shipments").insert({
-            order_id: order.id,
-            courier_company: orderFull.courier_company,
-            courier_name: shipResult.courierName,
-            courier_service: orderFull.courier_service,
-            biteship_order_id: shipResult.biteshipOrderId,
-            awb: shipResult.awb,
-            status: "pending",
-          });
-        } else {
-          const isOnDemand = ON_DEMAND_COURIERS.has(orderFull.courier_company.toLowerCase());
-          const hasOriginCoords = parseOriginCoords(storeOrigin) !== null;
-          const coordHint = isOnDemand && !hasOriginCoords
-            ? " (Koordinat origin belum dikonfigurasi — isi Latitude & Longitude di Admin → Pengaturan → Pengiriman)"
-            : "";
-          await svc.from("order_status_history").insert({
-            order_id: order.id,
-            status: "paid",
-            note: `Biteship gagal: ${shipResult.error}${coordHint}. Admin dapat input AWB manual di halaman pesanan.`,
-            changed_by: null,
-          });
-        }
-      }
-    }
+  const shipResult = await createShipmentForOrder(order.id, orderNumber);
+  if (!shipResult.ok) {
+    await svc.from("order_status_history").insert({
+      order_id: order.id,
+      status: "paid",
+      note: `Biteship gagal: ${shipResult.error}. Admin dapat coba lagi atau input AWB manual di halaman pesanan.`,
+      changed_by: null,
+    });
   }
-
   return "settled";
 }

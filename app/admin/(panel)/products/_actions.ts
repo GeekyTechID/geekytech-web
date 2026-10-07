@@ -68,6 +68,11 @@ function findDuplicateSku(variants: VariantInput[]) {
   return null;
 }
 
+/** Produk satu varian: Harga Dasar selalu = harga varian (storefront memakai max keduanya). */
+function effectiveBasePrice(data: ProductInput): number {
+  return data.variants.length === 1 ? data.variants[0].price : data.base_price;
+}
+
 export async function createProduct(data: ProductInput): Promise<ActionResult> {
   await requireAdmin();
   const supabase = await createServiceClient();
@@ -84,7 +89,7 @@ export async function createProduct(data: ProductInput): Promise<ActionResult> {
       name: data.name,
       slug: data.slug,
       description: data.description || null,
-      base_price: data.base_price,
+      base_price: effectiveBasePrice(data),
       sale_price: data.sale_price,
       min_order_qty: data.min_order_qty,
       category_id: data.category_id,
@@ -191,7 +196,7 @@ export async function updateProduct(
       name: data.name,
       slug: data.slug,
       description: data.description || null,
-      base_price: data.base_price,
+      base_price: effectiveBasePrice(data),
       sale_price: data.sale_price,
       min_order_qty: data.min_order_qty,
       category_id: data.category_id,

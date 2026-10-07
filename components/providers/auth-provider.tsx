@@ -12,6 +12,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
+    let lastUserId: string | null = null;
 
     async function fetchProfile(userId: string) {
       const { data } = await supabase
@@ -29,6 +30,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       const user = session?.user ?? null;
+
+      // Satu browser = satu akun. Jika tab lain login sebagai akun berbeda
+      // (atau logout), muat ulang agar tab ini tidak menampilkan data/keranjang
+      // akun lama sementara cookie sudah milik akun baru.
+      const previousId = lastUserId;
+      lastUserId = user?.id ?? null;
+      const switchedAccount = previousId !== null && lastUserId !== null && previousId !== lastUserId;
+      const signedOutElsewhere = previousId !== null && lastUserId === null && document.hidden;
+      if (event !== "INITIAL_SESSION" && (switchedAccount || signedOutElsewhere)) {
+        window.location.reload();
+        return;
+      }
+
       setUser(user);
 
       if (!user) {

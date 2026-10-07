@@ -7,6 +7,7 @@ import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
+import { createShipmentForOrder } from "@/lib/biteship/create-shipment-for-order";
 import { closePendingMayarPayments } from "@/lib/payments/close-pending";
 import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import { getUserEmail } from "@/lib/email/get-user-email";
@@ -266,6 +267,34 @@ export async function updateOrderStatus(
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
   return {};
+}
+
+export async function retryBiteshipShipment(orderId: string): Promise<{ error?: string }> {
+  const adminId = await requireAdmin();
+  const supabase = createServiceClient();
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("order_number, status")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!order) return { error: "Pesanan tidak ditemukan." };
+  if (order.status !== "paid" && order.status !== "processing") {
+    return { error: "Pengiriman hanya bisa dibuat untuk pesanan Dibayar atau Diproses." };
+  }
+
+  const result = await createShipmentForOrder(orderId, order.order_number);
+  await supabase.from("order_status_history").insert({
+    order_id: orderId,
+    status: order.status,
+    note: result.ok
+      ? "Pengiriman Biteship berhasil dibuat ulang oleh admin."
+      : `Biteship gagal (coba ulang admin): ${result.error}`,
+    changed_by: adminId,
+  });
+
+  revalidatePath(`/admin/orders/${orderId}`);
+  return result.ok ? {} : { error: result.error };
 }
 
 export async function syncBiteshipAWB(

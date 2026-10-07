@@ -100,9 +100,19 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // ─── /login, /register — satu browser satu akun ──────────────────────────────
+  // Sesi Supabase disimpan di satu cookie; login akun lain di tab baru akan
+  // menimpa sesi diam-diam. Pengguna yang sudah login wajib logout dulu.
+  if ((pathname === "/login" || pathname === "/register") && user) {
+    const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+    const safeTarget =
+      redirectTo && /^\/(?!\/)[\w\-/]*$/.test(redirectTo) ? redirectTo : "/dashboard";
+    return redirectWithCookies(safeTarget);
+  }
+
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/", "/dashboard", "/dashboard/:path*", "/admin", "/admin/:path*"],
+  matcher: ["/", "/dashboard", "/dashboard/:path*", "/admin", "/admin/:path*", "/login", "/register"],
 };

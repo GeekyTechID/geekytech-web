@@ -13,6 +13,7 @@ import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } 
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import { SyncBiteshipButton } from "./_components/sync-biteship-button";
+import { RetryShipmentButton } from "./_components/retry-shipment-button";
 import { ConfirmPickupButton } from "./_components/confirm-pickup-button";
 import { StartPackingButton } from "./_components/start-packing-button";
 import { ShipmentTrackingCard } from "./_components/tracking-timeline";
@@ -406,6 +407,14 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                       Tarik status terbaru dari Biteship secara manual.
                     </p>
                     <SyncBiteshipButton orderId={order.id} />
+                  </div>
+                )}
+                {!shipment && order.courier_company && (order.status === "paid" || order.status === "processing") && (
+                  <div className="space-y-1 pt-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Pengiriman belum terdaftar di Biteship. Coba buat ulang, atau input AWB manual.
+                    </p>
+                    <RetryShipmentButton orderId={order.id} />
                   </div>
                 )}
                 {shipment && !shipment.awb && shipment.biteship_order_id && shipment.status !== "cancelled" && (

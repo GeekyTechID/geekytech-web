@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useTransition } from "react";
+import { useState, useEffect, useRef, useTransition, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -259,6 +259,21 @@ export function ProductForm({
   // yang menyebabkan server action memperlakukan semua varian sebagai INSERT baru.
   const { fields, append, remove } = useFieldArray({ control, name: "variants", keyName: "_key" });
 
+  // Produk dengan satu varian: Harga Dasar dan harga varian adalah harga yang
+  // sama, jadi edit di salah satu field ikut mengubah yang lain. Tanpa ini,
+  // menurunkan harga varian tidak berpengaruh karena storefront memakai
+  // max(Harga Dasar, harga varian).
+  const syncSingleVariantPrice = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.valueAsNumber;
+    if (getValues("variants").length !== 1 || Number.isNaN(value)) return;
+    setValue("variants.0.price", value, { shouldDirty: true });
+  };
+  const syncBasePriceFromVariant = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.valueAsNumber;
+    if (getValues("variants").length !== 1 || Number.isNaN(value)) return;
+    setValue("base_price", value, { shouldDirty: true });
+  };
+
   // ── Draft persistence ─────────────────────────────────────────────────────
   // Gunakan ref agar form.watch callback selalu dapat nilai terbaru images/tags
   // tanpa perlu re-subscribe setiap kali state berubah.
@@ -304,7 +319,7 @@ export function ProductForm({
   }, [images, tags, isEdit]);
 
   // Auto-generate slug from name (only for new products)
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (!isEdit) setValue("slug", toSlug(val));
   };
@@ -445,7 +460,7 @@ export function ProductForm({
               <Field label="Harga Dasar (Rp)" error={errors.base_price?.message} required>
                 <Input
                   type="number"
-                  {...register("base_price", { valueAsNumber: true })}
+                  {...register("base_price", { valueAsNumber: true, onChange: syncSingleVariantPrice })}
                   placeholder="0"
                   className={inputClass}
                 />
@@ -638,7 +653,7 @@ export function ProductForm({
                         <Field label="Harga (Rp)" error={variantErrors?.price?.message} required>
                           <Input
                             type="number"
-                            {...register(`variants.${i}.price`, { valueAsNumber: true })}
+                            {...register(`variants.${i}.price`, { valueAsNumber: true, onChange: syncBasePriceFromVariant })}
                             placeholder="0"
                             className={variantInputClass}
                           />
