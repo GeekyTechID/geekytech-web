@@ -87,6 +87,21 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // ─── /api/admin/* — lapis kedua: tolak non-admin sebelum route handler jalan ──
+  if (pathname.startsWith("/api/admin")) {
+    if (!user) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   // ─── /admin/login — redirect ke /admin jika sudah login sebagai admin ────────
   if (pathname === "/admin/login" && user) {
     const { data: profile } = await supabase
@@ -114,5 +129,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard", "/dashboard/:path*", "/admin", "/admin/:path*", "/login", "/register"],
+  matcher: ["/", "/dashboard", "/dashboard/:path*", "/admin", "/admin/:path*", "/api/admin/:path*", "/login", "/register"],
 };

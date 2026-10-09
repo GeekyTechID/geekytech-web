@@ -4,6 +4,14 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+// Hanya bucket gambar publik; bucket privat (refund-proofs) punya route sendiri.
+const ALLOWED_BUCKETS = ["products", "brands", "banners", "coupons"];
+const EXT_BY_MIME: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -33,6 +41,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "File wajib diisi." }, { status: 400 });
   }
 
+  if (!ALLOWED_BUCKETS.includes(bucket)) {
+    return NextResponse.json({ error: "Bucket tidak valid." }, { status: 400 });
+  }
+
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
       { error: "Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF." },
@@ -47,7 +59,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const ext = EXT_BY_MIME[file.type];
   const path = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
 
   const arrayBuffer = await file.arrayBuffer();

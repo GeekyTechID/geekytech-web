@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const STATUS_PAID = [
@@ -25,6 +26,12 @@ function toCsv(headers: string[], rows: (string | number | null | undefined)[][]
 }
 
 export async function GET(req: NextRequest) {
+  try {
+    await requireAdmin();
+  } catch {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+
   const { searchParams } = req.nextUrl;
   const type = searchParams.get("type");
 
