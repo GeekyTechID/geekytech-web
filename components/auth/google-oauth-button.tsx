@@ -2,6 +2,7 @@
 
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { Button } from "@/components/ui/button";
+import { IS_SANDBOX } from "@/lib/app-env";
 
 type GoogleOAuthButtonProps = {
   label: string;
@@ -16,6 +17,8 @@ export function GoogleOAuthButton({
   onClick,
   className = "-mt-4 w-full",
 }: GoogleOAuthButtonProps) {
+  // Provider Google dimatikan di db_sandbox (secret OAuth hanya di production).
+  if (IS_SANDBOX) return null;
   return (
     <Button
       type="button"
