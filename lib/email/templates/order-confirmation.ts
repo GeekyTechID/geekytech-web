@@ -1,4 +1,4 @@
-import { emailShell, rp, ctaButton, summaryRow } from "./base";
+import { emailShell, rp, ctaButton, summaryRow, escapeHtml } from "./base";
 
 export type OrderConfirmationItem = {
   name: string;
@@ -22,7 +22,7 @@ export function orderConfirmationHtml(params: {
   etd: string;
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const orderUrl = `${params.appUrl}/dashboard/orders/${params.orderId}`;
 
   const itemRows = params.items
@@ -30,8 +30,8 @@ export function orderConfirmationHtml(params: {
       (item) => `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#1d1d1f;line-height:1.4;">
-        ${item.name}
-        ${item.variantName ? `<span style="color:#6e6e73;"> &mdash; ${item.variantName}</span>` : ""}
+        ${escapeHtml(item.name)}
+        ${item.variantName ? `<span style="color:#6e6e73;"> &mdash; ${escapeHtml(item.variantName)}</span>` : ""}
       </td>
       <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#3d3d3d;text-align:center;white-space:nowrap;">${item.qty}x</td>
       <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#1d1d1f;text-align:right;white-space:nowrap;">${rp(item.unitPrice * item.qty)}</td>
@@ -66,7 +66,7 @@ export function orderConfirmationHtml(params: {
 
     <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#1d1d1f;">Pengiriman</p>
     <p style="margin:0 0 24px;font-size:14px;color:#3d3d3d;line-height:1.6;">
-      ${params.courierName} &mdash; ${params.serviceName}
+      ${escapeHtml(params.courierName)} &mdash; ${escapeHtml(params.serviceName)}
       ${params.etd ? ` &middot; Estimasi ${params.etd} hari kerja` : ""}
     </p>
 

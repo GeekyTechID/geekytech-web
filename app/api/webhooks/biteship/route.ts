@@ -7,6 +7,7 @@ import { sendOrderShipped } from "@/lib/email/send-order-shipped";
 import { sendOrderDelivered } from "@/lib/email/send-order-delivered";
 import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import type { Database, Json } from "@/types/supabase";
+import { secretMatches } from "@/lib/security/safe-compare";
 
 type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
 type OrderStatus = Database["public"]["Enums"]["order_status"];
@@ -106,12 +107,10 @@ export async function POST(req: Request) {
     }
 
     // ── Verifikasi secret (hanya untuk payload aktual, bukan ping) ──
-    const secret = process.env.BITESHIP_WEBHOOK_SECRET?.trim();
-    if (secret) {
-      const token = new URL(req.url).searchParams.get("token");
-      if (token !== secret) {
-        return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-      }
+    // Fail-closed: tanpa BITESHIP_WEBHOOK_SECRET semua payload ditolak.
+    const token = new URL(req.url).searchParams.get("token");
+    if (!secretMatches(token, process.env.BITESHIP_WEBHOOK_SECRET)) {
+      return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const svc = createServiceClient();

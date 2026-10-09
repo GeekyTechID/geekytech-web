@@ -14,6 +14,7 @@ import { closePendingMayarPayments } from "@/lib/payments/close-pending";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { MANUAL_REFUND_DURATION } from "@/lib/payments/manual-refund";
 import { REVIEW_IMAGES_MAX, isOwnReviewImageUrl } from "@/lib/constants/review-images";
+import { isOwnComplaintMediaUrl } from "@/lib/supabase/upload-complaint-media";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -427,6 +428,9 @@ export async function submitComplaintAction(input: {
     .single();
 
   if (!order) return { success: false, error: "Pesanan tidak ditemukan." };
+  if (!Array.isArray(input.mediaUrls) || input.mediaUrls.length > 10 || input.mediaUrls.some((u) => !isOwnComplaintMediaUrl(u, input.orderId))) {
+    return { success: false, error: "Media bukti tidak valid. Upload ulang filenya." };
+  }
   if (order.status === "completed") {
     return {
       success: false,
@@ -569,6 +573,9 @@ export async function submitReturnAWBAction(
 
   if (!ret || ret.status !== "pending_shipback") {
     return { success: false, error: "Pengajuan retur tidak ditemukan atau sudah diproses." };
+  }
+  if (!Array.isArray(proofImages) || proofImages.length > 10 || proofImages.some((u) => !isOwnComplaintMediaUrl(u, ret.order_id))) {
+    return { success: false, error: "Foto bukti tidak valid. Upload ulang fotonya." };
   }
 
   // Service client: `returns` only has a SELECT RLS policy, so a user-scoped

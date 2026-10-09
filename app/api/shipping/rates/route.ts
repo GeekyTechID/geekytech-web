@@ -5,6 +5,7 @@ import { fetchUserCartWithLines, fetchVariantAsBuyNowLine } from "@/lib/data/use
 import { fetchAddressForUser } from "@/lib/data/dashboard-user";
 import { fetchBiteshipCourierRates } from "@/lib/biteship/fetch-courier-rates";
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 import {
   ON_DEMAND_COURIERS,
   isOnDemandSameDayOption,
@@ -27,6 +28,9 @@ function postalToNumber(raw: string): number | null {
 }
 
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "shipping-rates", 30, MINUTE);
+  if (limited) return limited;
+
   try {
     const json: unknown = await req.json();
     const parsed = bodySchema.safeParse(json);

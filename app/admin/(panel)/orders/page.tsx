@@ -1,9 +1,10 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { OrderFilters } from "./_components/order-filters";
 import { OrderTable, type OrderRow } from "./_components/order-table";
+import { sanitizeFilterTerm } from "@/lib/supabase/sanitize-filter";
 
 export const metadata: Metadata = { title: "Kelola Pesanan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export default async function AdminOrdersPage({
     )
     .range(from, to);
 
-  if (q) query = query.or(`order_number.ilike.%${q}%,recipient_name.ilike.%${q}%`);
+  if (q) { const t = sanitizeFilterTerm(q); query = query.or(`order_number.ilike.%${t}%,recipient_name.ilike.%${t}%`); }
   if (status) query = query.eq("status", status as "pending_payment");
 
   switch (sort) {

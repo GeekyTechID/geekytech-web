@@ -1,4 +1,4 @@
-import { emailShell, rp, ctaButton } from "./base";
+import { emailShell, rp, ctaButton, escapeHtml } from "./base";
 
 export function paymentConfirmedHtml(params: {
   name: string;
@@ -7,7 +7,7 @@ export function paymentConfirmedHtml(params: {
   total: number;
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const orderUrl = `${params.appUrl}/dashboard/orders/${params.orderId}`;
 
   const body = `

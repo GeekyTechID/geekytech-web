@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { sendContactMessage } from "@/lib/email/send-contact-message";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const contactFormSchema = z.object({
   name: z.string().min(3).max(100),
@@ -12,6 +13,9 @@ const contactFormSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "contact", 5, 10 * MINUTE);
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const data = contactFormSchema.parse(body);

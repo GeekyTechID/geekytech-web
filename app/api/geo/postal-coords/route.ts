@@ -1,10 +1,14 @@
 import { z } from "zod";
 
 import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({ postalCode: z.string().trim().min(3).max(10) });
 
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "geo", 30, MINUTE);
+  if (limited) return limited;
+
   try {
     const json: unknown = await req.json();
     const parsed = schema.safeParse(json);

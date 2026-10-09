@@ -65,7 +65,8 @@ export async function POST(req: Request) {
       ...new Set(
         ["id", "transactionId", "productId", "paymentLinkId", "paymentId", "invoiceId"]
           .map((k) => stringField(data, k))
-          .filter((v): v is string => !!v),
+          // ID Mayar = UUID/alfanumerik; tolak karakter yang bisa mengubah filter .or().
+          .filter((v): v is string => !!v && /^[A-Za-z0-9-]{1,100}$/.test(v)),
       ),
     ];
 

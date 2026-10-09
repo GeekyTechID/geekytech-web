@@ -1,4 +1,4 @@
-import { emailShell, ctaButton } from "./base";
+import { emailShell, ctaButton, escapeHtml } from "./base";
 
 export function refundProcessedHtml(params: {
   name: string;
@@ -6,7 +6,7 @@ export function refundProcessedHtml(params: {
   appUrl: string;
   reference?: string | null;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const reference = params.reference
     ? params.reference.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`)
     : null;

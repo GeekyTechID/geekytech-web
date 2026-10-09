@@ -1,4 +1,4 @@
-import { emailShell, ctaButton } from "./base";
+import { emailShell, ctaButton, escapeHtml } from "./base";
 
 export function lowStockAlertHtml(params: {
   productName: string;
@@ -19,8 +19,8 @@ export function lowStockAlertHtml(params: {
     </p>
 
     <div style="background:#f5f5f7;border-radius:12px;padding:16px 20px;margin:0 0 24px;">
-      <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1d1d1f;">${params.productName}</p>
-      <p style="margin:0 0 4px;font-size:13px;color:#3d3d3d;">Varian: <strong>${params.variantName}</strong></p>
+      <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1d1d1f;">${escapeHtml(params.productName)}</p>
+      <p style="margin:0 0 4px;font-size:13px;color:#3d3d3d;">Varian: <strong>${escapeHtml(params.variantName)}</strong></p>
       ${params.sku ? `<p style="margin:0 0 4px;font-size:13px;color:#3d3d3d;">SKU: <code style="background:#e5e5ea;padding:1px 5px;border-radius:4px;font-size:12px;">${params.sku}</code></p>` : ""}
       <p style="margin:12px 0 0;font-size:13px;color:#6e6e73;">Dipicu oleh pesanan: <strong>${params.orderNumber}</strong></p>
     </div>

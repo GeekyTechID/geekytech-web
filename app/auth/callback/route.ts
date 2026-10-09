@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
   const origin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
   const code = searchParams.get("code");
   const nextRaw = searchParams.get("next") ?? "/dashboard";
-  // Hanya izinkan path relatif untuk mencegah open-redirect
-  const next = nextRaw.startsWith("/") ? nextRaw : "/dashboard";
+  // Hanya path relatif satu-slash: "//evil.com" atau "/\evil.com" = open redirect.
+  const next = /^\/(?![/\\])[\w\-/?=&.%]*$/.test(nextRaw) ? nextRaw : "/dashboard";
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 

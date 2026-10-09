@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/types/supabase";
+import { sanitizeFilterTerm } from "@/lib/supabase/sanitize-filter";
 
 export const STOCK_DEFAULT_SORT = "stock-asc";
 
@@ -35,7 +36,8 @@ function applyStockFilters(query: any, filters: StockListFilters) {
 
   const term = filters.q.trim();
   if (term) {
-    next = next.or(`name.ilike.%${term}%,sku.ilike.%${term}%,products.name.ilike.%${term}%`);
+    const t = sanitizeFilterTerm(term);
+    next = next.or(`name.ilike.%${t}%,sku.ilike.%${t}%,products.name.ilike.%${t}%`);
   }
 
   return next;

@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { cancelExpiredOrder } from "@/lib/orders/cancel-expired";
+import { secretMatches } from "@/lib/security/safe-compare";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +16,10 @@ export const dynamic = "force-dynamic";
  *  - Jika tidak ada payment / tidak ada expiry_time → fallback: created_at + 3 jam
  */
 export async function GET(req: Request) {
-  // Verify CRON_SECRET if set
-  const cronSecret = process.env.CRON_SECRET?.trim();
-  if (cronSecret) {
-    const auth = req.headers.get("authorization");
-    if (auth !== `Bearer ${cronSecret}`) {
-      return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
+  // Fail-closed: tanpa CRON_SECRET endpoint ini selalu ditolak.
+  const auth = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (!secretMatches(auth, process.env.CRON_SECRET)) {
+    return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
   try {

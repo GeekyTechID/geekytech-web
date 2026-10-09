@@ -1,9 +1,10 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { ComplaintFilters } from "./_components/complaint-filters";
 import { ComplaintTable, type ComplaintRow } from "./_components/complaint-table";
+import { sanitizeFilterTerm } from "@/lib/supabase/sanitize-filter";
 
 export const metadata: Metadata = { title: "Komplain — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export default async function AdminComplaintsPage({
 
   if (status) query = query.eq("status", status);
   if (q) {
-    query = query.or(`reason.ilike.%${q}%`);
+    query = query.or(`reason.ilike.%${sanitizeFilterTerm(q)}%`);
   }
 
   const [{ data: complaints, count }, openCount] = await Promise.all([

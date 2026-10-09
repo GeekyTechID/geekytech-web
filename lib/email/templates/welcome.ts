@@ -1,3 +1,4 @@
+import { escapeHtml } from "./base";
 export function welcomeEmailHtml({
   name,
   appUrl,
@@ -7,7 +8,7 @@ export function welcomeEmailHtml({
   appUrl: string;
   activationUrl?: string;
 }): string {
-  const firstName = name.split(" ")[0] ?? name;
+  const firstName = escapeHtml(name.split(" ")[0] ?? name);
   const year = new Date().getFullYear();
 
   const ctaBlock = activationUrl

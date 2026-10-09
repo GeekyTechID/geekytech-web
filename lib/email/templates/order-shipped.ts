@@ -1,4 +1,4 @@
-import { emailShell, ctaButton } from "./base";
+import { emailShell, ctaButton, escapeHtml } from "./base";
 
 export function orderShippedHtml(params: {
   name: string;
@@ -9,7 +9,7 @@ export function orderShippedHtml(params: {
   trackingUrl?: string;
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const trackUrl = `${params.appUrl}/dashboard/orders/${params.orderId}/tracking`;
 
   const awbBlock =

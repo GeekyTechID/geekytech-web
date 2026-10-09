@@ -3,10 +3,14 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { uploadReviewImage } from "@/lib/supabase/upload-review-image";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const fileSchema = z.instanceof(File, { message: "File foto wajib diisi." });
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "review-upload", 20, 10 * MINUTE);
+  if (limited) return limited;
+
   try {
     const supabase = await createClient();
     const {

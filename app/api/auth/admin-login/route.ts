@@ -5,12 +5,16 @@ import { z } from "zod";
 
 import { loginSchema } from "@/lib/validations/auth";
 import type { Database } from "@/types/supabase";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const bodySchema = loginSchema.extend({
   turnstileToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, "admin-login", 10, 10 * MINUTE);
+  if (limited) return limited;
+
   try {
     const body: unknown = await request.json();
     const parsed = bodySchema.safeParse(body);

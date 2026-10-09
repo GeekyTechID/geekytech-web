@@ -1,4 +1,4 @@
-import { emailShell, ctaButton } from "./base";
+import { emailShell, ctaButton, escapeHtml } from "./base";
 
 export function orderDeliveredHtml(params: {
   name: string;
@@ -6,7 +6,7 @@ export function orderDeliveredHtml(params: {
   orderId: string;
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const reviewUrl = `${params.appUrl}/dashboard/orders/${params.orderId}/review`;
   const orderUrl = `${params.appUrl}/dashboard/orders/${params.orderId}`;
 

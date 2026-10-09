@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { reconcileMayarPayment } from "@/lib/payments/reconcile-mayar";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const paramsSchema = z.object({ id: z.string().uuid() });
 
@@ -12,6 +13,9 @@ const paramsSchema = z.object({ id: z.string().uuid() });
  * status with Mayar and settles the order when it is paid.
  */
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const limited = rateLimit(_req, "verify-payment", 20, MINUTE);
+  if (limited) return limited;
+
   try {
     const parsed = paramsSchema.safeParse(await params);
     if (!parsed.success) {

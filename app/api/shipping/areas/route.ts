@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({ q: z.string().min(2).max(80) });
 
@@ -8,6 +9,9 @@ type BiteshipAreasResponse = {
 };
 
 export async function GET(req: Request) {
+  const limited = rateLimit(req, "shipping-areas", 60, MINUTE);
+  if (limited) return limited;
+
   try {
     const { searchParams } = new URL(req.url);
     const parsed = schema.safeParse({ q: searchParams.get("q") ?? "" });

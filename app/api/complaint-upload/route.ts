@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { uploadComplaintMedia } from "@/lib/supabase/upload-complaint-media";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, "complaint-upload", 20, 10 * MINUTE);
+  if (limited) return limited;
+
   const supabase = await createClient();
   const {
     data: { user },

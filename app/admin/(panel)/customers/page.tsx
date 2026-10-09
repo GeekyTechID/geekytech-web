@@ -1,9 +1,10 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { CustomerFilters } from "./_components/customer-filters";
 import { CustomerTable, type CustomerRow } from "./_components/customer-table";
+import { sanitizeFilterTerm } from "@/lib/supabase/sanitize-filter";
 
 export const metadata: Metadata = { title: "Kelola Pelanggan — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export default async function AdminCustomersPage({
     .is("deleted_at", null)
     .range(from, to);
 
-  if (q) query = query.or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`);
+  if (q) { const t = sanitizeFilterTerm(q); query = query.or(`full_name.ilike.%${t}%,phone.ilike.%${t}%`); }
 
   switch (sort) {
     case "oldest":

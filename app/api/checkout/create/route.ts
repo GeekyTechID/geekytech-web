@@ -19,6 +19,7 @@ import {
   parseOriginCoords,
 } from "@/lib/shipping/on-demand-coords";
 import { closeMayarPayment, createMayarPayment } from "@/lib/mayar/client";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 // pg_cron (migration 029) cancels unpaid orders 3 hours after creation regardless
 // of this setting, so the Mayar link must never outlive that window.
@@ -88,6 +89,9 @@ async function resolveShippingPrice(params: {
 }
 
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "checkout", 10, MINUTE);
+  if (limited) return limited;
+
   let createdOrderId: string | null = null;
   let createdMayarPaymentId: string | null = null;
   try {

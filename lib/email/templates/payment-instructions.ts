@@ -1,4 +1,4 @@
-import { emailShell, rp, ctaButton, formatWIB } from "./base";
+import { emailShell, rp, ctaButton, formatWIB, escapeHtml } from "./base";
 
 function paymentBlock(params: {
   paymentType: string | null;
@@ -55,7 +55,7 @@ export function paymentInstructionsHtml(params: {
   expiryTime: string | null;
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const orderUrl = `${params.appUrl}/dashboard/orders/${params.orderId}`;
 
   const body = `

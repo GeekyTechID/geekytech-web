@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
 import { isTurnstileRequired } from "@/lib/auth/turnstile-config";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   first_name: z.string().min(1).max(50),
@@ -63,6 +64,9 @@ async function tryCleanupDeletedAuthUser(
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "auth-register", 5, 10 * MINUTE);
+  if (limited) return limited;
+
   try {
     const body: unknown = await request.json();
     const parsed = bodySchema.safeParse(body);

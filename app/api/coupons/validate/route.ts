@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { computeCouponDiscount } from "@/lib/checkout/coupon-discount";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const lineSchema = z.object({
   productId: z.string(),
@@ -18,6 +19,9 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "coupon-validate", 20, MINUTE);
+  if (limited) return limited;
+
   try {
     const json: unknown = await req.json();
     const parsed = bodySchema.safeParse(json);

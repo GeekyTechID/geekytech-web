@@ -3,12 +3,16 @@ import { z } from "zod";
 
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
+import { MINUTE, rateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
   email: z.string().email(),
 });
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "auth-resend", 3, 10 * MINUTE);
+  if (limited) return limited;
+
   try {
     const body: unknown = await request.json();
     const parsed = bodySchema.safeParse(body);

@@ -1,4 +1,4 @@
-import { emailShell, ctaButton } from "./base";
+import { emailShell, ctaButton, escapeHtml } from "./base";
 
 const reasonLabel: Record<string, { title: string; desc: string }> = {
   expired: {
@@ -21,7 +21,7 @@ export function orderCancelledHtml(params: {
   reason: "expired" | "cancelled" | "failed";
   appUrl: string;
 }): string {
-  const firstName = params.name.split(" ")[0] ?? params.name;
+  const firstName = escapeHtml(params.name.split(" ")[0] ?? params.name);
   const info = reasonLabel[params.reason] ?? reasonLabel.cancelled;
 
   const body = `
