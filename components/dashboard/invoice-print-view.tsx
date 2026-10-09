@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants/payment-method-labels";
 import { formatRupiah, formatDate } from "@/lib/format";
+import { IS_SANDBOX, SANDBOX_LABEL } from "@/lib/app-env";
 import type { Database } from "@/types/supabase";
 import type { DashboardOrderItemRow } from "@/lib/data/dashboard-user";
 
@@ -83,7 +84,7 @@ export function InvoicePrintView({ order, items, paidPayment, watermark }: Invoi
             letterSpacing: "0.05em",
           }}
         >
-          {watermark}
+          {IS_SANDBOX ? `${SANDBOX_LABEL} · ${watermark}` : watermark}
         </div>
 
         {/* Header */}

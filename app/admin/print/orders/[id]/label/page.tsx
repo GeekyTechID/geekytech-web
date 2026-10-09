@@ -11,6 +11,7 @@ import { Code128Barcode } from "@/components/shared/code128-barcode";
 import { SiteLogo } from "@/components/shared/site-logo";
 import { PrintPageButton } from "@/components/admin/print-page-button";
 import { csWhatsAppDigits } from "@/lib/whatsapp-link";
+import { SandboxWatermark } from "@/components/layout/sandbox-banner";
 
 export const metadata: Metadata = { title: "Cetak Resi — Admin GeekyTech" };
 export const dynamic = "force-dynamic";
@@ -107,7 +108,8 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
 
       {/* ── Lembar A5 ─────────────────────────────────────────────── */}
       {/* Tinggi cetak sedikit di bawah 210mm supaya pembulatan printer tidak memunculkan halaman kosong kedua. */}
-      <article className="mx-auto flex h-[210mm] w-[148mm] flex-col overflow-hidden bg-white p-[6mm] text-[10px] leading-snug text-black shadow-[0_2px_12px_rgba(0,0,0,0.12)] print:h-[209mm] print:shadow-none">
+      <article className="relative mx-auto flex h-[210mm] w-[148mm] flex-col overflow-hidden bg-white p-[6mm] text-[10px] leading-snug text-black shadow-[0_2px_12px_rgba(0,0,0,0.12)] print:h-[209mm] print:shadow-none">
+        <SandboxWatermark />
         {/* Header: toko + kurir */}
         <header className="flex items-center justify-between gap-3 border-b-2 border-black pb-2">
           <div>

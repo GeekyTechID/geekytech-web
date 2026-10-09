@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 
 import { Providers } from "@/components/providers";
+import { SandboxBanner } from "@/components/layout/sandbox-banner";
+import { IS_SANDBOX, SANDBOX_LABEL } from "@/lib/app-env";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -18,8 +20,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GeekyTech — Toko Tech & Gadget",
-    template: "%s | GeekyTech",
+    default: `${IS_SANDBOX ? `[${SANDBOX_LABEL}] ` : ""}GeekyTech — Toko Tech & Gadget`,
+    template: `${IS_SANDBOX ? `[${SANDBOX_LABEL}] ` : ""}%s | GeekyTech`,
   },
   description:
     "GeekyTech — toko tech & gadget terpercaya. Produk original bergaransi resmi. Pengiriman ke seluruh Indonesia.",
@@ -34,9 +36,10 @@ export const metadata: Metadata = {
     locale: "id_ID",
     siteName: "GeekyTech",
   },
+  // Sandbox (local/Vercel) tidak boleh diindeks mesin pencari.
   robots: {
-    index: true,
-    follow: true,
+    index: !IS_SANDBOX,
+    follow: !IS_SANDBOX,
   },
   icons: {
     icon: [
@@ -70,6 +73,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
+        <SandboxBanner />
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,6 +1,14 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+import { checkAppEnvConsistency } from "./lib/app-env";
+
+// Gagalkan dev/build/start kalau env salah sambung (mis. sandbox ke db_production).
+const envProblems = checkAppEnvConsistency();
+if (envProblems.length > 0) {
+  throw new Error(`Konfigurasi env tidak konsisten:\n- ${envProblems.join("\n- ")}`);
+}
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ["lightningcss"],
