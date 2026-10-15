@@ -61,11 +61,12 @@ const BITESHIP_TEMPLATES: { re: RegExp; text: (m: RegExpMatchArray) => string }[
     // Template Biteship sama utk pickup & drop off ("notified to pick up") — pakai kalimat netral.
     text: (m) => `Pengiriman terdaftar di kurir ${m[1].toUpperCase()}.` + (m[2] ? ` No. resi: ${m[2]}` : ""),
   },
-  { re: /^Courier has been allocated/i, text: () => "Kurir sudah ditugaskan untuk menjemput paket." },
+  { re: /^Courier (?:is|has been) allocated/i, text: () => "Kurir sudah ditugaskan untuk menjemput paket." },
   { re: /^Courier is on the way to pick ?up/i, text: () => "Kurir sedang menuju lokasi penjemputan." },
-  { re: /^Item has been picked/i, text: () => "Paket sudah diambil kurir dan siap dikirim." },
-  { re: /^Item is on the way|^Courier is on the way to (?:the )?destination/i, text: () => "Paket sedang diantar ke alamat tujuan." },
-  { re: /^Item has been delivered/i, text: () => "Paket telah diterima." },
+  { re: /^Item has been picked/i, text: () => "Paket sudah diterima kurir dan siap dikirim." },
+  { re: /^Item is on the way|^Courier is on the way to (?:the )?destination/i, text: () => "Paket dalam perjalanan ke kota tujuan." },
+  { re: /^Courier is dropping off/i, text: () => "Kurir sedang mengantar paket ke alamat tujuan." },
+  { re: /^(?:Item|Order) has been delivered/i, text: () => "Paket telah diterima." },
   { re: /^Item has been returned/i, text: () => "Paket dikembalikan ke pengirim." },
   { re: /^Courier order has been cancell?ed/i, text: () => "Pengiriman dibatalkan." },
 ];

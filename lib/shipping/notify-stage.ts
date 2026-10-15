@@ -5,9 +5,14 @@
  */
 export type ShipmentNotifyStage = "pickup" | "in_transit" | "delivered";
 
-export function shipmentNotifyStage(status: string | null | undefined): ShipmentNotifyStage | null {
+export function shipmentNotifyStage(
+  status: string | null | undefined,
+  dropOff = false,
+): ShipmentNotifyStage | null {
   switch (status) {
     case "picking_up":
+      // Drop off: kurir tidak menjemput — notifikasi baru saat paket diterima kurir (picked).
+      return dropOff ? null : "pickup";
     case "picked":
       return "pickup";
     case "dropping_off":
@@ -23,9 +28,10 @@ export function shipmentNotifyStage(status: string | null | undefined): Shipment
 export function shipmentStageToNotify(
   previousStatus: string | null | undefined,
   nextStatus: string | null | undefined,
+  dropOff = false,
 ): ShipmentNotifyStage | null {
-  const next = shipmentNotifyStage(nextStatus);
-  if (!next || next === shipmentNotifyStage(previousStatus)) return null;
+  const next = shipmentNotifyStage(nextStatus, dropOff);
+  if (!next || next === shipmentNotifyStage(previousStatus, dropOff)) return null;
   return next;
 }
 

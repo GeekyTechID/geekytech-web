@@ -307,7 +307,7 @@ export async function syncBiteshipAWB(
 
   const { data: shipment } = await supabase
     .from("shipments")
-    .select("id, biteship_order_id, awb, status, tracking_history, picked_up_at, delivered_at")
+    .select("id, biteship_order_id, awb, status, tracking_history, picked_up_at, delivered_at, courier_company")
     .eq("order_id", orderId)
     .maybeSingle();
 
@@ -386,7 +386,11 @@ export async function syncBiteshipAWB(
   }
 
   // User notification — hanya saat tahap pengiriman berubah (sinkron berulang tidak spam)
-  const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
+  const notifyStage = shipmentStageToNotify(
+    shipment.status,
+    newShipStatus,
+    courierCollectionMethod(shipment.courier_company) === "drop_off",
+  );
   if (orderRow?.user_id && orderRow.order_number) {
     if (notifyStage) {
       const content = shipmentNotificationContent(notifyStage, newShipStatus, orderRow.order_number);

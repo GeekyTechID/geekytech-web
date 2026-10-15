@@ -22,6 +22,7 @@ export const STEP_CFG: Record<string, StepCfg> = {
   allocated:    { label: "Kurir Dialokasikan",    Icon: UserCheck,    color: "text-blue-500",     bg: "bg-blue-50"      },
   picking_up:   { label: "Penjemputan",           Icon: MapPin,       color: "text-amber-500",    bg: "bg-amber-50"     },
   picked:       { label: "Paket Diambil",         Icon: PackageCheck, color: "text-[#EA5329]",    bg: "bg-[#FFF0E8]"   },
+  in_transit:   { label: "Dalam Perjalanan",      Icon: Truck,        color: "text-[#EA5329]",    bg: "bg-[#FFF0E8]"   },
   dropping_off: { label: "Dalam Pengiriman",      Icon: Truck,        color: "text-[#EA5329]",    bg: "bg-[#FFF0E8]"   },
   delivered:    { label: "Paket Terkirim",        Icon: Home,         color: "text-green-600",    bg: "bg-green-50"     },
   rejected:     { label: "Ditolak",               Icon: XCircle,      color: "text-red-500",      bg: "bg-red-50"       },

@@ -7,6 +7,7 @@ import { sendOrderShipped } from "@/lib/email/send-order-shipped";
 import { sendOrderDelivered } from "@/lib/email/send-order-delivered";
 import { shipmentNotificationContent, shipmentStageToNotify } from "@/lib/shipping/notify-stage";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
+import { courierCollectionMethod } from "@/lib/biteship/courier-brands";
 import {
   firstAt,
   mapShipmentStatus,
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
 
     const { data: shipment } = await svc
       .from("shipments")
-      .select("id, order_id, status, tracking_history, picked_up_at, delivered_at")
+      .select("id, order_id, status, tracking_history, picked_up_at, delivered_at, courier_company")
       .eq("biteship_order_id", biteshipOrderId)
       .maybeSingle();
 
@@ -197,7 +198,9 @@ export async function POST(req: Request) {
     }
 
     // ── Notifikasi user ──
-    const notifyStage = shipmentStageToNotify(shipment.status, shipStatus);
+    // Drop off (mis. TIKI): tidak ada penjemputan — jangan kabari "kurir menjemput".
+    const isDropOff = courierCollectionMethod(shipment.courier_company) === "drop_off";
+    const notifyStage = shipmentStageToNotify(shipment.status, shipStatus, isDropOff);
     if (orderRow?.user_id && orderRow.order_number) {
       const userId = orderRow.user_id;
       if (notifyStage) {
@@ -213,7 +216,7 @@ export async function POST(req: Request) {
       }
 
       // Email: kirim saat picking_up/picked/dropping_off (idempotency key cegah duplikat)
-      if (shipStatus === "picking_up" || shipStatus === "picked" || shipStatus === "dropping_off") {
+      if ((shipStatus === "picking_up" && !isDropOff) || shipStatus === "picked" || shipStatus === "dropping_off") {
         // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
         after(async () => {
           const user = await getUserEmail(userId).catch(() => null);

@@ -24,6 +24,7 @@ export function mapShipmentStatus(biteshipStatus: string): ShipmentStatus {
     case "picked":
       return "picked";
     case "dropping_off":
+    case "in_transit": // status Biteship antara picked → dropping_off (tidak ada di enum kita)
       return "dropping_off";
     case "delivered":
       return "delivered";
