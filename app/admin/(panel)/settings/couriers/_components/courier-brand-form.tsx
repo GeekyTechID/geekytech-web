@@ -55,6 +55,15 @@ export function CourierBrandForm({ activeCodes }: CourierBrandFormProps) {
               />
             )}
             <span className="text-sm font-medium">{brand.name}</span>
+            <span
+              className={
+                brand.collection === "drop_off"
+                  ? "rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800"
+                  : "rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground"
+              }
+            >
+              {brand.collection === "drop_off" ? "Drop off" : "Pickup"}
+            </span>
           </label>
         ))}
       </div>

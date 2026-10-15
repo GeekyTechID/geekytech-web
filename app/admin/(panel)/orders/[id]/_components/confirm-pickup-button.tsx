@@ -8,10 +8,13 @@ import { confirmReadyForPickup } from "../../_actions";
 
 interface ConfirmPickupButtonProps {
   orderId: string;
+  /** true = kurir drop off (admin antar ke counter), bukan dijemput. */
+  dropOff?: boolean;
 }
 
-export function ConfirmPickupButton({ orderId }: ConfirmPickupButtonProps) {
+export function ConfirmPickupButton({ orderId, dropOff = false }: ConfirmPickupButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const method = dropOff ? "drop off" : "pickup";
 
   return (
     <Button
@@ -26,17 +29,17 @@ export function ConfirmPickupButton({ orderId }: ConfirmPickupButtonProps) {
           if (result.error) {
             toast.error(result.error);
           } else if (result.awb) {
-            toast.success(`Paket dikonfirmasi siap pickup. Nomor resi: ${result.awb}`);
+            toast.success(`Paket dikonfirmasi siap ${method}. Nomor resi: ${result.awb}`);
           } else {
             toast.success(
-              "Paket dikonfirmasi siap pickup. Nomor resi belum terbit dari Biteship, gunakan tombol sinkron.",
+              `Paket dikonfirmasi siap ${method}. Nomor resi belum terbit dari Biteship, gunakan tombol sinkron.`,
             );
           }
         });
       }}
     >
       <PackageCheck size={13} />
-      {isPending ? "Mengonfirmasi..." : "Konfirmasi Siap Pickup"}
+      {isPending ? "Mengonfirmasi..." : dropOff ? "Konfirmasi Siap Drop Off" : "Konfirmasi Siap Pickup"}
     </Button>
   );
 }

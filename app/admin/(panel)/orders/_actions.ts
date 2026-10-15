@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications/create-notification";
 import { getBiteshipOrder } from "@/lib/biteship/get-order";
+import { courierCollectionMethod } from "@/lib/biteship/courier-brands";
 import { confirmBiteshipOrder } from "@/lib/biteship/confirm-order";
 import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { createShipmentForOrder } from "@/lib/biteship/create-shipment-for-order";
@@ -485,13 +486,14 @@ export async function confirmReadyForPickup(
 
   const { data: shipment } = await supabase
     .from("shipments")
-    .select("id, status, biteship_order_id")
+    .select("id, status, biteship_order_id, courier_company")
     .eq("order_id", orderId)
     .maybeSingle();
 
   if (!shipment?.biteship_order_id) {
     return { error: "Tidak ada Biteship Order ID untuk pesanan ini." };
   }
+  const isDropOff = courierCollectionMethod(shipment.courier_company) === "drop_off";
   if (shipment.status !== "pending") {
     return { error: "Pesanan sudah dikonfirmasi atau sedang diproses kurir." };
   }
@@ -522,9 +524,11 @@ export async function confirmReadyForPickup(
   await supabase.from("order_status_history").insert({
     order_id: orderId,
     status: "processing",
-    note: awb
-      ? `Admin mengonfirmasi paket siap pickup. Nomor resi: ${awb}. Menunggu kurir.`
-      : "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
+    note: isDropOff
+      ? `Admin mengonfirmasi paket siap drop off ke counter ${shipment.courier_company?.toUpperCase() ?? "kurir"}.${awb ? ` Nomor resi: ${awb}.` : ""}`
+      : awb
+        ? `Admin mengonfirmasi paket siap pickup. Nomor resi: ${awb}. Menunggu kurir.`
+        : "Admin mengonfirmasi paket siap pickup. Menunggu kurir.",
     changed_by: null,
   });
 

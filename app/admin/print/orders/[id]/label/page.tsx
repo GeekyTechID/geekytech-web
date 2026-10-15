@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
+import { BITESHIP_COURIER_BRANDS, courierCollectionMethod } from "@/lib/biteship/courier-brands";
 import { formatDate, formatRupiah } from "@/lib/format";
 import { Code128Barcode } from "@/components/shared/code128-barcode";
 import { SiteLogo } from "@/components/shared/site-logo";
@@ -70,6 +70,7 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
   const courierService = (shipment?.courier_service ?? order.courier_service ?? "").toUpperCase();
   const brand = BITESHIP_COURIER_BRANDS.find((b) => b.code === courierCode);
   const courierName = brand?.name ?? courierCode.toUpperCase();
+  const isDropOff = courierCollectionMethod(courierCode) === "drop_off";
 
   const totalQty = items.reduce((sum, it) => sum + it.quantity, 0);
   const totalWeight = items.reduce((sum, it) => sum + it.weight * it.quantity, 0);
@@ -102,7 +103,8 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
 
       {!awb && (
         <p className="mx-auto mb-4 w-[148mm] max-w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 print:hidden">
-          Nomor resi belum terbit. Konfirmasi siap pickup atau sinkron Biteship dulu sebelum mencetak.
+          Nomor resi belum terbit. Konfirmasi siap {isDropOff ? "drop off" : "pickup"} atau sinkron Biteship dulu
+          sebelum mencetak.
         </p>
       )}
 
@@ -140,6 +142,9 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
         <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
           <span className="rounded-sm bg-black px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
             Non-COD
+          </span>
+          <span className="rounded-sm bg-black px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+            {isDropOff ? "Drop Off" : "Pickup"}
           </span>
           <span className="rounded-sm border border-black px-2 py-0.5 text-[10px] font-semibold uppercase">
             {hasInsurance ? "Diasuransikan" : "Tanpa asuransi"}

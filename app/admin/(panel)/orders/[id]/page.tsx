@@ -11,6 +11,7 @@ import { formatRupiah, formatDate } from "@/lib/format";
 import { cn, nowMs } from "@/lib/utils";
 import { ADMIN_ORDER_STATUS_LABEL, adminOrderStatusBadgeClass } from "@/lib/admin/order-status-ui";
 import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
+import { courierCollectionMethod } from "@/lib/biteship/courier-brands";
 import { StatusUpdater } from "./_components/status-updater";
 import { AWBForm } from "./_components/awb-form";
 import { SyncBiteshipButton } from "./_components/sync-biteship-button";
@@ -71,6 +72,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const payment = Array.isArray(order.payments) ? order.payments[0] : null;
   const refundProofUrl = order.status === "refunded" ? await getRefundProofUrl(order.refund_proof_path) : null;
   const shipment = Array.isArray(order.shipments) ? order.shipments[0] : null;
+  const isDropOff = courierCollectionMethod(shipment?.courier_company ?? order.courier_company) === "drop_off";
 
   let trackingResult: TrackingResult | null = null;
   if (shipment?.awb) {
@@ -378,12 +380,27 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     value={`${order.courier_company.toUpperCase()} — ${order.courier_service ?? ""}`}
                   />
                 )}
+                {order.courier_company && (
+                  <InfoRow
+                    label="Serah Terima"
+                    value={isDropOff ? "Drop off ke counter" : "Pickup (kurir jemput)"}
+                  />
+                )}
                 {order.courier_etd && (
-                  <InfoRow label="Estimasi" value={`${order.courier_etd} hari`} />
+                  <InfoRow
+                    label="Estimasi"
+                    value={`${order.courier_etd.replace(/\s*(days?|hari)\s*$/i, "").trim()} hari`}
+                  />
                 )}
                 {shipment?.awb && (
                   <>
                     <InfoRow label="Nomor Resi" value={<span className="font-mono font-semibold">{shipment.awb}</span>} />
+                    {isDropOff && ["pending", "confirmed", "allocated"].includes(shipment.status ?? "") && (
+                      <p className="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-900">
+                        Antar paket ke counter {order.courier_company?.toUpperCase()} terdekat dan tunjukkan nomor resi
+                        ini. Kurir tidak datang menjemput.
+                      </p>
+                    )}
                     <Link
                       href={`/admin/print/orders/${order.id}/label`}
                       target="_blank"
@@ -424,22 +441,25 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                     {order.status === "paid" && shipment.status === "pending" ? (
                       <>
                         <p className="text-[11px] text-muted-foreground">
-                          Pembayaran diterima. Kemas paket lalu lanjut ke konfirmasi pickup.
+                          Pembayaran diterima. Kemas paket lalu lanjut ke konfirmasi {isDropOff ? "drop off" : "pickup"}.
                         </p>
                         <StartPackingButton orderId={order.id} />
                       </>
                     ) : order.status === "processing" && shipment.status === "pending" ? (
                       <>
                         <p className="text-[11px] text-muted-foreground">
-                          Paket terdaftar di Biteship. Konfirmasi siap pickup setelah selesai dikemas.
+                          Paket terdaftar di Biteship. Konfirmasi siap {isDropOff ? "drop off" : "pickup"} setelah
+                          selesai dikemas.
                         </p>
-                        <ConfirmPickupButton orderId={order.id} />
+                        <ConfirmPickupButton orderId={order.id} dropOff={isDropOff} />
                       </>
                     ) : (
                       <>
                         <p className="text-[11px] text-muted-foreground">
                           {shipment.status === "confirmed"
-                            ? "Paket siap pickup. Kurir akan datang sesuai jadwal. AWB akan muncul otomatis."
+                            ? isDropOff
+                              ? "Paket siap drop off. Antar ke counter kurir setelah AWB muncul."
+                              : "Paket siap pickup. Kurir akan datang sesuai jadwal. AWB akan muncul otomatis."
                             : "AWB dikirim otomatis via webhook, atau klik sync untuk tarik sekarang."}
                         </p>
                         <SyncBiteshipButton orderId={order.id} />

@@ -1,4 +1,5 @@
 import { ON_DEMAND_COURIERS } from "@/lib/shipping/on-demand-coords";
+import { courierCollectionMethod } from "@/lib/biteship/courier-brands";
 
 type BiteshipOrderItem = {
   name: string;
@@ -74,6 +75,8 @@ export async function createBiteshipOrder(
     courier_company: params.courierCompany.toLowerCase(),
     courier_type: params.courierType.toLowerCase(),
     delivery_type: isOnDemand ? "now" : "later",
+    // pickup = kurir jemput di toko; drop_off = admin antar ke counter (mis. TIKI).
+    origin_collection_method: courierCollectionMethod(params.courierCompany),
     // delivery_date = scheduled courier PICKUP date, always the next working day.
     // Standard e-commerce flow: customer pays → store packs → courier picks up NEXT day.
     // Never use today — cutoffs vary per courier/area and we can't predict them.
@@ -140,6 +143,7 @@ export async function createBiteshipOrder(
         courier_company: body.courier_company,
         courier_type: body.courier_type,
         delivery_type: body.delivery_type,
+        origin_collection_method: body.origin_collection_method,
         delivery_date: body.delivery_date,
         delivery_time: body.delivery_time,
         destination_postal_code: body.destination_postal_code,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const FOOTER_ADDRESS =
-  "Bellezza Shopping Arcade Unit GSA-037, Grogol Utara, Kebayoran Lama, Jakarta Selatan 12210.";
+  "Bellezza Shopping Arcade Unit BSA-GF037, Grogol Utara, Kebayoran Lama, Jakarta Selatan 12210.";
 const FOOTER_MAPS_URL = "https://maps.app.goo.gl/mHDWtvoTMQ8hfxQh8";
 
 const FOOTER_ABOUT = [

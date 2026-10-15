@@ -58,9 +58,8 @@ function flattenHistory(items: BiteshipHistory[]): BiteshipHistory[] {
 const BITESHIP_TEMPLATES: { re: RegExp; text: (m: RegExpMatchArray) => string }[] = [
   {
     re: /^Courier order is confirmed\.\s*(\S+) has been notified to pick up\.?(?:\s*Pickup Number:\s*(\S+))?/i,
-    text: (m) =>
-      `Pesanan dikonfirmasi. Kurir ${m[1].toUpperCase()} sudah dijadwalkan menjemput paket.` +
-      (m[2] ? ` No. pickup: ${m[2]}` : ""),
+    // Template Biteship sama utk pickup & drop off ("notified to pick up") — pakai kalimat netral.
+    text: (m) => `Pengiriman terdaftar di kurir ${m[1].toUpperCase()}.` + (m[2] ? ` No. resi: ${m[2]}` : ""),
   },
   { re: /^Courier has been allocated/i, text: () => "Kurir sudah ditugaskan untuk menjemput paket." },
   { re: /^Courier is on the way to pick ?up/i, text: () => "Kurir sedang menuju lokasi penjemputan." },
