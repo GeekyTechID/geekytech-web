@@ -4,7 +4,7 @@ import { fetchCoordinatesFromPostal } from "@/lib/geo/geocode-destination";
 import { BITESHIP_COURIER_BRANDS } from "@/lib/biteship/courier-brands";
 
 // Single source of truth — derived from BITESHIP_COURIER_BRANDS onDemand flag.
-// On-demand: gojek, gosend, grab, borzo, lalamove, deliveree, rara
+// On-demand: gojek, grab, borzo, lalamove, deliveree
 // Standard (later): all others (jne, sicepat, jnt, anteraja, tiki, ninja, lion,
 //   wahana, sap, pos, idexpress, paxel, rpx, jdl, sentralcargo, dash_express)
 export const ON_DEMAND_COURIERS = new Set(

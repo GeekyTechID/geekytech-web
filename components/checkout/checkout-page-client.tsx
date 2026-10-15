@@ -74,7 +74,6 @@ const COURIER_LOGOS: Record<string, string> = {
   paxel: "/couriers/paxel.png",
   rpx: "/couriers/rpx.png",
   gojek: "/couriers/gojek.png",
-  gosend: "/couriers/gojek.png",
   grab: "/couriers/grab.png",
   borzo: "/couriers/borzo.png",
   lalamove: "/couriers/lalamove.png",

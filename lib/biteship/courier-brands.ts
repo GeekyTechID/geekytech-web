@@ -31,7 +31,6 @@ const STANDARD: BiteshipBrand[] = [
   { code: "idexpress",    name: "ID Express",    logo: "/couriers/idexpress.png" },
   { code: "paxel",        name: "Paxel",         logo: "/couriers/paxel.png" },
   { code: "rpx",          name: "RPX",           logo: "/couriers/rpx.png" },
-  { code: "jdl",          name: "JDL" },
   { code: "sentralcargo", name: "Sentral Cargo", logo: "/couriers/sentralcargo.png" },
   { code: "dash_express", name: "Dash Express",  logo: "/couriers/dash.png" },
 ];
@@ -39,12 +38,10 @@ const STANDARD: BiteshipBrand[] = [
 // On-demand couriers — delivery_type: "now" (kurir jemput sekarang, butuh koordinat)
 const ON_DEMAND: BiteshipBrand[] = [
   { code: "gojek",     name: "Gojek",     logo: "/couriers/gojek.png",     onDemand: true },
-  { code: "gosend",    name: "GoSend",    logo: "/couriers/gojek.png",     onDemand: true },
   { code: "grab",      name: "Grab",      logo: "/couriers/grab.png",      onDemand: true },
   { code: "borzo",     name: "Borzo",     logo: "/couriers/borzo.png",     onDemand: true },
   { code: "lalamove",  name: "Lalamove",  logo: "/couriers/lalamove.png",  onDemand: true },
   { code: "deliveree", name: "Deliveree", logo: "/couriers/deliveree.png", onDemand: true },
-  { code: "rara",      name: "Rara",                                       onDemand: true },
 ];
 
 export const BITESHIP_COURIER_BRANDS: BiteshipBrand[] = [...STANDARD, ...ON_DEMAND];
