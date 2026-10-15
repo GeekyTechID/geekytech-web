@@ -1,3 +1,11 @@
+export type BiteshipOrderHistoryItem = {
+  status: string;
+  note: string;
+  updated_at: string | null;
+  /** Foto bukti dari kurir (mis. proof_of_delivery), hanya URL https. */
+  images: string[];
+};
+
 export type BiteshipOrderDetail = {
   id: string;
   status: string;
@@ -7,7 +15,37 @@ export type BiteshipOrderDetail = {
     name: string | null;
     link: string | null;
   } | null;
+  /** courier.history dari Biteship (oldest → newest), lengkap dengan catatan kurir. */
+  history: BiteshipOrderHistoryItem[];
 };
+
+function parseImages(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const urls: string[] = [];
+  for (const group of raw) {
+    const list = (group as { images_urls?: unknown } | null)?.images_urls;
+    if (!Array.isArray(list)) continue;
+    for (const url of list) {
+      if (typeof url === "string" && url.startsWith("https://")) urls.push(url);
+    }
+  }
+  return urls;
+}
+
+function parseHistory(raw: unknown): BiteshipOrderHistoryItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((h): BiteshipOrderHistoryItem => {
+      const e = (h ?? {}) as Record<string, unknown>;
+      return {
+        status: typeof e.status === "string" ? e.status.toLowerCase() : "",
+        note: typeof e.note === "string" ? e.note : "",
+        updated_at: typeof e.updated_at === "string" ? e.updated_at : null,
+        images: parseImages(e.images),
+      };
+    })
+    .filter((h) => h.status);
+}
 
 export async function getBiteshipOrder(
   biteshipOrderId: string,
@@ -46,6 +84,7 @@ export async function getBiteshipOrder(
               link: (courier.link as string | null) ?? null,
             }
           : null,
+        history: parseHistory(courier?.history),
       },
     };
   } catch {

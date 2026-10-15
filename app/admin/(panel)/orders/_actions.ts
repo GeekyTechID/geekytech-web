@@ -10,39 +10,20 @@ import { cancelBiteshipOrder } from "@/lib/biteship/cancel-order";
 import { createShipmentForOrder } from "@/lib/biteship/create-shipment-for-order";
 import { isRefundProofPathForOrder } from "@/lib/orders/refund-proof";
 import { closePendingMayarPayments } from "@/lib/payments/close-pending";
-import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
+import { shipmentNotificationContent, shipmentStageToNotify } from "@/lib/shipping/notify-stage";
+import {
+  firstAt,
+  mapShipmentStatus,
+  orderStatusFromShipment,
+  trackingHistoryFromBiteship,
+  type TrackingHistoryEntry,
+} from "@/lib/biteship/shipment-status";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { sendRefundProcessed } from "@/lib/email/send-refund-processed";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { ORDER_STATUSES, allowedNextStatuses, type OrderStatus } from "./_constants";
 import type { Database, Json } from "@/types/supabase";
 
-type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
-type TrackingHistoryEntry = { status: string; note: string; at: string };
-
-function mapShipmentStatus(s: string): ShipmentStatus {
-  switch (s.toLowerCase()) {
-    case "confirmed": return "confirmed";
-    case "allocated": return "allocated";
-    case "picking_up": return "picking_up";
-    case "picked": return "picked";
-    case "dropping_off": return "dropping_off";
-    case "delivered": return "delivered";
-    case "rejected": return "rejected";
-    case "cancelled": case "canceled": return "cancelled";
-    case "return": case "returned": return "returned";
-    default: return "pending";
-  }
-}
-
-function orderStatusFromShipment(s: ShipmentStatus): Database["public"]["Enums"]["order_status"] | null {
-  switch (s) {
-    case "confirmed": case "allocated": case "picking_up": case "picked": case "dropping_off":
-      return "shipped";
-    case "delivered": return "delivered";
-    default: return null;
-  }
-}
 
 export async function updateOrderStatus(
   orderId: string,
@@ -343,13 +324,20 @@ export async function syncBiteshipAWB(
 
   const newShipStatus = mapShipmentStatus(rawStatus);
 
-  // Append tracking history entry
-  const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
-    ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
-    : [];
-  const entry: TrackingHistoryEntry = { status: rawStatus, note: "Sinkronisasi manual", at: now };
-  const last = history.at(-1);
-  const newHistory = last && last.status === entry.status ? history : [...history, entry];
+  // Riwayat lengkap dari Biteship (catatan kurir + foto bukti). Bila kosong,
+  // pertahankan riwayat lama + 1 entri status saat ini.
+  const apiHistory = trackingHistoryFromBiteship(order.history);
+  let newHistory: TrackingHistoryEntry[];
+  if (apiHistory.length > 0) {
+    newHistory = apiHistory;
+  } else {
+    const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
+      ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
+      : [];
+    const entry: TrackingHistoryEntry = { status: rawStatus, note: "", at: now };
+    const last = history.at(-1);
+    newHistory = last && last.status === entry.status ? history : [...history, entry];
+  }
 
   const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
     tracking_history: newHistory as unknown as Json,
@@ -358,8 +346,14 @@ export async function syncBiteshipAWB(
   if (newShipStatus !== "pending") updatePayload.status = newShipStatus;
   if (awb) updatePayload.awb = awb;
   if (order.courier?.name) updatePayload.courier_name = order.courier.name;
-  if (newShipStatus === "picked" && !shipment.picked_up_at) updatePayload.picked_up_at = now;
-  if (newShipStatus === "delivered" && !shipment.delivered_at) updatePayload.delivered_at = now;
+  const pickedAt = firstAt(newHistory, "picked");
+  const deliveredAt = firstAt(newHistory, "delivered");
+  if (!shipment.picked_up_at && (pickedAt || newShipStatus === "picked")) {
+    updatePayload.picked_up_at = pickedAt ?? now;
+  }
+  if (!shipment.delivered_at && (deliveredAt || newShipStatus === "delivered")) {
+    updatePayload.delivered_at = deliveredAt ?? now;
+  }
 
   await supabase.from("shipments").update(updatePayload).eq("id", shipment.id);
 
@@ -380,12 +374,12 @@ export async function syncBiteshipAWB(
   ) {
     await supabase.from("orders").update({
       status: newOrderStatus,
-      ...(newOrderStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+      ...(newOrderStatus === "delivered" ? { delivered_at: deliveredAt ?? now } : {}),
     }).eq("id", orderRow.id);
     await supabase.from("order_status_history").insert({
       order_id: orderRow.id,
       status: newOrderStatus,
-      note: `Status diperbarui dari sinkronisasi manual Biteship: ${rawStatus}`,
+      note: `Status diperbarui dari sinkronisasi manual Biteship: ${newShipStatus}`,
       changed_by: null,
     });
   }
@@ -393,29 +387,12 @@ export async function syncBiteshipAWB(
   // User notification — hanya saat tahap pengiriman berubah (sinkron berulang tidak spam)
   const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
   if (orderRow?.user_id && orderRow.order_number) {
-    if (notifyStage === "packing") {
+    if (notifyStage) {
+      const content = shipmentNotificationContent(notifyStage, newShipStatus, orderRow.order_number);
       await createNotification({
         userId: orderRow.user_id,
-        title: "Pesanan Sedang Dikemas",
-        body: `Pesanan ${orderRow.order_number} sedang dikemas dan siap dikirim.`,
-        type: "order_shipped",
-        data: { orderId, awb: awb ?? undefined },
-      });
-    } else if (notifyStage === "in_transit") {
-      await createNotification({
-        userId: orderRow.user_id,
-        title: "Pesanan Dalam Perjalanan",
-        body: `Pesanan ${orderRow.order_number} sedang dalam perjalanan ke alamatmu.`,
-        type: "order_in_transit",
-        data: { orderId, awb: awb ?? undefined },
-      });
-    } else if (notifyStage === "delivered") {
-      await createNotification({
-        userId: orderRow.user_id,
-        title: "Pesanan Telah Sampai",
-        body: `Pesanan ${orderRow.order_number} telah sampai di tujuan. Jangan lupa beri ulasan!`,
-        type: "order_delivered",
-        data: { orderId },
+        ...content,
+        data: { orderId, ...(notifyStage !== "delivered" && awb ? { awb } : {}) },
       });
     }
   }

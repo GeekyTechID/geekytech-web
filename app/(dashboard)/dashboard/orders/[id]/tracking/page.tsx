@@ -1,248 +1,19 @@
 export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
-import {
-  CheckCircle2,
-  Circle,
-  Home,
-  Info,
-  MapPin,
-  Package,
-  PackageCheck,
-  RotateCcw,
-  Truck,
-  UserCheck,
-  XCircle,
-} from "lucide-react";
+import { Info, Package, Truck } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { nowMs } from "@/lib/utils";
 import { fetchOrderDetailForUser } from "@/lib/data/dashboard-user";
-import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult, type TrackingStep } from "@/lib/biteship/fetch-tracking";
+import { fetchBiteshipTracking, trackingStepsFromHistory, type TrackingResult } from "@/lib/biteship/fetch-tracking";
 import { OrderStatusStepper } from "@/components/dashboard/order-status-stepper";
-import type { Database } from "@/types/supabase";
-
-type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
-
-// ─── Status config ─────────────────────────────────────────────────────────
-
-type StepCfg = { label: string; Icon: React.ElementType; color: string; bg: string };
-
-const STEP_CFG: Record<string, StepCfg> = {
-  confirmed:    { label: "Pesanan Dikonfirmasi",  Icon: CheckCircle2, color: "text-blue-500",     bg: "bg-blue-50"      },
-  allocated:    { label: "Kurir Dialokasikan",    Icon: UserCheck,    color: "text-blue-500",     bg: "bg-blue-50"      },
-  picking_up:   { label: "Penjemputan",           Icon: MapPin,       color: "text-amber-500",    bg: "bg-amber-50"     },
-  picked:       { label: "Paket Diambil",         Icon: PackageCheck, color: "text-[#EA5329]",    bg: "bg-[#FFF0E8]"   },
-  dropping_off: { label: "Dalam Pengiriman",      Icon: Truck,        color: "text-[#EA5329]",    bg: "bg-[#FFF0E8]"   },
-  delivered:    { label: "Paket Terkirim",        Icon: Home,         color: "text-green-600",    bg: "bg-green-50"     },
-  rejected:     { label: "Ditolak",               Icon: XCircle,      color: "text-red-500",      bg: "bg-red-50"       },
-  cancelled:    { label: "Dibatalkan",            Icon: XCircle,      color: "text-red-500",      bg: "bg-red-50"       },
-  returned:     { label: "Diretur",               Icon: RotateCcw,    color: "text-yellow-600",   bg: "bg-yellow-50"    },
-};
-
-const FALLBACK_CFG: StepCfg = {
-  label: "Update",
-  Icon: Circle,
-  color: "text-[#a0a0a0]",
-  bg: "bg-[#f5f5f7]",
-};
-
-// ─── Grouping ──────────────────────────────────────────────────────────────
-
-type StepGroup = {
-  status: string;
-  steps: TrackingStep[];
-};
-
-/** Group consecutive steps with the same status into a single phase entry. */
-function groupConsecutive(steps: TrackingStep[]): StepGroup[] {
-  const groups: StepGroup[] = [];
-  for (const step of steps) {
-    const last = groups.at(-1);
-    if (last && last.status === step.status) {
-      last.steps.push(step);
-    } else {
-      groups.push({ status: step.status, steps: [step] });
-    }
-  }
-  return groups;
-}
-
-// ─── Date formatter ────────────────────────────────────────────────────────
-
-function fmt(iso: string | null): string | null {
-  if (!iso) return null;
-  return new Date(iso).toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Jakarta",
-  }) + " WIB";
-}
-
-// ─── TrackingTimeline ──────────────────────────────────────────────────────
-
-function TrackingTimeline({ result }: { result: TrackingResult }) {
-  if (!result.ok || result.steps.length === 0) return null;
-
-  // Biteship returns newest-first → reverse to chronological (oldest → newest, top → bottom)
-  const steps = [...result.steps].reverse();
-  const groups = groupConsecutive(steps);
-  const lastGroupIdx = groups.length - 1;
-
-  return (
-    <div>
-      <p className="mb-5 text-[11px] font-bold uppercase tracking-widest text-[#a0a0a0]">
-        Riwayat Pengiriman
-      </p>
-      <div>
-        {groups.map((group, gi) => {
-          const cfg = STEP_CFG[group.status] ?? FALLBACK_CFG;
-          const { Icon } = cfg;
-          const isCurrent = gi === lastGroupIdx;
-          const isMulti = group.steps.length > 1;
-
-          return (
-            <div key={gi} className="flex gap-3">
-              {/* ── Left: Icon + connector ── */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={[
-                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                    isCurrent
-                      ? "bg-[#EA5329] ring-4 ring-[#EA5329]/15"
-                      : `${cfg.bg} border border-[#e0e0e0]`,
-                  ].join(" ")}
-                >
-                  <Icon
-                    className={`h-[15px] w-[15px] ${isCurrent ? "text-white" : cfg.color}`}
-                    strokeWidth={2}
-                  />
-                </div>
-                {gi < lastGroupIdx && (
-                  <div
-                    className="my-1 w-px flex-1 bg-[#e0e0e0]"
-                    style={{ minHeight: isMulti ? 8 : 24 }}
-                  />
-                )}
-              </div>
-
-              {/* ── Right: Content ── */}
-              <div className={["min-w-0 flex-1", gi < lastGroupIdx ? "pb-5" : "pb-0"].join(" ")}>
-                {/* Phase header */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <p
-                    className={[
-                      "text-[14px] font-semibold leading-snug tracking-tight",
-                      isCurrent ? "text-[#EA5329]" : "text-[#1d1d1f]",
-                    ].join(" ")}
-                  >
-                    {cfg.label}
-                  </p>
-                  {isCurrent && (
-                    <span className="rounded-full bg-[#EA5329]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#EA5329]">
-                      Saat ini
-                    </span>
-                  )}
-                </div>
-
-                {/* ── Single step ── */}
-                {!isMulti && (() => {
-                  const s = group.steps[0];
-                  const showNote = s.note && s.note !== s.description && s.description;
-                  return (
-                    <div className="mt-1">
-                      {s.description && (
-                        <p className="text-[13px] leading-relaxed text-[#5c5c5c]">
-                          {s.description}
-                        </p>
-                      )}
-                      {showNote && (
-                        <p className="mt-0.5 text-[12px] text-[#a0a0a0]">{s.note}</p>
-                      )}
-                      {s.at && (
-                        <p className="mt-1 text-[11px] font-medium tabular-nums text-[#b0b0b0]">
-                          {fmt(s.at)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* ── Multi-step: recursive sub-steps ── */}
-                {isMulti && (
-                  <div className="mt-2.5 space-y-0 border-l-2 border-[#ececec] pl-3.5">
-                    {group.steps.map((s, si) => {
-                      const isLastSub = si === group.steps.length - 1;
-                      const showNote = s.note && s.note !== s.description && s.description;
-                      return (
-                        <div
-                          key={si}
-                          className={[
-                            "relative",
-                            si < group.steps.length - 1 ? "pb-3.5" : "",
-                          ].join(" ")}
-                        >
-                          {/* Sub-step dot */}
-                          <div
-                            className={[
-                              "absolute -left-[19px] top-[5px] h-2 w-2 rounded-full border",
-                              isLastSub && isCurrent
-                                ? "border-[#EA5329] bg-[#EA5329]"
-                                : "border-[#d0d0d0] bg-white",
-                            ].join(" ")}
-                          />
-                          {/* Content */}
-                          {s.description && (
-                            <p
-                              className={[
-                                "text-[13px] leading-relaxed",
-                                isLastSub && isCurrent
-                                  ? "font-medium text-[#1d1d1f]"
-                                  : "text-[#5c5c5c]",
-                              ].join(" ")}
-                            >
-                              {s.description}
-                            </p>
-                          )}
-                          {showNote && (
-                            <p className="mt-0.5 text-[12px] text-[#a0a0a0]">{s.note}</p>
-                          )}
-                          {s.at && (
-                            <p className="mt-0.5 text-[11px] font-medium tabular-nums text-[#b0b0b0]">
-                              {fmt(s.at)}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Shipment status label ─────────────────────────────────────────────────
-
-const SHIPMENT_STATUS_LABEL: Record<ShipmentStatus, string> = {
-  pending:      "Menunggu Konfirmasi",
-  confirmed:    "Pesanan Dikonfirmasi",
-  allocated:    "Kurir Dialokasikan",
-  picking_up:   "Penjemputan",
-  picked:       "Paket Diambil",
-  dropping_off: "Dalam Pengiriman",
-  delivered:    "Paket Terkirim",
-  rejected:     "Ditolak",
-  cancelled:    "Dibatalkan",
-  returned:     "Diretur",
-};
+import {
+  SHIPMENT_STATUS_LABEL,
+  STEP_CFG,
+  TrackingTimeline,
+  formatTrackingTime,
+} from "@/components/dashboard/shipment-tracking-timeline";
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
@@ -306,7 +77,8 @@ export default async function OrderTrackingPage({
         </p>
       </div>
     )}
-    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+    {/* items-stretch: kartu Status Pesanan setinggi kartu Lacak Kiriman (tanpa ruang kosong) */}
+    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 lg:items-stretch">
       {/* ── Status Pesanan ── */}
       <div className="rounded-[18px] border border-[#e0e0e0] bg-white p-5 sm:p-6">
         <p className="mb-5 text-[11px] font-bold uppercase tracking-widest text-[#a0a0a0]">
@@ -344,8 +116,7 @@ export default async function OrderTrackingPage({
             {shipmentsWithAwb.map((s, i) => {
               const tracking = trackingResults[i];
               const hasSteps = tracking?.ok && tracking.steps.length > 0;
-              const externalLink = tracking?.ok ? tracking.link : null;
-              const dbStatus = s.status as ShipmentStatus;
+              const cfg = STEP_CFG[s.status];
 
               return (
                 <div key={s.id}>
@@ -372,24 +143,15 @@ export default async function OrderTrackingPage({
                     <span
                       className={[
                         "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold",
-                        STEP_CFG[dbStatus]
-                          ? `${STEP_CFG[dbStatus].bg} ${STEP_CFG[dbStatus].color}`
-                          : "bg-[#f5f5f7] text-[#5c5c5c]",
+                        cfg ? `${cfg.bg} ${cfg.color}` : "bg-[#f5f5f7] text-[#5c5c5c]",
                       ].join(" ")}
                     >
-                      {(() => {
-                        const cfg = STEP_CFG[dbStatus];
-                        if (cfg) {
-                          const { Icon: StatusIcon } = cfg;
-                          return <StatusIcon className="h-3 w-3" strokeWidth={2.5} />;
-                        }
-                        return null;
-                      })()}
-                      {SHIPMENT_STATUS_LABEL[dbStatus] ?? dbStatus}
+                      {cfg && <cfg.Icon className="h-3 w-3" strokeWidth={2.5} />}
+                      {SHIPMENT_STATUS_LABEL[s.status] ?? s.status}
                     </span>
                     {s.updated_at && (
                       <span className="text-[12px] text-[#a0a0a0]">
-                        · {fmt(s.updated_at)}
+                        · {formatTrackingTime(s.updated_at)}
                       </span>
                     )}
                   </div>

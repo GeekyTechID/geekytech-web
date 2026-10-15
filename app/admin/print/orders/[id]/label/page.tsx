@@ -128,8 +128,16 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
           </div>
         </header>
 
+        {/* Pesan untuk pembeli */}
+        <div className="mt-1 flex items-start justify-between gap-3 text-[8.5px]">
+          <p className="font-semibold">Terima kasih telah berbelanja di GeekyTech!</p>
+          <p className="text-right text-[#333]">
+            Rekam video saat membuka paket sebagai bukti bila ada kendala / klaim.
+          </p>
+        </div>
+
         {/* Badge layanan */}
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
           <span className="rounded-sm bg-black px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
             Non-COD
           </span>
@@ -176,6 +184,12 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
             {shipper.phone && <p className="mt-0.5 text-[10px] font-semibold">{shipper.phone}</p>}
             {shipper.address && <p className="mt-1.5 text-[9.5px]">{shipper.address}</p>}
             {shipper.postal && <p className="text-[9.5px] font-semibold">{shipper.postal}</p>}
+            {(host || csWhatsApp) && (
+              <div className="mt-1.5 border-t border-dashed border-black pt-1 text-[9px]">
+                {host && <p className="font-semibold">{host}</p>}
+                {csWhatsApp && <p>CS WA: +{csWhatsApp}</p>}
+              </div>
+            )}
           </div>
         </section>
 
@@ -200,12 +214,41 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
               <dd className="font-semibold">{formatRupiah(Number(order.shipping_cost))}</dd>
             </div>
           </dl>
+          {/* Ringkasan produk — tetap menempel di paket setelah bagian arsip disobek */}
+          <div className="col-span-2 mt-1.5 border-t border-dashed border-black pt-1">
+            <p className="text-[8px] uppercase text-[#444]">
+              Produk · {items.length} item · {totalQty} pcs
+            </p>
+            <ul className="mt-0.5 space-y-px">
+              {items.slice(0, 3).map((it) => (
+                <li key={it.id} className="flex gap-1.5">
+                  <span className="shrink-0 font-bold">{it.quantity}×</span>
+                  <span className="line-clamp-1 font-semibold">
+                    {it.product_name}
+                    {it.variant_name && <span className="font-normal"> — {it.variant_name}</span>}
+                  </span>
+                </li>
+              ))}
+              {items.length > 3 && (
+                <li className="text-[9px] italic">+{items.length - 3} produk lainnya (lihat isi paket)</li>
+              )}
+            </ul>
+          </div>
         </section>
 
-        {/* Isi paket */}
+        {/* Garis sobek: bagian bawah = arsip toko */}
+        <div className="mt-2 flex items-center gap-2 text-[8px] uppercase tracking-[0.12em] text-[#555]">
+          <span className="h-px flex-1 border-t border-dashed border-[#555]" />
+          <span>✂ Sobek di sini — arsip toko</span>
+          <span className="h-px flex-1 border-t border-dashed border-[#555]" />
+        </div>
+
+        {/* Isi paket (arsip toko) */}
         <section className="mt-2 flex min-h-0 flex-1 flex-col border-2 border-black">
           <div className="flex items-center justify-between border-b border-black bg-black px-2 py-1 text-white">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em]">Isi Paket</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em]">
+              Isi Paket · {order.order_number}
+            </p>
             <p className="text-[9px] font-semibold">
               {items.length} produk · {totalQty} pcs
             </p>
@@ -233,30 +276,21 @@ export default async function ShippingLabelPage({ params, searchParams }: Props)
               ))}
             </tbody>
           </table>
-          {order.notes && (
-            <div className="mt-auto border-t border-black px-2 py-1.5">
-              <p className="text-[8px] font-bold uppercase">Catatan Pembeli</p>
-              <p className="line-clamp-3 text-[10px]">{order.notes}</p>
+          <div className="mt-auto flex items-end justify-between gap-3 border-t border-black px-2 py-1.5">
+            <div className="min-w-0">
+              {order.notes && (
+                <>
+                  <p className="text-[8px] font-bold uppercase">Catatan Pembeli</p>
+                  <p className="line-clamp-3 text-[10px]">{order.notes}</p>
+                </>
+              )}
             </div>
-          )}
+            <div className="shrink-0 text-right font-mono text-[7.5px] text-[#555]">
+              {awb && <p>AWB: {awb}</p>}
+              {shipment?.biteship_order_id && <p>Ref Biteship: {shipment.biteship_order_id}</p>}
+            </div>
+          </div>
         </section>
-
-        {/* Footer */}
-        <footer className="mt-2 flex items-end justify-between gap-3 border-t-2 border-black pt-1.5 text-[8.5px]">
-          <div>
-            <p className="font-semibold">Terima kasih telah berbelanja di GeekyTech!</p>
-            <p className="text-[#333]">
-              Rekam video saat membuka paket sebagai bukti bila ada kendala / klaim.
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            {host && <p className="font-semibold">{host}</p>}
-            {csWhatsApp && <p>CS WhatsApp: +{csWhatsApp}</p>}
-            {shipment?.biteship_order_id && (
-              <p className="font-mono text-[7px] text-[#555]">Ref: {shipment.biteship_order_id}</p>
-            )}
-          </div>
-        </footer>
       </article>
     </div>
   );

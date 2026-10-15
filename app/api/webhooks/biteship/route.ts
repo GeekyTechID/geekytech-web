@@ -5,12 +5,17 @@ import { createNotification } from "@/lib/notifications/create-notification";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { sendOrderShipped } from "@/lib/email/send-order-shipped";
 import { sendOrderDelivered } from "@/lib/email/send-order-delivered";
-import { shipmentStageToNotify } from "@/lib/shipping/notify-stage";
+import { shipmentNotificationContent, shipmentStageToNotify } from "@/lib/shipping/notify-stage";
+import { getBiteshipOrder } from "@/lib/biteship/get-order";
+import {
+  firstAt,
+  mapShipmentStatus,
+  orderStatusFromShipment,
+  trackingHistoryFromBiteship,
+  type TrackingHistoryEntry,
+} from "@/lib/biteship/shipment-status";
 import type { Database, Json } from "@/types/supabase";
 import { secretMatches } from "@/lib/security/safe-compare";
-
-type ShipmentStatus = Database["public"]["Enums"]["shipment_status"];
-type OrderStatus = Database["public"]["Enums"]["order_status"];
 
 /**
  * Biteship webhook payload — FLAT shape (verified dari event live):
@@ -37,57 +42,6 @@ type BiteshipWebhookBody = {
     link?: string;
   };
 };
-
-/** 1 entri timeline yang disimpan ke shipments.tracking_history (oldest → newest). */
-type TrackingHistoryEntry = {
-  status: string; // status mentah Biteship (lowercase) — granular utk tampilan
-  note: string; // detail kurir/driver bila ada
-  at: string; // ISO timestamp
-};
-
-// Map status Biteship → enum shipment_status kita (1:1 bila ada).
-function mapShipmentStatus(biteshipStatus: string): ShipmentStatus {
-  switch (biteshipStatus.toLowerCase()) {
-    case "confirmed":
-      return "confirmed";
-    case "allocated":
-      return "allocated";
-    case "picking_up":
-      return "picking_up";
-    case "picked":
-      return "picked";
-    case "dropping_off":
-      return "dropping_off";
-    case "delivered":
-      return "delivered";
-    case "rejected":
-      return "rejected";
-    case "cancelled":
-    case "canceled":
-      return "cancelled";
-    case "return":
-    case "returned":
-      return "returned";
-    default:
-      return "pending";
-  }
-}
-
-// Map shipment status → order status.
-function orderStatusFromShipment(shipmentStatus: ShipmentStatus): OrderStatus | null {
-  switch (shipmentStatus) {
-    case "confirmed":
-    case "allocated":
-    case "picking_up":
-    case "picked":
-    case "dropping_off":
-      return "shipped";
-    case "delivered":
-      return "delivered";
-    default:
-      return null;
-  }
-}
 
 export async function POST(req: Request) {
   try {
@@ -122,7 +76,7 @@ export async function POST(req: Request) {
 
     const { data: shipment } = await svc
       .from("shipments")
-      .select("id, order_id, status, tracking_history")
+      .select("id, order_id, status, tracking_history, picked_up_at, delivered_at")
       .eq("biteship_order_id", biteshipOrderId)
       .maybeSingle();
 
@@ -171,28 +125,46 @@ export async function POST(req: Request) {
       return Response.json({ ok: true });
     }
 
-    // ── Append ke tracking_history (dedup entri identik terakhir) ──
-    const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
-      ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
-      : [];
-    const note = [body.courier_driver_name, body.courier_driver_phone].filter(Boolean).join(" · ");
-    const entry: TrackingHistoryEntry = { status: rawStatus, note, at };
-    const last = history.at(-1);
-    const newHistory =
-      last && last.status === entry.status && last.at === entry.at
-        ? history
-        : [...history, entry];
+    // ── Riwayat: ambil courier.history lengkap dari Biteship (catatan hub + foto bukti).
+    // Payload webhook tidak membawa catatan, dan webhook bisa terlewat / datang tidak urut.
+    // Fallback: append entri dari payload bila API gagal.
+    const detail = await getBiteshipOrder(biteshipOrderId);
+    const apiHistory = detail.ok ? trackingHistoryFromBiteship(detail.order.history) : [];
+    // Status terkini dari API lebih andal daripada payload (webhook lama bisa datang belakangan).
+    const apiStatus = detail.ok ? mapShipmentStatus(detail.order.status) : "pending";
+    const shipStatus = apiStatus !== "pending" ? apiStatus : newShipStatus;
+
+    let newHistory: TrackingHistoryEntry[];
+    if (apiHistory.length > 0) {
+      newHistory = apiHistory;
+    } else {
+      const history: TrackingHistoryEntry[] = Array.isArray(shipment.tracking_history)
+        ? (shipment.tracking_history as unknown as TrackingHistoryEntry[])
+        : [];
+      const note = [body.courier_driver_name, body.courier_driver_phone].filter(Boolean).join(" · ");
+      const entry: TrackingHistoryEntry = { status: rawStatus, note, at };
+      const last = history.at(-1);
+      newHistory =
+        last && last.status === entry.status && last.at === entry.at ? history : [...history, entry];
+    }
 
     const updatePayload: Database["public"]["Tables"]["shipments"]["Update"] = {
       tracking_history: newHistory as unknown as Json,
       updated_at: new Date().toISOString(),
     };
     // Hanya ubah status kalau dikenali (jangan downgrade ke pending utk status tak dikenal).
-    if (newShipStatus !== "pending") updatePayload.status = newShipStatus;
+    if (shipStatus !== "pending") updatePayload.status = shipStatus;
     if (awb) updatePayload.awb = awb;
     if (courierName) updatePayload.courier_name = courierName;
-    if (newShipStatus === "picked") updatePayload.picked_up_at = at;
-    if (newShipStatus === "delivered") updatePayload.delivered_at = at;
+    // Waktu pertama status muncul — picked bisa berulang (pickup + serah ke hub).
+    const pickedAt = firstAt(newHistory, "picked");
+    const deliveredAt = firstAt(newHistory, "delivered");
+    if (!shipment.picked_up_at && (pickedAt || shipStatus === "picked")) {
+      updatePayload.picked_up_at = pickedAt ?? at;
+    }
+    if (!shipment.delivered_at && (deliveredAt || shipStatus === "delivered")) {
+      updatePayload.delivered_at = deliveredAt ?? at;
+    }
 
     await svc.from("shipments").update(updatePayload).eq("id", shipment.id);
 
@@ -203,7 +175,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     // ── Sync order status + riwayat ──
-    const newOrderStatus = orderStatusFromShipment(newShipStatus);
+    const newOrderStatus = orderStatusFromShipment(shipStatus);
     if (
       orderRow &&
       newOrderStatus &&
@@ -213,52 +185,35 @@ export async function POST(req: Request) {
     ) {
       await svc.from("orders").update({
         status: newOrderStatus,
-        ...(newOrderStatus === "delivered" ? { delivered_at: new Date().toISOString() } : {}),
+        // Waktu kurir (bukan waktu webhook) — batas komplain 3 hari dihitung dari sini.
+        ...(newOrderStatus === "delivered" ? { delivered_at: deliveredAt ?? at } : {}),
       }).eq("id", orderRow.id);
       await svc.from("order_status_history").insert({
         order_id: orderRow.id,
         status: newOrderStatus,
-        note: `Status diperbarui otomatis dari Biteship: ${rawStatus}`,
+        note: `Status diperbarui otomatis dari Biteship: ${shipStatus}`,
         changed_by: null,
       });
     }
 
     // ── Notifikasi user ──
-    const notifyStage = shipmentStageToNotify(shipment.status, newShipStatus);
+    const notifyStage = shipmentStageToNotify(shipment.status, shipStatus);
     if (orderRow?.user_id && orderRow.order_number) {
       const userId = orderRow.user_id;
-      if (notifyStage === "packing") {
+      if (notifyStage) {
+        const content = shipmentNotificationContent(notifyStage, shipStatus, orderRow.order_number);
         await createNotification({
-          userId: orderRow.user_id,
-          title: "Pesanan Sedang Dikemas",
-          body: `Pesanan ${orderRow.order_number} sedang dikemas dan siap dikirim.`,
-          type: "order_shipped",
-          data: { orderId: shipment.order_id, awb: awb ?? undefined },
-        });
-      } else if (notifyStage === "in_transit") {
-        await createNotification({
-          userId: orderRow.user_id,
-          title: "Pesanan Dalam Perjalanan",
-          body: `Pesanan ${orderRow.order_number} sedang dalam perjalanan ke alamatmu.`,
-          type: "order_in_transit",
-          data: { orderId: shipment.order_id, awb: awb ?? undefined },
-        });
-      } else if (notifyStage === "delivered") {
-        await createNotification({
-          userId: orderRow.user_id,
-          title: "Pesanan Telah Sampai",
-          body: `Pesanan ${orderRow.order_number} telah sampai di tujuan. Jangan lupa beri ulasan!`,
-          type: "order_delivered",
-          data: { orderId: shipment.order_id },
+          userId,
+          ...content,
+          data: {
+            orderId: shipment.order_id,
+            ...(notifyStage !== "delivered" && awb ? { awb } : {}),
+          },
         });
       }
 
       // Email: kirim saat picking_up/picked/dropping_off (idempotency key cegah duplikat)
-      if (
-        newShipStatus === "picking_up" ||
-        newShipStatus === "picked" ||
-        newShipStatus === "dropping_off"
-      ) {
+      if (shipStatus === "picking_up" || shipStatus === "picked" || shipStatus === "dropping_off") {
         // after(): tanpa ini Vercel membekukan fungsi sebelum email selesai terkirim.
         after(async () => {
           const user = await getUserEmail(userId).catch(() => null);
@@ -275,7 +230,7 @@ export async function POST(req: Request) {
         });
       }
 
-      if (newShipStatus === "delivered") {
+      if (shipStatus === "delivered") {
         after(async () => {
           const user = await getUserEmail(userId).catch(() => null);
           if (!user) return;
